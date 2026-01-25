@@ -13,6 +13,7 @@ import L from 'leaflet';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useGeolocation } from '@/hooks/useGeolocation';
 import { supabase } from '@/integrations/supabase/client';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
@@ -37,6 +38,7 @@ type AssetType = 'plant' | 'tree' | 'irrigation_controller' | 'valve' | 'lightin
 export default function MapView() {
   const { t, language } = useLanguage();
   const { currentEstate } = useEstate();
+  const { isOwnerOrManager } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { latitude, longitude, getCurrentPosition, hasLocation, loading: geoLoading } = useGeolocation();
@@ -212,6 +214,8 @@ export default function MapView() {
           >
             <Navigation className="h-5 w-5" />
           </Button>
+          {isOwnerOrManager && (
+            <>
           <Button
             variant={pinPlacementMode ? 'default' : 'outline'}
             size="icon"
@@ -234,6 +238,8 @@ export default function MapView() {
           >
             <Pencil className="h-5 w-5" />
           </Button>
+            </>
+          )}
           <Button
             variant="outline"
             size="icon"

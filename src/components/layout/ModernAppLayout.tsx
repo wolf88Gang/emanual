@@ -27,6 +27,7 @@ import {
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { BottomNav } from './BottomNav';
+import { ThemeToggle } from '../ThemeToggle';
 
 interface ModernAppLayoutProps {
   children: ReactNode;
@@ -170,6 +171,9 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
                 </DropdownMenuContent>
               </DropdownMenu>
             )}
+
+            {/* Theme Toggle */}
+            <ThemeToggle />
 
             {/* Language Toggle */}
             <Button

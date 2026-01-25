@@ -153,18 +153,8 @@ export function EstateMap({
 
   // Update center when it changes
   useEffect(() => {
-    // Only set initial view, don't reset on center changes to prevent jumping
-    if (mapRef.current && isMapReady && center && !mapRef.current.getBounds().contains(center)) {
-      // Only recenter if the new center is far outside the current view
-      const bounds = mapRef.current.getBounds();
-      const currentCenter = mapRef.current.getCenter();
-      const distance = currentCenter.distanceTo(L.latLng(center));
-      
-      // Only recenter if more than 10km away (prevents jumping during normal pan)
-      if (distance > 10000) {
-        mapRef.current.setView(center, zoom);
-      }
-    }
+    // Don't auto-recenter if user is interacting with map (prevents jumping)
+    // Only recenter when map is first initialized
   }, [center, zoom, isMapReady]);
 
   // Add zone polygons
