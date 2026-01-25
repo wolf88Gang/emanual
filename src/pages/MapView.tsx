@@ -3,11 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   MapPin, 
   Search,
-  QrCode,
   X,
-  Plus,
-  Navigation,
-  Pencil
 } from 'lucide-react';
 import L from 'leaflet';
 import { cn } from '@/lib/utils';
@@ -19,17 +15,16 @@ import { supabase } from '@/integrations/supabase/client';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
 import { EstateMap } from '@/components/map/EstateMap';
 import { ZoneLegend } from '@/components/map/ZoneLegend';
 import { QRScannerView } from '@/components/map/QRScannerView';
 import { ZoneDrawingTool } from '@/components/map/ZoneDrawingTool';
 import { AssetCreationDialog } from '@/components/map/AssetCreationDialog';
+import { MapActionsMenu } from '@/components/map/MapActionsMenu';
 import { toast } from 'sonner';
 import type { MapZone, MapAsset } from '@/components/map/types';
 
@@ -194,9 +189,9 @@ export default function MapView() {
   return (
     <ModernAppLayout>
       <div className="h-[calc(100vh-4rem-4rem)] lg:h-[calc(100vh-3.5rem)] flex flex-col">
-        {/* Search Bar */}
-        <div className="p-4 border-b border-border bg-card flex items-center gap-2">
-          <div className="relative flex-1">
+        {/* Search Bar - simplified */}
+        <div className="p-4 border-b border-border bg-card">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={language === 'es' ? 'Buscar activos...' : 'Search assets...'}
@@ -205,49 +200,6 @@ export default function MapView() {
               className="pl-10"
             />
           </div>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={centerOnCurrentLocation}
-            disabled={geoLoading}
-            title={language === 'es' ? 'Mi ubicación' : 'My location'}
-          >
-            <Navigation className="h-5 w-5" />
-          </Button>
-          {isOwnerOrManager && (
-            <>
-          <Button
-            variant={pinPlacementMode ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => {
-              setPinPlacementMode(!pinPlacementMode);
-              setZoneDrawingMode(false);
-            }}
-            title={language === 'es' ? 'Agregar activo' : 'Add asset'}
-          >
-            <Plus className="h-5 w-5" />
-          </Button>
-          <Button
-            variant={zoneDrawingMode ? 'default' : 'outline'}
-            size="icon"
-            onClick={() => {
-              setZoneDrawingMode(!zoneDrawingMode);
-              setPinPlacementMode(false);
-            }}
-            title={language === 'es' ? 'Dibujar zona' : 'Draw zone'}
-          >
-            <Pencil className="h-5 w-5" />
-          </Button>
-            </>
-          )}
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={() => setShowQRScanner(true)}
-            title={language === 'es' ? 'Escanear QR' : 'Scan QR'}
-          >
-            <QrCode className="h-5 w-5" />
-          </Button>
         </div>
 
         {/* Pin Placement Mode Indicator */}
@@ -384,6 +336,25 @@ export default function MapView() {
                     </CardContent>
                   </Card>
                 </div>
+              )}
+
+              {/* Floating Action Menu */}
+              {isOwnerOrManager && (
+                <MapActionsMenu
+                  onAddAsset={() => {
+                    setPinPlacementMode(!pinPlacementMode);
+                    setZoneDrawingMode(false);
+                  }}
+                  onDrawZone={() => {
+                    setZoneDrawingMode(!zoneDrawingMode);
+                    setPinPlacementMode(false);
+                  }}
+                  onScanQR={() => setShowQRScanner(true)}
+                  onLocateMe={centerOnCurrentLocation}
+                  isAddingAsset={pinPlacementMode}
+                  isDrawingZone={zoneDrawingMode}
+                  locatingDisabled={geoLoading}
+                />
               )}
             </>
           )}
