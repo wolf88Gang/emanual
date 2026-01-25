@@ -25,6 +25,7 @@ interface EstateMapProps {
   zoom?: number;
   onMapClick?: (lat: number, lng: number) => void;
   enablePinPlacement?: boolean;
+  onMapReady?: (map: L.Map) => void;
 }
 
 // Asset type to emoji/icon mapping
@@ -78,6 +79,7 @@ export function EstateMap({
   zoom = 16,
   onMapClick,
   enablePinPlacement = false,
+  onMapReady,
 }: EstateMapProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
@@ -101,23 +103,38 @@ export function EstateMap({
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
 
-    // Handle map clicks for pin placement
-    if (enablePinPlacement) {
-      map.on('click', (e) => {
-        if (onMapClick) {
-          onMapClick(e.latlng.lat, e.latlng.lng);
-        }
-      });
-    }
-
     mapRef.current = map;
     setIsMapReady(true);
+
+    // Notify parent of map instance
+    if (onMapReady) {
+      onMapReady(map);
+    }
 
     return () => {
       map.remove();
       mapRef.current = null;
     };
   }, []);
+
+  // Handle map clicks for pin placement
+  useEffect(() => {
+    if (!mapRef.current) return;
+
+    const handleMapClick = (e: L.LeafletMouseEvent) => {
+      if (enablePinPlacement && onMapClick) {
+        onMapClick(e.latlng.lat, e.latlng.lng);
+      }
+    };
+
+    mapRef.current.on('click', handleMapClick);
+
+    return () => {
+      if (mapRef.current) {
+        mapRef.current.off('click', handleMapClick);
+      }
+    };
+  }, [enablePinPlacement, onMapClick]);
 
   // Toggle satellite view
   function toggleSatellite() {
@@ -136,10 +153,19 @@ export function EstateMap({
 
   // Update center when it changes
   useEffect(() => {
-    if (mapRef.current && center) {
-      mapRef.current.setView(center, zoom);
+    // Only set initial view, don't reset on center changes to prevent jumping
+    if (mapRef.current && isMapReady && center && !mapRef.current.getBounds().contains(center)) {
+      // Only recenter if the new center is far outside the current view
+      const bounds = mapRef.current.getBounds();
+      const currentCenter = mapRef.current.getCenter();
+      const distance = currentCenter.distanceTo(L.latLng(center));
+      
+      // Only recenter if more than 10km away (prevents jumping during normal pan)
+      if (distance > 10000) {
+        mapRef.current.setView(center, zoom);
+      }
     }
-  }, [center, zoom]);
+  }, [center, zoom, isMapReady]);
 
   // Add zone polygons
   useEffect(() => {
