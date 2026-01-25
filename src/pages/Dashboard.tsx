@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
 import { AppLayout } from '@/components/layout/AppLayout';
-import { WeatherAlertCard } from '@/components/dashboard/WeatherAlertCard';
+import { WeatherAlertWidget } from '@/components/dashboard/WeatherAlertWidget';
 import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard';
 import { TasksOverviewCard } from '@/components/dashboard/TasksOverviewCard';
 import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
@@ -80,25 +80,26 @@ export default function Dashboard() {
         zone: task.zones,
       })));
 
-      // Fetch weather alerts
+      // Fetch weather alerts (active and acknowledged)
       const { data: alertsData } = await supabase
         .from('weather_alerts')
         .select('*')
         .eq('estate_id', currentEstate.id)
-        .eq('status', 'active')
+        .in('status', ['active', 'acknowledged'])
         .order('fired_at', { ascending: false })
-        .limit(5);
+        .limit(10);
 
       setAlerts((alertsData || []).map(a => ({
         id: a.id,
-        type: a.message?.includes('freeze') ? 'freeze' 
-          : a.message?.includes('rain') ? 'heavy_rain'
-          : a.message?.includes('wind') ? 'high_wind'
+        type: a.message?.toLowerCase().includes('freeze') ? 'freeze' 
+          : a.message?.toLowerCase().includes('rain') ? 'heavy_rain'
+          : a.message?.toLowerCase().includes('wind') ? 'high_wind'
           : 'drought',
         message: a.message,
         message_es: a.message_es,
         severity: a.severity === 'critical' ? 'critical' : 'warning',
         fired_at: a.fired_at,
+        status: a.status as 'active' | 'acknowledged' | 'resolved',
       })));
 
       // Fetch recent checkins as activities
@@ -186,7 +187,7 @@ export default function Dashboard() {
 
           {/* Right Column - Weather & Activity */}
           <div className="space-y-6">
-            <WeatherAlertCard alerts={alerts} />
+            <WeatherAlertWidget alerts={alerts} onAlertUpdate={fetchDashboardData} />
             <RecentActivityCard activities={activities} />
           </div>
         </div>

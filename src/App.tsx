@@ -12,6 +12,7 @@ import Dashboard from "./pages/Dashboard";
 import MapView from "./pages/MapView";
 import Tasks from "./pages/Tasks";
 import Assets from "./pages/Assets";
+import AssetDetail from "./pages/AssetDetail";
 import Documents from "./pages/Documents";
 import Admin from "./pages/Admin";
 import NotFound from "./pages/NotFound";
@@ -54,6 +55,7 @@ function AppRoutes() {
       <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
       <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
       <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
+      <Route path="/assets/:id" element={<ProtectedRoute><AssetDetail /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
