@@ -33,10 +33,11 @@ interface PlantProfileLinkerProps {
 }
 
 interface CareProtocol {
-  watering: { frequency: string; amount: string; method: string };
-  sunlight: { requirement: string; hours: string };
-  pruning: { frequency: string; timing: string };
-  do_not_do: string[];
+  watering?: { frequency?: string; amount?: string; method?: string } | string;
+  sunlight?: { requirement?: string; hours?: string } | string;
+  pruning?: { frequency?: string; timing?: string } | string;
+  fertilizer?: string;
+  do_not_do?: string[];
 }
 
 export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfileLinkerProps) {
@@ -284,7 +285,8 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
           {careProtocol && (
             <div className="mt-6 space-y-4">
               {/* Watering */}
-              <Card>
+              {careProtocol.watering && (
+                <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Droplets className="h-4 w-4 text-primary" />
@@ -292,14 +294,22 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm space-y-1">
-                  <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {careProtocol.watering?.frequency}</p>
-                  <p><strong>{language === 'es' ? 'Cantidad:' : 'Amount:'}</strong> {careProtocol.watering?.amount}</p>
-                  <p><strong>{language === 'es' ? 'Método:' : 'Method:'}</strong> {careProtocol.watering?.method}</p>
+                  {typeof careProtocol.watering === 'object' ? (
+                    <>
+                      {careProtocol.watering.frequency && <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {careProtocol.watering.frequency}</p>}
+                      {careProtocol.watering.amount && <p><strong>{language === 'es' ? 'Cantidad:' : 'Amount:'}</strong> {careProtocol.watering.amount}</p>}
+                      {careProtocol.watering.method && <p><strong>{language === 'es' ? 'Método:' : 'Method:'}</strong> {careProtocol.watering.method}</p>}
+                    </>
+                  ) : (
+                    <p>{careProtocol.watering}</p>
+                  )}
                 </CardContent>
               </Card>
+              )}
 
               {/* Sunlight */}
-              <Card>
+              {careProtocol.sunlight && (
+                <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Sun className="h-4 w-4 text-warning" />
@@ -307,13 +317,21 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm space-y-1">
-                  <p><strong>{language === 'es' ? 'Requisito:' : 'Requirement:'}</strong> {careProtocol.sunlight?.requirement}</p>
-                  <p><strong>{language === 'es' ? 'Horas:' : 'Hours:'}</strong> {careProtocol.sunlight?.hours}</p>
+                  {typeof careProtocol.sunlight === 'object' ? (
+                    <>
+                      {careProtocol.sunlight.requirement && <p><strong>{language === 'es' ? 'Requisito:' : 'Requirement:'}</strong> {careProtocol.sunlight.requirement}</p>}
+                      {careProtocol.sunlight.hours && <p><strong>{language === 'es' ? 'Horas:' : 'Hours:'}</strong> {careProtocol.sunlight.hours}</p>}
+                    </>
+                  ) : (
+                    <p>{careProtocol.sunlight}</p>
+                  )}
                 </CardContent>
               </Card>
+              )}
 
               {/* Pruning */}
-              <Card>
+              {careProtocol.pruning && (
+                <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm flex items-center gap-2">
                     <Scissors className="h-4 w-4 text-primary" />
@@ -321,10 +339,32 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm space-y-1">
-                  <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {careProtocol.pruning?.frequency}</p>
-                  <p><strong>{language === 'es' ? 'Época:' : 'Timing:'}</strong> {careProtocol.pruning?.timing}</p>
+                  {typeof careProtocol.pruning === 'object' ? (
+                    <>
+                      {careProtocol.pruning.frequency && <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {careProtocol.pruning.frequency}</p>}
+                      {careProtocol.pruning.timing && <p><strong>{language === 'es' ? 'Época:' : 'Timing:'}</strong> {careProtocol.pruning.timing}</p>}
+                    </>
+                  ) : (
+                    <p>{careProtocol.pruning}</p>
+                  )}
                 </CardContent>
               </Card>
+              )}
+
+              {/* Fertilizer (legacy format) */}
+              {careProtocol.fertilizer && (
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <Sparkles className="h-4 w-4 text-primary" />
+                      {language === 'es' ? 'Fertilización' : 'Fertilizer'}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-sm">
+                    <p>{careProtocol.fertilizer}</p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Do Not Do */}
               {careProtocol.do_not_do && careProtocol.do_not_do.length > 0 && (

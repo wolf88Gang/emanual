@@ -492,28 +492,12 @@ export default function MapView() {
         </Sheet>
 
         {/* QR Scanner Sheet */}
-        <Sheet open={showQRScanner} onOpenChange={setShowQRScanner}>
-          <SheetContent className="w-full sm:max-w-lg">
-            <SheetHeader>
-              <SheetTitle className="flex items-center gap-2">
-                <QrCode className="h-5 w-5" />
-                {language === 'es' ? 'Escanear Código QR' : 'Scan QR Code'}
-              </SheetTitle>
-            </SheetHeader>
-            <div className="mt-6">
-              <QRScannerView 
-                onScan={(code) => {
-                  setShowQRScanner(false);
-                  // QR codes contain asset IDs - navigate to asset detail
-                  if (code) {
-                    navigate(`/assets/${code}`);
-                  }
-                }}
-                onClose={() => setShowQRScanner(false)}
-              />
-            </div>
-          </SheetContent>
-        </Sheet>
+        {showQRScanner && (
+          <QRScannerView 
+            onClose={() => setShowQRScanner(false)}
+            estateId={currentEstate?.id}
+          />
+        )}
 
       </div>
     </ModernAppLayout>
