@@ -8,7 +8,15 @@ import {
   ChevronRight,
   AlertTriangle,
   QrCode,
-  Camera
+  Camera,
+  Leaf,
+  TreeDeciduous,
+  Droplets,
+  Wrench,
+  Lightbulb,
+  Construction,
+  Settings,
+  Home
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -27,7 +35,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu';
 import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
+import { toast } from '@/hooks/use-toast';
 
 interface Asset {
   id: string;
@@ -150,6 +167,40 @@ export default function Assets() {
     navigate(`/assets/${assetId}`);
   };
 
+  const handleAddAsset = async (assetType: string) => {
+    if (!currentEstate) return;
+    
+    // Create a new asset with the selected type
+    try {
+      const { data, error } = await supabase
+        .from('assets')
+        .insert({
+          estate_id: currentEstate.id,
+          name: `${language === 'es' ? 'Nuevo(a)' : 'New'} ${getAssetTypeLabel(assetType)}`,
+          asset_type: assetType as 'plant' | 'tree' | 'irrigation_controller' | 'valve' | 'lighting_transformer' | 'hardscape' | 'equipment' | 'structure',
+        })
+        .select('id')
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: language === 'es' ? 'Activo creado' : 'Asset created',
+        description: language === 'es' ? 'Ahora puedes editar los detalles' : 'You can now edit the details',
+      });
+
+      // Navigate to the new asset's detail page
+      navigate(`/assets/${data.id}`);
+    } catch (error) {
+      console.error('Error creating asset:', error);
+      toast({
+        title: language === 'es' ? 'Error' : 'Error',
+        description: language === 'es' ? 'No se pudo crear el activo' : 'Could not create asset',
+        variant: 'destructive',
+      });
+    }
+  };
+
   return (
     <ModernAppLayout>
       <div className="container py-6">
@@ -166,10 +217,54 @@ export default function Assets() {
               <QrCode className="h-4 w-4" />
             </Button>
             {isOwnerOrManager && (
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {t('assets.addAsset')}
-              </Button>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button>
+                    <Plus className="h-4 w-4 mr-2" />
+                    {t('assets.addAsset')}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>
+                    {language === 'es' ? 'Seleccionar tipo' : 'Select type'}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleAddAsset('plant')}>
+                    <Leaf className="h-4 w-4 mr-2 text-green-600" />
+                    {t('assets.plants')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAddAsset('tree')}>
+                    <TreeDeciduous className="h-4 w-4 mr-2 text-green-700" />
+                    {t('assets.trees')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleAddAsset('irrigation_controller')}>
+                    <Droplets className="h-4 w-4 mr-2 text-blue-500" />
+                    {t('assets.irrigationController')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAddAsset('valve')}>
+                    <Wrench className="h-4 w-4 mr-2 text-gray-500" />
+                    {t('assets.valve')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAddAsset('lighting_transformer')}>
+                    <Lightbulb className="h-4 w-4 mr-2 text-amber-500" />
+                    {t('assets.lightingTransformer')}
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => handleAddAsset('hardscape')}>
+                    <Construction className="h-4 w-4 mr-2 text-stone-500" />
+                    {t('assets.hardscape')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAddAsset('equipment')}>
+                    <Settings className="h-4 w-4 mr-2 text-slate-500" />
+                    {t('assets.equipment')}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => handleAddAsset('structure')}>
+                    <Home className="h-4 w-4 mr-2 text-orange-500" />
+                    {t('assets.structures')}
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )}
           </div>
         </div>

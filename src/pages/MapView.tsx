@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   MapPin, 
   Search,
   QrCode,
-  X,
-  Camera
+  X
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,12 +19,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
 import { EstateMap } from '@/components/map/EstateMap';
 import { ZoneLegend } from '@/components/map/ZoneLegend';
+import { QRScannerView } from '@/components/map/QRScannerView';
 import type { MapZone, MapAsset } from '@/components/map/types';
 
 export default function MapView() {
   const { t, language } = useLanguage();
   const { currentEstate } = useEstate();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [zones, setZones] = useState<MapZone[]>([]);
   const [assets, setAssets] = useState<MapAsset[]>([]);
   const [selectedZone, setSelectedZone] = useState<MapZone | null>(null);
@@ -33,6 +34,17 @@ export default function MapView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [showQRScanner, setShowQRScanner] = useState(false);
+
+  // Handle zone selection from URL param
+  useEffect(() => {
+    const zoneId = searchParams.get('zone');
+    if (zoneId && zones.length > 0) {
+      const zone = zones.find(z => z.id === zoneId);
+      if (zone) {
+        setSelectedZone(zone);
+      }
+    }
+  }, [searchParams, zones]);
 
   useEffect(() => {
     if (currentEstate) {
@@ -327,113 +339,5 @@ export default function MapView() {
         </Sheet>
       </div>
     </ModernAppLayout>
-  );
-}
-
-// QR Scanner Component
-function QRScannerView({ 
-  onScan, 
-  onClose 
-}: { 
-  onScan: (code: string) => void; 
-  onClose: () => void;
-}) {
-  const { language } = useLanguage();
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [scanning, setScanning] = useState(false);
-
-  useEffect(() => {
-    let stream: MediaStream | null = null;
-
-    async function startCamera() {
-      try {
-        stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
-        });
-        
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          setScanning(true);
-        }
-      } catch (err) {
-        console.error('Camera access error:', err);
-        setError(language === 'es' 
-          ? 'No se pudo acceder a la cámara. Verifica los permisos.'
-          : 'Could not access camera. Please check permissions.');
-      }
-    }
-
-    startCamera();
-
-    return () => {
-      if (stream) {
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [language]);
-
-  // Note: Full QR detection would require a library like @zxing/browser
-  // For now, this shows the camera view with manual entry fallback
-
-  return (
-    <div className="space-y-4">
-      {error ? (
-        <div className="text-center py-8">
-          <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-          <p className="text-destructive mb-4">{error}</p>
-          <Button variant="outline" onClick={onClose}>
-            {language === 'es' ? 'Cerrar' : 'Close'}
-          </Button>
-        </div>
-      ) : (
-        <>
-          <div className="relative aspect-square bg-muted rounded-xl overflow-hidden">
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className="w-full h-full object-cover"
-            />
-            {scanning && (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-48 h-48 border-2 border-primary rounded-lg">
-                  <div className="absolute top-0 left-0 right-0 h-0.5 bg-primary animate-pulse" />
-                </div>
-              </div>
-            )}
-          </div>
-          <p className="text-sm text-center text-muted-foreground">
-            {language === 'es' 
-              ? 'Apunta la cámara al código QR del activo'
-              : 'Point camera at asset QR code'}
-          </p>
-          
-          {/* Manual entry fallback */}
-          <div className="pt-4 border-t border-border">
-            <p className="text-xs text-muted-foreground mb-2">
-              {language === 'es' ? 'O ingresa el código manualmente:' : 'Or enter code manually:'}
-            </p>
-            <div className="flex gap-2">
-              <Input 
-                placeholder={language === 'es' ? 'Código del activo' : 'Asset code'}
-                id="manual-code"
-              />
-              <Button 
-                onClick={() => {
-                  const input = document.getElementById('manual-code') as HTMLInputElement;
-                  if (input?.value) {
-                    onScan(input.value);
-                  }
-                }}
-              >
-                {language === 'es' ? 'Ir' : 'Go'}
-              </Button>
-            </div>
-          </div>
-        </>
-      )}
-    </div>
   );
 }

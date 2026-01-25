@@ -17,8 +17,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { WorkAreasCard } from '@/components/work/WorkAreasCard';
+import { NearbyWorkCard } from '@/components/work/NearbyWorkCard';
 import { WeatherAlertWidget } from '@/components/dashboard/WeatherAlertWidget';
 import { CheckinDialog } from '@/components/checkin/CheckinDialog';
+import { useNearbyWork } from '@/hooks/useNearbyWork';
 import { Building2 } from 'lucide-react';
 
 interface WorkZone {
@@ -27,6 +29,7 @@ interface WorkZone {
   color: string;
   pendingTasks: number;
   overdueTasks: number;
+  geometry_geojson?: any;
 }
 
 interface UpcomingTask {
@@ -37,6 +40,23 @@ interface UpcomingTask {
   status: string;
   zone?: { name: string; color: string };
   asset?: { name: string; asset_type: string };
+}
+
+interface RawAsset {
+  id: string;
+  name: string;
+  asset_type: string;
+  lat: number | null;
+  lng: number | null;
+  zone_id: string | null;
+}
+
+interface RawTask {
+  id: string;
+  zone_id: string | null;
+  asset_id: string | null;
+  status: string | null;
+  due_date: string | null;
 }
 
 export default function WorkView() {
@@ -50,6 +70,24 @@ export default function WorkView() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [checkinDialogOpen, setCheckinDialogOpen] = useState(false);
+  const [rawAssets, setRawAssets] = useState<RawAsset[]>([]);
+  const [rawTasks, setRawTasks] = useState<RawTask[]>([]);
+  const [zonesWithGeometry, setZonesWithGeometry] = useState<any[]>([]);
+
+  // GPS-based nearby work
+  const { 
+    nearbyAssets, 
+    nearbyZones, 
+    loading: geoLoading, 
+    error: geoError, 
+    hasLocation,
+    refresh: refreshLocation 
+  } = useNearbyWork({
+    assets: rawAssets,
+    zones: zonesWithGeometry,
+    tasks: rawTasks,
+    maxDistance: 150, // 150 meters
+  });
 
   useEffect(() => {
     if (currentEstate) {
@@ -62,20 +100,37 @@ export default function WorkView() {
     
     setLoading(true);
     try {
-      // Fetch zones with task counts
+      // Fetch zones with task counts and geometry for GPS
       const { data: zonesData } = await supabase
         .from('zones')
-        .select('id, name, color')
+        .select('id, name, color, geometry_geojson')
         .eq('estate_id', currentEstate.id)
         .order('name');
 
+      // Fetch assets for GPS nearby work
+      const { data: assetsData } = await supabase
+        .from('assets')
+        .select('id, name, asset_type, lat, lng, zone_id')
+        .eq('estate_id', currentEstate.id);
+
       const { data: tasksData } = await supabase
         .from('tasks')
-        .select('id, zone_id, status, due_date')
+        .select('id, zone_id, asset_id, status, due_date')
         .eq('estate_id', currentEstate.id)
         .neq('status', 'completed');
 
       const today = new Date().toISOString().split('T')[0];
+
+      // Store raw data for GPS nearby work
+      setRawAssets(assetsData || []);
+      setRawTasks((tasksData || []).map(t => ({
+        id: t.id,
+        zone_id: t.zone_id,
+        asset_id: t.asset_id,
+        status: t.status,
+        due_date: t.due_date,
+      })));
+      setZonesWithGeometry(zonesData || []);
       
       // Calculate task counts per zone
       const zoneTaskCounts = (zonesData || []).map(zone => {
@@ -89,6 +144,7 @@ export default function WorkView() {
           color: zone.color || '#888888',
           pendingTasks: pending,
           overdueTasks: overdue,
+          geometry_geojson: zone.geometry_geojson,
         };
       });
 
@@ -214,6 +270,16 @@ export default function WorkView() {
         {alerts.length > 0 && (
           <WeatherAlertWidget alerts={alerts} onAlertUpdate={fetchWorkData} />
         )}
+
+        {/* GPS-Based Nearby Work */}
+        <NearbyWorkCard
+          nearbyAssets={nearbyAssets}
+          nearbyZones={nearbyZones}
+          loading={geoLoading}
+          error={geoError}
+          hasLocation={hasLocation}
+          onRefresh={refreshLocation}
+        />
 
         {/* Main Work Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
