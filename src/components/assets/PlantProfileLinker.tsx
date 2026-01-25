@@ -42,6 +42,23 @@ function hasDetailedProtocol(protocol: any): boolean {
   );
 }
 
+// Detect if the protocol content is in English (needs regeneration for Spanish)
+function detectProtocolLanguage(protocol: any): 'en' | 'es' | 'unknown' {
+  if (!protocol) return 'unknown';
+  
+  const englishIndicators = ['every', 'daily', 'weekly', 'water', 'hours', 'apply', 'avoid', 'full sun', 'partial shade', 'well-drained', 'morning', 'afternoon'];
+  const spanishIndicators = ['cada', 'diario', 'semanal', 'riego', 'horas', 'aplicar', 'evitar', 'sol pleno', 'sombra parcial', 'bien drenado', 'mañana', 'tarde'];
+  
+  const protocolString = JSON.stringify(protocol).toLowerCase();
+  
+  const englishMatches = englishIndicators.filter(word => protocolString.includes(word)).length;
+  const spanishMatches = spanishIndicators.filter(word => protocolString.includes(word)).length;
+  
+  if (englishMatches > spanishMatches) return 'en';
+  if (spanishMatches > englishMatches) return 'es';
+  return 'unknown';
+}
+
 export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfileLinkerProps) {
   const { language } = useLanguage();
   const { currentEstate } = useEstate();
@@ -221,6 +238,8 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
   const linkedProfile = instance?.plant_profile;
   const careProtocol = linkedProfile?.care_template_json as any;
   const isDetailedProtocol = hasDetailedProtocol(careProtocol);
+  const protocolLang = detectProtocolLanguage(careProtocol);
+  const needsLanguageRegeneration = careProtocol && protocolLang !== 'unknown' && protocolLang !== language;
 
   return (
     <>
@@ -255,8 +274,33 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                 </Badge>
               </div>
 
+              {/* Show warning if protocol language doesn't match UI language */}
+              {needsLanguageRegeneration && (
+                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
+                  <p className="text-xs text-destructive mb-2 font-medium">
+                    {language === 'es' 
+                      ? '🌐 El protocolo está en inglés. Regenera para obtener contenido en español.' 
+                      : '🌐 Protocol is in Spanish. Regenerate for English content.'}
+                  </p>
+                  <Button 
+                    variant="destructive" 
+                    size="sm"
+                    className="w-full"
+                    onClick={regenerateProtocol}
+                    disabled={regenerating}
+                  >
+                    {regenerating ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    {language === 'es' ? 'Regenerar en Español' : 'Regenerate in English'}
+                  </Button>
+                </div>
+              )}
+
               {/* Show warning if protocol is basic/legacy */}
-              {careProtocol && !isDetailedProtocol && (
+              {careProtocol && !isDetailedProtocol && !needsLanguageRegeneration && (
                 <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
                   <p className="text-xs text-amber-800 dark:text-amber-200 mb-2">
                     {language === 'es' 
