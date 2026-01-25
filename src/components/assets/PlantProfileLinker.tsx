@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { Leaf, Sparkles, Link2, Unlink, Loader2, Droplets, Sun, Scissors, AlertTriangle } from 'lucide-react';
+import { Leaf, Sparkles, Link2, Unlink, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { CareProtocolSheet } from '@/components/plants/CareProtocolSheet';
 
 interface PlantProfile {
   id: string;
@@ -30,14 +30,6 @@ interface PlantProfileLinkerProps {
   assetId: string;
   assetType: string;
   onUpdate?: () => void;
-}
-
-interface CareProtocol {
-  watering?: { frequency?: string; amount?: string; method?: string } | string;
-  sunlight?: { requirement?: string; hours?: string } | string;
-  pruning?: { frequency?: string; timing?: string } | string;
-  fertilizer?: string;
-  do_not_do?: string[];
 }
 
 export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfileLinkerProps) {
@@ -163,7 +155,7 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
   }
 
   const linkedProfile = instance?.plant_profile;
-  const careProtocol = linkedProfile?.care_template_json as CareProtocol | undefined;
+  const careProtocol = linkedProfile?.care_template_json as any;
 
   return (
     <>
@@ -266,131 +258,14 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
         </CardContent>
       </Card>
 
-      {/* Care Protocol Sheet */}
-      <Sheet open={showCareSheet} onOpenChange={setShowCareSheet}>
-        <SheetContent className="w-full sm:max-w-lg overflow-auto">
-          <SheetHeader>
-            <SheetTitle className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              {language === 'es' ? 'Protocolo de Cuidados IA' : 'AI Care Protocol'}
-            </SheetTitle>
-            {linkedProfile && (
-              <p className="text-sm text-muted-foreground">
-                {linkedProfile.common_name}
-                {linkedProfile.scientific_name && ` (${linkedProfile.scientific_name})`}
-              </p>
-            )}
-          </SheetHeader>
-
-          {careProtocol && (
-            <div className="mt-6 space-y-4">
-              {/* Watering */}
-              {careProtocol.watering && (
-                <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Droplets className="h-4 w-4 text-primary" />
-                    {language === 'es' ? 'Riego' : 'Watering'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-1">
-                  {typeof careProtocol.watering === 'object' ? (
-                    <>
-                      {careProtocol.watering.frequency && <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {careProtocol.watering.frequency}</p>}
-                      {careProtocol.watering.amount && <p><strong>{language === 'es' ? 'Cantidad:' : 'Amount:'}</strong> {careProtocol.watering.amount}</p>}
-                      {careProtocol.watering.method && <p><strong>{language === 'es' ? 'Método:' : 'Method:'}</strong> {careProtocol.watering.method}</p>}
-                    </>
-                  ) : (
-                    <p>{careProtocol.watering}</p>
-                  )}
-                </CardContent>
-              </Card>
-              )}
-
-              {/* Sunlight */}
-              {careProtocol.sunlight && (
-                <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Sun className="h-4 w-4 text-warning" />
-                    {language === 'es' ? 'Luz Solar' : 'Sunlight'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-1">
-                  {typeof careProtocol.sunlight === 'object' ? (
-                    <>
-                      {careProtocol.sunlight.requirement && <p><strong>{language === 'es' ? 'Requisito:' : 'Requirement:'}</strong> {careProtocol.sunlight.requirement}</p>}
-                      {careProtocol.sunlight.hours && <p><strong>{language === 'es' ? 'Horas:' : 'Hours:'}</strong> {careProtocol.sunlight.hours}</p>}
-                    </>
-                  ) : (
-                    <p>{careProtocol.sunlight}</p>
-                  )}
-                </CardContent>
-              </Card>
-              )}
-
-              {/* Pruning */}
-              {careProtocol.pruning && (
-                <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm flex items-center gap-2">
-                    <Scissors className="h-4 w-4 text-primary" />
-                    {language === 'es' ? 'Poda' : 'Pruning'}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="text-sm space-y-1">
-                  {typeof careProtocol.pruning === 'object' ? (
-                    <>
-                      {careProtocol.pruning.frequency && <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {careProtocol.pruning.frequency}</p>}
-                      {careProtocol.pruning.timing && <p><strong>{language === 'es' ? 'Época:' : 'Timing:'}</strong> {careProtocol.pruning.timing}</p>}
-                    </>
-                  ) : (
-                    <p>{careProtocol.pruning}</p>
-                  )}
-                </CardContent>
-              </Card>
-              )}
-
-              {/* Fertilizer (legacy format) */}
-              {careProtocol.fertilizer && (
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                      <Sparkles className="h-4 w-4 text-primary" />
-                      {language === 'es' ? 'Fertilización' : 'Fertilizer'}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-sm">
-                    <p>{careProtocol.fertilizer}</p>
-                  </CardContent>
-                </Card>
-              )}
-
-              {/* Do Not Do */}
-              {careProtocol.do_not_do && careProtocol.do_not_do.length > 0 && (
-                <Card className="border-destructive/30">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2 text-destructive">
-                      <AlertTriangle className="h-4 w-4" />
-                      {language === 'es' ? 'No Hacer' : 'Do Not Do'}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ul className="text-sm space-y-2">
-                      {careProtocol.do_not_do.map((warning, idx) => (
-                        <li key={idx} className="flex items-start gap-2 text-destructive">
-                          <span className="mt-1">⚠️</span>
-                          <span>{warning}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </CardContent>
-                </Card>
-              )}
-            </div>
-          )}
-        </SheetContent>
-      </Sheet>
+      {/* Care Protocol Sheet - Using new enhanced component */}
+      <CareProtocolSheet
+        open={showCareSheet}
+        onOpenChange={setShowCareSheet}
+        plantName={linkedProfile?.common_name || ''}
+        scientificName={linkedProfile?.scientific_name || undefined}
+        careProtocol={careProtocol}
+      />
     </>
   );
 }
