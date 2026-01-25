@@ -5,12 +5,20 @@ export type Language = 'en' | 'es';
 
 export const translations = {
   en: {
+    // Product
+    product: {
+      name: 'Estate Manual',
+      tagline: 'Preserve design intent. Prove duty of care. Protect estate value.',
+      description: 'Estate Manual is a living asset registry and evidence system for estates, documenting what exists, why it exists, and how to care for it.',
+      differentiator: 'Property management tools manage people and generic tasks. Estate Manual manages living assets, design intent, and long-term risk.',
+    },
     // Navigation
     nav: {
-      dashboard: 'Dashboard',
+      home: 'Home',
       map: 'Map',
-      tasks: 'Tasks',
       assets: 'Assets',
+      tasks: 'Tasks',
+      log: 'Log',
       documents: 'Documents',
       admin: 'Admin',
       settings: 'Settings',
@@ -38,15 +46,14 @@ export const translations = {
       sort: 'Sort',
       export: 'Export',
     },
-    // Dashboard
+    // Dashboard / Home
     dashboard: {
       welcome: 'Welcome back',
-      todaysTasks: "Today's Tasks",
-      overdueItems: 'Overdue Items',
-      recentActivity: 'Recent Activity',
-      weatherAlerts: 'Weather Watch',
+      weatherWatch: 'Weather Watch',
+      todaysObligations: "Today's Obligations",
       quickActions: 'Quick Actions',
-      startCheckin: 'Start Check-in',
+      recentActivity: 'Recent Activity',
+      newCheckin: 'New Check-in',
       addAsset: 'Add Asset',
       uploadDocument: 'Upload Document',
       viewAllTasks: 'View All Tasks',
@@ -58,15 +65,14 @@ export const translations = {
       title: 'Tasks',
       myTasks: 'My Tasks',
       allTasks: 'All Tasks',
-      pending: 'Pending',
-      inProgress: 'In Progress',
-      completed: 'Completed',
+      due: 'Due',
       overdue: 'Overdue',
+      done: 'Done',
       dueToday: 'Due Today',
       dueThisWeek: 'Due This Week',
       markComplete: 'Mark Complete',
       assignTo: 'Assign to',
-      photoRequired: 'Photo Required',
+      photoProofRequired: 'Photo proof required',
       addPhoto: 'Add Photo',
       taskDetails: 'Task Details',
       newTask: 'New Task',
@@ -93,12 +99,12 @@ export const translations = {
       equipment: 'Equipment',
       structures: 'Structures',
       assetDetails: 'Asset Details',
-      careNotes: 'Care Notes',
-      warnings: 'Warnings',
+      purpose: 'Purpose',
+      riskFlags: 'Risk Flags',
+      criticalCare: 'Critical Care',
+      doNotDo: 'Do Not Do',
       lastService: 'Last Service',
       installDate: 'Install Date',
-      riskFlags: 'Risk Flags',
-      purposeTags: 'Purpose Tags',
       photos: 'Photos',
       relatedTasks: 'Related Tasks',
       relatedDocs: 'Related Documents',
@@ -125,10 +131,10 @@ export const translations = {
       linkToZone: 'Link to Zone',
       expiryDate: 'Expiry Date',
     },
-    // Check-ins
+    // Check-ins / Log
     checkins: {
-      title: 'Check-ins',
-      startCheckin: 'Start Check-in',
+      title: 'Activity Log',
+      newCheckin: 'New Check-in',
       selectZone: 'Select Zone',
       selectAsset: 'Select Asset (Optional)',
       takePhoto: 'Take Photo',
@@ -147,6 +153,7 @@ export const translations = {
       next48h: 'Next 48 Hours',
       activeAlerts: 'Active Alerts',
       viewRules: 'View Rules',
+      simulateAlert: 'Simulate Alert',
     },
     // Admin
     admin: {
@@ -169,6 +176,8 @@ export const translations = {
       noAccount: "Don't have an account?",
       hasAccount: 'Already have an account?',
       signInWith: 'Sign in with',
+      demoAccess: 'Demo Access',
+      continueAsDemo: 'Continue as Demo User',
     },
     // Roles
     roles: {
@@ -179,12 +188,20 @@ export const translations = {
     },
   },
   es: {
+    // Product
+    product: {
+      name: 'Estate Manual',
+      tagline: 'Preserva la intención del diseño. Evidencia el cuidado. Protege el valor de la propiedad.',
+      description: 'Estate Manual es un registro de activos vivos y un sistema de evidencia para propiedades, que documenta qué existe, por qué existe y cómo se mantiene.',
+      differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Estate Manual gestiona activos vivos, intención de diseño y riesgo a largo plazo.',
+    },
     // Navigation
     nav: {
-      dashboard: 'Panel',
+      home: 'Inicio',
       map: 'Mapa',
-      tasks: 'Tareas',
       assets: 'Activos',
+      tasks: 'Tareas',
+      log: 'Registro',
       documents: 'Documentos',
       admin: 'Admin',
       settings: 'Ajustes',
@@ -212,15 +229,14 @@ export const translations = {
       sort: 'Ordenar',
       export: 'Exportar',
     },
-    // Dashboard
+    // Dashboard / Home
     dashboard: {
       welcome: 'Bienvenido',
-      todaysTasks: 'Tareas de Hoy',
-      overdueItems: 'Atrasados',
-      recentActivity: 'Actividad Reciente',
-      weatherAlerts: 'Alertas del Clima',
+      weatherWatch: 'Clima y Alertas',
+      todaysObligations: 'Obligaciones de Hoy',
       quickActions: 'Acciones Rápidas',
-      startCheckin: 'Registrar Entrada',
+      recentActivity: 'Actividad Reciente',
+      newCheckin: 'Nuevo Registro',
       addAsset: 'Agregar Activo',
       uploadDocument: 'Subir Documento',
       viewAllTasks: 'Ver Todas las Tareas',
@@ -232,15 +248,14 @@ export const translations = {
       title: 'Tareas',
       myTasks: 'Mis Tareas',
       allTasks: 'Todas las Tareas',
-      pending: 'Pendiente',
-      inProgress: 'En Progreso',
-      completed: 'Completado',
-      overdue: 'Atrasado',
+      due: 'Pendiente',
+      overdue: 'Vencida',
+      done: 'Hecha',
       dueToday: 'Vence Hoy',
       dueThisWeek: 'Vence Esta Semana',
       markComplete: 'Marcar Completo',
       assignTo: 'Asignar a',
-      photoRequired: 'Foto Requerida',
+      photoProofRequired: 'Se requiere foto',
       addPhoto: 'Agregar Foto',
       taskDetails: 'Detalles de Tarea',
       newTask: 'Nueva Tarea',
@@ -267,12 +282,12 @@ export const translations = {
       equipment: 'Equipo',
       structures: 'Estructuras',
       assetDetails: 'Detalles del Activo',
-      careNotes: 'Notas de Cuidado',
-      warnings: 'Advertencias',
+      purpose: 'Propósito',
+      riskFlags: 'Riesgos',
+      criticalCare: 'Cuidado Crítico',
+      doNotDo: 'No Hacer',
       lastService: 'Último Servicio',
       installDate: 'Fecha de Instalación',
-      riskFlags: 'Banderas de Riesgo',
-      purposeTags: 'Etiquetas de Propósito',
       photos: 'Fotos',
       relatedTasks: 'Tareas Relacionadas',
       relatedDocs: 'Documentos Relacionados',
@@ -288,7 +303,7 @@ export const translations = {
         asbuilt: 'As-Built',
         irrigation: 'Riego',
         lighting: 'Iluminación',
-        planting_plan: 'Plan de Plantación',
+        planting_plan: 'Plan de Siembra',
         vendor_contract: 'Contrato de Proveedor',
         insurance: 'Seguro',
         other: 'Otro',
@@ -299,10 +314,10 @@ export const translations = {
       linkToZone: 'Vincular a Zona',
       expiryDate: 'Fecha de Vencimiento',
     },
-    // Check-ins
+    // Check-ins / Log
     checkins: {
-      title: 'Registros',
-      startCheckin: 'Registrar Entrada',
+      title: 'Registro de Actividad',
+      newCheckin: 'Nuevo Registro',
       selectZone: 'Seleccionar Zona',
       selectAsset: 'Seleccionar Activo (Opcional)',
       takePhoto: 'Tomar Foto',
@@ -313,7 +328,7 @@ export const translations = {
     },
     // Weather
     weather: {
-      title: 'Alertas del Clima',
+      title: 'Clima y Alertas',
       freeze: 'Alerta de Helada',
       heavyRain: 'Lluvia Fuerte',
       highWind: 'Viento Fuerte',
@@ -321,6 +336,7 @@ export const translations = {
       next48h: 'Próximas 48 Horas',
       activeAlerts: 'Alertas Activas',
       viewRules: 'Ver Reglas',
+      simulateAlert: 'Simular Alerta',
     },
     // Admin
     admin: {
@@ -343,6 +359,8 @@ export const translations = {
       noAccount: '¿No tienes cuenta?',
       hasAccount: '¿Ya tienes cuenta?',
       signInWith: 'Iniciar sesión con',
+      demoAccess: 'Acceso Demo',
+      continueAsDemo: 'Continuar como Usuario Demo',
     },
     // Roles
     roles: {

@@ -30,7 +30,7 @@ export function QuickActionsCard({
   const actions = [
     {
       icon: Camera,
-      label: t('dashboard.startCheckin'),
+      label: t('dashboard.newCheckin'),
       description: 'Record site visit',
       onClick: onCheckin || (() => navigate('/tasks?action=checkin')),
       primary: true,
