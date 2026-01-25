@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Filter, 
@@ -63,6 +64,7 @@ const assetTypeOptions = [
 ];
 
 export default function Assets() {
+  const navigate = useNavigate();
   const { t } = useLanguage();
   const { currentEstate } = useEstate();
   const { isOwnerOrManager } = useAuth();
@@ -244,7 +246,7 @@ export default function Assets() {
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredAssets.map((asset) => (
-              <Card key={asset.id} className="estate-card overflow-hidden cursor-pointer group">
+              <Card key={asset.id} className="estate-card overflow-hidden cursor-pointer group" onClick={() => navigate(`/assets/${asset.id}`)}>
                 {/* Image / Icon header */}
                 <div className="h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative">
                   {asset.photos && asset.photos[0] ? (
@@ -307,7 +309,7 @@ export default function Assets() {
         ) : (
           <div className="space-y-3">
             {filteredAssets.map((asset) => (
-              <Card key={asset.id} className="estate-card cursor-pointer">
+              <Card key={asset.id} className="estate-card cursor-pointer" onClick={() => navigate(`/assets/${asset.id}`)}>
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     {/* Thumbnail */}
