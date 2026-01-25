@@ -1,7 +1,7 @@
 import React, { ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { 
-  LayoutDashboard, 
+  Home, 
   Map, 
   CheckSquare, 
   Box, 
@@ -12,7 +12,8 @@ import {
   X,
   Globe,
   ChevronDown,
-  Building2
+  Building2,
+  ClipboardList
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -34,19 +35,29 @@ interface AppLayoutProps {
 
 export function AppLayout({ children }: AppLayoutProps) {
   const { t, language, toggleLanguage } = useLanguage();
-  const { user, profile, signOut, isOwnerOrManager } = useAuth();
+  const { user, profile, signOut, isOwnerOrManager, hasRole } = useAuth();
   const { estates, currentEstate, setCurrentEstate } = useEstate();
   const location = useLocation();
   const [mobileOpen, setMobileOpen] = React.useState(false);
 
+  // Crew sees: Home, Map, Tasks, Log. 
+  // Vendor sees: Home, Tasks, Documents (limited).
+  // Owner/Manager sees all.
+  const isCrew = hasRole('crew');
+  const isVendor = hasRole('vendor');
+
   const navItems = [
-    { path: '/', icon: LayoutDashboard, label: t('nav.dashboard') },
-    { path: '/map', icon: Map, label: t('nav.map') },
+    { path: '/', icon: Home, label: t('nav.home') },
+    { path: '/map', icon: Map, label: t('nav.map'), hideForVendor: true },
+    { path: '/assets', icon: Box, label: t('nav.assets'), hideForVendor: true, hideForCrew: false },
     { path: '/tasks', icon: CheckSquare, label: t('nav.tasks') },
-    { path: '/assets', icon: Box, label: t('nav.assets') },
-    { path: '/documents', icon: FolderOpen, label: t('nav.documents') },
+    { path: '/documents', icon: FolderOpen, label: t('nav.documents'), hideForCrew: true },
     ...(isOwnerOrManager ? [{ path: '/admin', icon: Settings, label: t('nav.admin') }] : []),
-  ];
+  ].filter(item => {
+    if (isVendor && item.hideForVendor) return false;
+    if (isCrew && item.hideForCrew) return false;
+    return true;
+  });
 
   const NavItem = ({ item, mobile = false }: { item: typeof navItems[0]; mobile?: boolean }) => (
     <NavLink
