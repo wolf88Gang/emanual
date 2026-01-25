@@ -4,6 +4,7 @@ import 'leaflet/dist/leaflet.css';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
+import { Layers, Satellite, Map as MapIcon } from 'lucide-react';
 import type { MapZone, MapAsset } from './types';
 
 // Fix for default marker icons
@@ -22,6 +23,8 @@ interface EstateMapProps {
   onAssetSelect: (asset: MapAsset) => void;
   center?: [number, number];
   zoom?: number;
+  onMapClick?: (lat: number, lng: number) => void;
+  enablePinPlacement?: boolean;
 }
 
 // Asset type to emoji/icon mapping
@@ -73,12 +76,20 @@ export function EstateMap({
   onAssetSelect,
   center = [18.4655, -66.1057],
   zoom = 16,
+  onMapClick,
+  enablePinPlacement = false,
 }: EstateMapProps) {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const [isMapReady, setIsMapReady] = useState(false);
+  const [isSatellite, setIsSatellite] = useState(false);
+  const tileLayerRef = useRef<L.TileLayer | null>(null);
+
+  // Tile layer URLs
+  const streetTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+  const satelliteTileUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}';
 
   // Initialize map
   useEffect(() => {
@@ -86,9 +97,18 @@ export function EstateMap({
 
     const map = L.map(mapContainerRef.current).setView(center, zoom);
     
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    tileLayerRef.current = L.tileLayer(streetTileUrl, {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
+
+    // Handle map clicks for pin placement
+    if (enablePinPlacement) {
+      map.on('click', (e) => {
+        if (onMapClick) {
+          onMapClick(e.latlng.lat, e.latlng.lng);
+        }
+      });
+    }
 
     mapRef.current = map;
     setIsMapReady(true);
@@ -98,6 +118,21 @@ export function EstateMap({
       mapRef.current = null;
     };
   }, []);
+
+  // Toggle satellite view
+  function toggleSatellite() {
+    if (!mapRef.current || !tileLayerRef.current) return;
+    
+    mapRef.current.removeLayer(tileLayerRef.current);
+    
+    const newUrl = isSatellite ? streetTileUrl : satelliteTileUrl;
+    const attribution = isSatellite 
+      ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+      : '&copy; <a href="https://www.esri.com/">Esri</a>';
+    
+    tileLayerRef.current = L.tileLayer(newUrl, { attribution }).addTo(mapRef.current);
+    setIsSatellite(!isSatellite);
+  }
 
   // Update center when it changes
   useEffect(() => {
@@ -227,10 +262,34 @@ export function EstateMap({
   }, [assets, language, isMapReady]);
 
   return (
-    <div 
-      ref={mapContainerRef} 
-      className="h-full w-full rounded-xl"
-      style={{ minHeight: '300px' }}
-    />
+    <div className="relative h-full w-full">
+      <div 
+        ref={mapContainerRef} 
+        className="h-full w-full rounded-xl"
+        style={{ minHeight: '300px' }}
+      />
+      
+      {/* Satellite Toggle Button */}
+      <div className="absolute top-4 right-4 z-[1000]">
+        <Button
+          variant="secondary"
+          size="sm"
+          className="gap-2 shadow-lg"
+          onClick={toggleSatellite}
+        >
+          {isSatellite ? (
+            <>
+              <MapIcon className="h-4 w-4" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Mapa' : 'Map'}</span>
+            </>
+          ) : (
+            <>
+              <Satellite className="h-4 w-4" />
+              <span className="hidden sm:inline">{language === 'es' ? 'Satélite' : 'Satellite'}</span>
+            </>
+          )}
+        </Button>
+      </div>
+    </div>
   );
 }
