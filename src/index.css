@@ -2,95 +2,157 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Definition of the design system. All colors, gradients, fonts, etc should be defined here. 
-All colors MUST be HSL.
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+/* Estate Manual Design System
+   Inspired by luxury real estate and architectural visualization
+   Earthy greens, warm stones, crisp whites - cultivated nature meets sophistication
 */
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* Core colors - Earthy luxury palette */
+    --background: 40 20% 98%;
+    --foreground: 150 15% 15%;
 
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 150 15% 15%;
 
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 150 15% 15%;
 
-    --primary: 222.2 47.4% 11.2%;
-    --primary-foreground: 210 40% 98%;
+    /* Estate Green - Primary brand */
+    --primary: 150 35% 28%;
+    --primary-foreground: 40 20% 98%;
 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
+    /* Warm Stone - Secondary */
+    --secondary: 35 25% 92%;
+    --secondary-foreground: 150 15% 20%;
 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
+    /* Muted tones */
+    --muted: 40 15% 94%;
+    --muted-foreground: 150 10% 45%;
 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    /* Accent - Botanical gold */
+    --accent: 42 75% 55%;
+    --accent-foreground: 150 15% 15%;
 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    /* Status colors */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 222.2 84% 4.9%;
+    --success: 142 70% 35%;
+    --success-foreground: 0 0% 100%;
 
-    --radius: 0.5rem;
+    --warning: 38 92% 50%;
+    --warning-foreground: 0 0% 100%;
 
-    --sidebar-background: 0 0% 98%;
+    --info: 199 89% 48%;
+    --info-foreground: 0 0% 100%;
 
-    --sidebar-foreground: 240 5.3% 26.1%;
+    /* Borders and inputs */
+    --border: 40 15% 88%;
+    --input: 40 15% 88%;
+    --ring: 150 35% 28%;
 
-    --sidebar-primary: 240 5.9% 10%;
+    --radius: 0.625rem;
 
-    --sidebar-primary-foreground: 0 0% 98%;
+    /* Estate-specific semantic colors */
+    --estate-forest: 150 40% 25%;
+    --estate-sage: 135 25% 65%;
+    --estate-stone: 35 20% 75%;
+    --estate-sand: 38 35% 92%;
+    --estate-terracotta: 15 55% 55%;
+    --estate-sky: 200 75% 60%;
+    --estate-water: 195 85% 45%;
 
-    --sidebar-accent: 240 4.8% 95.9%;
+    /* Asset type colors */
+    --asset-plant: 130 45% 40%;
+    --asset-tree: 145 50% 30%;
+    --asset-irrigation: 200 70% 50%;
+    --asset-lighting: 45 90% 55%;
+    --asset-hardscape: 30 20% 50%;
+    --asset-equipment: 220 15% 45%;
+    --asset-structure: 25 35% 45%;
 
-    --sidebar-accent-foreground: 240 5.9% 10%;
+    /* Gradients */
+    --gradient-estate: linear-gradient(135deg, hsl(150 40% 25%) 0%, hsl(150 30% 35%) 100%);
+    --gradient-sunrise: linear-gradient(135deg, hsl(38 65% 75%) 0%, hsl(15 50% 70%) 100%);
+    --gradient-sky: linear-gradient(180deg, hsl(200 75% 85%) 0%, hsl(195 60% 75%) 100%);
+    --gradient-card: linear-gradient(180deg, hsl(0 0% 100%) 0%, hsl(40 20% 97%) 100%);
 
-    --sidebar-border: 220 13% 91%;
+    /* Shadows */
+    --shadow-sm: 0 1px 2px 0 hsl(150 10% 20% / 0.05);
+    --shadow-md: 0 4px 6px -1px hsl(150 10% 20% / 0.08), 0 2px 4px -2px hsl(150 10% 20% / 0.05);
+    --shadow-lg: 0 10px 15px -3px hsl(150 10% 20% / 0.1), 0 4px 6px -4px hsl(150 10% 20% / 0.05);
+    --shadow-xl: 0 20px 25px -5px hsl(150 10% 20% / 0.1), 0 8px 10px -6px hsl(150 10% 20% / 0.05);
+    --shadow-estate: 0 25px 50px -12px hsl(150 35% 28% / 0.2);
 
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    /* Sidebar */
+    --sidebar-background: 150 25% 18%;
+    --sidebar-foreground: 40 20% 95%;
+    --sidebar-primary: 42 75% 55%;
+    --sidebar-primary-foreground: 150 15% 15%;
+    --sidebar-accent: 150 20% 25%;
+    --sidebar-accent-foreground: 40 20% 95%;
+    --sidebar-border: 150 20% 25%;
+    --sidebar-ring: 42 75% 55%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --background: 150 20% 8%;
+    --foreground: 40 15% 95%;
 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
+    --card: 150 18% 12%;
+    --card-foreground: 40 15% 95%;
 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
+    --popover: 150 18% 12%;
+    --popover-foreground: 40 15% 95%;
 
-    --primary: 210 40% 98%;
-    --primary-foreground: 222.2 47.4% 11.2%;
+    --primary: 150 45% 45%;
+    --primary-foreground: 150 15% 10%;
 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
+    --secondary: 150 15% 18%;
+    --secondary-foreground: 40 15% 90%;
 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
+    --muted: 150 15% 18%;
+    --muted-foreground: 40 10% 60%;
 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    --accent: 42 75% 50%;
+    --accent-foreground: 150 15% 10%;
 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
+    --destructive: 0 62% 45%;
+    --destructive-foreground: 0 0% 100%;
 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+    --success: 142 60% 40%;
+    --success-foreground: 0 0% 100%;
+
+    --warning: 38 85% 45%;
+    --warning-foreground: 0 0% 100%;
+
+    --info: 199 80% 45%;
+    --info-foreground: 0 0% 100%;
+
+    --border: 150 15% 20%;
+    --input: 150 15% 20%;
+    --ring: 150 45% 45%;
+
+    --estate-forest: 150 35% 35%;
+    --estate-sage: 135 20% 50%;
+    --estate-stone: 35 15% 45%;
+    --estate-sand: 38 20% 25%;
+    --estate-terracotta: 15 45% 45%;
+    --estate-sky: 200 60% 45%;
+    --estate-water: 195 70% 40%;
+
+    --sidebar-background: 150 20% 10%;
+    --sidebar-foreground: 40 15% 95%;
+    --sidebar-primary: 42 70% 50%;
+    --sidebar-primary-foreground: 150 15% 10%;
+    --sidebar-accent: 150 15% 15%;
+    --sidebar-accent-foreground: 40 15% 95%;
+    --sidebar-border: 150 15% 18%;
+    --sidebar-ring: 42 70% 50%;
   }
 }
 
@@ -100,6 +162,209 @@ All colors MUST be HSL.
   }
 
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    @apply font-semibold tracking-tight;
+  }
+}
+
+@layer components {
+  /* Premium card styles */
+  .estate-card {
+    @apply bg-card rounded-xl border border-border/50;
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .estate-card:hover {
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+  }
+
+  /* Glass morphism */
+  .glass {
+    @apply backdrop-blur-md bg-white/80 border border-white/20;
+  }
+
+  .glass-dark {
+    @apply backdrop-blur-md bg-black/40 border border-white/10;
+  }
+
+  /* Asset type badges */
+  .asset-badge {
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium;
+  }
+
+  .asset-badge-plant {
+    @apply bg-[hsl(var(--asset-plant)/0.15)] text-[hsl(var(--asset-plant))];
+  }
+
+  .asset-badge-tree {
+    @apply bg-[hsl(var(--asset-tree)/0.15)] text-[hsl(var(--asset-tree))];
+  }
+
+  .asset-badge-irrigation {
+    @apply bg-[hsl(var(--asset-irrigation)/0.15)] text-[hsl(var(--asset-irrigation))];
+  }
+
+  .asset-badge-lighting {
+    @apply bg-[hsl(var(--asset-lighting)/0.15)] text-[hsl(var(--asset-lighting))];
+  }
+
+  .asset-badge-hardscape {
+    @apply bg-[hsl(var(--asset-hardscape)/0.15)] text-[hsl(var(--asset-hardscape))];
+  }
+
+  .asset-badge-equipment {
+    @apply bg-[hsl(var(--asset-equipment)/0.15)] text-[hsl(var(--asset-equipment))];
+  }
+
+  .asset-badge-structure {
+    @apply bg-[hsl(var(--asset-structure)/0.15)] text-[hsl(var(--asset-structure))];
+  }
+
+  /* Status indicators */
+  .status-dot {
+    @apply w-2 h-2 rounded-full;
+  }
+
+  .status-pending {
+    @apply bg-warning;
+  }
+
+  .status-in-progress {
+    @apply bg-info animate-pulse;
+  }
+
+  .status-completed {
+    @apply bg-success;
+  }
+
+  .status-overdue {
+    @apply bg-destructive animate-pulse;
+  }
+
+  /* Weather alert cards */
+  .weather-alert {
+    @apply rounded-lg p-4 border-l-4;
+  }
+
+  .weather-alert-freeze {
+    @apply bg-info/10 border-info text-info;
+  }
+
+  .weather-alert-rain {
+    @apply bg-estate-water/10 border-[hsl(var(--estate-water))] text-[hsl(var(--estate-water))];
+  }
+
+  .weather-alert-wind {
+    @apply bg-muted border-muted-foreground text-muted-foreground;
+  }
+
+  .weather-alert-drought {
+    @apply bg-warning/10 border-warning text-warning;
+  }
+
+  /* Crew-friendly large buttons */
+  .crew-button {
+    @apply flex flex-col items-center justify-center gap-2 p-6 rounded-2xl font-medium;
+    @apply bg-primary text-primary-foreground;
+    @apply active:scale-95 transition-transform;
+    min-height: 120px;
+  }
+
+  .crew-button-secondary {
+    @apply bg-secondary text-secondary-foreground;
+  }
+
+  /* Map overlays */
+  .map-zone-overlay {
+    @apply absolute rounded-lg bg-primary/20 border-2 border-primary/50;
+    transition: all 0.2s ease;
+  }
+
+  .map-zone-overlay:hover {
+    @apply bg-primary/30 border-primary;
+  }
+
+  /* Navigation pill */
+  .nav-pill {
+    @apply flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all;
+    @apply text-muted-foreground hover:text-foreground hover:bg-secondary;
+  }
+
+  .nav-pill.active {
+    @apply bg-primary text-primary-foreground;
+  }
+
+  /* Gradient text */
+  .gradient-text {
+    @apply bg-clip-text text-transparent;
+    background-image: var(--gradient-estate);
+  }
+
+  /* Smooth scrollbar */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--border)) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  /* Page transitions */
+  .page-enter {
+    animation: pageEnter 0.3s ease-out;
+  }
+
+  @keyframes pageEnter {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Shimmer loading */
+  .shimmer {
+    @apply relative overflow-hidden bg-muted;
+  }
+
+  .shimmer::after {
+    content: '';
+    @apply absolute inset-0;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--background) / 0.4),
+      transparent
+    );
+    animation: shimmer 2s infinite;
+  }
+
+  @keyframes shimmer {
+    0% {
+      transform: translateX(-100%);
+    }
+    100% {
+      transform: translateX(100%);
+    }
   }
 }
