@@ -9,6 +9,7 @@ import { QuickActionsCard } from '@/components/dashboard/QuickActionsCard';
 import { TasksOverviewCard } from '@/components/dashboard/TasksOverviewCard';
 import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
 import { EstateStatsCard } from '@/components/dashboard/EstateStatsCard';
+import { CheckinDialog } from '@/components/checkin/CheckinDialog';
 import { Building2 } from 'lucide-react';
 
 export default function Dashboard() {
@@ -27,6 +28,7 @@ export default function Dashboard() {
   const [alerts, setAlerts] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [checkinDialogOpen, setCheckinDialogOpen] = useState(false);
 
   useEffect(() => {
     if (currentEstate) {
@@ -178,7 +180,7 @@ export default function Dashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Left Column - Tasks & Quick Actions */}
           <div className="lg:col-span-2 space-y-6">
-            <QuickActionsCard />
+            <QuickActionsCard onCheckin={() => setCheckinDialogOpen(true)} />
             <TasksOverviewCard tasks={tasks} />
           </div>
 
@@ -188,6 +190,13 @@ export default function Dashboard() {
             <RecentActivityCard activities={activities} />
           </div>
         </div>
+        
+        {/* Check-in Dialog */}
+        <CheckinDialog 
+          open={checkinDialogOpen} 
+          onOpenChange={setCheckinDialogOpen}
+          onSuccess={fetchDashboardData}
+        />
       </div>
     </AppLayout>
   );
