@@ -4,10 +4,6 @@ import {
   Layers, 
   Filter, 
   Search,
-  TreeDeciduous,
-  Droplets,
-  Lightbulb,
-  Flower2,
   ChevronRight,
   X
 } from 'lucide-react';
@@ -15,7 +11,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -112,8 +108,8 @@ export default function MapView() {
   }, {} as Record<string, number>);
 
   return (
-    <AppLayout>
-      <div className="h-[calc(100vh-4rem)] flex flex-col lg:flex-row">
+    <ModernAppLayout>
+      <div className="h-[calc(100vh-4rem-4rem)] lg:h-[calc(100vh-3.5rem)] flex flex-col lg:flex-row">
         {/* Sidebar */}
         <aside className="w-full lg:w-80 border-b lg:border-b-0 lg:border-r border-border bg-card p-4 overflow-auto">
           <div className="space-y-4">
@@ -133,11 +129,11 @@ export default function MapView() {
               <TabsList className="w-full">
                 <TabsTrigger value="zones" className="flex-1">
                   <Layers className="h-4 w-4 mr-1" />
-                  Zones
+                  {language === 'es' ? 'Zonas' : 'Zones'}
                 </TabsTrigger>
                 <TabsTrigger value="types" className="flex-1">
                   <Filter className="h-4 w-4 mr-1" />
-                  Types
+                  {language === 'es' ? 'Tipos' : 'Types'}
                 </TabsTrigger>
               </TabsList>
 
@@ -150,7 +146,7 @@ export default function MapView() {
                     onClick={() => setSelectedZone(null)}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Clear zone filter
+                    {language === 'es' ? 'Limpiar filtro de zona' : 'Clear zone filter'}
                   </Button>
                 )}
                 {zones.map((zone) => (
@@ -173,7 +169,7 @@ export default function MapView() {
                       <div className="flex-1 min-w-0">
                         <p className="font-medium truncate">{zone.name}</p>
                         <p className="text-xs text-muted-foreground">
-                          {assets.filter(a => a.zone_id === zone.id).length} assets
+                          {assets.filter(a => a.zone_id === zone.id).length} {language === 'es' ? 'activos' : 'assets'}
                         </p>
                       </div>
                       <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -182,7 +178,7 @@ export default function MapView() {
                 ))}
                 {zones.length === 0 && (
                   <p className="text-center text-muted-foreground py-6">
-                    No zones defined yet
+                    {language === 'es' ? 'Sin zonas definidas' : 'No zones defined yet'}
                   </p>
                 )}
               </TabsContent>
@@ -196,7 +192,7 @@ export default function MapView() {
                     onClick={() => setFilterType(null)}
                   >
                     <X className="h-4 w-4 mr-2" />
-                    Clear type filter
+                    {language === 'es' ? 'Limpiar filtro de tipo' : 'Clear type filter'}
                   </Button>
                 )}
                 {Object.entries(assetTypeCounts).map(([type, count]) => (
@@ -231,11 +227,12 @@ export default function MapView() {
             <div className="text-center p-6 max-w-md">
               <MapPin className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
               <h3 className="text-xl font-serif font-semibold mb-2">
-                Interactive Map
+                {language === 'es' ? 'Mapa Interactivo' : 'Interactive Map'}
               </h3>
               <p className="text-muted-foreground mb-4">
-                Your estate map with zones and asset pins will display here. 
-                Click assets below to view details.
+                {language === 'es' 
+                  ? 'El mapa de tu propiedad con zonas y activos aparecerá aquí. Toca los activos para ver detalles.'
+                  : 'Your estate map with zones and asset pins will display here. Click assets below to view details.'}
               </p>
 
               {/* Asset Grid */}
@@ -251,7 +248,7 @@ export default function MapView() {
                       {asset.name}
                     </p>
                     <p className="text-xs text-muted-foreground truncate">
-                      {asset.zone?.name || 'No zone'}
+                      {asset.zone?.name || (language === 'es' ? 'Sin zona' : 'No zone')}
                     </p>
                   </button>
                 ))}
@@ -259,7 +256,7 @@ export default function MapView() {
 
               {filteredAssets.length > 9 && (
                 <p className="text-sm text-muted-foreground mt-4">
-                  +{filteredAssets.length - 9} more assets
+                  +{filteredAssets.length - 9} {language === 'es' ? 'activos más' : 'more assets'}
                 </p>
               )}
             </div>
@@ -268,7 +265,9 @@ export default function MapView() {
           {/* Zone Legend (floating) */}
           {zones.length > 0 && (
             <div className="absolute bottom-4 left-4 bg-card/95 backdrop-blur-sm rounded-xl p-3 border border-border shadow-lg">
-              <p className="text-xs font-medium text-muted-foreground mb-2">Zones</p>
+              <p className="text-xs font-medium text-muted-foreground mb-2">
+                {language === 'es' ? 'Zonas' : 'Zones'}
+              </p>
               <div className="flex flex-wrap gap-2">
                 {zones.slice(0, 4).map((zone) => (
                   <div key={zone.id} className="flex items-center gap-1.5">
@@ -325,7 +324,7 @@ export default function MapView() {
                     <Card className="border-warning/50 bg-warning/5">
                       <CardHeader className="pb-2">
                         <CardTitle className="text-sm text-warning">
-                          Critical Care Note
+                          {language === 'es' ? 'Nota de Cuidado Crítico' : 'Critical Care Note'}
                         </CardTitle>
                       </CardHeader>
                       <CardContent>
@@ -337,7 +336,9 @@ export default function MapView() {
                   {/* Purpose Tags */}
                   {selectedAsset.purpose_tags?.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2">Purpose</h4>
+                      <h4 className="text-sm font-medium mb-2">
+                        {language === 'es' ? 'Propósito' : 'Purpose'}
+                      </h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedAsset.purpose_tags.map((tag) => (
                           <Badge key={tag} variant="secondary">
@@ -351,7 +352,9 @@ export default function MapView() {
                   {/* Risk Flags */}
                   {selectedAsset.risk_flags?.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium mb-2">Risk Flags</h4>
+                      <h4 className="text-sm font-medium mb-2">
+                        {language === 'es' ? 'Riesgos' : 'Risk Flags'}
+                      </h4>
                       <div className="flex flex-wrap gap-2">
                         {selectedAsset.risk_flags.map((flag) => (
                           <Badge key={flag} variant="destructive" className="bg-destructive/10 text-destructive">
@@ -365,7 +368,9 @@ export default function MapView() {
                   {/* Last Service */}
                   {selectedAsset.last_service_date && (
                     <div>
-                      <h4 className="text-sm font-medium mb-1">Last Service</h4>
+                      <h4 className="text-sm font-medium mb-1">
+                        {language === 'es' ? 'Último Servicio' : 'Last Service'}
+                      </h4>
                       <p className="text-muted-foreground">
                         {new Date(selectedAsset.last_service_date).toLocaleDateString()}
                       </p>
@@ -374,8 +379,12 @@ export default function MapView() {
 
                   {/* Actions */}
                   <div className="flex gap-2 pt-4">
-                    <Button className="flex-1">View Details</Button>
-                    <Button variant="outline" className="flex-1">View Tasks</Button>
+                    <Button className="flex-1">
+                      {language === 'es' ? 'Ver Detalles' : 'View Details'}
+                    </Button>
+                    <Button variant="outline" className="flex-1">
+                      {language === 'es' ? 'Ver Tareas' : 'View Tasks'}
+                    </Button>
                   </div>
                 </div>
               </>
@@ -383,6 +392,6 @@ export default function MapView() {
           </SheetContent>
         </Sheet>
       </div>
-    </AppLayout>
+    </ModernAppLayout>
   );
 }

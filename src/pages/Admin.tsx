@@ -18,7 +18,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -159,26 +159,30 @@ export default function Admin() {
 
   if (!isOwnerOrManager) {
     return (
-      <AppLayout>
+      <ModernAppLayout>
         <div className="container py-12 text-center">
           <Settings className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-serif font-semibold mb-2">Access Restricted</h2>
+          <h2 className="text-2xl font-serif font-semibold mb-2">
+            {language === 'es' ? 'Acceso Restringido' : 'Access Restricted'}
+          </h2>
           <p className="text-muted-foreground">
-            Admin access is only available to owners and managers.
+            {language === 'es' 
+              ? 'El acceso de administrador solo está disponible para propietarios y gerentes.'
+              : 'Admin access is only available to owners and managers.'}
           </p>
         </div>
-      </AppLayout>
+      </ModernAppLayout>
     );
   }
 
   return (
-    <AppLayout>
+    <ModernAppLayout>
       <div className="container py-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-3xl font-serif font-semibold">{t('admin.title')}</h1>
+          <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('admin.title')}</h1>
           <p className="text-muted-foreground mt-1">
-            Manage users, vendors, and estate settings
+            {language === 'es' ? 'Gestiona usuarios, proveedores y configuración' : 'Manage users, vendors, and estate settings'}
           </p>
         </div>
 
@@ -206,10 +210,12 @@ export default function Admin() {
           {/* Users Tab */}
           <TabsContent value="users" className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium">Team Members</h2>
+              <h2 className="text-lg font-medium">
+                {language === 'es' ? 'Miembros del Equipo' : 'Team Members'}
+              </h2>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Invite User
+                {language === 'es' ? 'Invitar Usuario' : 'Invite User'}
               </Button>
             </div>
 
@@ -252,10 +258,12 @@ export default function Admin() {
           {/* Vendors Tab */}
           <TabsContent value="vendors" className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium">Vendors & Contractors</h2>
+              <h2 className="text-lg font-medium">
+                {language === 'es' ? 'Proveedores y Contratistas' : 'Vendors & Contractors'}
+              </h2>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Vendor
+                {language === 'es' ? 'Agregar Proveedor' : 'Add Vendor'}
               </Button>
             </div>
 
@@ -263,9 +271,13 @@ export default function Admin() {
               <Card className="estate-card">
                 <CardContent className="py-12 text-center">
                   <Building2 className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-medium text-lg">No vendors yet</h3>
+                  <h3 className="font-medium text-lg">
+                    {language === 'es' ? 'Sin proveedores' : 'No vendors yet'}
+                  </h3>
                   <p className="text-muted-foreground mt-1">
-                    Add vendors and contractors to assign tasks to them
+                    {language === 'es' 
+                      ? 'Agrega proveedores y contratistas para asignarles tareas'
+                      : 'Add vendors and contractors to assign tasks to them'}
                   </p>
                 </CardContent>
               </Card>
@@ -316,7 +328,9 @@ export default function Admin() {
           {/* Weather Rules Tab */}
           <TabsContent value="weather" className="space-y-4">
             <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium">Weather Alert Rules</h2>
+              <h2 className="text-lg font-medium">
+                {language === 'es' ? 'Reglas de Alertas del Clima' : 'Weather Alert Rules'}
+              </h2>
               <div className="flex gap-2">
                 <SimulateAlertButton 
                   weatherRules={weatherRules} 
@@ -324,7 +338,7 @@ export default function Admin() {
                 />
                 <Button>
                   <Plus className="h-4 w-4 mr-2" />
-                  Add Rule
+                  {language === 'es' ? 'Agregar Regla' : 'Add Rule'}
                 </Button>
               </div>
             </div>
@@ -333,9 +347,13 @@ export default function Admin() {
               <Card className="estate-card">
                 <CardContent className="py-12 text-center">
                   <CloudSun className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-medium text-lg">No weather rules</h3>
+                  <h3 className="font-medium text-lg">
+                    {language === 'es' ? 'Sin reglas del clima' : 'No weather rules'}
+                  </h3>
                   <p className="text-muted-foreground mt-1">
-                    Create rules to get alerts based on weather conditions
+                    {language === 'es'
+                      ? 'Crea reglas para recibir alertas basadas en condiciones climáticas'
+                      : 'Create rules to get alerts based on weather conditions'}
                   </p>
                 </CardContent>
               </Card>
@@ -400,13 +418,16 @@ export default function Admin() {
               <Card className="estate-card">
                 <CardContent className="py-12 text-center">
                   <QrCode className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                  <h3 className="font-medium text-lg">Generate QR Labels</h3>
+                  <h3 className="font-medium text-lg">
+                    {language === 'es' ? 'Generar Etiquetas QR' : 'Generate QR Labels'}
+                  </h3>
                   <p className="text-muted-foreground mt-1 max-w-md mx-auto">
-                    Create scannable QR codes for your assets. When scanned, 
-                    they'll open the asset's detail page in the app.
+                    {language === 'es'
+                      ? 'Crea códigos QR escaneables para tus activos. Al escanearlos, abrirán la página de detalles del activo en la app.'
+                      : "Create scannable QR codes for your assets. When scanned, they'll open the asset's detail page in the app."}
                   </p>
                   <Button className="mt-4">
-                    Generate for All Assets
+                    {language === 'es' ? 'Generar para Todos los Activos' : 'Generate for All Assets'}
                   </Button>
                 </CardContent>
               </Card>
@@ -426,6 +447,6 @@ export default function Admin() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
+    </ModernAppLayout>
   );
 }

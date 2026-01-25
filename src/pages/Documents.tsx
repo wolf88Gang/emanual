@@ -17,7 +17,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -137,17 +137,17 @@ export default function Documents() {
   }, {} as Record<string, number>);
 
   return (
-    <AppLayout>
+    <ModernAppLayout>
       <div className="container py-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-serif font-semibold">{t('documents.digitalBinder')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('documents.digitalBinder')}</h1>
             <p className="text-muted-foreground mt-1">
-              {documents.length} documents
+              {documents.length} {language === 'es' ? 'documentos' : 'documents'}
               {expiringCount > 0 && (
                 <span className="text-warning ml-2">
-                  • {expiringCount} expiring soon
+                  · {expiringCount} {language === 'es' ? 'por vencer' : 'expiring soon'}
                 </span>
               )}
             </p>
@@ -176,7 +176,7 @@ export default function Documents() {
           <div className="overflow-x-auto pb-2">
             <TabsList className="inline-flex h-auto p-1 w-auto min-w-full sm:min-w-0">
               <TabsTrigger value="all" className="gap-2">
-                All
+                {language === 'es' ? 'Todo' : 'All'}
                 <Badge variant="secondary" className="h-5 px-1.5">{documents.length}</Badge>
               </TabsTrigger>
               {Object.entries(categoryConfig).map(([key, config]) => {
@@ -203,11 +203,13 @@ export default function Documents() {
             <Card className="estate-card">
               <CardContent className="py-12 text-center">
                 <FolderOpen className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-medium text-lg">No documents found</h3>
+                <h3 className="font-medium text-lg">
+                  {language === 'es' ? 'Sin documentos' : 'No documents found'}
+                </h3>
                 <p className="text-muted-foreground mt-1">
                   {searchQuery || activeCategory !== 'all'
-                    ? 'Try adjusting your search or filters'
-                    : 'Start by uploading your first document'}
+                    ? (language === 'es' ? 'Intenta ajustar tu búsqueda o filtros' : 'Try adjusting your search or filters')
+                    : (language === 'es' ? 'Comienza subiendo tu primer documento' : 'Start by uploading your first document')}
                 </p>
               </CardContent>
             </Card>
@@ -237,12 +239,12 @@ export default function Documents() {
                             <h3 className="font-medium truncate">{doc.title}</h3>
                             {expired && (
                               <Badge variant="destructive" className="shrink-0">
-                                Expired
+                                {language === 'es' ? 'Vencido' : 'Expired'}
                               </Badge>
                             )}
                             {expiring && (
                               <Badge variant="outline" className="border-warning text-warning shrink-0">
-                                Expiring Soon
+                                {language === 'es' ? 'Por Vencer' : 'Expiring Soon'}
                               </Badge>
                             )}
                           </div>
@@ -266,7 +268,7 @@ export default function Documents() {
                           {doc.expiry_date && (
                             <div className="flex items-center gap-1 mt-1 text-xs text-muted-foreground">
                               <Calendar className="h-3 w-3" />
-                              Expires: {format(parseISO(doc.expiry_date), 'MMM d, yyyy')}
+                              {language === 'es' ? 'Vence:' : 'Expires:'} {format(parseISO(doc.expiry_date), 'MMM d, yyyy')}
                             </div>
                           )}
                         </div>
@@ -287,6 +289,6 @@ export default function Documents() {
           )}
         </Tabs>
       </div>
-    </AppLayout>
+    </ModernAppLayout>
   );
 }
