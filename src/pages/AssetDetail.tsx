@@ -32,6 +32,7 @@ import { AssetTypeIcon, getAssetBadgeClass, AssetType } from '@/components/icons
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
 import { AssetEditForm } from '@/components/assets/AssetEditForm';
 import { PlantProfileLinker } from '@/components/assets/PlantProfileLinker';
+import { AssetActionsCard } from '@/components/assets/AssetActionsCard';
 
 interface AssetDetail {
   id: string;
@@ -360,6 +361,18 @@ export default function AssetDetail() {
                 fetchAssetData();
               }}
               onCancel={() => setIsEditing(false)}
+            />
+          </div>
+        )}
+
+        {/* Asset Actions Card - Create tasks and update status */}
+        {!isEditing && (
+          <div className="mb-6">
+            <AssetActionsCard
+              assetId={asset.id}
+              assetName={asset.name}
+              currentRiskFlags={asset.risk_flags || []}
+              onUpdate={fetchAssetData}
             />
           </div>
         )}
