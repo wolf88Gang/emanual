@@ -27,6 +27,8 @@ import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
 import { EstateMap } from '@/components/map/EstateMap';
 import { ZoneLegend } from '@/components/map/ZoneLegend';
 import { QRScannerView } from '@/components/map/QRScannerView';
+import { ZoneDrawingTool } from '@/components/map/ZoneDrawingTool';
+import { AssetCreationDialog } from '@/components/map/AssetCreationDialog';
 import { toast } from 'sonner';
 import type { MapZone, MapAsset } from '@/components/map/types';
 
@@ -51,12 +53,7 @@ export default function MapView() {
   const [pinPlacementMode, setPinPlacementMode] = useState(false);
   const [zoneDrawingMode, setZoneDrawingMode] = useState(false);
   const [pendingPin, setPendingPin] = useState<{ lat: number; lng: number } | null>(null);
-  
-  const [newAsset, setNewAsset] = useState({
-    name: '',
-    asset_type: 'plant' as AssetType,
-    zone_id: ''
-  });
+  const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
 
   // Handle zone selection from URL param
   useEffect(() => {
@@ -111,31 +108,11 @@ export default function MapView() {
     setShowAddAsset(true);
   }
 
-  async function handleAddAssetWithPin() {
-    if (!currentEstate || !pendingPin || !newAsset.name.trim()) return;
-
-    try {
-      const { error } = await supabase.from('assets').insert([{
-        estate_id: currentEstate.id,
-        name: newAsset.name,
-        asset_type: newAsset.asset_type,
-        zone_id: newAsset.zone_id || null,
-        lat: pendingPin.lat,
-        lng: pendingPin.lng
-      }]);
-
-      if (error) throw error;
-
-      toast.success(language === 'es' ? '✅ Activo agregado al mapa' : '✅ Asset added to map');
-      setShowAddAsset(false);
-      setPendingPin(null);
-      setPinPlacementMode(false);
-      setNewAsset({ name: '', asset_type: 'plant', zone_id: '' });
-      fetchMapData();
-    } catch (error) {
-      console.error('Error adding asset:', error);
-      toast.error(language === 'es' ? 'Error al agregar activo' : 'Failed to add asset');
-    }
+  function handleAssetCreated() {
+    setShowAddAsset(false);
+    setPendingPin(null);
+    setPinPlacementMode(false);
+    fetchMapData();
   }
 
   async function handleSaveZone(zoneData: {
@@ -188,10 +165,6 @@ export default function MapView() {
 
   // Get estate center from first zone or asset with coordinates
   const getMapCenter = (): [number, number] => {
-    // If we have current GPS location, use it
-    if (hasLocation && latitude && longitude) {
-      return [latitude, longitude];
-    }
     // Try to get from estate
     if (currentEstate?.lat && currentEstate?.lng) {
       return [currentEstate.lat, currentEstate.lng];
@@ -332,7 +305,33 @@ export default function MapView() {
                 zoom={17}
                 enablePinPlacement={pinPlacementMode}
                 onMapClick={handleMapClick}
+                onMapReady={setMapInstance}
               />
+
+              {/* Zone Drawing Tool */}
+              {zoneDrawingMode && (
+                <ZoneDrawingTool
+                  mapRef={mapInstance}
+                  onSaveZone={handleSaveZone}
+                  onCancel={() => setZoneDrawingMode(false)}
+                  isActive={zoneDrawingMode}
+                />
+              )}
+
+              {/* Asset Creation Dialog */}
+              {showAddAsset && pendingPin && currentEstate && (
+                <AssetCreationDialog
+                  estateId={currentEstate.id}
+                  lat={pendingPin.lat}
+                  lng={pendingPin.lng}
+                  zones={zones}
+                  onSave={handleAssetCreated}
+                  onCancel={() => {
+                    setShowAddAsset(false);
+                    setPendingPin(null);
+                  }}
+                />
+              )}
 
               {/* Zone Legend */}
               <ZoneLegend
@@ -516,89 +515,6 @@ export default function MapView() {
           </SheetContent>
         </Sheet>
 
-        {/* Add Asset with Pin Sheet */}
-        <Sheet open={showAddAsset} onOpenChange={(open) => {
-          setShowAddAsset(open);
-          if (!open) {
-            setPendingPin(null);
-            setNewAsset({ name: '', asset_type: 'plant', zone_id: '' });
-          }
-        }}>
-          <SheetContent className="w-full sm:max-w-lg">
-            <SheetHeader>
-              <SheetTitle className="flex items-center gap-2">
-                <MapPin className="h-5 w-5 text-primary" />
-                {language === 'es' ? 'Agregar Activo' : 'Add Asset'}
-              </SheetTitle>
-            </SheetHeader>
-            
-            <div className="mt-6 space-y-4">
-              {pendingPin && (
-                <div className="p-3 bg-primary/10 rounded-lg text-sm">
-                  <p className="font-medium">{language === 'es' ? 'Ubicación seleccionada:' : 'Selected location:'}</p>
-                  <p className="text-muted-foreground">
-                    {pendingPin.lat.toFixed(6)}, {pendingPin.lng.toFixed(6)}
-                  </p>
-                </div>
-              )}
-              
-              <div className="space-y-2">
-                <Label>{language === 'es' ? 'Nombre *' : 'Name *'}</Label>
-                <Input
-                  placeholder={language === 'es' ? 'Nombre del activo...' : 'Asset name...'}
-                  value={newAsset.name}
-                  onChange={(e) => setNewAsset(p => ({ ...p, name: e.target.value }))}
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label>{language === 'es' ? 'Tipo' : 'Type'}</Label>
-                <Select 
-                  value={newAsset.asset_type} 
-                  onValueChange={(v: AssetType) => setNewAsset(p => ({ ...p, asset_type: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {Object.entries(assetTypeLabels).map(([value, labels]) => (
-                      <SelectItem key={value} value={value}>
-                        {language === 'es' ? labels.es : labels.en}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              
-              <div className="space-y-2">
-                <Label>{language === 'es' ? 'Zona (opcional)' : 'Zone (optional)'}</Label>
-                <Select 
-                  value={newAsset.zone_id} 
-                  onValueChange={(v) => setNewAsset(p => ({ ...p, zone_id: v }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder={language === 'es' ? 'Seleccionar zona...' : 'Select zone...'} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {zones.map((zone) => (
-                      <SelectItem key={zone.id} value={zone.id}>
-                        {zone.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button 
-                className="w-full" 
-                onClick={handleAddAssetWithPin}
-                disabled={!newAsset.name.trim() || !pendingPin}
-              >
-                {language === 'es' ? 'Agregar al Mapa' : 'Add to Map'}
-              </Button>
-            </div>
-          </SheetContent>
-        </Sheet>
       </div>
     </ModernAppLayout>
   );
