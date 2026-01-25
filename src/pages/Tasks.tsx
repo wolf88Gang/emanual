@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
+import { TaskCompletionDialog } from '@/components/tasks/TaskCompletionDialog';
 
 interface Task {
   id: string;
@@ -86,6 +87,7 @@ export default function Tasks() {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
 
   useEffect(() => {
     if (currentEstate) {
@@ -156,6 +158,11 @@ export default function Tasks() {
     completed: tasks.filter(t => t.status === 'completed').length,
     my: tasks.filter(t => t.assigned_user?.id === user?.id && t.status !== 'completed').length,
   };
+
+  function openCompletionDialog(task: Task) {
+    setSelectedTask(task);
+    setCompletionDialogOpen(true);
+  }
 
   return (
     <AppLayout>
@@ -229,8 +236,12 @@ export default function Tasks() {
                 return (
                   <Card 
                     key={task.id} 
-                    className="estate-card cursor-pointer"
-                    onClick={() => setSelectedTask(task)}
+                    className="estate-card cursor-pointer hover:shadow-lg transition-shadow"
+                    onClick={() => {
+                      if (task.status !== 'completed') {
+                        openCompletionDialog(task);
+                      }
+                    }}
                   >
                     <CardContent className="p-4">
                       <div className="flex items-start gap-4">
@@ -308,6 +319,14 @@ export default function Tasks() {
             )}
           </div>
         </Tabs>
+
+        {/* Task Completion Dialog */}
+        <TaskCompletionDialog
+          open={completionDialogOpen}
+          onOpenChange={setCompletionDialogOpen}
+          task={selectedTask}
+          onSuccess={fetchTasks}
+        />
       </div>
     </AppLayout>
   );

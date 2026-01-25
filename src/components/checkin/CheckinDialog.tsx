@@ -153,21 +153,29 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
     try {
       let photoUrl: string | null = null;
 
-      // Upload photo to storage (placeholder - would need storage bucket setup)
-      // For now, we'll create a data URL placeholder
+      // Upload photo to Supabase Storage
       if (photoCapture.photoFile) {
-        // In production, upload to Supabase Storage
-        // For demo, we'll use a placeholder or base64
-        const reader = new FileReader();
-        photoUrl = await new Promise<string>((resolve) => {
-          reader.onload = () => resolve(reader.result as string);
-          reader.readAsDataURL(photoCapture.photoFile!);
-        });
+        const fileExt = photoCapture.photoFile.name.split('.').pop() || 'jpg';
+        const fileName = `${user.id}/${Date.now()}.${fileExt}`;
         
-        // Truncate base64 for storage demo (in production, use Storage)
-        if (photoUrl && photoUrl.length > 5000) {
-          photoUrl = photoUrl.substring(0, 5000) + '...';
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('photos')
+          .upload(fileName, photoCapture.photoFile, {
+            cacheControl: '3600',
+            upsert: false
+          });
+
+        if (uploadError) {
+          console.error('Upload error:', uploadError);
+          throw new Error(language === 'es' ? 'Error al subir foto' : 'Failed to upload photo');
         }
+
+        // Get public URL
+        const { data: { publicUrl } } = supabase.storage
+          .from('photos')
+          .getPublicUrl(fileName);
+        
+        photoUrl = publicUrl;
       }
 
       // Create checkin record

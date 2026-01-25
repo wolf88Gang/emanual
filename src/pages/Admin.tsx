@@ -10,7 +10,8 @@ import {
   Mail,
   Phone,
   ChevronRight,
-  Settings
+  Settings,
+  Printer
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,6 +25,8 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
+import { SimulateAlertButton } from '@/components/admin/SimulateAlertButton';
+import { AssetQRCode } from '@/components/assets/AssetQRCode';
 
 interface User {
   id: string;
@@ -51,6 +54,17 @@ interface WeatherRule {
   auto_create_tasks: boolean;
 }
 
+interface QRLabel {
+  id: string;
+  code: string;
+  label_text: string | null;
+  asset: {
+    id: string;
+    name: string;
+    asset_type: string;
+  };
+}
+
 const roleColors: Record<string, string> = {
   owner: 'bg-primary/20 text-primary',
   manager: 'bg-info/20 text-info',
@@ -72,6 +86,7 @@ export default function Admin() {
   const [users, setUsers] = useState<User[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [weatherRules, setWeatherRules] = useState<WeatherRule[]>([]);
+  const [qrLabels, setQRLabels] = useState<QRLabel[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -85,7 +100,7 @@ export default function Admin() {
     
     setLoading(true);
     try {
-      const [vendorsRes, rulesRes] = await Promise.all([
+      const [vendorsRes, rulesRes, labelsRes] = await Promise.all([
         supabase
           .from('vendors')
           .select('*')
@@ -96,10 +111,22 @@ export default function Admin() {
           .select('*')
           .eq('estate_id', currentEstate.id)
           .order('rule_type'),
+        supabase
+          .from('qr_labels')
+          .select(`
+            *,
+            assets:asset_id (id, name, asset_type)
+          `)
+          .eq('estate_id', currentEstate.id)
+          .order('code'),
       ]);
 
       setVendors(vendorsRes.data || []);
       setWeatherRules(rulesRes.data || []);
+      setQRLabels((labelsRes.data || []).map(label => ({
+        ...label,
+        asset: label.assets as QRLabel['asset'],
+      })));
 
       // Mock users for now (in real app, fetch from profiles with roles)
       setUsers([
@@ -290,10 +317,16 @@ export default function Admin() {
           <TabsContent value="weather" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium">Weather Alert Rules</h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                Add Rule
-              </Button>
+              <div className="flex gap-2">
+                <SimulateAlertButton 
+                  weatherRules={weatherRules} 
+                  onAlertCreated={() => fetchAdminData()}
+                />
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add Rule
+                </Button>
+              </div>
             </div>
 
             {weatherRules.length === 0 ? (
@@ -353,6 +386,7 @@ export default function Admin() {
               <h2 className="text-lg font-medium">QR Code Labels</h2>
               <div className="flex gap-2">
                 <Button variant="outline">
+                  <Printer className="h-4 w-4 mr-2" />
                   {t('admin.printLabels')}
                 </Button>
                 <Button>
@@ -362,19 +396,33 @@ export default function Admin() {
               </div>
             </div>
 
-            <Card className="estate-card">
-              <CardContent className="py-12 text-center">
-                <QrCode className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-                <h3 className="font-medium text-lg">Generate QR Labels</h3>
-                <p className="text-muted-foreground mt-1 max-w-md mx-auto">
-                  Create scannable QR codes for your assets. When scanned, 
-                  they'll open the asset's detail page in the app.
-                </p>
-                <Button className="mt-4">
-                  Generate for All Assets
-                </Button>
-              </CardContent>
-            </Card>
+            {qrLabels.length === 0 ? (
+              <Card className="estate-card">
+                <CardContent className="py-12 text-center">
+                  <QrCode className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+                  <h3 className="font-medium text-lg">Generate QR Labels</h3>
+                  <p className="text-muted-foreground mt-1 max-w-md mx-auto">
+                    Create scannable QR codes for your assets. When scanned, 
+                    they'll open the asset's detail page in the app.
+                  </p>
+                  <Button className="mt-4">
+                    Generate for All Assets
+                  </Button>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {qrLabels.map((label) => (
+                  <AssetQRCode
+                    key={label.id}
+                    assetId={label.asset.id}
+                    assetName={label.asset.name}
+                    qrCode={label.code}
+                    size={120}
+                  />
+                ))}
+              </div>
+            )}
           </TabsContent>
         </Tabs>
       </div>
