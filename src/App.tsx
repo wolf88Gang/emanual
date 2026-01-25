@@ -15,6 +15,9 @@ import Assets from "./pages/Assets";
 import AssetDetail from "./pages/AssetDetail";
 import Documents from "./pages/Documents";
 import Admin from "./pages/Admin";
+import Inventory from "./pages/Inventory";
+import PlantRegistry from "./pages/PlantRegistry";
+import WorkerCheckin from "./pages/WorkerCheckin";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -58,6 +61,9 @@ function AppRoutes() {
       <Route path="/assets/:id" element={<ProtectedRoute><AssetDetail /></ProtectedRoute>} />
       <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
       <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
+      <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
+      <Route path="/plants" element={<ProtectedRoute><PlantRegistry /></ProtectedRoute>} />
+      <Route path="/checkin" element={<ProtectedRoute><WorkerCheckin /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

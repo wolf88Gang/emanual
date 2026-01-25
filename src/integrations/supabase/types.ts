@@ -322,6 +322,68 @@ export type Database = {
           },
         ]
       }
+      inventory_items: {
+        Row: {
+          category: Database["public"]["Enums"]["inventory_category"]
+          condition: Database["public"]["Enums"]["inventory_condition"] | null
+          created_at: string
+          description: string | null
+          estate_id: string
+          id: string
+          name: string
+          name_es: string | null
+          notes: string | null
+          photo_url: string | null
+          purchase_date: string | null
+          quantity: number
+          serial_number: string | null
+          unit: string | null
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["inventory_category"]
+          condition?: Database["public"]["Enums"]["inventory_condition"] | null
+          created_at?: string
+          description?: string | null
+          estate_id: string
+          id?: string
+          name: string
+          name_es?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          purchase_date?: string | null
+          quantity?: number
+          serial_number?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["inventory_category"]
+          condition?: Database["public"]["Enums"]["inventory_condition"] | null
+          created_at?: string
+          description?: string | null
+          estate_id?: string
+          id?: string
+          name?: string
+          name_es?: string | null
+          notes?: string | null
+          photo_url?: string | null
+          purchase_date?: string | null
+          quantity?: number
+          serial_number?: string | null
+          unit?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -660,6 +722,76 @@ export type Database = {
           },
         ]
       }
+      tool_assignments: {
+        Row: {
+          assigned_at: string
+          assigned_to_user_id: string
+          created_at: string
+          estate_id: string
+          expected_return_at: string | null
+          id: string
+          inventory_item_id: string
+          notes: string | null
+          quantity_assigned: number
+          return_condition:
+            | Database["public"]["Enums"]["inventory_condition"]
+            | null
+          returned_at: string | null
+        }
+        Insert: {
+          assigned_at?: string
+          assigned_to_user_id: string
+          created_at?: string
+          estate_id: string
+          expected_return_at?: string | null
+          id?: string
+          inventory_item_id: string
+          notes?: string | null
+          quantity_assigned?: number
+          return_condition?:
+            | Database["public"]["Enums"]["inventory_condition"]
+            | null
+          returned_at?: string | null
+        }
+        Update: {
+          assigned_at?: string
+          assigned_to_user_id?: string
+          created_at?: string
+          estate_id?: string
+          expected_return_at?: string | null
+          id?: string
+          inventory_item_id?: string
+          notes?: string | null
+          quantity_assigned?: number
+          return_condition?:
+            | Database["public"]["Enums"]["inventory_condition"]
+            | null
+          returned_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_assignments_assigned_to_user_id_fkey"
+            columns: ["assigned_to_user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_assignments_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_assignments_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -834,6 +966,72 @@ export type Database = {
           },
         ]
       }
+      worker_shifts: {
+        Row: {
+          check_in_at: string
+          check_in_lat: number | null
+          check_in_lng: number | null
+          check_in_photo_url: string | null
+          check_out_at: string | null
+          check_out_lat: number | null
+          check_out_lng: number | null
+          check_out_photo_url: string | null
+          created_at: string
+          estate_id: string
+          id: string
+          notes: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          check_in_at?: string
+          check_in_lat?: number | null
+          check_in_lng?: number | null
+          check_in_photo_url?: string | null
+          check_out_at?: string | null
+          check_out_lat?: number | null
+          check_out_lng?: number | null
+          check_out_photo_url?: string | null
+          created_at?: string
+          estate_id: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          check_in_at?: string
+          check_in_lat?: number | null
+          check_in_lng?: number | null
+          check_in_photo_url?: string | null
+          check_out_at?: string | null
+          check_out_lat?: number | null
+          check_out_lng?: number | null
+          check_out_photo_url?: string | null
+          created_at?: string
+          estate_id?: string
+          id?: string
+          notes?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_shifts_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worker_shifts_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       zones: {
         Row: {
           color: string | null
@@ -913,6 +1111,13 @@ export type Database = {
         | "vendor_contract"
         | "insurance"
         | "other"
+      inventory_category: "hand_tool" | "equipment" | "supply" | "material"
+      inventory_condition:
+        | "new"
+        | "good"
+        | "fair"
+        | "needs_repair"
+        | "out_of_service"
       native_status: "native" | "naturalized" | "exotic" | "invasive"
       plant_category:
         | "ornamental"
@@ -1077,6 +1282,14 @@ export const Constants = {
         "vendor_contract",
         "insurance",
         "other",
+      ],
+      inventory_category: ["hand_tool", "equipment", "supply", "material"],
+      inventory_condition: [
+        "new",
+        "good",
+        "fair",
+        "needs_repair",
+        "out_of_service",
       ],
       native_status: ["native", "naturalized", "exotic", "invasive"],
       plant_category: [

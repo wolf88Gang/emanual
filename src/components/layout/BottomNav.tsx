@@ -1,12 +1,12 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Map, Briefcase, Box, ClipboardList, FolderOpen, Settings } from 'lucide-react';
+import { Map, Briefcase, Box, ClipboardList, FolderOpen, Settings, Package, Leaf, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 
 export function BottomNav() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { isOwnerOrManager, hasRole } = useAuth();
   const location = useLocation();
   
@@ -15,14 +15,18 @@ export function BottomNav() {
 
   const navItems = [
     { path: '/map', icon: Map, label: t('nav.map'), hideForVendor: true },
-    { path: '/', icon: Briefcase, label: 'Work' },
+    { path: '/', icon: Briefcase, label: language === 'es' ? 'Trabajo' : 'Work' },
     { path: '/assets', icon: Box, label: t('nav.assets'), hideForVendor: true },
+    { path: '/checkin', icon: Clock, label: language === 'es' ? 'Turno' : 'Shift', showForCrew: true },
+    { path: '/inventory', icon: Package, label: language === 'es' ? 'Inventario' : 'Inventory', hideForCrew: true, hideForVendor: true },
+    { path: '/plants', icon: Leaf, label: language === 'es' ? 'Plantas' : 'Plants', hideForCrew: true, hideForVendor: true },
     { path: '/tasks', icon: ClipboardList, label: t('nav.log'), hideForCrew: true },
     { path: '/documents', icon: FolderOpen, label: t('nav.documents'), hideForCrew: true, hideForVendor: true },
     ...(isOwnerOrManager ? [{ path: '/admin', icon: Settings, label: t('nav.admin') }] : []),
   ].filter(item => {
     if (isVendor && item.hideForVendor) return false;
     if (isCrew && item.hideForCrew) return false;
+    if ((item as any).showForCrew && !isCrew && !isOwnerOrManager) return false;
     return true;
   });
 
