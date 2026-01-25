@@ -14,7 +14,8 @@ import {
   Shield,
   Leaf,
   Wrench,
-  XCircle
+  XCircle,
+  Pencil
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
@@ -29,6 +30,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { AssetTypeIcon, getAssetBadgeClass, AssetType } from '@/components/icons/AssetTypeIcon';
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
+import { AssetEditForm } from '@/components/assets/AssetEditForm';
+import { PlantProfileLinker } from '@/components/assets/PlantProfileLinker';
 
 interface AssetDetail {
   id: string;
@@ -85,11 +88,13 @@ export default function AssetDetail() {
   const { currentEstate } = useEstate();
   
   const [asset, setAsset] = useState<AssetDetail | null>(null);
+  const [zones, setZones] = useState<Array<{ id: string; name: string; color: string | null }>>([]);
   const [completions, setCompletions] = useState<TaskCompletion[]>([]);
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [documents, setDocuments] = useState<RelatedDocument[]>([]);
   const [loading, setLoading] = useState(true);
   const [showQR, setShowQR] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
 
   useEffect(() => {
     if (id && currentEstate) {
@@ -103,18 +108,25 @@ export default function AssetDetail() {
     setLoading(true);
     try {
       // Fetch asset with zone and photos
-      const { data: assetData, error: assetError } = await supabase
-        .from('assets')
-        .select(`
-          *,
-          zones:zone_id (id, name, color),
-          asset_photos (id, url, caption)
-        `)
-        .eq('id', id)
-        .eq('estate_id', currentEstate.id)
-        .single();
+      const [assetRes, zonesRes] = await Promise.all([
+        supabase
+          .from('assets')
+          .select(`
+            *,
+            zones:zone_id (id, name, color),
+            asset_photos (id, url, caption)
+          `)
+          .eq('id', id)
+          .eq('estate_id', currentEstate.id)
+          .single(),
+        supabase
+          .from('zones')
+          .select('id, name, color')
+          .eq('estate_id', currentEstate.id)
+          .order('name')
+      ]);
 
-      if (assetError) throw assetError;
+      if (assetRes.error) throw assetRes.error;
 
       // Fetch QR label
       const { data: qrData } = await supabase
@@ -123,10 +135,11 @@ export default function AssetDetail() {
         .eq('asset_id', id)
         .single();
 
+      setZones(zonesRes.data || []);
       setAsset({
-        ...assetData,
-        zone: assetData.zones as AssetDetail['zone'],
-        photos: assetData.asset_photos as AssetDetail['photos'],
+        ...assetRes.data,
+        zone: assetRes.data.zones as AssetDetail['zone'],
+        photos: assetRes.data.asset_photos as AssetDetail['photos'],
         qr_code: qrData?.code,
       });
 
@@ -274,9 +287,14 @@ export default function AssetDetail() {
                   )}
                 </div>
               </div>
-              <Button variant="outline" size="icon" onClick={() => setShowQR(!showQR)}>
-                <QrCode className="h-4 w-4" />
-              </Button>
+              <div className="flex gap-2">
+                <Button variant="outline" size="icon" onClick={() => setIsEditing(true)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="icon" onClick={() => setShowQR(!showQR)}>
+                  <QrCode className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
             {asset.description && (
@@ -317,6 +335,44 @@ export default function AssetDetail() {
               />
             </CardContent>
           </Card>
+        )}
+
+        {/* Edit Form */}
+        {isEditing && (
+          <div className="mb-6">
+            <AssetEditForm
+              asset={{
+                id: asset.id,
+                name: asset.name,
+                description: asset.description,
+                asset_type: asset.asset_type,
+                purpose_tags: asset.purpose_tags,
+                risk_flags: asset.risk_flags,
+                critical_care_note: asset.critical_care_note,
+                do_not_do_warnings: asset.do_not_do_warnings,
+                lat: asset.lat,
+                lng: asset.lng,
+                zone_id: asset.zone_id
+              }}
+              zones={zones}
+              onSave={() => {
+                setIsEditing(false);
+                fetchAssetData();
+              }}
+              onCancel={() => setIsEditing(false)}
+            />
+          </div>
+        )}
+
+        {/* Plant Profile Linker - Only for plant/tree assets */}
+        {!isEditing && (asset.asset_type === 'plant' || asset.asset_type === 'tree') && (
+          <div className="mb-6">
+            <PlantProfileLinker 
+              assetId={asset.id} 
+              assetType={asset.asset_type}
+              onUpdate={fetchAssetData}
+            />
+          </div>
         )}
 
         {/* Intent & Care Section - DELMM Core */}

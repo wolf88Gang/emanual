@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { 
   MapPin, 
@@ -6,8 +6,10 @@ import {
   QrCode,
   X,
   Plus,
-  Navigation
+  Navigation,
+  Pencil
 } from 'lucide-react';
+import L from 'leaflet';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
@@ -36,6 +38,7 @@ export default function MapView() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { latitude, longitude, getCurrentPosition, hasLocation, loading: geoLoading } = useGeolocation();
+  const mapInstanceRef = useRef<L.Map | null>(null);
   
   const [zones, setZones] = useState<MapZone[]>([]);
   const [assets, setAssets] = useState<MapAsset[]>([]);
@@ -46,6 +49,7 @@ export default function MapView() {
   const [showQRScanner, setShowQRScanner] = useState(false);
   const [showAddAsset, setShowAddAsset] = useState(false);
   const [pinPlacementMode, setPinPlacementMode] = useState(false);
+  const [zoneDrawingMode, setZoneDrawingMode] = useState(false);
   const [pendingPin, setPendingPin] = useState<{ lat: number; lng: number } | null>(null);
   
   const [newAsset, setNewAsset] = useState({
@@ -134,6 +138,34 @@ export default function MapView() {
     }
   }
 
+  async function handleSaveZone(zoneData: {
+    name: string;
+    color: string;
+    geometry_geojson: any;
+    purpose_tags: string[];
+  }) {
+    if (!currentEstate) return;
+
+    try {
+      const { error } = await supabase.from('zones').insert([{
+        estate_id: currentEstate.id,
+        name: zoneData.name,
+        color: zoneData.color,
+        geometry_geojson: zoneData.geometry_geojson,
+        purpose_tags: zoneData.purpose_tags
+      }]);
+
+      if (error) throw error;
+
+      toast.success(language === 'es' ? '✅ Zona creada' : '✅ Zone created');
+      setZoneDrawingMode(false);
+      fetchMapData();
+    } catch (error) {
+      console.error('Error creating zone:', error);
+      toast.error(language === 'es' ? 'Error al crear zona' : 'Failed to create zone');
+    }
+  }
+
   async function centerOnCurrentLocation() {
     try {
       await getCurrentPosition();
@@ -210,10 +242,24 @@ export default function MapView() {
           <Button
             variant={pinPlacementMode ? 'default' : 'outline'}
             size="icon"
-            onClick={() => setPinPlacementMode(!pinPlacementMode)}
+            onClick={() => {
+              setPinPlacementMode(!pinPlacementMode);
+              setZoneDrawingMode(false);
+            }}
             title={language === 'es' ? 'Agregar activo' : 'Add asset'}
           >
             <Plus className="h-5 w-5" />
+          </Button>
+          <Button
+            variant={zoneDrawingMode ? 'default' : 'outline'}
+            size="icon"
+            onClick={() => {
+              setZoneDrawingMode(!zoneDrawingMode);
+              setPinPlacementMode(false);
+            }}
+            title={language === 'es' ? 'Dibujar zona' : 'Draw zone'}
+          >
+            <Pencil className="h-5 w-5" />
           </Button>
           <Button
             variant="outline"
@@ -238,6 +284,25 @@ export default function MapView() {
               size="sm" 
               className="ml-2"
               onClick={() => setPinPlacementMode(false)}
+            >
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+          </div>
+        )}
+
+        {/* Zone Drawing Mode Indicator */}
+        {zoneDrawingMode && (
+          <div className="px-4 py-2 bg-primary/10 border-b border-primary/30 text-center text-sm">
+            <span className="text-primary font-medium">
+              {language === 'es' 
+                ? '✏️ Dibuja puntos en el mapa para crear una zona' 
+                : '✏️ Draw points on the map to create a zone'}
+            </span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="ml-2"
+              onClick={() => setZoneDrawingMode(false)}
             >
               {language === 'es' ? 'Cancelar' : 'Cancel'}
             </Button>
