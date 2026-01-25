@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Leaf, Sparkles, Plus, Search, Loader2, AlertTriangle, Droplets, Sun, Scissors } from 'lucide-react';
+import { Leaf, Sparkles, Plus, Search, Loader2, AlertTriangle, Droplets, Sun, Scissors, Mountain, Waves, TreeDeciduous } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -13,6 +13,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/co
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { CareProtocolSheet } from '@/components/plants/CareProtocolSheet';
 
 interface PlantProfile {
   id: string;
@@ -22,17 +23,6 @@ interface PlantProfile {
   native_status: string | null;
   image_url: string | null;
   care_template_json: any;
-}
-
-interface CareProtocol {
-  watering: { frequency: string; amount: string; method: string; seasonal_notes?: string };
-  sunlight: { requirement: string; hours: string; notes?: string };
-  soil: { type: string; ph?: string; drainage: string };
-  fertilization: { type: string; frequency: string; timing?: string };
-  pruning: { frequency: string; timing: string; technique?: string };
-  common_issues: Array<{ issue: string; symptoms: string; treatment: string }>;
-  do_not_do: string[];
-  monthly_tasks?: Array<{ month: string; tasks: string[] }>;
 }
 
 export default function PlantRegistry() {
@@ -46,13 +36,15 @@ export default function PlantRegistry() {
   const [showAddSheet, setShowAddSheet] = useState(false);
   const [generating, setGenerating] = useState(false);
   const [selectedProfile, setSelectedProfile] = useState<PlantProfile | null>(null);
+  const [showCareSheet, setShowCareSheet] = useState(false);
   
-  // New plant form
+  // New plant form with elevation zone
   const [newPlant, setNewPlant] = useState({
     common_name: '',
     scientific_name: '',
     category: 'ornamental',
-    native_status: 'exotic'
+    native_status: 'exotic',
+    elevation_zone: 'transitional' // coastal, transitional, highland
   });
 
   useEffect(() => {
@@ -83,13 +75,23 @@ export default function PlantRegistry() {
 
     setGenerating(true);
     try {
+      // Determine climate based on estate location
+      let climate = 'Tropical/Subtropical Costa Rica';
+      if (currentEstate?.country === 'CR') {
+        climate = 'Costa Rica - Tropical';
+      } else if (currentEstate?.country === 'PR') {
+        climate = 'Tropical Caribbean';
+      }
+
       const { data, error } = await supabase.functions.invoke('plant-care-ai', {
         body: {
           plantName: newPlant.common_name,
           scientificName: newPlant.scientific_name,
           category: newPlant.category,
-          climate: currentEstate?.country === 'PR' ? 'Tropical Caribbean' : 'Subtropical',
-          language
+          climate,
+          language,
+          elevationZone: newPlant.elevation_zone,
+          propertyType: 'luxury residential'
         }
       });
 
@@ -119,8 +121,9 @@ export default function PlantRegistry() {
 
       setProfiles(prev => [...prev, profile]);
       setShowAddSheet(false);
-      setNewPlant({ common_name: '', scientific_name: '', category: 'ornamental', native_status: 'exotic' });
+      setNewPlant({ common_name: '', scientific_name: '', category: 'ornamental', native_status: 'exotic', elevation_zone: 'transitional' });
       setSelectedProfile(profile);
+      setShowCareSheet(true);
     } catch (error: any) {
       console.error('Error generating care protocol:', error);
       toast.error(error.message || (language === 'es' ? 'Error al generar protocolo' : 'Failed to generate protocol'));
@@ -228,6 +231,61 @@ export default function PlantRegistry() {
                   </Select>
                 </div>
 
+                <div className="space-y-2">
+                  <Label className="flex items-center gap-2">
+                    <Mountain className="h-4 w-4" />
+                    {language === 'es' ? 'Zona de Elevación' : 'Elevation Zone'}
+                  </Label>
+                  <Select 
+                    value={newPlant.elevation_zone} 
+                    onValueChange={(v) => setNewPlant(p => ({ ...p, elevation_zone: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="coastal">
+                        <div className="flex items-center gap-2">
+                          <Waves className="h-4 w-4 text-blue-500" />
+                          <div>
+                            <span>{language === 'es' ? 'Costera (0-300m)' : 'Coastal (0-300m)'}</span>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              {language === 'es' ? 'Guanacaste, Pacífico' : 'Guanacaste, Pacific'}
+                            </span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="transitional">
+                        <div className="flex items-center gap-2">
+                          <TreeDeciduous className="h-4 w-4 text-green-500" />
+                          <div>
+                            <span>{language === 'es' ? 'Transicional (300-1500m)' : 'Transitional (300-1500m)'}</span>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              {language === 'es' ? 'Valle Central' : 'Central Valley'}
+                            </span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                      <SelectItem value="highland">
+                        <div className="flex items-center gap-2">
+                          <Mountain className="h-4 w-4 text-purple-500" />
+                          <div>
+                            <span>{language === 'es' ? 'Montaña (1500m+)' : 'Highland (1500m+)'}</span>
+                            <span className="text-xs text-muted-foreground ml-2">
+                              {language === 'es' ? 'Monteverde, Talamanca' : 'Monteverde, Talamanca'}
+                            </span>
+                          </div>
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p className="text-xs text-muted-foreground">
+                    {language === 'es' 
+                      ? 'La zona de elevación determina los cuidados específicos para el clima' 
+                      : 'Elevation zone determines climate-specific care protocols'}
+                  </p>
+                </div>
+
                 <div className="bg-primary/5 border border-primary/20 rounded-lg p-4 mt-6">
                   <div className="flex items-start gap-3">
                     <Sparkles className="h-5 w-5 text-primary mt-0.5" />
@@ -332,130 +390,23 @@ export default function PlantRegistry() {
           </div>
         )}
 
-        {/* Care Protocol Detail Sheet */}
-        <Sheet open={!!selectedProfile} onOpenChange={() => setSelectedProfile(null)}>
-          <SheetContent className="w-full sm:max-w-lg overflow-auto">
-            {selectedProfile && (
-              <>
-                <SheetHeader>
-                  <SheetTitle className="flex items-center gap-2">
-                    <Leaf className="h-5 w-5 text-primary" />
-                    {selectedProfile.common_name}
-                  </SheetTitle>
-                  {selectedProfile.scientific_name && (
-                    <p className="text-sm text-muted-foreground italic">{selectedProfile.scientific_name}</p>
-                  )}
-                </SheetHeader>
-
-                {selectedProfile.care_template_json ? (
-                  <CareProtocolDisplay 
-                    protocol={selectedProfile.care_template_json as CareProtocol} 
-                    language={language}
-                  />
-                ) : (
-                  <div className="mt-6 text-center py-8 text-muted-foreground">
-                    {language === 'es' ? 'Sin protocolo de cuidados' : 'No care protocol available'}
-                  </div>
-                )}
-              </>
-            )}
-          </SheetContent>
-        </Sheet>
+        {/* Care Protocol Detail Sheet - Using enhanced component */}
+        {selectedProfile && (
+          <CareProtocolSheet
+            open={showCareSheet || !!selectedProfile}
+            onOpenChange={(open) => {
+              if (!open) {
+                setSelectedProfile(null);
+                setShowCareSheet(false);
+              }
+            }}
+            plantName={selectedProfile.common_name}
+            scientificName={selectedProfile.scientific_name || undefined}
+            careProtocol={selectedProfile.care_template_json}
+          />
+        )}
       </div>
     </ModernAppLayout>
   );
 }
 
-function CareProtocolDisplay({ protocol, language }: { protocol: CareProtocol; language: string }) {
-  return (
-    <div className="mt-6 space-y-4">
-      {/* Watering */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Droplets className="h-4 w-4 text-primary" />
-            {language === 'es' ? 'Riego' : 'Watering'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm space-y-1">
-          <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {protocol.watering.frequency}</p>
-          <p><strong>{language === 'es' ? 'Cantidad:' : 'Amount:'}</strong> {protocol.watering.amount}</p>
-          <p><strong>{language === 'es' ? 'Método:' : 'Method:'}</strong> {protocol.watering.method}</p>
-        </CardContent>
-      </Card>
-
-      {/* Sunlight */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Sun className="h-4 w-4 text-warning" />
-            {language === 'es' ? 'Luz Solar' : 'Sunlight'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm space-y-1">
-          <p><strong>{language === 'es' ? 'Requisito:' : 'Requirement:'}</strong> {protocol.sunlight.requirement}</p>
-          <p><strong>{language === 'es' ? 'Horas:' : 'Hours:'}</strong> {protocol.sunlight.hours}</p>
-        </CardContent>
-      </Card>
-
-      {/* Pruning */}
-      <Card>
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm flex items-center gap-2">
-            <Scissors className="h-4 w-4 text-primary" />
-            {language === 'es' ? 'Poda' : 'Pruning'}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm space-y-1">
-          <p><strong>{language === 'es' ? 'Frecuencia:' : 'Frequency:'}</strong> {protocol.pruning.frequency}</p>
-          <p><strong>{language === 'es' ? 'Época:' : 'Timing:'}</strong> {protocol.pruning.timing}</p>
-          {protocol.pruning.technique && (
-            <p><strong>{language === 'es' ? 'Técnica:' : 'Technique:'}</strong> {protocol.pruning.technique}</p>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Do Not Do Warnings */}
-      {protocol.do_not_do && protocol.do_not_do.length > 0 && (
-        <Card className="border-destructive/50 bg-destructive/5">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm flex items-center gap-2 text-destructive">
-              <AlertTriangle className="h-4 w-4" />
-              {language === 'es' ? 'NO HACER' : 'DO NOT DO'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ul className="text-sm space-y-2">
-              {protocol.do_not_do.map((warning, i) => (
-                <li key={i} className="flex items-start gap-2">
-                  <span className="text-destructive">•</span>
-                  <span>{warning}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Common Issues */}
-      {protocol.common_issues && protocol.common_issues.length > 0 && (
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm">
-              {language === 'es' ? 'Problemas Comunes' : 'Common Issues'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-sm space-y-3">
-            {protocol.common_issues.map((issue, i) => (
-              <div key={i} className="border-b border-border pb-2 last:border-0 last:pb-0">
-                <p className="font-medium">{issue.issue}</p>
-                <p className="text-muted-foreground text-xs">{issue.symptoms}</p>
-                <p className="text-xs mt-1"><strong>{language === 'es' ? 'Tratamiento:' : 'Treatment:'}</strong> {issue.treatment}</p>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-      )}
-    </div>
-  );
-}
