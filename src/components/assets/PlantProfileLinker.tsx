@@ -1,10 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { Leaf, Sparkles, Link2, Unlink, Loader2 } from 'lucide-react';
+import { Leaf, Sparkles, Link2, Unlink, Loader2, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { CareProtocolSheet } from '@/components/plants/CareProtocolSheet';
@@ -32,13 +33,24 @@ interface PlantProfileLinkerProps {
   onUpdate?: () => void;
 }
 
+// Check if protocol has detailed data
+function hasDetailedProtocol(protocol: any): boolean {
+  return protocol && (
+    (protocol.watering && typeof protocol.watering === 'object' && protocol.watering.frequency) ||
+    protocol.crew_checklist ||
+    protocol.do_not_do
+  );
+}
+
 export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfileLinkerProps) {
   const { language } = useLanguage();
+  const { currentEstate } = useEstate();
   const [loading, setLoading] = useState(true);
   const [profiles, setProfiles] = useState<PlantProfile[]>([]);
   const [instance, setInstance] = useState<PlantInstance | null>(null);
   const [selectedProfileId, setSelectedProfileId] = useState<string>('');
   const [linking, setLinking] = useState(false);
+  const [regenerating, setRegenerating] = useState(false);
   const [showCareSheet, setShowCareSheet] = useState(false);
 
   // Only show for plant/tree assets
@@ -142,6 +154,58 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
     }
   }
 
+  async function regenerateProtocol() {
+    const profile = instance?.plant_profile;
+    if (!profile) return;
+    
+    setRegenerating(true);
+    try {
+      // Determine climate based on estate location
+      let climate = 'Tropical/Subtropical Costa Rica';
+      if (currentEstate?.country === 'CR') {
+        climate = 'Costa Rica - Tropical';
+      }
+
+      const { data, error } = await supabase.functions.invoke('plant-care-ai', {
+        body: {
+          plantName: profile.common_name,
+          scientificName: profile.scientific_name,
+          category: profile.category,
+          climate,
+          language,
+          elevationZone: 'transitional', // Default to central valley
+          propertyType: 'luxury residential'
+        }
+      });
+
+      if (error) throw error;
+      if (data.error) throw new Error(data.error);
+
+      // Update the plant profile with new care protocol
+      const { error: updateError } = await supabase
+        .from('plant_profiles')
+        .update({ care_template_json: data.careProtocol })
+        .eq('id', profile.id);
+
+      if (updateError) throw updateError;
+
+      toast.success(
+        language === 'es' 
+          ? `✨ Protocolo regenerado para ${profile.common_name}` 
+          : `✨ Protocol regenerated for ${profile.common_name}`
+      );
+
+      // Refresh data
+      fetchData();
+      onUpdate?.();
+    } catch (error: any) {
+      console.error('Error regenerating protocol:', error);
+      toast.error(error.message || (language === 'es' ? 'Error al regenerar' : 'Failed to regenerate'));
+    } finally {
+      setRegenerating(false);
+    }
+  }
+
   if (!isPlantAsset) return null;
 
   if (loading) {
@@ -156,6 +220,7 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
 
   const linkedProfile = instance?.plant_profile;
   const careProtocol = linkedProfile?.care_template_json as any;
+  const isDetailedProtocol = hasDetailedProtocol(careProtocol);
 
   return (
     <>
@@ -190,6 +255,31 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                 </Badge>
               </div>
 
+              {/* Show warning if protocol is basic/legacy */}
+              {careProtocol && !isDetailedProtocol && (
+                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
+                  <p className="text-xs text-amber-800 dark:text-amber-200 mb-2">
+                    {language === 'es' 
+                      ? '⚠️ Este protocolo tiene información básica. Regenera con IA para obtener datos detallados.' 
+                      : '⚠️ This protocol has basic info. Regenerate with AI for detailed data.'}
+                  </p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    className="w-full border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300"
+                    onClick={regenerateProtocol}
+                    disabled={regenerating}
+                  >
+                    {regenerating ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <RefreshCw className="h-4 w-4 mr-2" />
+                    )}
+                    {language === 'es' ? 'Regenerar con IA' : 'Regenerate with AI'}
+                  </Button>
+                </div>
+              )}
+
               {careProtocol && (
                 <Button 
                   variant="outline" 
@@ -201,16 +291,32 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                 </Button>
               )}
 
-              <Button 
-                variant="ghost" 
-                size="sm" 
-                className="w-full text-destructive"
-                onClick={unlinkProfile}
-                disabled={linking}
-              >
-                <Unlink className="h-4 w-4 mr-1" />
-                {language === 'es' ? 'Desvincular Variedad' : 'Unlink Variety'}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  className="flex-1"
+                  onClick={regenerateProtocol}
+                  disabled={regenerating}
+                >
+                  {regenerating ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-1" />
+                  ) : (
+                    <RefreshCw className="h-4 w-4 mr-1" />
+                  )}
+                  {language === 'es' ? 'Regenerar' : 'Regenerate'}
+                </Button>
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  className="flex-1 text-destructive"
+                  onClick={unlinkProfile}
+                  disabled={linking}
+                >
+                  <Unlink className="h-4 w-4 mr-1" />
+                  {language === 'es' ? 'Desvincular' : 'Unlink'}
+                </Button>
+              </div>
             </div>
           ) : (
             <div className="space-y-3">
