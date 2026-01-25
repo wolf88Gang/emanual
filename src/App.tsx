@@ -8,7 +8,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { EstateProvider } from "./contexts/EstateContext";
 
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+import WorkView from "./pages/WorkView";
 import MapView from "./pages/MapView";
 import Tasks from "./pages/Tasks";
 import Assets from "./pages/Assets";
@@ -51,7 +51,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
-      <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+      <Route path="/" element={<ProtectedRoute><WorkView /></ProtectedRoute>} />
       <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
       <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
       <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />

@@ -17,7 +17,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -165,14 +165,14 @@ export default function Tasks() {
   }
 
   return (
-    <AppLayout>
+    <ModernAppLayout>
       <div className="container py-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-serif font-semibold">{t('tasks.title')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('tasks.title')}</h1>
             <p className="text-muted-foreground mt-1">
-              Manage maintenance and care tasks
+              {language === 'es' ? 'Gestiona tareas de mantenimiento y cuidado' : 'Manage maintenance and care tasks'}
             </p>
           </div>
           {isOwnerOrManager && (
@@ -187,25 +187,25 @@ export default function Tasks() {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
           <TabsList className="w-full sm:w-auto flex-wrap h-auto p-1">
             <TabsTrigger value="all" className="gap-2">
-              All
+              {language === 'es' ? 'Todo' : 'All'}
               <Badge variant="secondary" className="h-5 px-1.5">{taskCounts.all}</Badge>
             </TabsTrigger>
             <TabsTrigger value="today" className="gap-2">
-              Today
+              {language === 'es' ? 'Hoy' : 'Today'}
               <Badge variant="secondary" className="h-5 px-1.5">{taskCounts.today}</Badge>
             </TabsTrigger>
             <TabsTrigger value="overdue" className="gap-2">
-              Overdue
+              {language === 'es' ? 'Vencidas' : 'Overdue'}
               {taskCounts.overdue > 0 && (
                 <Badge variant="destructive" className="h-5 px-1.5">{taskCounts.overdue}</Badge>
               )}
             </TabsTrigger>
             <TabsTrigger value="my" className="gap-2">
-              My Tasks
+              {language === 'es' ? 'Mis Tareas' : 'My Tasks'}
               <Badge variant="secondary" className="h-5 px-1.5">{taskCounts.my}</Badge>
             </TabsTrigger>
             <TabsTrigger value="completed" className="gap-2">
-              Done
+              {language === 'es' ? 'Hechas' : 'Done'}
               <Badge variant="secondary" className="h-5 px-1.5">{taskCounts.completed}</Badge>
             </TabsTrigger>
           </TabsList>
@@ -221,11 +221,13 @@ export default function Tasks() {
               <Card className="estate-card">
                 <CardContent className="py-12 text-center">
                   <CheckCircle2 className="h-12 w-12 mx-auto text-success mb-4" />
-                  <h3 className="font-medium text-lg">All caught up!</h3>
+                  <h3 className="font-medium text-lg">
+                    {language === 'es' ? '¡Todo al día!' : 'All caught up!'}
+                  </h3>
                   <p className="text-muted-foreground mt-1">
                     {activeTab === 'overdue' 
-                      ? 'No overdue tasks' 
-                      : 'No tasks in this category'}
+                      ? (language === 'es' ? 'Sin tareas vencidas' : 'No overdue tasks')
+                      : (language === 'es' ? 'Sin tareas en esta categoría' : 'No tasks in this category')}
                   </p>
                 </CardContent>
               </Card>
@@ -296,7 +298,7 @@ export default function Tasks() {
                             {task.required_photo && (
                               <span className="flex items-center gap-1 text-primary">
                                 <Camera className="h-3.5 w-3.5" />
-                                Photo required
+                                {language === 'es' ? 'Foto requerida' : 'Photo required'}
                               </span>
                             )}
                           </div>
@@ -328,6 +330,6 @@ export default function Tasks() {
           onSuccess={fetchTasks}
         />
       </div>
-    </AppLayout>
+    </ModernAppLayout>
   );
 }

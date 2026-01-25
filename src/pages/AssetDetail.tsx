@@ -21,7 +21,7 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -188,26 +188,28 @@ export default function AssetDetail() {
 
   if (loading) {
     return (
-      <AppLayout>
+      <ModernAppLayout>
         <div className="container py-6">
           <div className="h-96 rounded-xl shimmer" />
         </div>
-      </AppLayout>
+      </ModernAppLayout>
     );
   }
 
   if (!asset) {
     return (
-      <AppLayout>
+      <ModernAppLayout>
         <div className="container py-6 text-center">
           <XCircle className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-serif">Asset Not Found</h2>
+          <h2 className="text-2xl font-serif">
+            {language === 'es' ? 'Activo No Encontrado' : 'Asset Not Found'}
+          </h2>
           <Button onClick={() => navigate('/assets')} className="mt-4">
             <ArrowLeft className="h-4 w-4 mr-2" />
-            Back to Assets
+            {language === 'es' ? 'Volver a Activos' : 'Back to Assets'}
           </Button>
         </div>
-      </AppLayout>
+      </ModernAppLayout>
     );
   }
 
@@ -216,7 +218,7 @@ export default function AssetDetail() {
   const assetBadgeClass = getAssetBadgeClass(assetType);
 
   return (
-    <AppLayout>
+    <ModernAppLayout>
       <div className="container py-6 max-w-4xl">
         {/* Back button */}
         <Button 
@@ -538,6 +540,6 @@ export default function AssetDetail() {
           </TabsContent>
         </Tabs>
       </div>
-    </AppLayout>
+    </ModernAppLayout>
   );
 }

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
-  Filter, 
   Plus,
   Grid3X3,
   List,
@@ -16,12 +15,11 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
-import { AppLayout } from '@/components/layout/AppLayout';
+import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -29,7 +27,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AssetTypeIcon, getAssetBadgeClass } from '@/components/icons/AssetTypeIcon';
+import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
 
 interface Asset {
   id: string;
@@ -51,21 +49,9 @@ interface Asset {
   photos?: { url: string }[];
 }
 
-const assetTypeOptions = [
-  { value: 'all', label: 'All Types' },
-  { value: 'plant', label: 'Plants' },
-  { value: 'tree', label: 'Trees' },
-  { value: 'irrigation_controller', label: 'Irrigation Controllers' },
-  { value: 'valve', label: 'Valves' },
-  { value: 'lighting_transformer', label: 'Lighting' },
-  { value: 'hardscape', label: 'Hardscape' },
-  { value: 'equipment', label: 'Equipment' },
-  { value: 'structure', label: 'Structures' },
-];
-
 export default function Assets() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const { currentEstate } = useEstate();
   const { isOwnerOrManager } = useAuth();
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -75,6 +61,33 @@ export default function Assets() {
   const [filterType, setFilterType] = useState('all');
   const [filterZone, setFilterZone] = useState('all');
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+
+  // Asset type options with translations
+  const getAssetTypeLabel = (type: string) => {
+    const typeMap: Record<string, string> = {
+      plant: t('assets.plants'),
+      tree: t('assets.trees'),
+      irrigation_controller: t('assets.irrigationController'),
+      valve: t('assets.valve'),
+      lighting_transformer: t('assets.lightingTransformer'),
+      hardscape: t('assets.hardscape'),
+      equipment: t('assets.equipment'),
+      structure: t('assets.structures'),
+    };
+    return typeMap[type] || type.replace('_', ' ');
+  };
+
+  const assetTypeOptions = [
+    { value: 'all', label: t('common.allTypes') },
+    { value: 'plant', label: t('assets.plants') },
+    { value: 'tree', label: t('assets.trees') },
+    { value: 'irrigation_controller', label: t('assets.irrigationController') },
+    { value: 'valve', label: t('assets.valve') },
+    { value: 'lighting_transformer', label: t('assets.lightingTransformer') },
+    { value: 'hardscape', label: t('assets.hardscape') },
+    { value: 'equipment', label: t('assets.equipment') },
+    { value: 'structure', label: t('assets.structures') },
+  ];
 
   useEffect(() => {
     if (currentEstate) {
@@ -125,7 +138,7 @@ export default function Assets() {
       return (
         asset.name.toLowerCase().includes(query) ||
         asset.description?.toLowerCase().includes(query) ||
-        asset.purpose_tags.some(tag => tag.toLowerCase().includes(query))
+        asset.purpose_tags?.some(tag => tag.toLowerCase().includes(query))
       );
     }
     return true;
@@ -133,25 +146,29 @@ export default function Assets() {
 
   const hasRiskFlags = (asset: Asset) => asset.risk_flags && asset.risk_flags.length > 0;
 
+  const handleAssetClick = (assetId: string) => {
+    navigate(`/assets/${assetId}`);
+  };
+
   return (
-    <AppLayout>
+    <ModernAppLayout>
       <div className="container py-6">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-3xl font-serif font-semibold">{t('assets.title')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('assets.title')}</h1>
             <p className="text-muted-foreground mt-1">
-              {assets.length} assets across {zones.length} zones
+              {assets.length} {t('common.assetsCount')} · {zones.length} {t('common.zonesCount')}
             </p>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" title={t('assets.scanQR')}>
               <QrCode className="h-4 w-4" />
             </Button>
             {isOwnerOrManager && (
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Add Asset
+                {t('assets.addAsset')}
               </Button>
             )}
           </div>
@@ -170,7 +187,7 @@ export default function Assets() {
           </div>
           <Select value={filterType} onValueChange={setFilterType}>
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Filter by type" />
+              <SelectValue placeholder={t('common.filterByType')} />
             </SelectTrigger>
             <SelectContent>
               {assetTypeOptions.map(opt => (
@@ -182,10 +199,10 @@ export default function Assets() {
           </Select>
           <Select value={filterZone} onValueChange={setFilterZone}>
             <SelectTrigger className="w-full sm:w-48">
-              <SelectValue placeholder="Filter by zone" />
+              <SelectValue placeholder={t('common.filterByZone')} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All Zones</SelectItem>
+              <SelectItem value="all">{t('common.allZones')}</SelectItem>
               {zones.map(zone => (
                 <SelectItem key={zone.id} value={zone.id}>
                   <div className="flex items-center gap-2">
@@ -199,7 +216,7 @@ export default function Assets() {
               ))}
             </SelectContent>
           </Select>
-          <div className="flex rounded-lg border border-input p-1">
+          <div className="flex rounded-lg border border-input p-1 bg-card">
             <Button
               variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
               size="sm"
@@ -235,18 +252,22 @@ export default function Assets() {
           <Card className="estate-card">
             <CardContent className="py-12 text-center">
               <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
-              <h3 className="font-medium text-lg">No assets found</h3>
+              <h3 className="font-medium text-lg">{t('assets.noAssets')}</h3>
               <p className="text-muted-foreground mt-1">
                 {searchQuery || filterType !== 'all' || filterZone !== 'all'
-                  ? 'Try adjusting your filters'
-                  : 'Start by adding your first asset'}
+                  ? t('common.tryAdjusting')
+                  : `${t('common.startAdding')} ${t('assets.title').toLowerCase()}`}
               </p>
             </CardContent>
           </Card>
         ) : viewMode === 'grid' ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {filteredAssets.map((asset) => (
-              <Card key={asset.id} className="estate-card overflow-hidden cursor-pointer group" onClick={() => navigate(`/assets/${asset.id}`)}>
+              <Card 
+                key={asset.id} 
+                className="estate-card overflow-hidden cursor-pointer group" 
+                onClick={() => handleAssetClick(asset.id)}
+              >
                 {/* Image / Icon header */}
                 <div className="h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative">
                   {asset.photos && asset.photos[0] ? (
@@ -262,7 +283,7 @@ export default function Assets() {
                     <div className="absolute top-2 right-2">
                       <Badge variant="destructive" className="gap-1">
                         <AlertTriangle className="h-3 w-3" />
-                        Risk
+                        {language === 'es' ? 'Riesgo' : 'Risk'}
                       </Badge>
                     </div>
                   )}
@@ -271,8 +292,8 @@ export default function Assets() {
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <h3 className="font-medium truncate">{asset.name}</h3>
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {asset.asset_type.replace('_', ' ')}
+                      <p className="text-sm text-muted-foreground">
+                        {getAssetTypeLabel(asset.asset_type)}
                       </p>
                     </div>
                     <AssetTypeIcon type={asset.asset_type as any} size="sm" />
@@ -309,7 +330,11 @@ export default function Assets() {
         ) : (
           <div className="space-y-3">
             {filteredAssets.map((asset) => (
-              <Card key={asset.id} className="estate-card cursor-pointer" onClick={() => navigate(`/assets/${asset.id}`)}>
+              <Card 
+                key={asset.id} 
+                className="estate-card cursor-pointer" 
+                onClick={() => handleAssetClick(asset.id)}
+              >
                 <CardContent className="p-4">
                   <div className="flex items-center gap-4">
                     {/* Thumbnail */}
@@ -333,9 +358,9 @@ export default function Assets() {
                           <AlertTriangle className="h-4 w-4 text-destructive shrink-0" />
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground capitalize">
-                        {asset.asset_type.replace('_', ' ')}
-                        {asset.zone && ` • ${asset.zone.name}`}
+                      <p className="text-sm text-muted-foreground">
+                        {getAssetTypeLabel(asset.asset_type)}
+                        {asset.zone && ` · ${asset.zone.name}`}
                       </p>
                       {asset.critical_care_note && (
                         <p className="text-xs text-warning mt-1 line-clamp-1">
@@ -360,6 +385,6 @@ export default function Assets() {
           </div>
         )}
       </div>
-    </AppLayout>
+    </ModernAppLayout>
   );
 }
