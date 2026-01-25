@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { getPlantImageUrl } from '@/lib/plantImages';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -253,6 +254,16 @@ export default function AssetDetail() {
                 src={asset.photos[0].url} 
                 alt={asset.name}
                 className="w-full h-full object-cover"
+              />
+            ) : getPlantImageUrl(asset.name, asset.asset_type) ? (
+              <img 
+                src={getPlantImageUrl(asset.name, asset.asset_type)!} 
+                alt={asset.name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  // Fallback to icon if image fails to load
+                  (e.target as HTMLImageElement).style.display = 'none';
+                }}
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
