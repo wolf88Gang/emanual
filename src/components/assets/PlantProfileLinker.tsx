@@ -33,30 +33,32 @@ interface PlantProfileLinkerProps {
   onUpdate?: () => void;
 }
 
-// Check if protocol has detailed data
-function hasDetailedProtocol(protocol: any): boolean {
-  return protocol && (
+// Check if protocol has complete detailed data in the user's language
+function needsProtocolUpdate(protocol: any, userLang: 'en' | 'es'): boolean {
+  if (!protocol) return false; // No protocol at all - different case
+  
+  // Check if has detailed structure
+  const hasDetailedStructure = protocol && (
     (protocol.watering && typeof protocol.watering === 'object' && protocol.watering.frequency) ||
     protocol.crew_checklist ||
     protocol.do_not_do
   );
-}
-
-// Detect if the protocol content is in English (needs regeneration for Spanish)
-function detectProtocolLanguage(protocol: any): 'en' | 'es' | 'unknown' {
-  if (!protocol) return 'unknown';
   
-  const englishIndicators = ['every', 'daily', 'weekly', 'water', 'hours', 'apply', 'avoid', 'full sun', 'partial shade', 'well-drained', 'morning', 'afternoon'];
-  const spanishIndicators = ['cada', 'diario', 'semanal', 'riego', 'horas', 'aplicar', 'evitar', 'sol pleno', 'sombra parcial', 'bien drenado', 'mañana', 'tarde'];
+  if (!hasDetailedStructure) return true; // Basic protocol, needs update
+  
+  // Detect language mismatch
+  const englishIndicators = ['every', 'daily', 'weekly', 'water', 'hours', 'apply', 'avoid', 'full sun', 'morning'];
+  const spanishIndicators = ['cada', 'diario', 'semanal', 'riego', 'horas', 'aplicar', 'evitar', 'sol pleno', 'mañana'];
   
   const protocolString = JSON.stringify(protocol).toLowerCase();
-  
   const englishMatches = englishIndicators.filter(word => protocolString.includes(word)).length;
   const spanishMatches = spanishIndicators.filter(word => protocolString.includes(word)).length;
   
-  if (englishMatches > spanishMatches) return 'en';
-  if (spanishMatches > englishMatches) return 'es';
-  return 'unknown';
+  // If language mismatch detected, needs update
+  if (userLang === 'es' && englishMatches > spanishMatches) return true;
+  if (userLang === 'en' && spanishMatches > englishMatches) return true;
+  
+  return false;
 }
 
 export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfileLinkerProps) {
@@ -237,9 +239,7 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
 
   const linkedProfile = instance?.plant_profile;
   const careProtocol = linkedProfile?.care_template_json as any;
-  const isDetailedProtocol = hasDetailedProtocol(careProtocol);
-  const protocolLang = detectProtocolLanguage(careProtocol);
-  const needsLanguageRegeneration = careProtocol && protocolLang !== 'unknown' && protocolLang !== language;
+  const showUpdateRecommendation = needsProtocolUpdate(careProtocol, language as 'en' | 'es');
 
   return (
     <>
@@ -274,16 +274,16 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                 </Badge>
               </div>
 
-              {/* Show warning if protocol language doesn't match UI language */}
-              {needsLanguageRegeneration && (
-                <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/30">
-                  <p className="text-xs text-destructive mb-2 font-medium">
-                    {language === 'es' 
-                      ? '🌐 El protocolo está en inglés. Regenera para obtener contenido en español.' 
-                      : '🌐 Protocol is in Spanish. Regenerate for English content.'}
+              {/* Platform recommendation to update protocol */}
+              {showUpdateRecommendation && (
+                <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
+                  <p className="text-xs text-muted-foreground mb-2">
+                    💡 {language === 'es' 
+                      ? 'Se recomienda actualizar el protocolo para obtener información más detallada y optimizada.' 
+                      : 'We recommend updating the protocol for more detailed and optimized information.'}
                   </p>
                   <Button 
-                    variant="destructive" 
+                    variant="outline" 
                     size="sm"
                     className="w-full"
                     onClick={regenerateProtocol}
@@ -292,34 +292,9 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                     {regenerating ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     ) : (
-                      <RefreshCw className="h-4 w-4 mr-2" />
+                      <Sparkles className="h-4 w-4 mr-2" />
                     )}
-                    {language === 'es' ? 'Regenerar en Español' : 'Regenerate in English'}
-                  </Button>
-                </div>
-              )}
-
-              {/* Show warning if protocol is basic/legacy */}
-              {careProtocol && !isDetailedProtocol && !needsLanguageRegeneration && (
-                <div className="p-3 rounded-lg bg-amber-50 border border-amber-200 dark:bg-amber-900/20 dark:border-amber-800">
-                  <p className="text-xs text-amber-800 dark:text-amber-200 mb-2">
-                    {language === 'es' 
-                      ? '⚠️ Este protocolo tiene información básica. Regenera con IA para obtener datos detallados.' 
-                      : '⚠️ This protocol has basic info. Regenerate with AI for detailed data.'}
-                  </p>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="w-full border-amber-300 text-amber-700 hover:bg-amber-100 dark:border-amber-700 dark:text-amber-300"
-                    onClick={regenerateProtocol}
-                    disabled={regenerating}
-                  >
-                    {regenerating ? (
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                    ) : (
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                    )}
-                    {language === 'es' ? 'Regenerar con IA' : 'Regenerate with AI'}
+                    {language === 'es' ? 'Actualizar Protocolo' : 'Update Protocol'}
                   </Button>
                 </div>
               )}
