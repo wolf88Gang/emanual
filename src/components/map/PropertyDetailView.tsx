@@ -82,11 +82,18 @@ export function PropertyDetailView({
   useEffect(() => {
     if (!isOpen || !mapContainerRef.current) return;
     
+    // Clean up previous instance
+    if (mapRef.current) {
+      mapRef.current.remove();
+      mapRef.current = null;
+      tileLayerRef.current = null;
+    }
+    
     // Wait for container to be visible
     const timer = setTimeout(() => {
-      if (mapRef.current) return;
+      if (!mapContainerRef.current) return;
       
-      const map = L.map(mapContainerRef.current!, {
+      const map = L.map(mapContainerRef.current, {
         zoomControl: false,
       }).setView(center, 18);
       
@@ -98,14 +105,19 @@ export function PropertyDetailView({
       mapRef.current = map;
       
       // Force a resize after initialization
-      setTimeout(() => map.invalidateSize(), 100);
-    }, 100);
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.invalidateSize();
+        }
+      }, 200);
+    }, 150);
 
     return () => {
       clearTimeout(timer);
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
+        tileLayerRef.current = null;
       }
     };
   }, [isOpen, center]);

@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { SimulateAlertButton } from '@/components/admin/SimulateAlertButton';
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
+import { toast } from 'sonner';
 
 interface User {
   id: string;
@@ -336,7 +337,10 @@ export default function Admin() {
                   weatherRules={weatherRules} 
                   onAlertCreated={() => fetchAdminData()}
                 />
-                <Button>
+                <Button onClick={() => {
+                  // For now show toast - full form to be implemented
+                  toast.info(language === 'es' ? 'Función en desarrollo' : 'Feature coming soon');
+                }}>
                   <Plus className="h-4 w-4 mr-2" />
                   {language === 'es' ? 'Agregar Regla' : 'Add Rule'}
                 </Button>

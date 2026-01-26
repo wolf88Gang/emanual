@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { 
   CheckCircle2, 
   Clock, 
@@ -24,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
 import { TaskCompletionDialog } from '@/components/tasks/TaskCompletionDialog';
+import { toast } from 'sonner';
 
 interface Task {
   id: string;
@@ -83,11 +85,21 @@ export default function Tasks() {
   const { t, language } = useLanguage();
   const { currentEstate } = useEstate();
   const { isOwnerOrManager, user } = useAuth();
+  const [searchParams] = useSearchParams();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
+  const [zoneFilter, setZoneFilter] = useState<string | null>(null);
+
+  // Handle zone filter from URL
+  useEffect(() => {
+    const zoneId = searchParams.get('zone');
+    if (zoneId) {
+      setZoneFilter(zoneId);
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (currentEstate) {
@@ -137,6 +149,9 @@ export default function Tasks() {
   }
 
   const filteredTasks = tasks.filter(task => {
+    // Apply zone filter if set
+    if (zoneFilter && task.zone?.id !== zoneFilter) return false;
+    
     switch (activeTab) {
       case 'today':
         return task.due_date && isToday(parseISO(task.due_date)) && task.status !== 'completed';
@@ -150,6 +165,9 @@ export default function Tasks() {
         return task.status !== 'completed';
     }
   });
+
+  // Get zone name for filter display
+  const filterZone = zoneFilter ? tasks.find(t => t.zone?.id === zoneFilter)?.zone : null;
 
   const taskCounts = {
     all: tasks.filter(t => t.status !== 'completed').length,
@@ -176,12 +194,36 @@ export default function Tasks() {
             </p>
           </div>
           {isOwnerOrManager && (
-            <Button>
+            <Button onClick={() => {
+              toast.info(language === 'es' ? 'Función en desarrollo' : 'Feature coming soon');
+            }}>
               <Plus className="h-4 w-4 mr-2" />
               {t('tasks.newTask')}
             </Button>
           )}
         </div>
+
+        {/* Zone Filter Banner */}
+        {filterZone && (
+          <div className="mb-4 p-3 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <div 
+                className="w-4 h-4 rounded-full"
+                style={{ backgroundColor: filterZone.color }}
+              />
+              <span className="font-medium">
+                {language === 'es' ? 'Tareas de' : 'Tasks in'}: {filterZone.name}
+              </span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm"
+              onClick={() => setZoneFilter(null)}
+            >
+              {language === 'es' ? 'Ver todas' : 'Show all'}
+            </Button>
+          </div>
+        )}
 
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
