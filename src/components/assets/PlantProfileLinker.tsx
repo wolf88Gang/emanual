@@ -1,8 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { Leaf, Sparkles, Link2, Unlink, Loader2, RefreshCw } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Leaf, Sparkles, Link2, Unlink, Loader2, RefreshCw, Plus, Search, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
@@ -30,23 +33,22 @@ interface PlantInstance {
 interface PlantProfileLinkerProps {
   assetId: string;
   assetType: string;
+  assetName?: string;
   onUpdate?: () => void;
 }
 
 // Check if protocol has complete detailed data in the user's language
 function needsProtocolUpdate(protocol: any, userLang: 'en' | 'es'): boolean {
-  if (!protocol) return false; // No protocol at all - different case
+  if (!protocol) return false;
   
-  // Check if has detailed structure
   const hasDetailedStructure = protocol && (
     (protocol.watering && typeof protocol.watering === 'object' && protocol.watering.frequency) ||
     protocol.crew_checklist ||
     protocol.do_not_do
   );
   
-  if (!hasDetailedStructure) return true; // Basic protocol, needs update
+  if (!hasDetailedStructure) return true;
   
-  // Detect language mismatch
   const englishIndicators = ['every', 'daily', 'weekly', 'water', 'hours', 'apply', 'avoid', 'full sun', 'morning'];
   const spanishIndicators = ['cada', 'diario', 'semanal', 'riego', 'horas', 'aplicar', 'evitar', 'sol pleno', 'mañana'];
   
@@ -54,14 +56,80 @@ function needsProtocolUpdate(protocol: any, userLang: 'en' | 'es'): boolean {
   const englishMatches = englishIndicators.filter(word => protocolString.includes(word)).length;
   const spanishMatches = spanishIndicators.filter(word => protocolString.includes(word)).length;
   
-  // If language mismatch detected, needs update
   if (userLang === 'es' && englishMatches > spanishMatches) return true;
   if (userLang === 'en' && spanishMatches > englishMatches) return true;
   
   return false;
 }
 
-export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfileLinkerProps) {
+// Common plant keywords for auto-suggestion
+const PLANT_KEYWORDS: Record<string, string[]> = {
+  // Herbs
+  'oregano': ['oregano', 'orégano'],
+  'basil': ['basil', 'albahaca'],
+  'rosemary': ['rosemary', 'romero'],
+  'thyme': ['thyme', 'tomillo'],
+  'mint': ['mint', 'menta', 'hierbabuena'],
+  'cilantro': ['cilantro', 'coriander'],
+  'parsley': ['parsley', 'perejil'],
+  'sage': ['sage', 'salvia'],
+  'lavender': ['lavender', 'lavanda'],
+  // Trees
+  'palm': ['palm', 'palma', 'palmera'],
+  'coconut': ['coconut', 'coco'],
+  'mango': ['mango'],
+  'avocado': ['avocado', 'aguacate'],
+  'citrus': ['citrus', 'lemon', 'orange', 'lime', 'limón', 'naranja', 'lima'],
+  'banana': ['banana', 'plátano', 'banano'],
+  // Ornamentals
+  'bougainvillea': ['bougainvillea', 'buganvilla', 'buganvilia'],
+  'hibiscus': ['hibiscus', 'hibisco'],
+  'frangipani': ['frangipani', 'plumeria'],
+  'bird of paradise': ['bird of paradise', 'ave del paraíso', 'strelitzia'],
+  'heliconia': ['heliconia'],
+  'ginger': ['ginger', 'jengibre'],
+  'croton': ['croton', 'crotón'],
+  'ixora': ['ixora'],
+  // Ground covers / Grasses
+  'vetiver': ['vetiver'],
+  'lemongrass': ['lemongrass', 'zacate limón', 'hierba limón'],
+  'bermuda': ['bermuda', 'bermuda grass'],
+  'zoysia': ['zoysia'],
+  // Fruit
+  'papaya': ['papaya'],
+  'pineapple': ['pineapple', 'piña'],
+  'passion fruit': ['passion fruit', 'maracuyá', 'granadilla'],
+  'guava': ['guava', 'guayaba'],
+  // Succulents
+  'aloe': ['aloe', 'sábila'],
+  'agave': ['agave'],
+  'cactus': ['cactus'],
+};
+
+// Suggest plant names based on asset name
+function suggestPlantsFromName(assetName: string): string[] {
+  const lowerName = assetName.toLowerCase();
+  const suggestions: string[] = [];
+  
+  // Check for "herb garden" type names
+  if (lowerName.includes('herb') || lowerName.includes('hierba')) {
+    suggestions.push('Oregano', 'Basil', 'Rosemary', 'Thyme', 'Mint', 'Cilantro');
+  }
+  
+  // Check for specific plant keywords
+  for (const [plantName, keywords] of Object.entries(PLANT_KEYWORDS)) {
+    if (keywords.some(kw => lowerName.includes(kw))) {
+      const capitalized = plantName.split(' ').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
+      if (!suggestions.includes(capitalized)) {
+        suggestions.push(capitalized);
+      }
+    }
+  }
+  
+  return suggestions;
+}
+
+export function PlantProfileLinker({ assetId, assetType, assetName = '', onUpdate }: PlantProfileLinkerProps) {
   const { language } = useLanguage();
   const { currentEstate } = useEstate();
   const [loading, setLoading] = useState(true);
@@ -71,9 +139,30 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
   const [linking, setLinking] = useState(false);
   const [regenerating, setRegenerating] = useState(false);
   const [showCareSheet, setShowCareSheet] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  
+  // Create new variety dialog
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newVariety, setNewVariety] = useState({ common_name: '', scientific_name: '', category: 'ornamental' });
+  const [creating, setCreating] = useState(false);
 
-  // Only show for plant/tree assets
   const isPlantAsset = assetType === 'plant' || assetType === 'tree';
+  
+  // Get suggestions based on asset name
+  const suggestions = useMemo(() => {
+    if (!assetName) return [];
+    return suggestPlantsFromName(assetName);
+  }, [assetName]);
+
+  // Filter profiles based on search
+  const filteredProfiles = useMemo(() => {
+    if (!searchQuery) return profiles;
+    const query = searchQuery.toLowerCase();
+    return profiles.filter(p => 
+      p.common_name.toLowerCase().includes(query) ||
+      (p.scientific_name && p.scientific_name.toLowerCase().includes(query))
+    );
+  }, [profiles, searchQuery]);
 
   useEffect(() => {
     if (isPlantAsset) {
@@ -84,7 +173,6 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
   async function fetchData() {
     setLoading(true);
     try {
-      // Fetch all plant profiles
       const { data: profilesData } = await supabase
         .from('plant_profiles')
         .select('*')
@@ -92,7 +180,6 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
 
       setProfiles(profilesData || []);
 
-      // Fetch existing plant instance for this asset
       const { data: instanceData } = await supabase
         .from('plant_instances')
         .select('*, plant_profiles:plant_profile_id(*)')
@@ -113,26 +200,110 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
     }
   }
 
-  async function linkProfile() {
-    if (!selectedProfileId) return;
+  async function createNewVariety() {
+    if (!newVariety.common_name.trim()) {
+      toast.error(language === 'es' ? 'Nombre requerido' : 'Name required');
+      return;
+    }
 
+    setCreating(true);
+    try {
+      // Create the plant profile
+      const { data: profile, error } = await supabase
+        .from('plant_profiles')
+        .insert([{
+          common_name: newVariety.common_name.trim(),
+          scientific_name: newVariety.scientific_name.trim() || null,
+          category: newVariety.category as 'ornamental' | 'edible' | 'structural' | 'ecological' | 'other'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success(
+        language === 'es' 
+          ? `✅ Variedad "${newVariety.common_name}" creada` 
+          : `✅ Variety "${newVariety.common_name}" created`
+      );
+
+      // Refresh profiles and select the new one
+      await fetchData();
+      setSelectedProfileId(profile.id);
+      setShowCreateDialog(false);
+      setNewVariety({ common_name: '', scientific_name: '', category: 'ornamental' });
+      
+      // Optionally auto-link it
+      if (profile.id) {
+        await linkProfileById(profile.id);
+      }
+    } catch (error: any) {
+      console.error('Error creating variety:', error);
+      toast.error(error.message || (language === 'es' ? 'Error al crear' : 'Failed to create'));
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function createAndLinkSuggestion(plantName: string) {
+    // Check if profile already exists
+    const existing = profiles.find(p => 
+      p.common_name.toLowerCase() === plantName.toLowerCase()
+    );
+
+    if (existing) {
+      await linkProfileById(existing.id);
+      return;
+    }
+
+    // Create new profile
+    setCreating(true);
+    try {
+      const { data: profile, error } = await supabase
+        .from('plant_profiles')
+        .insert([{
+          common_name: plantName,
+          category: 'ornamental'
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast.success(
+        language === 'es' 
+          ? `✅ Variedad "${plantName}" creada y vinculada` 
+          : `✅ Variety "${plantName}" created and linked`
+      );
+
+      await fetchData();
+      if (profile.id) {
+        await linkProfileById(profile.id);
+      }
+    } catch (error: any) {
+      console.error('Error creating variety:', error);
+      toast.error(error.message || (language === 'es' ? 'Error' : 'Failed'));
+    } finally {
+      setCreating(false);
+    }
+  }
+
+  async function linkProfileById(profileId: string) {
     setLinking(true);
     try {
       if (instance) {
-        // Update existing instance
         const { error } = await supabase
           .from('plant_instances')
-          .update({ plant_profile_id: selectedProfileId })
+          .update({ plant_profile_id: profileId })
           .eq('id', instance.id);
 
         if (error) throw error;
       } else {
-        // Create new instance
         const { error } = await supabase
           .from('plant_instances')
           .insert([{
             asset_id: assetId,
-            plant_profile_id: selectedProfileId
+            plant_profile_id: profileId
           }]);
 
         if (error) throw error;
@@ -147,6 +318,11 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
     } finally {
       setLinking(false);
     }
+  }
+
+  async function linkProfile() {
+    if (!selectedProfileId) return;
+    await linkProfileById(selectedProfileId);
   }
 
   async function unlinkProfile() {
@@ -179,7 +355,6 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
     
     setRegenerating(true);
     try {
-      // Determine climate based on estate location
       let climate = 'Tropical/Subtropical Costa Rica';
       if (currentEstate?.country === 'CR') {
         climate = 'Costa Rica - Tropical';
@@ -192,7 +367,7 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
           category: profile.category,
           climate,
           language,
-          elevationZone: 'transitional', // Default to central valley
+          elevationZone: 'transitional',
           propertyType: 'luxury residential'
         }
       });
@@ -200,7 +375,6 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
       if (error) throw error;
       if (data.error) throw new Error(data.error);
 
-      // Update the plant profile with new care protocol
       const { error: updateError } = await supabase
         .from('plant_profiles')
         .update({ care_template_json: data.careProtocol })
@@ -214,7 +388,6 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
           : `✨ Protocol regenerated for ${profile.common_name}`
       );
 
-      // Refresh data
       fetchData();
       onUpdate?.();
     } catch (error: any) {
@@ -274,7 +447,6 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
                 </Badge>
               </div>
 
-              {/* Platform recommendation to update protocol */}
               {showUpdateRecommendation && (
                 <div className="p-3 rounded-lg bg-primary/5 border border-primary/20">
                   <p className="text-xs text-muted-foreground mb-2">
@@ -339,51 +511,183 @@ export function PlantProfileLinker({ assetId, assetType, onUpdate }: PlantProfil
             </div>
           ) : (
             <div className="space-y-3">
+              {/* Suggestions based on asset name */}
+              {suggestions.length > 0 && (
+                <div className="p-3 rounded-lg bg-accent/50 border border-accent">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Lightbulb className="h-4 w-4 text-primary" />
+                    <span className="text-sm font-medium">
+                      {language === 'es' ? 'Sugerencias automáticas' : 'Auto-suggestions'}
+                    </span>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestions.slice(0, 4).map(suggestion => {
+                      const exists = profiles.some(p => 
+                        p.common_name.toLowerCase() === suggestion.toLowerCase()
+                      );
+                      return (
+                        <Button
+                          key={suggestion}
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => createAndLinkSuggestion(suggestion)}
+                          disabled={creating || linking}
+                        >
+                          {exists ? <Link2 className="h-3 w-3 mr-1" /> : <Plus className="h-3 w-3 mr-1" />}
+                          {suggestion}
+                        </Button>
+                      );
+                    })}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-2">
+                    {language === 'es' 
+                      ? 'Click para crear y vincular automáticamente' 
+                      : 'Click to create and link automatically'}
+                  </p>
+                </div>
+              )}
+
+              {/* Search existing varieties */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder={language === 'es' ? 'Buscar variedad...' : 'Search variety...'}
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Variety selector */}
               <Select value={selectedProfileId} onValueChange={setSelectedProfileId}>
                 <SelectTrigger>
                   <SelectValue placeholder={language === 'es' ? 'Seleccionar variedad...' : 'Select variety...'} />
                 </SelectTrigger>
                 <SelectContent>
-                  {profiles.map(profile => (
-                    <SelectItem key={profile.id} value={profile.id}>
-                      <div className="flex items-center gap-2">
-                        <Leaf className="h-4 w-4 text-primary" />
-                        <span>{profile.common_name}</span>
-                        {profile.care_template_json && (
-                          <Sparkles className="h-3 w-3 text-primary ml-1" />
-                        )}
-                      </div>
-                    </SelectItem>
-                  ))}
+                  {filteredProfiles.length > 0 ? (
+                    filteredProfiles.map(profile => (
+                      <SelectItem key={profile.id} value={profile.id}>
+                        <div className="flex items-center gap-2">
+                          <Leaf className="h-4 w-4 text-primary" />
+                          <span>{profile.common_name}</span>
+                          {profile.care_template_json && (
+                            <Sparkles className="h-3 w-3 text-primary ml-1" />
+                          )}
+                        </div>
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="px-2 py-4 text-center text-sm text-muted-foreground">
+                      {language === 'es' ? 'No se encontraron variedades' : 'No varieties found'}
+                    </div>
+                  )}
                 </SelectContent>
               </Select>
 
-              <Button 
-                className="w-full"
-                onClick={linkProfile}
-                disabled={!selectedProfileId || linking}
-              >
-                {linking ? (
-                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                ) : (
-                  <Link2 className="h-4 w-4 mr-2" />
-                )}
-                {language === 'es' ? 'Vincular Variedad' : 'Link Variety'}
-              </Button>
+              <div className="flex gap-2">
+                <Button 
+                  className="flex-1"
+                  onClick={linkProfile}
+                  disabled={!selectedProfileId || linking}
+                >
+                  {linking ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Link2 className="h-4 w-4 mr-2" />
+                  )}
+                  {language === 'es' ? 'Vincular' : 'Link'}
+                </Button>
+                <Button 
+                  variant="outline"
+                  onClick={() => setShowCreateDialog(true)}
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  {language === 'es' ? 'Nueva' : 'New'}
+                </Button>
+              </div>
 
-              {profiles.length === 0 && (
-                <p className="text-xs text-muted-foreground text-center">
-                  {language === 'es' 
-                    ? 'No hay variedades registradas. Ve al Registro de Plantas para agregar.' 
-                    : 'No varieties registered. Go to Plant Registry to add.'}
-                </p>
-              )}
+              <p className="text-xs text-muted-foreground text-center">
+                {profiles.length === 0 
+                  ? (language === 'es' 
+                      ? 'No hay variedades registradas. Crea una nueva.' 
+                      : 'No varieties registered. Create a new one.')
+                  : (language === 'es'
+                      ? `${profiles.length} variedades disponibles`
+                      : `${profiles.length} varieties available`)
+                }
+              </p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      {/* Care Protocol Sheet - Using new enhanced component */}
+      {/* Create New Variety Dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {language === 'es' ? 'Nueva Variedad de Planta' : 'New Plant Variety'}
+            </DialogTitle>
+            <DialogDescription>
+              {language === 'es' 
+                ? 'Agrega una nueva variedad al registro. La IA generará automáticamente su protocolo de cuidados.' 
+                : 'Add a new variety to the registry. AI will automatically generate its care protocol.'}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label>{language === 'es' ? 'Nombre Común *' : 'Common Name *'}</Label>
+              <Input
+                placeholder={language === 'es' ? 'Ej: Orégano Mexicano' : 'E.g.: Mexican Oregano'}
+                value={newVariety.common_name}
+                onChange={(e) => setNewVariety(prev => ({ ...prev, common_name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{language === 'es' ? 'Nombre Científico' : 'Scientific Name'}</Label>
+              <Input
+                placeholder={language === 'es' ? 'Ej: Lippia graveolens' : 'E.g.: Lippia graveolens'}
+                value={newVariety.scientific_name}
+                onChange={(e) => setNewVariety(prev => ({ ...prev, scientific_name: e.target.value }))}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>{language === 'es' ? 'Categoría' : 'Category'}</Label>
+              <Select 
+                value={newVariety.category} 
+                onValueChange={(val) => setNewVariety(prev => ({ ...prev, category: val }))}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="ornamental">{language === 'es' ? 'Ornamental' : 'Ornamental'}</SelectItem>
+                  <SelectItem value="edible">{language === 'es' ? 'Comestible' : 'Edible'}</SelectItem>
+                  <SelectItem value="structural">{language === 'es' ? 'Estructural' : 'Structural'}</SelectItem>
+                  <SelectItem value="ecological">{language === 'es' ? 'Ecológica' : 'Ecological'}</SelectItem>
+                  <SelectItem value="other">{language === 'es' ? 'Otra' : 'Other'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)}>
+              {language === 'es' ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button onClick={createNewVariety} disabled={creating || !newVariety.common_name.trim()}>
+              {creating ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : (
+                <Plus className="h-4 w-4 mr-2" />
+              )}
+              {language === 'es' ? 'Crear y Vincular' : 'Create & Link'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Care Protocol Sheet */}
       <CareProtocolSheet
         open={showCareSheet}
         onOpenChange={setShowCareSheet}
