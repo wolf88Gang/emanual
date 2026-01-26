@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { MapPin, Check, X, Navigation } from 'lucide-react';
@@ -27,23 +27,34 @@ export function LocationPickerDialog({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<L.Map | null>(null);
   const markerRef = useRef<L.Marker | null>(null);
+  const [mapReady, setMapReady] = useState(false);
   
   const [selectedLocation, setSelectedLocation] = useState<{ lat: number; lng: number } | null>(
     initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
   );
 
-  // Initialize map when dialog opens
-  useEffect(() => {
-    if (!open || !mapContainerRef.current || mapRef.current) return;
+  const defaultCenter: [number, number] = initialLat && initialLng 
+    ? [initialLat, initialLng] 
+    : [18.4655, -66.1057];
 
-    const defaultCenter: [number, number] = initialLat && initialLng 
-      ? [initialLat, initialLng] 
-      : [18.4655, -66.1057];
+  // Initialize map using callback ref pattern
+  const initializeMap = useCallback(() => {
+    if (!mapContainerRef.current || mapRef.current) return;
 
-    const map = L.map(mapContainerRef.current).setView(defaultCenter, 17);
+    const container = mapContainerRef.current;
+    
+    // Ensure container has dimensions
+    if (container.clientWidth === 0 || container.clientHeight === 0) {
+      // Retry after a short delay
+      setTimeout(initializeMap, 100);
+      return;
+    }
+
+    const map = L.map(container).setView(defaultCenter, 17);
     
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-      attribution: '&copy; <a href="https://www.esri.com/">Esri</a>',
+      attribution: '&copy; Esri',
+      maxZoom: 20,
     }).addTo(map);
 
     // Add initial marker if location exists
@@ -92,7 +103,6 @@ export function LocationPickerDialog({
               font-size: 20px;
               box-shadow: 0 4px 12px rgba(0,0,0,0.4);
               border: 3px solid white;
-              animation: pulse 1s ease-out;
             ">📍</div>`,
             className: 'location-picker-marker',
             iconSize: [40, 40],
@@ -104,22 +114,32 @@ export function LocationPickerDialog({
     });
 
     mapRef.current = map;
+    setMapReady(true);
+    
+    // Force resize
+    setTimeout(() => map.invalidateSize(), 100);
+  }, [defaultCenter, initialLat, initialLng]);
 
-    // Cleanup
-    return () => {
+  // Initialize when dialog opens
+  useEffect(() => {
+    if (open) {
+      // Wait for dialog animation to complete
+      const timer = setTimeout(initializeMap, 400);
+      return () => clearTimeout(timer);
+    } else {
+      // Cleanup when closing
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
         markerRef.current = null;
+        setMapReady(false);
       }
-    };
-  }, [open, initialLat, initialLng]);
+    }
+  }, [open, initializeMap]);
 
-  // Reset state when dialog closes
+  // Reset selected location when dialog closes
   useEffect(() => {
     if (!open) {
-      mapRef.current = null;
-      markerRef.current = null;
       setSelectedLocation(
         initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
       );
@@ -172,7 +192,7 @@ export function LocationPickerDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl h-[80vh] flex flex-col p-0">
+      <DialogContent className="max-w-2xl p-0 overflow-hidden">
         <DialogHeader className="p-4 pb-2">
           <DialogTitle className="flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
@@ -185,12 +205,21 @@ export function LocationPickerDialog({
           </DialogDescription>
         </DialogHeader>
 
-        {/* Map container */}
-        <div className="flex-1 relative mx-4">
+        {/* Map container - fixed height */}
+        <div className="relative mx-4 h-[400px]">
           <div 
             ref={mapContainerRef} 
-            className="absolute inset-0 rounded-lg overflow-hidden border border-border"
+            className="absolute inset-0 rounded-lg overflow-hidden border border-border bg-muted"
           />
+          
+          {/* Loading state */}
+          {!mapReady && (
+            <div className="absolute inset-0 flex items-center justify-center z-[998]">
+              <div className="animate-pulse text-muted-foreground text-sm">
+                {language === 'es' ? 'Cargando mapa...' : 'Loading map...'}
+              </div>
+            </div>
+          )}
           
           {/* Locate me button */}
           <Button
@@ -204,7 +233,7 @@ export function LocationPickerDialog({
           </Button>
 
           {/* Instructions overlay */}
-          {!selectedLocation && (
+          {mapReady && !selectedLocation && (
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-[999]">
               <div className="bg-background/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-border">
                 <span className="text-sm font-medium">

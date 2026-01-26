@@ -111,7 +111,7 @@ export function WorkAreasCard({ zones, loading }: WorkAreasCardProps) {
             return (
               <button
                 key={zone.id}
-                onClick={() => navigate(`/map?zone=${zone.id}`)}
+                onClick={() => navigate(`/tasks?zone=${zone.id}`)}
                 className={cn(
                   'w-full p-4 rounded-xl text-left transition-all',
                   'border hover:shadow-md active:scale-[0.99]',
