@@ -4,6 +4,7 @@ import {
   MapPin, 
   Search,
   X,
+  Maximize2,
 } from 'lucide-react';
 import L from 'leaflet';
 import { cn } from '@/lib/utils';
@@ -25,6 +26,7 @@ import { QRScannerView } from '@/components/map/QRScannerView';
 import { ZoneDrawingTool } from '@/components/map/ZoneDrawingTool';
 import { AssetCreationDialog } from '@/components/map/AssetCreationDialog';
 import { MapActionsMenu } from '@/components/map/MapActionsMenu';
+import { PropertyDetailView } from '@/components/map/PropertyDetailView';
 import { toast } from 'sonner';
 import type { MapZone, MapAsset } from '@/components/map/types';
 
@@ -51,6 +53,7 @@ export default function MapView() {
   const [zoneDrawingMode, setZoneDrawingMode] = useState(false);
   const [pendingPin, setPendingPin] = useState<{ lat: number; lng: number } | null>(null);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
+  const [showPropertyView, setShowPropertyView] = useState(false);
 
   // Handle zone selection from URL param
   useEffect(() => {
@@ -189,9 +192,9 @@ export default function MapView() {
   return (
     <ModernAppLayout>
       <div className="h-[calc(100vh-4rem-4rem)] lg:h-[calc(100vh-3.5rem)] flex flex-col">
-        {/* Search Bar - simplified */}
-        <div className="p-4 border-b border-border bg-card">
-          <div className="relative">
+        {/* Search Bar with Fullscreen button */}
+        <div className="p-3 border-b border-border bg-card flex gap-2">
+          <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder={language === 'es' ? 'Buscar activos...' : 'Search assets...'}
@@ -200,6 +203,14 @@ export default function MapView() {
               className="pl-10"
             />
           </div>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => setShowPropertyView(true)}
+            title={language === 'es' ? 'Vista completa de propiedad' : 'Full property view'}
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
         </div>
 
         {/* Pin Placement Mode Indicator */}
@@ -475,6 +486,19 @@ export default function MapView() {
             estateId={currentEstate?.id}
           />
         )}
+
+        {/* Property Detail View */}
+        <PropertyDetailView
+          zones={zones}
+          assets={assets}
+          center={getMapCenter()}
+          isOpen={showPropertyView}
+          onClose={() => setShowPropertyView(false)}
+          onAssetClick={(asset) => {
+            setShowPropertyView(false);
+            navigate(`/assets/${asset.id}`);
+          }}
+        />
 
       </div>
     </ModernAppLayout>
