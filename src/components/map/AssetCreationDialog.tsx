@@ -147,211 +147,163 @@
      structure: { en: 'Structure', es: 'Estructura' }
    };
  
-   return (
-     <Card className="absolute top-4 left-4 right-4 z-[1000] bg-card/95 backdrop-blur-sm max-w-2xl max-h-[calc(100vh-8rem)] overflow-y-auto">
-       <CardHeader className="pb-3">
-         <CardTitle className="text-lg flex items-center gap-2">
-           <MapPin className="h-4 w-4 text-primary" />
-           {language === 'es' ? 'Crear Nuevo Activo' : 'Create New Asset'}
-         </CardTitle>
-         <p className="text-xs text-muted-foreground">
-           📍 {lat.toFixed(6)}, {lng.toFixed(6)}
-         </p>
-       </CardHeader>
-       <CardContent className="space-y-4">
-         {/* Basic Info */}
-         <div className="grid gap-4 sm:grid-cols-2">
-           <div className="space-y-2">
-             <Label>{language === 'es' ? 'Nombre *' : 'Name *'}</Label>
-             <Input
-               value={formData.name}
-               onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
-               autoFocus
-             />
-           </div>
-           <div className="space-y-2">
-             <Label>{language === 'es' ? 'Tipo' : 'Type'}</Label>
-             <Select 
-               value={formData.asset_type}
-               onValueChange={(v: AssetType) => setFormData(p => ({ ...p, asset_type: v }))}
-             >
-               <SelectTrigger>
-                 <SelectValue />
-               </SelectTrigger>
-               <SelectContent>
-                 {ASSET_TYPES.map(type => (
-                   <SelectItem key={type} value={type}>
-                     {language === 'es' ? assetTypeLabels[type].es : assetTypeLabels[type].en}
-                   </SelectItem>
-                 ))}
-               </SelectContent>
-             </Select>
-           </div>
-         </div>
+  return (
+    <Card className="absolute top-4 left-4 z-[1000] bg-card/95 backdrop-blur-sm w-80 sm:w-96 max-h-[calc(100vh-10rem)] flex flex-col">
+      <CardHeader className="pb-2 shrink-0">
+        <CardTitle className="text-base flex items-center gap-2">
+          <MapPin className="h-4 w-4 text-primary" />
+          {language === 'es' ? 'Nuevo Activo' : 'New Asset'}
+        </CardTitle>
+        <p className="text-xs text-muted-foreground">
+          📍 {lat.toFixed(5)}, {lng.toFixed(5)}
+        </p>
+      </CardHeader>
+      <CardContent className="space-y-3 overflow-y-auto flex-1 pb-4">
+        {/* Basic Info */}
+        <div className="space-y-2">
+          <Label className="text-xs">{language === 'es' ? 'Nombre *' : 'Name *'}</Label>
+          <Input
+            value={formData.name}
+            onChange={(e) => setFormData(p => ({ ...p, name: e.target.value }))}
+            autoFocus
+            className="h-9"
+          />
+        </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{language === 'es' ? 'Tipo' : 'Type'}</Label>
+          <Select 
+            value={formData.asset_type}
+            onValueChange={(v: AssetType) => setFormData(p => ({ ...p, asset_type: v }))}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {ASSET_TYPES.map(type => (
+                <SelectItem key={type} value={type}>
+                  {language === 'es' ? assetTypeLabels[type].es : assetTypeLabels[type].en}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
  
-         <div className="space-y-2">
-           <Label>{language === 'es' ? 'Descripción' : 'Description'}</Label>
-           <Textarea
-             value={formData.description}
-             onChange={(e) => setFormData(p => ({ ...p, description: e.target.value }))}
-             rows={2}
-           />
-         </div>
+        <div className="space-y-2">
+          <Label className="text-xs">{language === 'es' ? 'Zona' : 'Zone'}</Label>
+          <Select 
+            value={formData.zone_id}
+            onValueChange={(v) => setFormData(p => ({ ...p, zone_id: v }))}
+          >
+            <SelectTrigger className="h-9">
+              <SelectValue placeholder={language === 'es' ? 'Sin zona' : 'No zone'} />
+            </SelectTrigger>
+            <SelectContent>
+              {zones.map(zone => (
+                <SelectItem key={zone.id} value={zone.id}>
+                  <div className="flex items-center gap-2">
+                    <div 
+                      className="w-3 h-3 rounded-full" 
+                      style={{ backgroundColor: zone.color || '#10b981' }}
+                    />
+                    {zone.name}
+                  </div>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
  
-         <div className="space-y-2">
-           <Label>{language === 'es' ? 'Zona' : 'Zone'}</Label>
-           <Select 
-             value={formData.zone_id}
-             onValueChange={(v) => setFormData(p => ({ ...p, zone_id: v }))}
-           >
-             <SelectTrigger>
-               <SelectValue placeholder={language === 'es' ? 'Sin zona' : 'No zone'} />
-             </SelectTrigger>
-             <SelectContent>
-               {zones.map(zone => (
-                 <SelectItem key={zone.id} value={zone.id}>
-                   <div className="flex items-center gap-2">
-                     <div 
-                       className="w-3 h-3 rounded-full" 
-                       style={{ backgroundColor: zone.color || '#10b981' }}
-                     />
-                     {zone.name}
-                   </div>
-                 </SelectItem>
-               ))}
-             </SelectContent>
-           </Select>
-         </div>
+        {/* Purpose Tags - Compact */}
+        <div className="space-y-1">
+          <Label className="flex items-center gap-1 text-xs">
+            <Tag className="h-3 w-3" />
+            {language === 'es' ? 'Etiquetas' : 'Purpose Tags'}
+          </Label>
+          <div className="flex flex-wrap gap-1">
+            {formData.purpose_tags.map(tag => (
+              <Badge key={tag} variant="secondary" className="gap-1 text-xs h-5">
+                {tag}
+                <button onClick={() => removePurposeTag(tag)}>
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {COMMON_PURPOSE_TAGS.filter(t => !formData.purpose_tags.includes(t)).slice(0, 4).map(tag => (
+              <Button
+                key={tag}
+                variant="ghost"
+                size="sm"
+                className="h-5 text-xs px-2"
+                onClick={() => addPurposeTag(tag)}
+              >
+                + {tag}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Risk Flags - Compact */}
+        <div className="space-y-1">
+          <Label className="flex items-center gap-1 text-xs text-destructive">
+            <AlertTriangle className="h-3 w-3" />
+            {language === 'es' ? 'Riesgos' : 'Risks'}
+          </Label>
+          <div className="flex flex-wrap gap-1">
+            {formData.risk_flags.map(flag => (
+              <Badge key={flag} variant="destructive" className="gap-1 text-xs h-5 bg-destructive/10 text-destructive">
+                {flag.replace(/_/g, ' ')}
+                <button onClick={() => removeRiskFlag(flag)}>
+                  <X className="h-2.5 w-2.5" />
+                </button>
+              </Badge>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-1">
+            {COMMON_RISK_FLAGS.filter(f => !formData.risk_flags.includes(f)).slice(0, 4).map(flag => (
+              <Button
+                key={flag}
+                variant="ghost"
+                size="sm"
+                className="h-5 text-xs px-2 text-destructive"
+                onClick={() => addRiskFlag(flag)}
+              >
+                + {flag.replace(/_/g, ' ')}
+              </Button>
+            ))}
+          </div>
+        </div>
+
+        {/* Critical Care - Compact */}
+        <div className="space-y-1">
+          <Label className="flex items-center gap-1 text-xs">
+            <Shield className="h-3 w-3 text-primary" />
+            {language === 'es' ? 'Nota Crítica' : 'Critical Note'}
+          </Label>
+          <Textarea
+            value={formData.critical_care_note}
+            onChange={(e) => setFormData(p => ({ ...p, critical_care_note: e.target.value }))}
+            placeholder={language === 'es' ? 'Instrucciones especiales...' : 'Special instructions...'}
+            rows={1}
+            className="resize-none text-sm"
+          />
+        </div>
  
-         {/* Purpose Tags */}
-         <div className="space-y-2">
-           <Label className="flex items-center gap-2">
-             <Tag className="h-4 w-4" />
-             {language === 'es' ? 'Etiquetas de Propósito' : 'Purpose Tags'}
-           </Label>
-           <div className="flex flex-wrap gap-2 mb-2">
-             {formData.purpose_tags.map(tag => (
-               <Badge key={tag} variant="secondary" className="gap-1">
-                 {tag}
-                 <button onClick={() => removePurposeTag(tag)} className="ml-1">
-                   <X className="h-3 w-3" />
-                 </button>
-               </Badge>
-             ))}
-           </div>
-           <div className="flex gap-2">
-             <Input
-               placeholder={language === 'es' ? 'Nueva etiqueta...' : 'New tag...'}
-               value={newTag}
-               onChange={(e) => setNewTag(e.target.value)}
-               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addPurposeTag(newTag))}
-               className="flex-1"
-             />
-             <Button variant="outline" size="sm" onClick={() => addPurposeTag(newTag)}>
-               {language === 'es' ? 'Agregar' : 'Add'}
-             </Button>
-           </div>
-           <div className="flex flex-wrap gap-1 mt-2">
-             {COMMON_PURPOSE_TAGS.filter(t => !formData.purpose_tags.includes(t)).slice(0, 5).map(tag => (
-               <Button
-                 key={tag}
-                 variant="ghost"
-                 size="sm"
-                 className="h-6 text-xs"
-                 onClick={() => addPurposeTag(tag)}
-               >
-                 + {tag}
-               </Button>
-             ))}
-           </div>
-         </div>
- 
-         {/* Risk Flags */}
-         <div className="space-y-2">
-           <Label className="flex items-center gap-2 text-destructive">
-             <AlertTriangle className="h-4 w-4" />
-             {language === 'es' ? 'Banderas de Riesgo' : 'Risk Flags'}
-           </Label>
-           <div className="flex flex-wrap gap-2 mb-2">
-             {formData.risk_flags.map(flag => (
-               <Badge key={flag} variant="destructive" className="gap-1 bg-destructive/10 text-destructive">
-                 {flag.replace(/_/g, ' ')}
-                 <button onClick={() => removeRiskFlag(flag)} className="ml-1">
-                   <X className="h-3 w-3" />
-                 </button>
-               </Badge>
-             ))}
-           </div>
-           <div className="flex gap-2">
-             <Input
-               placeholder={language === 'es' ? 'Nuevo riesgo...' : 'New risk...'}
-               value={newRisk}
-               onChange={(e) => setNewRisk(e.target.value)}
-               onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), addRiskFlag(newRisk))}
-               className="flex-1"
-             />
-             <Button variant="outline" size="sm" onClick={() => addRiskFlag(newRisk)}>
-               {language === 'es' ? 'Agregar' : 'Add'}
-             </Button>
-           </div>
-           <div className="flex flex-wrap gap-1 mt-2">
-             {COMMON_RISK_FLAGS.filter(f => !formData.risk_flags.includes(f)).slice(0, 5).map(flag => (
-               <Button
-                 key={flag}
-                 variant="ghost"
-                 size="sm"
-                 className="h-6 text-xs text-destructive"
-                 onClick={() => addRiskFlag(flag)}
-               >
-                 + {flag.replace(/_/g, ' ')}
-               </Button>
-             ))}
-           </div>
-         </div>
- 
-         {/* Critical Care */}
-         <div className="space-y-2">
-           <Label className="flex items-center gap-2">
-             <Shield className="h-4 w-4 text-primary" />
-             {language === 'es' ? 'Nota de Cuidado Crítico' : 'Critical Care Note'}
-           </Label>
-           <Textarea
-             value={formData.critical_care_note}
-             onChange={(e) => setFormData(p => ({ ...p, critical_care_note: e.target.value }))}
-             placeholder={language === 'es' ? 'Instrucciones especiales de cuidado...' : 'Special care instructions...'}
-             rows={2}
-           />
-         </div>
- 
-         {/* Do Not Do */}
-         <div className="space-y-2">
-           <Label className="flex items-center gap-2 text-destructive">
-             <X className="h-4 w-4" />
-             {language === 'es' ? 'Advertencias (No Hacer)' : 'Do Not Do Warnings'}
-           </Label>
-           <Textarea
-             value={formData.do_not_do_warnings}
-             onChange={(e) => setFormData(p => ({ ...p, do_not_do_warnings: e.target.value }))}
-             placeholder={language === 'es' ? 'Qué NO hacer con este activo...' : 'What NOT to do with this asset...'}
-             rows={2}
-             className="border-destructive/30"
-           />
-         </div>
- 
-         {/* Actions */}
-         <div className="flex gap-2 pt-4">
-           <Button variant="outline" className="flex-1" onClick={onCancel}>
-             <X className="h-4 w-4 mr-1" />
-             {language === 'es' ? 'Cancelar' : 'Cancel'}
-           </Button>
-           <Button className="flex-1" onClick={handleSave} disabled={saving}>
-             <Save className="h-4 w-4 mr-1" />
-             {saving 
-               ? (language === 'es' ? 'Guardando...' : 'Saving...') 
-               : (language === 'es' ? 'Guardar' : 'Save')}
-           </Button>
-         </div>
-       </CardContent>
-     </Card>
-   );
- }
+        {/* Actions - Sticky */}
+        <div className="flex gap-2 pt-2 border-t border-border mt-2">
+          <Button variant="outline" size="sm" className="flex-1" onClick={onCancel}>
+            <X className="h-3 w-3 mr-1" />
+            {language === 'es' ? 'Cancelar' : 'Cancel'}
+          </Button>
+          <Button size="sm" className="flex-1" onClick={handleSave} disabled={saving}>
+            <Save className="h-3 w-3 mr-1" />
+            {saving 
+              ? (language === 'es' ? 'Guardando...' : 'Saving...') 
+              : (language === 'es' ? 'Guardar' : 'Save')}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
