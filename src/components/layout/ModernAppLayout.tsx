@@ -11,7 +11,8 @@ import {
   Globe,
   ChevronDown,
   Building2,
-  Menu
+  Menu,
+  DollarSign
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -49,7 +50,10 @@ export function ModernAppLayout({ children }: ModernAppLayoutProps) {
     { path: '/assets', icon: Box, label: t('nav.assets'), hideForVendor: true },
     { path: '/tasks', icon: ClipboardList, label: t('nav.log'), hideForCrew: true },
     { path: '/documents', icon: FolderOpen, label: t('nav.documents'), hideForCrew: true, hideForVendor: true },
-    ...(isOwnerOrManager ? [{ path: '/admin', icon: Settings, label: t('nav.admin') }] : []),
+    ...(isOwnerOrManager ? [
+      { path: '/labor', icon: DollarSign, label: language === 'es' ? 'Nómina' : 'Labor' },
+      { path: '/admin', icon: Settings, label: t('nav.admin') },
+    ] : []),
   ].filter(item => {
     if (isVendor && item.hideForVendor) return false;
     if (isCrew && item.hideForCrew) return false;

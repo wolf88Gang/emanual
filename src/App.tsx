@@ -20,6 +20,7 @@ import PlantRegistry from "./pages/PlantRegistry";
 import WorkerCheckin from "./pages/WorkerCheckin";
 import Reports from "./pages/Reports";
 import EstateManagement from "./pages/EstateManagement";
+import LaborManagement from "./pages/LaborManagement";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -68,6 +69,7 @@ function AppRoutes() {
       <Route path="/checkin" element={<ProtectedRoute><WorkerCheckin /></ProtectedRoute>} />
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/estates" element={<ProtectedRoute><EstateManagement /></ProtectedRoute>} />
+      <Route path="/labor" element={<ProtectedRoute><LaborManagement /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
