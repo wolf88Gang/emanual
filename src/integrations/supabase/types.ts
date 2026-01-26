@@ -578,6 +578,130 @@ export type Database = {
           },
         ]
       }
+      shift_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          paid_by: string | null
+          payment_date: string
+          payment_method: string
+          reference: string | null
+          shift_id: string
+          validation_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          paid_by?: string | null
+          payment_date?: string
+          payment_method: string
+          reference?: string | null
+          shift_id: string
+          validation_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          paid_by?: string | null
+          payment_date?: string
+          payment_method?: string
+          reference?: string | null
+          shift_id?: string
+          validation_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_payments_paid_by_fkey"
+            columns: ["paid_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_payments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "worker_shifts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_payments_validation_id_fkey"
+            columns: ["validation_id"]
+            isOneToOne: false
+            referencedRelation: "shift_validations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      shift_validations: {
+        Row: {
+          adjusted_minutes: number | null
+          ai_generated_message: string | null
+          created_at: string
+          decision_message: string | null
+          decision_type: string | null
+          id: string
+          original_minutes: number | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          shift_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          adjusted_minutes?: number | null
+          ai_generated_message?: string | null
+          created_at?: string
+          decision_message?: string | null
+          decision_type?: string | null
+          id?: string
+          original_minutes?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shift_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          adjusted_minutes?: number | null
+          ai_generated_message?: string | null
+          created_at?: string
+          decision_message?: string | null
+          decision_type?: string | null
+          id?: string
+          original_minutes?: number | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          shift_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shift_validations_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "shift_validations_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "worker_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       task_completions: {
         Row: {
           amendment_note: string | null
@@ -962,6 +1086,63 @@ export type Database = {
             columns: ["estate_id"]
             isOneToOne: false
             referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      worker_rates: {
+        Row: {
+          created_at: string
+          currency: string
+          effective_from: string
+          effective_to: string | null
+          estate_id: string
+          id: string
+          notes: string | null
+          rate_amount: number
+          rate_type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          currency?: string
+          effective_from?: string
+          effective_to?: string | null
+          estate_id: string
+          id?: string
+          notes?: string | null
+          rate_amount: number
+          rate_type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          currency?: string
+          effective_from?: string
+          effective_to?: string | null
+          estate_id?: string
+          id?: string
+          notes?: string | null
+          rate_amount?: number
+          rate_type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worker_rates_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worker_rates_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
             referencedColumns: ["id"]
           },
         ]
