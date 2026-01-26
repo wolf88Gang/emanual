@@ -174,8 +174,8 @@ export default function MapView() {
     if (assetWithCoords?.lat && assetWithCoords?.lng) {
       return [assetWithCoords.lat, assetWithCoords.lng];
     }
-    // Default: Puerto Rico
-    return [18.4655, -66.1057];
+    // Default: Costa Rica - User K1 zone
+    return [9.927138464588024, -84.19285111352922];
   };
 
   const assetTypeLabels: Record<AssetType, { en: string; es: string }> = {
