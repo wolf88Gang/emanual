@@ -9,20 +9,26 @@ import {
   ExternalLink,
   Filter,
   ChevronRight,
-  FolderOpen
+  FolderOpen,
+  BookOpen,
+  Download,
+  Loader2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { format, parseISO, isBefore, addDays } from 'date-fns';
+import { es } from 'date-fns/locale';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ESTATE_MANUAL_SYSTEM_PROMPT, buildEstateDataPrompt } from '@/lib/estateManualPrompt';
+import { toast } from 'sonner';
 
 interface Document {
   id: string;
@@ -65,6 +71,7 @@ export default function Documents() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeCategory, setActiveCategory] = useState('all');
+  const [generatingManual, setGeneratingManual] = useState(false);
 
   useEffect(() => {
     if (currentEstate) {
@@ -136,6 +143,79 @@ export default function Documents() {
     return acc;
   }, {} as Record<string, number>);
 
+  async function generatePropertyManual() {
+    if (!currentEstate) return;
+    
+    setGeneratingManual(true);
+    toast.info(language === 'es' ? 'Generando manual... esto puede tomar un minuto' : 'Generating manual... this may take a minute');
+
+    try {
+      // Fetch all estate data
+      const [zonesRes, assetsRes, tasksRes, completionsRes, checkinsRes, docsRes, alertsRes] = await Promise.all([
+        supabase.from('zones').select('*').eq('estate_id', currentEstate.id),
+        supabase.from('assets').select('*').eq('estate_id', currentEstate.id),
+        supabase.from('tasks').select('*').eq('estate_id', currentEstate.id),
+        supabase.from('task_completions').select(`
+          *,
+          task:tasks (*, asset:assets (name), zone:zones (name)),
+          completed_by:profiles (full_name)
+        `).order('completed_at', { ascending: false }),
+        supabase.from('checkins').select(`
+          *,
+          user:profiles (full_name),
+          asset:assets (name),
+          zone:zones (name)
+        `).eq('estate_id', currentEstate.id).order('checkin_at', { ascending: false }),
+        supabase.from('documents').select('*').eq('estate_id', currentEstate.id),
+        supabase.from('weather_alerts').select('*').eq('estate_id', currentEstate.id)
+      ]);
+
+      const dataPrompt = buildEstateDataPrompt({
+        estateName: currentEstate.name,
+        estateAddress: currentEstate.address_text,
+        estateCountry: currentEstate.country,
+        generationDate: format(new Date(), 'PPP', { locale: language === 'es' ? es : undefined }),
+        zones: zonesRes.data || [],
+        assets: assetsRes.data || [],
+        tasks: tasksRes.data || [],
+        completions: completionsRes.data || [],
+        checkins: checkinsRes.data || [],
+        documents: docsRes.data || [],
+        weatherAlerts: alertsRes.data || [],
+        language: language as 'en' | 'es',
+      });
+
+      const { data, error } = await supabase.functions.invoke('generate-estate-manual', {
+        body: { 
+          systemPrompt: ESTATE_MANUAL_SYSTEM_PROMPT,
+          dataPrompt 
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.manual) {
+        // Create a blob and download
+        const blob = new Blob([data.manual], { type: 'text/markdown' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `${currentEstate.name.replace(/\s+/g, '-')}-Manual-${format(new Date(), 'yyyy-MM-dd')}.md`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        toast.success(language === 'es' ? 'Manual generado exitosamente' : 'Manual generated successfully');
+      }
+    } catch (error) {
+      console.error('Error generating manual:', error);
+      toast.error(language === 'es' ? 'Error al generar el manual' : 'Error generating manual');
+    } finally {
+      setGeneratingManual(false);
+    }
+  }
+
   return (
     <ModernAppLayout>
       <div className="container py-6">
@@ -159,6 +239,47 @@ export default function Documents() {
             </Button>
           )}
         </div>
+
+        {/* Property Manual Card - Prominent */}
+        {isOwnerOrManager && (
+          <Card className="estate-card mb-6 border-primary/30 bg-gradient-to-br from-primary/5 to-primary/10">
+            <CardContent className="p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="w-16 h-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                  <BookOpen className="h-8 w-8 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-serif font-semibold">
+                    {language === 'es' ? 'Manual de la Propiedad' : 'Property Manual'}
+                  </h3>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {language === 'es' 
+                      ? 'Genera un manual profesional completo con toda la información de zonas, activos, historial de mantenimiento y documentación técnica.'
+                      : 'Generate a complete professional manual with all zone information, assets, maintenance history, and technical documentation.'}
+                  </p>
+                </div>
+                <Button 
+                  size="lg" 
+                  onClick={generatePropertyManual}
+                  disabled={generatingManual}
+                  className="shrink-0"
+                >
+                  {generatingManual ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      {language === 'es' ? 'Generando...' : 'Generating...'}
+                    </>
+                  ) : (
+                    <>
+                      <Download className="h-4 w-4 mr-2" />
+                      {language === 'es' ? 'Generar Manual' : 'Generate Manual'}
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
         {/* Search */}
         <div className="relative mb-6">
