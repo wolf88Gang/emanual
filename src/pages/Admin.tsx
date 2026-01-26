@@ -27,6 +27,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { SimulateAlertButton } from '@/components/admin/SimulateAlertButton';
 import { AddWeatherRuleDialog } from '@/components/admin/AddWeatherRuleDialog';
+import { EmergencyAlertDialog } from '@/components/admin/EmergencyAlertDialog';
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
 import { toast } from 'sonner';
 
@@ -181,11 +182,14 @@ export default function Admin() {
     <ModernAppLayout>
       <div className="container py-6">
         {/* Header */}
-        <div className="mb-6">
-          <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('admin.title')}</h1>
-          <p className="text-muted-foreground mt-1">
-            {language === 'es' ? 'Gestiona usuarios, proveedores y configuración' : 'Manage users, vendors, and estate settings'}
-          </p>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('admin.title')}</h1>
+            <p className="text-muted-foreground mt-1">
+              {language === 'es' ? 'Gestiona usuarios, proveedores y configuración' : 'Manage users, vendors, and estate settings'}
+            </p>
+          </div>
+          <EmergencyAlertDialog onAlertSent={() => fetchAdminData()} />
         </div>
 
         {/* Tabs */}
