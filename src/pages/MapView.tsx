@@ -5,6 +5,7 @@ import {
   Search,
   X,
   Maximize2,
+  Edit3,
 } from 'lucide-react';
 import L from 'leaflet';
 import { cn } from '@/lib/utils';
@@ -24,6 +25,7 @@ import { EstateMap } from '@/components/map/EstateMap';
 import { ZoneLegend } from '@/components/map/ZoneLegend';
 import { QRScannerView } from '@/components/map/QRScannerView';
 import { ZoneDrawingTool } from '@/components/map/ZoneDrawingTool';
+import { ZoneEditPanel } from '@/components/map/ZoneEditPanel';
 import { AssetCreationDialog } from '@/components/map/AssetCreationDialog';
 import { MapActionsMenu } from '@/components/map/MapActionsMenu';
 import { PropertyDetailView } from '@/components/map/PropertyDetailView';
@@ -54,7 +56,7 @@ export default function MapView() {
   const [pendingPin, setPendingPin] = useState<{ lat: number; lng: number } | null>(null);
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
   const [showPropertyView, setShowPropertyView] = useState(false);
-
+  const [editingZone, setEditingZone] = useState<MapZone | null>(null);
   // Handle zone selection from URL param
   useEffect(() => {
     const zoneId = searchParams.get('zone');
@@ -311,7 +313,7 @@ export default function MapView() {
               />
 
               {/* Selected Zone Info */}
-              {selectedZone && (
+              {selectedZone && !editingZone && (
                 <div className="absolute top-4 left-4 right-4 z-[1000]">
                   <Card className="bg-card/95 backdrop-blur-sm">
                     <CardHeader className="py-3 px-4">
@@ -323,14 +325,27 @@ export default function MapView() {
                           />
                           <CardTitle className="text-base">{selectedZone.name}</CardTitle>
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          className="h-8 w-8"
-                          onClick={() => setSelectedZone(null)}
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        <div className="flex items-center gap-1">
+                          {isOwnerOrManager && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8"
+                              onClick={() => setEditingZone(selectedZone)}
+                              title={language === 'es' ? 'Editar zona' : 'Edit zone'}
+                            >
+                              <Edit3 className="h-4 w-4" />
+                            </Button>
+                          )}
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8"
+                            onClick={() => setSelectedZone(null)}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
                       </div>
                     </CardHeader>
                     <CardContent className="py-2 px-4">
@@ -347,6 +362,25 @@ export default function MapView() {
                     </CardContent>
                   </Card>
                 </div>
+              )}
+
+              {/* Zone Edit Panel */}
+              {editingZone && (
+                <ZoneEditPanel
+                  zone={editingZone}
+                  mapRef={mapInstance}
+                  onClose={() => setEditingZone(null)}
+                  onUpdated={() => {
+                    setEditingZone(null);
+                    setSelectedZone(null);
+                    fetchMapData();
+                  }}
+                  onDeleted={() => {
+                    setEditingZone(null);
+                    setSelectedZone(null);
+                    fetchMapData();
+                  }}
+                />
               )}
 
               {/* Floating Action Menu */}
