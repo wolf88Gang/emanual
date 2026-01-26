@@ -286,6 +286,24 @@ export function EstateMap({
       // Store risk flag on marker for cluster icon
       (marker as any)._hasRisk = hasRisk;
 
+      // Hover tooltip with quick info
+      const tooltipContent = `
+        <div style="font-family: system-ui, sans-serif; padding: 4px 0;">
+          <strong style="font-size: 13px; display: block;">${asset.name}</strong>
+          <span style="font-size: 11px; color: #666; text-transform: capitalize;">${asset.asset_type.replace('_', ' ')}</span>
+          ${asset.zone ? `<br/><span style="font-size: 10px; color: #888;">📍 ${asset.zone.name}</span>` : ''}
+          ${hasRisk ? `<br/><span style="font-size: 10px; color: #dc2626;">⚠️ ${language === 'es' ? 'Requiere atención' : 'Needs attention'}</span>` : ''}
+        </div>
+      `;
+
+      marker.bindTooltip(tooltipContent, {
+        permanent: false,
+        direction: 'top',
+        offset: [0, -20],
+        className: 'asset-tooltip',
+      });
+
+      // Click popup with full details
       const popupContent = `
         <div style="min-width: 180px; font-family: system-ui, sans-serif;">
           <h4 style="font-weight: 600; font-size: 14px; margin: 0 0 4px 0;">${asset.name}</h4>
@@ -356,6 +374,21 @@ export function EstateMap({
           stroke: hsl(142, 76%, 36%);
           stroke-width: 2;
           stroke-opacity: 0.7;
+        }
+        /* Asset tooltip styling */
+        .asset-tooltip {
+          background: white;
+          border: 1px solid #e5e7eb;
+          border-radius: 8px;
+          padding: 8px 12px;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+          font-size: 12px;
+        }
+        .asset-tooltip::before {
+          border-top-color: white !important;
+        }
+        .leaflet-tooltip-top:before {
+          border-top-color: #e5e7eb !important;
         }
       `}</style>
       <div 
