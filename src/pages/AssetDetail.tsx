@@ -396,6 +396,7 @@ export default function AssetDetail() {
             <PlantProfileLinker 
               assetId={asset.id} 
               assetType={asset.asset_type}
+              assetName={asset.name}
               onUpdate={fetchAssetData}
             />
           </div>
