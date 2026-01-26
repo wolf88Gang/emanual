@@ -32,8 +32,9 @@ import { AssetTypeIcon, getAssetBadgeClass, AssetType } from '@/components/icons
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
 import { AssetEditForm } from '@/components/assets/AssetEditForm';
 import { PlantProfileLinker } from '@/components/assets/PlantProfileLinker';
- import { AssetActionsCard } from '@/components/assets/AssetActionsCard';
- import { AssetPhotoUpload } from '@/components/assets/AssetPhotoUpload';
+import { AssetActionsCard } from '@/components/assets/AssetActionsCard';
+import { AssetPhotoUpload } from '@/components/assets/AssetPhotoUpload';
+import { MaintenanceInfoCard } from '@/components/assets/MaintenanceInfoCard';
 
 interface AssetDetail {
   id: string;
@@ -65,6 +66,17 @@ interface TaskCompletion {
   photo_url: string | null;
   notes: string | null;
   completed_by: string;
+  amendment_note?: string | null;
+}
+
+interface MaintenanceTask {
+  id: string;
+  title: string;
+  description: string | null;
+  frequency: string | null;
+  status: string | null;
+  due_date: string | null;
+  priority: number | null;
 }
 
 interface Checkin {
@@ -81,6 +93,7 @@ interface RelatedDocument {
   category: string;
   expiry_date: string | null;
   file_url: string;
+  notes: string | null;
 }
 
 export default function AssetDetail() {
@@ -92,6 +105,7 @@ export default function AssetDetail() {
   const [asset, setAsset] = useState<AssetDetail | null>(null);
   const [zones, setZones] = useState<Array<{ id: string; name: string; color: string | null }>>([]);
   const [completions, setCompletions] = useState<TaskCompletion[]>([]);
+  const [maintenanceTasks, setMaintenanceTasks] = useState<MaintenanceTask[]>([]);
   const [checkins, setCheckins] = useState<Checkin[]>([]);
   const [documents, setDocuments] = useState<RelatedDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,13 +163,13 @@ export default function AssetDetail() {
       const { data: completionsData } = await supabase
         .from('task_completions')
         .select(`
-          id, completed_at, photo_url, notes,
+          id, completed_at, photo_url, notes, amendment_note,
           tasks:task_id (title),
           profiles:completed_by_user_id (full_name)
         `)
         .eq('tasks.asset_id', id)
         .order('completed_at', { ascending: false })
-        .limit(10);
+        .limit(20);
 
       setCompletions((completionsData || []).map(c => ({
         id: c.id,
@@ -164,7 +178,17 @@ export default function AssetDetail() {
         photo_url: c.photo_url,
         notes: c.notes,
         completed_by: (c.profiles as any)?.full_name || 'User',
+        amendment_note: c.amendment_note,
       })));
+
+      // Fetch maintenance tasks for this asset
+      const { data: tasksData } = await supabase
+        .from('tasks')
+        .select('id, title, description, frequency, status, due_date, priority')
+        .eq('asset_id', id)
+        .order('priority', { ascending: true });
+
+      setMaintenanceTasks(tasksData || []);
 
       // Fetch related checkins (nearby evidence)
       const { data: checkinsData } = await supabase
@@ -185,10 +209,10 @@ export default function AssetDetail() {
         user_name: (c.profiles as any)?.full_name || 'User',
       })));
 
-      // Fetch related documents
+      // Fetch related documents with notes
       const { data: docsData } = await supabase
         .from('documents')
-        .select('id, title, category, expiry_date, file_url')
+        .select('id, title, category, expiry_date, file_url, notes')
         .eq('asset_id', id)
         .order('created_at', { ascending: false });
 
@@ -398,6 +422,23 @@ export default function AssetDetail() {
               assetType={asset.asset_type}
               assetName={asset.name}
               onUpdate={fetchAssetData}
+            />
+          </div>
+        )}
+
+        {/* Maintenance Information Card - Feeds the Integral Manual */}
+        {!isEditing && (
+          <div className="mb-6">
+            <MaintenanceInfoCard
+              assetName={asset.name}
+              assetType={asset.asset_type}
+              criticalCareNote={asset.critical_care_note}
+              doNotDoWarnings={asset.do_not_do_warnings}
+              lastServiceDate={asset.last_service_date}
+              installDate={asset.install_date}
+              tasks={maintenanceTasks}
+              recentCompletions={completions}
+              documents={documents}
             />
           </div>
         )}
