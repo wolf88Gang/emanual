@@ -21,6 +21,7 @@ import WorkerCheckin from "./pages/WorkerCheckin";
 import Reports from "./pages/Reports";
 import EstateManagement from "./pages/EstateManagement";
 import LaborManagement from "./pages/LaborManagement";
+import TopographyRisks from "./pages/TopographyRisks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ function AppRoutes() {
       <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
       <Route path="/estates" element={<ProtectedRoute><EstateManagement /></ProtectedRoute>} />
       <Route path="/labor" element={<ProtectedRoute><LaborManagement /></ProtectedRoute>} />
+      <Route path="/topography" element={<ProtectedRoute><TopographyRisks /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

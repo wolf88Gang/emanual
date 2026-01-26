@@ -272,6 +272,41 @@ export type Database = {
           },
         ]
       }
+      elevation_transects: {
+        Row: {
+          created_at: string
+          estate_id: string
+          id: string
+          line_geojson: Json
+          name: string | null
+          profile_data: Json | null
+        }
+        Insert: {
+          created_at?: string
+          estate_id: string
+          id?: string
+          line_geojson: Json
+          name?: string | null
+          profile_data?: Json | null
+        }
+        Update: {
+          created_at?: string
+          estate_id?: string
+          id?: string
+          line_geojson?: Json
+          name?: string | null
+          profile_data?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "elevation_transects_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estates: {
         Row: {
           address_text: string | null
@@ -912,6 +947,53 @@ export type Database = {
             columns: ["inventory_item_id"]
             isOneToOne: false
             referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      topographic_references: {
+        Row: {
+          analysis_data: Json | null
+          created_at: string
+          description: string | null
+          estate_id: string
+          geometry_geojson: Json
+          geometry_type: string
+          id: string
+          name: string
+          source_filename: string | null
+          updated_at: string
+        }
+        Insert: {
+          analysis_data?: Json | null
+          created_at?: string
+          description?: string | null
+          estate_id: string
+          geometry_geojson: Json
+          geometry_type: string
+          id?: string
+          name: string
+          source_filename?: string | null
+          updated_at?: string
+        }
+        Update: {
+          analysis_data?: Json | null
+          created_at?: string
+          description?: string | null
+          estate_id?: string
+          geometry_geojson?: Json
+          geometry_type?: string
+          id?: string
+          name?: string
+          source_filename?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "topographic_references_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
             referencedColumns: ["id"]
           },
         ]

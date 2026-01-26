@@ -1,5 +1,5 @@
  import React, { useState } from 'react';
- import { MapPin, Plus, Loader2, Building } from 'lucide-react';
+ import { MapPin, Plus, Loader2, Building, Mountain } from 'lucide-react';
  import { useNavigate } from 'react-router-dom';
  import { useLanguage } from '@/contexts/LanguageContext';
  import { useAuth } from '@/contexts/AuthContext';
@@ -223,35 +223,49 @@
            </Sheet>
          </div>
  
-         {/* Estate List */}
-         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-           {estates.map(estate => (
-             <Card
-               key={estate.id}
-               className="cursor-pointer hover:border-primary/50 transition-colors estate-card"
-               onClick={() => navigate(`/map?estate=${estate.id}`)}
-             >
-               <CardHeader>
-                 <div className="flex items-start gap-3">
-                   <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                     <Building className="h-5 w-5 text-primary" />
-                   </div>
-                   <div className="flex-1 min-w-0">
-                     <CardTitle className="text-base truncate">{estate.name}</CardTitle>
-                     {estate.country && (
-                       <CardDescription className="text-xs">{estate.country}</CardDescription>
-                     )}
-                   </div>
-                 </div>
-               </CardHeader>
-               {estate.address_text && (
-                 <CardContent className="pb-4">
-                   <p className="text-xs text-muted-foreground line-clamp-2">{estate.address_text}</p>
-                 </CardContent>
-               )}
-             </Card>
-           ))}
-         </div>
+        {/* Estate List */}
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {estates.map(estate => (
+              <Card
+                key={estate.id}
+                className="hover:border-primary/50 transition-colors estate-card"
+              >
+                <CardHeader 
+                  className="cursor-pointer"
+                  onClick={() => navigate(`/map?estate=${estate.id}`)}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                      <Building className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <CardTitle className="text-base truncate">{estate.name}</CardTitle>
+                      {estate.country && (
+                        <CardDescription className="text-xs">{estate.country}</CardDescription>
+                      )}
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pb-4 space-y-3">
+                  {estate.address_text && (
+                    <p className="text-xs text-muted-foreground line-clamp-2">{estate.address_text}</p>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="w-full gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      navigate('/topography');
+                    }}
+                  >
+                    <Mountain className="h-4 w-4" />
+                    {language === 'es' ? 'Topografía y Riesgos' : 'Topography & Risks'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
  
          {estates.length === 0 && (
            <Card className="border-dashed">
