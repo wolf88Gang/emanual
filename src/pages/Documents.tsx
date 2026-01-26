@@ -143,14 +143,30 @@ export default function Documents() {
     return acc;
   }, {} as Record<string, number>);
 
+  // Helper to load image as base64
+  async function loadImageAsBase64(url: string): Promise<string | null> {
+    try {
+      const response = await fetch(url);
+      const blob = await response.blob();
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.onerror = () => resolve(null);
+        reader.readAsDataURL(blob);
+      });
+    } catch {
+      return null;
+    }
+  }
+
   async function generatePropertyManual() {
     if (!currentEstate) return;
     
     setGeneratingManual(true);
-    toast.info(language === 'es' ? 'Generando manual PDF... esto puede tomar un minuto' : 'Generating PDF manual... this may take a minute');
+    toast.info('Generando manual PDF profesional... esto puede tomar un minuto');
 
     try {
-      // Fetch all estate data
+      // Fetch all estate data including photos
       const [zonesRes, assetsRes, tasksRes, completionsRes, checkinsRes, docsRes, alertsRes, photosRes] = await Promise.all([
         supabase.from('zones').select('*').eq('estate_id', currentEstate.id),
         supabase.from('assets').select('*').eq('estate_id', currentEstate.id),
@@ -168,197 +184,496 @@ export default function Documents() {
         `).eq('estate_id', currentEstate.id).order('checkin_at', { ascending: false }),
         supabase.from('documents').select('*').eq('estate_id', currentEstate.id),
         supabase.from('weather_alerts').select('*').eq('estate_id', currentEstate.id),
-        supabase.from('asset_photos').select('*, asset:assets (name)').order('created_at', { ascending: false }).limit(20),
+        supabase.from('asset_photos').select('*').order('created_at', { ascending: false }),
       ]);
 
-      const dataPrompt = buildEstateDataPrompt({
-        estateName: currentEstate.name,
-        estateAddress: currentEstate.address_text,
-        estateCountry: currentEstate.country,
-        generationDate: format(new Date(), 'PPP', { locale: language === 'es' ? es : undefined }),
-        zones: zonesRes.data || [],
-        assets: assetsRes.data || [],
-        tasks: tasksRes.data || [],
-        completions: completionsRes.data || [],
-        checkins: checkinsRes.data || [],
-        documents: docsRes.data || [],
-        weatherAlerts: alertsRes.data || [],
-        language: language as 'en' | 'es',
-      });
+      const zones = zonesRes.data || [];
+      const assets = assetsRes.data || [];
+      const tasks = tasksRes.data || [];
+      const completions = completionsRes.data || [];
+      const checkins = checkinsRes.data || [];
+      const documents = docsRes.data || [];
+      const weatherAlerts = alertsRes.data || [];
+      const assetPhotos = photosRes.data || [];
 
-      const { data, error } = await supabase.functions.invoke('generate-estate-manual', {
-        body: { 
-          systemPrompt: ESTATE_MANUAL_SYSTEM_PROMPT,
-          dataPrompt 
+      // Create photo map by asset_id
+      const photosByAsset: Record<string, string> = {};
+      for (const photo of assetPhotos) {
+        if (!photosByAsset[photo.asset_id]) {
+          photosByAsset[photo.asset_id] = photo.url;
         }
-      });
-
-      if (error) throw error;
-
-      if (data?.manual) {
-        // Generate PDF instead of markdown
-        const { jsPDF } = await import('jspdf');
-        const pdf = new jsPDF();
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const margin = 20;
-        const lineHeight = 6;
-        let yPos = margin;
-
-        // Helper function to add text with word wrap
-        const addText = (text: string, fontSize: number = 10, isBold: boolean = false) => {
-          pdf.setFontSize(fontSize);
-          pdf.setFont('helvetica', isBold ? 'bold' : 'normal');
-          const lines = pdf.splitTextToSize(text, pageWidth - margin * 2);
-          
-          for (const line of lines) {
-            if (yPos + lineHeight > pageHeight - margin) {
-              pdf.addPage();
-              yPos = margin;
-            }
-            pdf.text(line, margin, yPos);
-            yPos += lineHeight * (fontSize / 10);
-          }
-        };
-
-        const addSection = (title: string) => {
-          if (yPos + 20 > pageHeight - margin) {
-            pdf.addPage();
-            yPos = margin;
-          }
-          yPos += 5;
-          addText(title, 14, true);
-          yPos += 3;
-        };
-
-        // Title Page
-        pdf.setFillColor(34, 139, 34);
-        pdf.rect(0, 0, pageWidth, 40, 'F');
-        pdf.setTextColor(255, 255, 255);
-        pdf.setFontSize(24);
-        pdf.setFont('helvetica', 'bold');
-        pdf.text(language === 'es' ? 'MANUAL DE LA PROPIEDAD' : 'PROPERTY MANUAL', pageWidth / 2, 25, { align: 'center' });
-        
-        pdf.setTextColor(0, 0, 0);
-        yPos = 55;
-        
-        pdf.setFontSize(18);
-        pdf.text(currentEstate.name, pageWidth / 2, yPos, { align: 'center' });
-        yPos += 15;
-        
-        pdf.setFontSize(12);
-        pdf.setFont('helvetica', 'normal');
-        if (currentEstate.address_text) {
-          pdf.text(currentEstate.address_text, pageWidth / 2, yPos, { align: 'center' });
-          yPos += 8;
-        }
-        if (currentEstate.country) {
-          pdf.text(currentEstate.country, pageWidth / 2, yPos, { align: 'center' });
-          yPos += 8;
-        }
-        
-        yPos += 10;
-        pdf.text(
-          `${language === 'es' ? 'Generado:' : 'Generated:'} ${format(new Date(), 'PPP', { locale: language === 'es' ? es : undefined })}`,
-          pageWidth / 2, yPos, { align: 'center' }
-        );
-        
-        // Stats summary
-        yPos += 20;
-        const stats = [
-          { label: language === 'es' ? 'Zonas' : 'Zones', value: zonesRes.data?.length || 0 },
-          { label: language === 'es' ? 'Activos' : 'Assets', value: assetsRes.data?.length || 0 },
-          { label: language === 'es' ? 'Tareas' : 'Tasks', value: tasksRes.data?.length || 0 },
-          { label: language === 'es' ? 'Documentos' : 'Documents', value: docsRes.data?.length || 0 },
-        ];
-        
-        const boxWidth = 35;
-        const startX = (pageWidth - (boxWidth * 4 + 10 * 3)) / 2;
-        
-        stats.forEach((stat, i) => {
-          const x = startX + i * (boxWidth + 10);
-          pdf.setFillColor(245, 245, 245);
-          pdf.roundedRect(x, yPos, boxWidth, 25, 3, 3, 'F');
-          pdf.setFontSize(16);
-          pdf.setFont('helvetica', 'bold');
-          pdf.text(String(stat.value), x + boxWidth / 2, yPos + 12, { align: 'center' });
-          pdf.setFontSize(8);
-          pdf.setFont('helvetica', 'normal');
-          pdf.text(stat.label, x + boxWidth / 2, yPos + 20, { align: 'center' });
-        });
-        
-        // Parse markdown and add to PDF
-        pdf.addPage();
-        yPos = margin;
-        
-        const lines = data.manual.split('\n');
-        for (const line of lines) {
-          const trimmedLine = line.trim();
-          
-          if (trimmedLine.startsWith('### ')) {
-            addSection(trimmedLine.replace('### ', ''));
-          } else if (trimmedLine.startsWith('## ')) {
-            if (yPos + 25 > pageHeight - margin) {
-              pdf.addPage();
-              yPos = margin;
-            }
-            yPos += 8;
-            addText(trimmedLine.replace('## ', ''), 16, true);
-            yPos += 5;
-          } else if (trimmedLine.startsWith('# ')) {
-            if (yPos + 30 > pageHeight - margin) {
-              pdf.addPage();
-              yPos = margin;
-            }
-            yPos += 10;
-            addText(trimmedLine.replace('# ', ''), 18, true);
-            yPos += 6;
-          } else if (trimmedLine.startsWith('- **')) {
-            const match = trimmedLine.match(/- \*\*(.+?)\*\*:?\s*(.*)$/);
-            if (match) {
-              addText(`• ${match[1]}: ${match[2]}`, 10, false);
-            } else {
-              addText(`• ${trimmedLine.replace('- **', '').replace('**', '')}`, 10, false);
-            }
-          } else if (trimmedLine.startsWith('- ')) {
-            addText(`• ${trimmedLine.substring(2)}`, 10, false);
-          } else if (trimmedLine.startsWith('**') && trimmedLine.endsWith('**')) {
-            addText(trimmedLine.replace(/\*\*/g, ''), 11, true);
-          } else if (trimmedLine) {
-            addText(trimmedLine.replace(/\*\*/g, ''), 10, false);
-          } else {
-            yPos += 3;
-          }
-        }
-        
-        // Footer on all pages
-        const totalPages = pdf.getNumberOfPages();
-        for (let i = 1; i <= totalPages; i++) {
-          pdf.setPage(i);
-          pdf.setFontSize(8);
-          pdf.setTextColor(128);
-          pdf.text(
-            `${currentEstate.name} - ${language === 'es' ? 'Manual de la Propiedad' : 'Property Manual'}`,
-            margin,
-            pageHeight - 10
-          );
-          pdf.text(
-            `${language === 'es' ? 'Página' : 'Page'} ${i} / ${totalPages}`,
-            pageWidth - margin,
-            pageHeight - 10,
-            { align: 'right' }
-          );
-        }
-
-        // Save PDF
-        const filename = `${currentEstate.name.replace(/\s+/g, '-')}-Manual-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
-        pdf.save(filename);
-
-        toast.success(language === 'es' ? 'Manual PDF generado exitosamente' : 'PDF Manual generated successfully');
       }
+
+      // Generate PDF directly with structured data (no AI call needed for better control)
+      const { jsPDF } = await import('jspdf');
+      const pdf = new jsPDF();
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const margin = 20;
+      const contentWidth = pageWidth - margin * 2;
+      let yPos = margin;
+
+      // Helper functions
+      const checkPageBreak = (neededSpace: number) => {
+        if (yPos + neededSpace > pageHeight - margin) {
+          pdf.addPage();
+          yPos = margin;
+          return true;
+        }
+        return false;
+      };
+
+      const addTitle = (text: string, size: number = 18) => {
+        checkPageBreak(20);
+        pdf.setFontSize(size);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(34, 139, 34);
+        pdf.text(text, margin, yPos);
+        yPos += size * 0.5 + 4;
+        pdf.setTextColor(0, 0, 0);
+      };
+
+      const addSubtitle = (text: string, size: number = 14) => {
+        checkPageBreak(15);
+        pdf.setFontSize(size);
+        pdf.setFont('helvetica', 'bold');
+        pdf.setTextColor(60, 60, 60);
+        pdf.text(text, margin, yPos);
+        yPos += size * 0.4 + 3;
+        pdf.setTextColor(0, 0, 0);
+      };
+
+      const addText = (text: string, fontSize: number = 10, indent: number = 0) => {
+        pdf.setFontSize(fontSize);
+        pdf.setFont('helvetica', 'normal');
+        const lines = pdf.splitTextToSize(text, contentWidth - indent);
+        for (const line of lines) {
+          checkPageBreak(fontSize * 0.5);
+          pdf.text(line, margin + indent, yPos);
+          yPos += fontSize * 0.5;
+        }
+      };
+
+      const addLabelValue = (label: string, value: string, indent: number = 0) => {
+        checkPageBreak(8);
+        pdf.setFontSize(10);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(`${label}: `, margin + indent, yPos);
+        const labelWidth = pdf.getTextWidth(`${label}: `);
+        pdf.setFont('helvetica', 'normal');
+        const valueLines = pdf.splitTextToSize(value || 'No registrado', contentWidth - indent - labelWidth);
+        pdf.text(valueLines[0], margin + indent + labelWidth, yPos);
+        yPos += 5;
+        for (let i = 1; i < valueLines.length; i++) {
+          pdf.text(valueLines[i], margin + indent, yPos);
+          yPos += 5;
+        }
+      };
+
+      const addSeparator = () => {
+        yPos += 3;
+        pdf.setDrawColor(200, 200, 200);
+        pdf.line(margin, yPos, pageWidth - margin, yPos);
+        yPos += 6;
+      };
+
+      const addImage = async (url: string, maxWidth: number = 60, maxHeight: number = 45) => {
+        try {
+          const base64 = await loadImageAsBase64(url);
+          if (base64) {
+            checkPageBreak(maxHeight + 10);
+            pdf.addImage(base64, 'JPEG', margin, yPos, maxWidth, maxHeight);
+            yPos += maxHeight + 5;
+            return true;
+          }
+        } catch (e) {
+          console.log('Error loading image:', e);
+        }
+        return false;
+      };
+
+      // ==================== PORTADA ====================
+      pdf.setFillColor(34, 139, 34);
+      pdf.rect(0, 0, pageWidth, 50, 'F');
+      pdf.setTextColor(255, 255, 255);
+      pdf.setFontSize(28);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text('MANUAL DE LA PROPIEDAD', pageWidth / 2, 30, { align: 'center' });
+      pdf.setFontSize(12);
+      pdf.text('Documento Técnico Integral', pageWidth / 2, 42, { align: 'center' });
+      
+      pdf.setTextColor(0, 0, 0);
+      yPos = 70;
+      
+      pdf.setFontSize(22);
+      pdf.setFont('helvetica', 'bold');
+      pdf.text(currentEstate.name, pageWidth / 2, yPos, { align: 'center' });
+      yPos += 15;
+      
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      if (currentEstate.address_text) {
+        pdf.text(currentEstate.address_text, pageWidth / 2, yPos, { align: 'center' });
+        yPos += 8;
+      }
+      if (currentEstate.country) {
+        pdf.text(currentEstate.country, pageWidth / 2, yPos, { align: 'center' });
+        yPos += 8;
+      }
+      
+      yPos += 15;
+      pdf.setFontSize(11);
+      pdf.text(`Fecha de Generación: ${format(new Date(), "d 'de' MMMM 'de' yyyy", { locale: es })}`, pageWidth / 2, yPos, { align: 'center' });
+      
+      // Stats boxes
+      yPos += 25;
+      const statsData = [
+        { label: 'Zonas', value: zones.length, color: [76, 175, 80] },
+        { label: 'Activos', value: assets.length, color: [33, 150, 243] },
+        { label: 'Tareas', value: tasks.length, color: [255, 152, 0] },
+        { label: 'Documentos', value: documents.length, color: [156, 39, 176] },
+      ];
+      
+      const boxWidth = 38;
+      const boxGap = 8;
+      const totalBoxesWidth = boxWidth * 4 + boxGap * 3;
+      let boxX = (pageWidth - totalBoxesWidth) / 2;
+      
+      statsData.forEach((stat) => {
+        pdf.setFillColor(stat.color[0], stat.color[1], stat.color[2]);
+        pdf.roundedRect(boxX, yPos, boxWidth, 30, 3, 3, 'F');
+        pdf.setTextColor(255, 255, 255);
+        pdf.setFontSize(20);
+        pdf.setFont('helvetica', 'bold');
+        pdf.text(String(stat.value), boxX + boxWidth / 2, yPos + 15, { align: 'center' });
+        pdf.setFontSize(9);
+        pdf.setFont('helvetica', 'normal');
+        pdf.text(stat.label, boxX + boxWidth / 2, yPos + 24, { align: 'center' });
+        boxX += boxWidth + boxGap;
+      });
+      
+      pdf.setTextColor(0, 0, 0);
+      
+      // Disclaimer
+      yPos = pageHeight - 40;
+      pdf.setFontSize(9);
+      pdf.setTextColor(100);
+      const disclaimer = 'Este documento ha sido generado automáticamente a partir de los registros verificados del sistema. Toda la información presentada corresponde a datos reales capturados durante la operación de la propiedad.';
+      const disclaimerLines = pdf.splitTextToSize(disclaimer, contentWidth);
+      disclaimerLines.forEach((line: string) => {
+        pdf.text(line, pageWidth / 2, yPos, { align: 'center' });
+        yPos += 5;
+      });
+
+      // ==================== ÍNDICE ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('ÍNDICE DE CONTENIDOS', 20);
+      yPos += 5;
+
+      const tocItems = [
+        '1. Resumen Ejecutivo',
+        '2. Descripción de Zonas',
+        '3. Inventario de Activos',
+        '4. Historial de Mantenimiento',
+        '5. Registros de Campo',
+        '6. Documentación Asociada',
+        '7. Alertas Climáticas',
+      ];
+
+      pdf.setFontSize(12);
+      pdf.setFont('helvetica', 'normal');
+      tocItems.forEach((item) => {
+        pdf.text(item, margin + 10, yPos);
+        yPos += 10;
+      });
+
+      // ==================== 1. RESUMEN EJECUTIVO ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('1. RESUMEN EJECUTIVO', 18);
+      yPos += 5;
+
+      addText('Este manual documenta de manera integral la propiedad, sus zonas operativas, activos registrados y el historial completo de intervenciones. El objetivo es garantizar la continuidad operativa y facilitar la transferencia de conocimiento.', 11);
+      yPos += 10;
+
+      addSubtitle('Estadísticas Generales');
+      addLabelValue('Total de Zonas', String(zones.length));
+      addLabelValue('Total de Activos', String(assets.length));
+      addLabelValue('Tareas Registradas', String(tasks.length));
+      addLabelValue('Intervenciones Completadas', String(completions.length));
+      addLabelValue('Registros de Campo', String(checkins.length));
+      addLabelValue('Documentos Archivados', String(documents.length));
+
+      // ==================== 2. ZONAS ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('2. DESCRIPCIÓN DE ZONAS', 18);
+      yPos += 5;
+
+      if (zones.length === 0) {
+        addText('No existen zonas registradas en el sistema.', 11);
+      } else {
+        for (const zone of zones) {
+          checkPageBreak(40);
+          addSubtitle(`Zona: ${zone.name}`);
+          addLabelValue('Propósito', zone.purpose_tags?.join(', ') || 'No definido', 5);
+          addLabelValue('Notas', zone.notes || 'Sin notas', 5);
+          const zoneAssets = assets.filter(a => a.zone_id === zone.id);
+          addLabelValue('Activos en esta zona', String(zoneAssets.length), 5);
+          yPos += 5;
+          addSeparator();
+        }
+      }
+
+      // ==================== 3. INVENTARIO DE ACTIVOS ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('3. INVENTARIO DE ACTIVOS', 18);
+      yPos += 5;
+
+      if (assets.length === 0) {
+        addText('No existen activos registrados en el sistema.', 11);
+      } else {
+        for (const asset of assets) {
+          checkPageBreak(80);
+          
+          // Asset header with green background
+          pdf.setFillColor(240, 248, 240);
+          pdf.roundedRect(margin - 5, yPos - 3, contentWidth + 10, 12, 2, 2, 'F');
+          pdf.setFontSize(13);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(34, 100, 34);
+          pdf.text(`${asset.name}`, margin, yPos + 5);
+          pdf.setTextColor(0, 0, 0);
+          yPos += 15;
+
+          // Try to add asset photo
+          const photoUrl = photosByAsset[asset.id];
+          if (photoUrl) {
+            await addImage(photoUrl, 55, 40);
+          }
+
+          const assetZone = zones.find(z => z.id === asset.zone_id);
+          
+          addLabelValue('Tipo', asset.asset_type, 5);
+          addLabelValue('Zona', assetZone?.name || 'Sin asignar', 5);
+          if (asset.lat && asset.lng) {
+            addLabelValue('Coordenadas', `${asset.lat.toFixed(6)}, ${asset.lng.toFixed(6)}`, 5);
+          }
+          addLabelValue('Fecha de Instalación', asset.install_date || 'No registrada', 5);
+          addLabelValue('Último Servicio', asset.last_service_date || 'No registrado', 5);
+          
+          if (asset.critical_care_note) {
+            yPos += 3;
+            pdf.setFillColor(255, 243, 224);
+            pdf.roundedRect(margin, yPos - 2, contentWidth, 12, 2, 2, 'F');
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(200, 100, 0);
+            pdf.text('⚠ CUIDADO CRÍTICO:', margin + 3, yPos + 5);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(asset.critical_care_note, margin + 45, yPos + 5);
+            pdf.setTextColor(0, 0, 0);
+            yPos += 15;
+          }
+          
+          if (asset.do_not_do_warnings) {
+            pdf.setFillColor(255, 235, 238);
+            pdf.roundedRect(margin, yPos - 2, contentWidth, 12, 2, 2, 'F');
+            pdf.setFontSize(9);
+            pdf.setFont('helvetica', 'bold');
+            pdf.setTextColor(200, 50, 50);
+            pdf.text('🚫 NO HACER:', margin + 3, yPos + 5);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text(asset.do_not_do_warnings, margin + 35, yPos + 5);
+            pdf.setTextColor(0, 0, 0);
+            yPos += 15;
+          }
+
+          if (asset.description) {
+            addLabelValue('Descripción', asset.description, 5);
+          }
+
+          yPos += 5;
+          addSeparator();
+        }
+      }
+
+      // ==================== 4. HISTORIAL DE MANTENIMIENTO ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('4. HISTORIAL DE MANTENIMIENTO', 18);
+      yPos += 5;
+
+      if (completions.length === 0) {
+        addText('No existen intervenciones registradas en el sistema.', 11);
+      } else {
+        addText(`Se han registrado ${completions.length} intervenciones de mantenimiento.`, 11);
+        yPos += 8;
+
+        const recentCompletions = completions.slice(0, 30);
+        for (const completion of recentCompletions) {
+          checkPageBreak(25);
+          
+          const taskTitle = (completion.task as any)?.title || 'Tarea';
+          const assetName = (completion.task as any)?.asset?.name || '';
+          const completedBy = (completion.completed_by as any)?.full_name || 'Usuario';
+          const completedDate = format(new Date(completion.completed_at), "d MMM yyyy, HH:mm", { locale: es });
+
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`• ${taskTitle}`, margin, yPos);
+          yPos += 6;
+          
+          pdf.setFontSize(9);
+          pdf.setFont('helvetica', 'normal');
+          pdf.setTextColor(100);
+          pdf.text(`Completado: ${completedDate} | Por: ${completedBy}${assetName ? ` | Activo: ${assetName}` : ''}`, margin + 5, yPos);
+          pdf.setTextColor(0, 0, 0);
+          yPos += 5;
+
+          if (completion.notes) {
+            pdf.setFontSize(9);
+            pdf.text(`Notas: ${completion.notes}`, margin + 5, yPos);
+            yPos += 5;
+          }
+          yPos += 3;
+        }
+
+        if (completions.length > 30) {
+          yPos += 5;
+          pdf.setFontSize(9);
+          pdf.setTextColor(100);
+          pdf.text(`(Se muestran las primeras 30 de ${completions.length} intervenciones)`, margin, yPos);
+          pdf.setTextColor(0, 0, 0);
+        }
+      }
+
+      // ==================== 5. REGISTROS DE CAMPO ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('5. REGISTROS DE CAMPO', 18);
+      yPos += 5;
+
+      if (checkins.length === 0) {
+        addText('No existen registros de campo en el sistema.', 11);
+      } else {
+        addText(`Se han registrado ${checkins.length} visitas de campo.`, 11);
+        yPos += 8;
+
+        const recentCheckins = checkins.slice(0, 20);
+        for (const checkin of recentCheckins) {
+          checkPageBreak(20);
+          
+          const userName = (checkin.user as any)?.full_name || 'Usuario';
+          const checkinDate = format(new Date(checkin.checkin_at), "d MMM yyyy, HH:mm", { locale: es });
+          const location = (checkin.asset as any)?.name || (checkin.zone as any)?.name || 'General';
+
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`${checkinDate}`, margin, yPos);
+          pdf.setFont('helvetica', 'normal');
+          pdf.text(` - ${userName} en ${location}`, margin + 40, yPos);
+          yPos += 5;
+
+          if (checkin.notes) {
+            pdf.setFontSize(9);
+            pdf.setTextColor(80);
+            pdf.text(`"${checkin.notes}"`, margin + 5, yPos);
+            pdf.setTextColor(0, 0, 0);
+            yPos += 5;
+          }
+          yPos += 3;
+        }
+      }
+
+      // ==================== 6. DOCUMENTACIÓN ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('6. DOCUMENTACIÓN ASOCIADA', 18);
+      yPos += 5;
+
+      if (documents.length === 0) {
+        addText('No existen documentos registrados en el sistema.', 11);
+      } else {
+        for (const doc of documents) {
+          checkPageBreak(25);
+          
+          pdf.setFontSize(11);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`• ${doc.title}`, margin, yPos);
+          yPos += 6;
+          
+          addLabelValue('Categoría', doc.category, 5);
+          if (doc.expiry_date) {
+            addLabelValue('Fecha de Vencimiento', format(new Date(doc.expiry_date), "d MMM yyyy", { locale: es }), 5);
+          }
+          if (doc.notes) {
+            addLabelValue('Notas', doc.notes, 5);
+          }
+          yPos += 3;
+        }
+      }
+
+      // ==================== 7. ALERTAS CLIMÁTICAS ====================
+      pdf.addPage();
+      yPos = margin;
+      addTitle('7. ALERTAS CLIMÁTICAS', 18);
+      yPos += 5;
+
+      if (weatherAlerts.length === 0) {
+        addText('No existen alertas climáticas registradas en el sistema.', 11);
+      } else {
+        for (const alert of weatherAlerts.slice(0, 20)) {
+          checkPageBreak(20);
+          
+          const alertDate = format(new Date(alert.fired_at), "d MMM yyyy, HH:mm", { locale: es });
+          const severity = alert.severity?.toUpperCase() || 'INFO';
+          
+          pdf.setFontSize(10);
+          pdf.setFont('helvetica', 'bold');
+          pdf.text(`[${severity}] ${alertDate}`, margin, yPos);
+          yPos += 5;
+          
+          pdf.setFont('helvetica', 'normal');
+          pdf.setFontSize(9);
+          const msgLines = pdf.splitTextToSize(alert.message_es || alert.message, contentWidth - 10);
+          msgLines.forEach((line: string) => {
+            pdf.text(line, margin + 5, yPos);
+            yPos += 4;
+          });
+          yPos += 3;
+        }
+      }
+
+      // ==================== FOOTER ON ALL PAGES ====================
+      const totalPages = pdf.getNumberOfPages();
+      for (let i = 1; i <= totalPages; i++) {
+        pdf.setPage(i);
+        pdf.setFontSize(8);
+        pdf.setTextColor(128);
+        pdf.text(
+          `${currentEstate.name} - Manual de la Propiedad`,
+          margin,
+          pageHeight - 10
+        );
+        pdf.text(
+          `Página ${i} de ${totalPages}`,
+          pageWidth - margin,
+          pageHeight - 10,
+          { align: 'right' }
+        );
+      }
+
+      // Save PDF
+      const filename = `${currentEstate.name.replace(/\s+/g, '-')}-Manual-${format(new Date(), 'yyyy-MM-dd')}.pdf`;
+      pdf.save(filename);
+
+      toast.success('Manual PDF generado exitosamente');
     } catch (error) {
       console.error('Error generating manual:', error);
-      toast.error(language === 'es' ? 'Error al generar el manual' : 'Error generating manual');
+      toast.error('Error al generar el manual');
     } finally {
       setGeneratingManual(false);
     }
