@@ -333,6 +333,31 @@ export function EstateMap({
 
   return (
     <div className="relative h-full w-full">
+      {/* Custom CSS for marker cluster spiderfy */}
+      <style>{`
+        .leaflet-marker-icon.custom-asset-marker,
+        .leaflet-marker-icon.custom-cluster-marker {
+          background: transparent !important;
+          border: none !important;
+        }
+        .marker-cluster {
+          background-clip: padding-box;
+        }
+        .marker-cluster-small,
+        .marker-cluster-medium,
+        .marker-cluster-large {
+          background-color: transparent !important;
+        }
+        .leaflet-cluster-anim .leaflet-marker-icon {
+          transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+        }
+        /* Spider leg styling */
+        .leaflet-cluster-spider-leg {
+          stroke: hsl(142, 76%, 36%);
+          stroke-width: 2;
+          stroke-opacity: 0.7;
+        }
+      `}</style>
       <div 
         ref={mapContainerRef} 
         className="h-full w-full rounded-xl"
