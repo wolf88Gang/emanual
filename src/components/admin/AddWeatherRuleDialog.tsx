@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Loader2, Plus, Snowflake, CloudRain, Wind, Sun } from 'lucide-react';
+import { Loader2, Plus, Snowflake, CloudRain, Wind, Sun, Mountain, Zap } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -31,6 +31,8 @@ interface AddWeatherRuleDialogProps {
 
 type WeatherRuleType = 'freeze' | 'heavy_rain' | 'high_wind' | 'drought';
 
+type TemperatureUnit = 'F' | 'C';
+
 interface RuleConfig {
   icon: React.ElementType;
   label: { en: string; es: string };
@@ -38,37 +40,39 @@ interface RuleConfig {
   thresholdUnit: string;
   defaultThreshold: number;
   defaultAction: { en: string; es: string };
+  supportsTemperatureUnit?: boolean;
 }
 
 const ruleConfigs: Record<WeatherRuleType, RuleConfig> = {
   freeze: {
     icon: Snowflake,
     label: { en: 'Freeze Warning', es: 'Alerta de Helada' },
-    thresholdLabel: { en: 'Temperature below (°F)', es: 'Temperatura menor a (°F)' },
-    thresholdUnit: '°F',
+    thresholdLabel: { en: 'Temperature below', es: 'Temperatura menor a' },
+    thresholdUnit: '°',
     defaultThreshold: 35,
     defaultAction: {
       en: 'Cover tropical plants. Turn off irrigation. Check pool equipment.',
       es: 'Cubrir plantas tropicales sensibles. Apagar riego. Revisar equipo de piscina.',
     },
+    supportsTemperatureUnit: true,
   },
   heavy_rain: {
     icon: CloudRain,
-    label: { en: 'Heavy Rain', es: 'Lluvia Fuerte' },
-    thresholdLabel: { en: 'Rainfall above (inches)', es: 'Lluvia mayor a (pulgadas)' },
-    thresholdUnit: 'in',
-    defaultThreshold: 2,
+    label: { en: 'Heavy Rain / Downpour', es: 'Aguacero / Lluvia Fuerte' },
+    thresholdLabel: { en: 'Rainfall above (mm)', es: 'Lluvia mayor a (mm)' },
+    thresholdUnit: 'mm',
+    defaultThreshold: 50,
     defaultAction: {
-      en: 'Check slope drainage. Inspect erosion control. Clear drain debris.',
-      es: 'Revisar drenaje de pendientes. Inspeccionar control de erosión. Limpiar escombros de desagües.',
+      en: 'Check slope drainage. Inspect erosion control. Clear drain debris. Review flood-prone areas.',
+      es: 'Revisar drenaje de pendientes. Inspeccionar control de erosión. Limpiar escombros de desagües. Revisar zonas propensas a inundación.',
     },
   },
   high_wind: {
     icon: Wind,
     label: { en: 'High Wind', es: 'Viento Fuerte' },
-    thresholdLabel: { en: 'Wind speed above (mph)', es: 'Viento mayor a (mph)' },
-    thresholdUnit: 'mph',
-    defaultThreshold: 40,
+    thresholdLabel: { en: 'Wind speed above (km/h)', es: 'Viento mayor a (km/h)' },
+    thresholdUnit: 'km/h',
+    defaultThreshold: 65,
     defaultAction: {
       en: 'Secure loose items. Move potted plants to shelter. Check tree stability.',
       es: 'Asegurar objetos sueltos. Mover macetas a refugio. Revisar estabilidad de árboles.',
@@ -95,6 +99,7 @@ export function AddWeatherRuleDialog({ onRuleAdded }: AddWeatherRuleDialogProps)
 
   const [ruleType, setRuleType] = useState<WeatherRuleType>('freeze');
   const [threshold, setThreshold] = useState<number>(35);
+  const [temperatureUnit, setTemperatureUnit] = useState<TemperatureUnit>('C');
   const [actionText, setActionText] = useState('');
   const [actionTextEs, setActionTextEs] = useState('');
   const [autoCreateTasks, setAutoCreateTasks] = useState(true);
@@ -105,9 +110,24 @@ export function AddWeatherRuleDialog({ onRuleAdded }: AddWeatherRuleDialogProps)
   function handleRuleTypeChange(type: WeatherRuleType) {
     setRuleType(type);
     const newConfig = ruleConfigs[type];
-    setThreshold(newConfig.defaultThreshold);
+    // Convert default threshold to Celsius if freeze rule
+    if (type === 'freeze' && temperatureUnit === 'C') {
+      setThreshold(Math.round((newConfig.defaultThreshold - 32) * 5 / 9));
+    } else {
+      setThreshold(newConfig.defaultThreshold);
+    }
     setActionText(newConfig.defaultAction.en);
     setActionTextEs(newConfig.defaultAction.es);
+  }
+
+  function handleTemperatureUnitChange(unit: TemperatureUnit) {
+    // Convert threshold when changing units
+    if (unit === 'C' && temperatureUnit === 'F') {
+      setThreshold(Math.round((threshold - 32) * 5 / 9));
+    } else if (unit === 'F' && temperatureUnit === 'C') {
+      setThreshold(Math.round((threshold * 9 / 5) + 32));
+    }
+    setTemperatureUnit(unit);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -125,9 +145,24 @@ export function AddWeatherRuleDialog({ onRuleAdded }: AddWeatherRuleDialogProps)
 
     setSaving(true);
     try {
+      // Store temperature in Fahrenheit internally for consistency
+      let storedValue = threshold;
+      let storedUnit = config.thresholdUnit;
+      
+      if (config.supportsTemperatureUnit) {
+        storedUnit = `°${temperatureUnit}`;
+        // If user entered Celsius, convert to Fahrenheit for storage
+        if (temperatureUnit === 'C') {
+          storedValue = Math.round((threshold * 9 / 5) + 32);
+          storedUnit = '°F'; // Store in F internally
+        }
+      }
+
       const thresholdJson = {
-        value: threshold,
-        unit: config.thresholdUnit,
+        value: storedValue,
+        unit: storedUnit,
+        displayUnit: config.supportsTemperatureUnit ? `°${temperatureUnit}` : config.thresholdUnit,
+        displayValue: threshold,
       };
 
       const { error } = await supabase
@@ -163,7 +198,9 @@ export function AddWeatherRuleDialog({ onRuleAdded }: AddWeatherRuleDialogProps)
 
   function resetForm() {
     setRuleType('freeze');
-    setThreshold(ruleConfigs.freeze.defaultThreshold);
+    setTemperatureUnit('C');
+    // Default to Celsius equivalent of 35°F (about 2°C)
+    setThreshold(2);
     setActionText('');
     setActionTextEs('');
     setAutoCreateTasks(true);
@@ -171,6 +208,7 @@ export function AddWeatherRuleDialog({ onRuleAdded }: AddWeatherRuleDialogProps)
   }
 
   const Icon = config.icon;
+  const displayUnit = config.supportsTemperatureUnit ? `°${temperatureUnit}` : config.thresholdUnit;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -243,7 +281,19 @@ export function AddWeatherRuleDialog({ onRuleAdded }: AddWeatherRuleDialogProps)
                 onChange={(e) => setThreshold(Number(e.target.value))}
                 className="w-24"
               />
-              <span className="text-muted-foreground">{config.thresholdUnit}</span>
+              {config.supportsTemperatureUnit ? (
+                <Select value={temperatureUnit} onValueChange={(v) => handleTemperatureUnitChange(v as TemperatureUnit)}>
+                  <SelectTrigger className="w-20">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="C">°C</SelectItem>
+                    <SelectItem value="F">°F</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <span className="text-muted-foreground">{config.thresholdUnit}</span>
+              )}
             </div>
           </div>
 

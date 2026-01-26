@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Loader2, Clock, FileText } from 'lucide-react';
+import { Download, Loader2, Clock, FileText, Plus } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
@@ -17,6 +17,7 @@ import { WeekSummaryCard } from '@/components/labor/WeekSummaryCard';
 import { WorkerShiftCard } from '@/components/labor/WorkerShiftCard';
 import { ValidationModal } from '@/components/labor/ValidationModal';
 import { PaymentModal } from '@/components/labor/PaymentModal';
+import { ManualShiftDialog } from '@/components/labor/ManualShiftDialog';
 import type { WorkerShift, Currency, RateType, ValidationStatus, DecisionType } from '@/components/labor/types';
 
 function formatMinutes(minutes: number): string {
@@ -43,7 +44,8 @@ export default function LaborManagement() {
     loading, 
     workerSummaries, 
     updateValidation, 
-    recordPayment 
+    recordPayment,
+    refetch,
   } = useLaborData(weekStart, language);
 
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
@@ -192,10 +194,13 @@ export default function LaborManagement() {
                 : 'Time, evidence, validation and payments'}
             </p>
           </div>
-          <Button onClick={exportToPDF} disabled={workerSummaries.length === 0}>
-            <Download className="h-4 w-4 mr-2" />
-            {language === 'es' ? 'Exportar PDF' : 'Export PDF'}
-          </Button>
+          <div className="flex items-center gap-2">
+            <ManualShiftDialog onShiftAdded={refetch} />
+            <Button onClick={exportToPDF} disabled={workerSummaries.length === 0}>
+              <Download className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Exportar PDF' : 'Export PDF'}
+            </Button>
+          </div>
         </div>
 
         {/* Week Navigation */}
