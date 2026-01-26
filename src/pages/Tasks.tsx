@@ -25,6 +25,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
 import { TaskCompletionDialog } from '@/components/tasks/TaskCompletionDialog';
+import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 
 interface Task {
@@ -182,6 +183,41 @@ export default function Tasks() {
     setCompletionDialogOpen(true);
   }
 
+  async function handleQuickComplete(task: Task, completed: boolean) {
+    try {
+      const newStatus = completed ? 'completed' : 'pending';
+      
+      const { error } = await supabase
+        .from('tasks')
+        .update({ status: newStatus })
+        .eq('id', task.id);
+
+      if (error) throw error;
+
+      // If completing, also create a task_completion record
+      if (completed) {
+        await supabase
+          .from('task_completions')
+          .insert({
+            task_id: task.id,
+            completed_by_user_id: user?.id,
+            notes: language === 'es' ? 'Marcado como completado por administrador' : 'Marked complete by admin'
+          });
+      }
+
+      toast.success(
+        completed 
+          ? (language === 'es' ? 'Tarea completada' : 'Task completed')
+          : (language === 'es' ? 'Tarea reabierta' : 'Task reopened')
+      );
+      
+      fetchTasks();
+    } catch (error) {
+      console.error('Error updating task:', error);
+      toast.error(language === 'es' ? 'Error al actualizar' : 'Error updating task');
+    }
+  }
+
   return (
     <ModernAppLayout>
       <div className="container py-6">
@@ -295,7 +331,7 @@ export default function Tasks() {
                         {/* Main content */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
-                            <div>
+                            <div className="flex-1">
                               <h3 className="font-medium">
                                 {language === 'es' && task.title_es 
                                   ? task.title_es 
@@ -309,9 +345,24 @@ export default function Tasks() {
                                 </p>
                               )}
                             </div>
-                            <Badge variant="outline" className={cn('shrink-0', config.badgeClass)}>
-                              {language === 'es' ? config.labelEs : config.label}
-                            </Badge>
+                            <div className="flex items-center gap-2 shrink-0">
+                              {/* Quick complete switch for owners/managers */}
+                              {isOwnerOrManager && (
+                                <div 
+                                  className="flex items-center gap-2"
+                                  onClick={(e) => e.stopPropagation()}
+                                >
+                                  <Switch
+                                    checked={task.status === 'completed'}
+                                    onCheckedChange={(checked) => handleQuickComplete(task, checked)}
+                                    className="data-[state=checked]:bg-success"
+                                  />
+                                </div>
+                              )}
+                              <Badge variant="outline" className={cn('shrink-0', config.badgeClass)}>
+                                {language === 'es' ? config.labelEs : config.label}
+                              </Badge>
+                            </div>
                           </div>
 
                           {/* Meta info */}
