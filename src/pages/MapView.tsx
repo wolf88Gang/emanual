@@ -165,13 +165,28 @@ export default function MapView() {
     return true;
   });
 
-  // Get estate center from first zone or asset with coordinates
+  // Get estate center from zone geometry, estate coords, or first asset
   const getMapCenter = (): [number, number] => {
-    // Try to get from estate
+    // Priority 1: Try to get center from first zone's geometry
+    if (zones.length > 0 && zones[0].geometry_geojson) {
+      try {
+        const geojson = zones[0].geometry_geojson as any;
+        if (geojson.type === 'Polygon' && geojson.coordinates?.[0]?.length > 0) {
+          // Calculate centroid of polygon
+          const coords = geojson.coordinates[0];
+          const sumLat = coords.reduce((acc: number, c: number[]) => acc + c[1], 0);
+          const sumLng = coords.reduce((acc: number, c: number[]) => acc + c[0], 0);
+          return [sumLat / coords.length, sumLng / coords.length];
+        }
+      } catch (e) {
+        console.warn('Error parsing zone geometry for center:', e);
+      }
+    }
+    // Priority 2: Try to get from estate
     if (currentEstate?.lat && currentEstate?.lng) {
       return [currentEstate.lat, currentEstate.lng];
     }
-    // Try to get from first asset with coordinates
+    // Priority 3: Try to get from first asset with coordinates
     const assetWithCoords = assets.find(a => a.lat && a.lng);
     if (assetWithCoords?.lat && assetWithCoords?.lng) {
       return [assetWithCoords.lat, assetWithCoords.lng];
