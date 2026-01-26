@@ -1090,6 +1090,41 @@ export type Database = {
           },
         ]
       }
+      work_log_entries: {
+        Row: {
+          created_at: string
+          entry_type: string | null
+          id: string
+          processed_text: string | null
+          raw_text: string
+          shift_id: string
+        }
+        Insert: {
+          created_at?: string
+          entry_type?: string | null
+          id?: string
+          processed_text?: string | null
+          raw_text: string
+          shift_id: string
+        }
+        Update: {
+          created_at?: string
+          entry_type?: string | null
+          id?: string
+          processed_text?: string | null
+          raw_text?: string
+          shift_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_log_entries_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "worker_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       worker_rates: {
         Row: {
           created_at: string
@@ -1149,6 +1184,7 @@ export type Database = {
       }
       worker_shifts: {
         Row: {
+          asset_id: string | null
           check_in_at: string
           check_in_lat: number | null
           check_in_lng: number | null
@@ -1157,14 +1193,23 @@ export type Database = {
           check_out_lat: number | null
           check_out_lng: number | null
           check_out_photo_url: string | null
+          checkin_type: string | null
           created_at: string
           estate_id: string
+          gps_validated: boolean | null
           id: string
           notes: string | null
+          qr_code_in: string | null
+          qr_code_out: string | null
+          tasks_completed: string[] | null
           updated_at: string
           user_id: string
+          work_description: string | null
+          work_description_raw: string[] | null
+          zone_id: string | null
         }
         Insert: {
+          asset_id?: string | null
           check_in_at?: string
           check_in_lat?: number | null
           check_in_lng?: number | null
@@ -1173,14 +1218,23 @@ export type Database = {
           check_out_lat?: number | null
           check_out_lng?: number | null
           check_out_photo_url?: string | null
+          checkin_type?: string | null
           created_at?: string
           estate_id: string
+          gps_validated?: boolean | null
           id?: string
           notes?: string | null
+          qr_code_in?: string | null
+          qr_code_out?: string | null
+          tasks_completed?: string[] | null
           updated_at?: string
           user_id: string
+          work_description?: string | null
+          work_description_raw?: string[] | null
+          zone_id?: string | null
         }
         Update: {
+          asset_id?: string | null
           check_in_at?: string
           check_in_lat?: number | null
           check_in_lng?: number | null
@@ -1189,14 +1243,29 @@ export type Database = {
           check_out_lat?: number | null
           check_out_lng?: number | null
           check_out_photo_url?: string | null
+          checkin_type?: string | null
           created_at?: string
           estate_id?: string
+          gps_validated?: boolean | null
           id?: string
           notes?: string | null
+          qr_code_in?: string | null
+          qr_code_out?: string | null
+          tasks_completed?: string[] | null
           updated_at?: string
           user_id?: string
+          work_description?: string | null
+          work_description_raw?: string[] | null
+          zone_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "worker_shifts_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "worker_shifts_estate_id_fkey"
             columns: ["estate_id"]
@@ -1209,6 +1278,13 @@ export type Database = {
             columns: ["user_id"]
             isOneToOne: false
             referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worker_shifts_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
             referencedColumns: ["id"]
           },
         ]

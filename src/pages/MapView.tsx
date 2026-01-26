@@ -29,6 +29,7 @@ import { ZoneEditPanel } from '@/components/map/ZoneEditPanel';
 import { AssetCreationDialog } from '@/components/map/AssetCreationDialog';
 import { MapActionsMenu } from '@/components/map/MapActionsMenu';
 import { PropertyDetailView } from '@/components/map/PropertyDetailView';
+import { QRShiftScanner, ShiftEndFlow } from '@/components/qr';
 import { toast } from 'sonner';
 import type { MapZone, MapAsset } from '@/components/map/types';
 
@@ -37,7 +38,7 @@ type AssetType = 'plant' | 'tree' | 'irrigation_controller' | 'valve' | 'lightin
 export default function MapView() {
   const { t, language } = useLanguage();
   const { currentEstate } = useEstate();
-  const { isOwnerOrManager } = useAuth();
+  const { isOwnerOrManager, user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { latitude, longitude, getCurrentPosition, hasLocation, loading: geoLoading } = useGeolocation();
@@ -57,6 +58,39 @@ export default function MapView() {
   const [mapInstance, setMapInstance] = useState<L.Map | null>(null);
   const [showPropertyView, setShowPropertyView] = useState(false);
   const [editingZone, setEditingZone] = useState<MapZone | null>(null);
+  
+  // Shift management state
+  const [showShiftScanner, setShowShiftScanner] = useState(false);
+  const [showShiftEnd, setShowShiftEnd] = useState(false);
+  const [hasActiveShift, setHasActiveShift] = useState(false);
+
+  // Check for active shift
+  useEffect(() => {
+    if (currentEstate && user) {
+      checkActiveShift();
+    }
+  }, [currentEstate, user]);
+
+  async function checkActiveShift() {
+    if (!currentEstate || !user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('worker_shifts')
+        .select('id')
+        .eq('estate_id', currentEstate.id)
+        .eq('user_id', user.id)
+        .is('check_out_at', null)
+        .limit(1)
+        .maybeSingle();
+
+      if (!error) {
+        setHasActiveShift(!!data);
+      }
+    } catch (err) {
+      console.error('Error checking active shift:', err);
+    }
+  }
   // Handle zone selection from URL param
   useEffect(() => {
     const zoneId = searchParams.get('zone');
@@ -398,24 +432,25 @@ export default function MapView() {
                 />
               )}
 
-              {/* Floating Action Menu */}
-              {isOwnerOrManager && (
-                <MapActionsMenu
-                  onAddAsset={() => {
-                    setPinPlacementMode(!pinPlacementMode);
-                    setZoneDrawingMode(false);
-                  }}
-                  onDrawZone={() => {
-                    setZoneDrawingMode(!zoneDrawingMode);
-                    setPinPlacementMode(false);
-                  }}
-                  onScanQR={() => setShowQRScanner(true)}
-                  onLocateMe={centerOnCurrentLocation}
-                  isAddingAsset={pinPlacementMode}
-                  isDrawingZone={zoneDrawingMode}
-                  locatingDisabled={geoLoading}
-                />
-              )}
+              {/* Floating Action Menu - Available for all users now */}
+              <MapActionsMenu
+                onAddAsset={() => {
+                  setPinPlacementMode(!pinPlacementMode);
+                  setZoneDrawingMode(false);
+                }}
+                onDrawZone={() => {
+                  setZoneDrawingMode(!zoneDrawingMode);
+                  setPinPlacementMode(false);
+                }}
+                onScanQR={() => setShowQRScanner(true)}
+                onLocateMe={centerOnCurrentLocation}
+                onStartShift={() => setShowShiftScanner(true)}
+                onEndShift={() => setShowShiftEnd(true)}
+                isAddingAsset={pinPlacementMode}
+                isDrawingZone={zoneDrawingMode}
+                locatingDisabled={geoLoading}
+                hasActiveShift={hasActiveShift}
+              />
             </>
           )}
         </div>
@@ -546,6 +581,31 @@ export default function MapView() {
           onAssetClick={(asset) => {
             setShowPropertyView(false);
             navigate(`/assets/${asset.id}`);
+          }}
+        />
+
+        {/* QR Shift Scanner for starting shifts */}
+        {showShiftScanner && (
+          <QRShiftScanner
+            onClose={() => setShowShiftScanner(false)}
+            onShiftStarted={() => {
+              setHasActiveShift(true);
+              checkActiveShift();
+            }}
+            onShiftEnded={() => {
+              setHasActiveShift(false);
+              checkActiveShift();
+            }}
+          />
+        )}
+
+        {/* Shift End Flow */}
+        <ShiftEndFlow
+          open={showShiftEnd}
+          onOpenChange={setShowShiftEnd}
+          onComplete={() => {
+            setHasActiveShift(false);
+            checkActiveShift();
           }}
         />
 
