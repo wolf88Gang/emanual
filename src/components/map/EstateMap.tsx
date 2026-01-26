@@ -1,6 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet.markercluster';
+import 'leaflet.markercluster/dist/MarkerCluster.css';
+import 'leaflet.markercluster/dist/MarkerCluster.Default.css';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -88,6 +91,7 @@ export function EstateMap({
   const [isMapReady, setIsMapReady] = useState(false);
   const [isSatellite, setIsSatellite] = useState(false);
   const tileLayerRef = useRef<L.TileLayer | null>(null);
+  const markerClusterRef = useRef<L.MarkerClusterGroup | null>(null);
 
   // Tile layer URLs
   const streetTileUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
@@ -218,28 +222,69 @@ export function EstateMap({
     }
   }, [selectedZone]);
 
-  // Add asset markers
+  // Add asset markers with clustering
   useEffect(() => {
     if (!mapRef.current || !isMapReady) return;
 
     const map = mapRef.current;
     
-    // Clear existing asset markers
-    map.eachLayer((layer) => {
-      if ((layer as any)._isAssetMarker) {
-        map.removeLayer(layer);
-      }
+    // Remove existing cluster group
+    if (markerClusterRef.current) {
+      map.removeLayer(markerClusterRef.current);
+      markerClusterRef.current = null;
+    }
+
+    // Create new cluster group with spiderfying for stacked markers
+    const clusterGroup = L.markerClusterGroup({
+      spiderfyOnMaxZoom: true,
+      showCoverageOnHover: false,
+      zoomToBoundsOnClick: true,
+      maxClusterRadius: 40,
+      spiderfyDistanceMultiplier: 2,
+      iconCreateFunction: (cluster) => {
+        const count = cluster.getChildCount();
+        const hasRisk = cluster.getAllChildMarkers().some(
+          (m: any) => m._hasRisk
+        );
+        const bgColor = hasRisk ? 'hsl(0, 84%, 60%)' : 'hsl(142, 76%, 36%)';
+        
+        return L.divIcon({
+          html: `
+            <div style="
+              width: 44px;
+              height: 44px;
+              background: ${bgColor};
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 16px;
+              font-weight: 600;
+              color: white;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+              border: 3px solid white;
+            ">
+              ${count}
+            </div>
+          `,
+          className: 'custom-cluster-marker',
+          iconSize: [44, 44],
+          iconAnchor: [22, 22],
+        });
+      },
     });
 
-    // Add asset markers
+    // Add asset markers to cluster group
     const mappableAssets = assets.filter(a => a.lat !== null && a.lng !== null);
     
     mappableAssets.forEach((asset) => {
+      const hasRisk = (asset.risk_flags?.length || 0) > 0;
       const marker = L.marker([asset.lat!, asset.lng!], {
-        icon: createAssetIcon(asset.asset_type, (asset.risk_flags?.length || 0) > 0),
+        icon: createAssetIcon(asset.asset_type, hasRisk),
       });
 
-      (marker as any)._isAssetMarker = true;
+      // Store risk flag on marker for cluster icon
+      (marker as any)._hasRisk = hasRisk;
 
       const popupContent = `
         <div style="min-width: 180px; font-family: system-ui, sans-serif;">
@@ -273,8 +318,17 @@ export function EstateMap({
       `;
 
       marker.bindPopup(popupContent);
-      marker.addTo(map);
+      clusterGroup.addLayer(marker);
     });
+
+    map.addLayer(clusterGroup);
+    markerClusterRef.current = clusterGroup;
+
+    return () => {
+      if (markerClusterRef.current && mapRef.current) {
+        mapRef.current.removeLayer(markerClusterRef.current);
+      }
+    };
   }, [assets, language, isMapReady]);
 
   return (
