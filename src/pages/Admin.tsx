@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { SimulateAlertButton } from '@/components/admin/SimulateAlertButton';
+import { AddWeatherRuleDialog } from '@/components/admin/AddWeatherRuleDialog';
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
 import { toast } from 'sonner';
 
@@ -333,17 +334,11 @@ export default function Admin() {
                 {language === 'es' ? 'Reglas de Alertas del Clima' : 'Weather Alert Rules'}
               </h2>
               <div className="flex gap-2">
-                <SimulateAlertButton 
-                  weatherRules={weatherRules} 
-                  onAlertCreated={() => fetchAdminData()}
-                />
-                <Button onClick={() => {
-                  // For now show toast - full form to be implemented
-                  toast.info(language === 'es' ? 'Función en desarrollo' : 'Feature coming soon');
-                }}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {language === 'es' ? 'Agregar Regla' : 'Add Rule'}
-                </Button>
+              <SimulateAlertButton 
+                weatherRules={weatherRules} 
+                onAlertCreated={() => fetchAdminData()}
+              />
+              <AddWeatherRuleDialog onRuleAdded={() => fetchAdminData()} />
               </div>
             </div>
 
