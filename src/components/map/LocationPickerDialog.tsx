@@ -12,6 +12,8 @@ interface LocationPickerDialogProps {
   onOpenChange: (open: boolean) => void;
   initialLat?: number;
   initialLng?: number;
+  estateLat?: number | null;
+  estateLng?: number | null;
   onConfirm: (lat: number, lng: number) => void;
 }
 
@@ -20,6 +22,8 @@ export function LocationPickerDialog({
   onOpenChange,
   initialLat,
   initialLng,
+  estateLat,
+  estateLng,
   onConfirm,
 }: LocationPickerDialogProps) {
   const { language } = useLanguage();
@@ -33,9 +37,12 @@ export function LocationPickerDialog({
     initialLat && initialLng ? { lat: initialLat, lng: initialLng } : null
   );
 
+  // Priority: asset coords > estate coords > default Puerto Rico
   const defaultCenter: [number, number] = initialLat && initialLng 
     ? [initialLat, initialLng] 
-    : [18.4655, -66.1057];
+    : (estateLat && estateLng 
+        ? [estateLat, estateLng] 
+        : [18.4655, -66.1057]);
 
   // Initialize map using callback ref pattern
   const initializeMap = useCallback(() => {
@@ -118,7 +125,7 @@ export function LocationPickerDialog({
     
     // Force resize
     setTimeout(() => map.invalidateSize(), 100);
-  }, [defaultCenter, initialLat, initialLng]);
+  }, [defaultCenter, initialLat, initialLng, estateLat, estateLng]);
 
   // Initialize when dialog opens
   useEffect(() => {

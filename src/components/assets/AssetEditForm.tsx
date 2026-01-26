@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Pencil, Save, X, MapPin, AlertTriangle, Shield, Tag, ChevronDown, Map } from 'lucide-react';
+import { Pencil, Save, X, MapPin, AlertTriangle, Shield, Tag, ChevronDown, Map, Camera } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -13,6 +13,8 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { LocationPickerDialog } from '@/components/map/LocationPickerDialog';
+import { AssetPhotoUpload } from './AssetPhotoUpload';
+import { useEstate } from '@/contexts/EstateContext';
 
 interface AssetEditFormProps {
   asset: {
@@ -27,6 +29,7 @@ interface AssetEditFormProps {
     lat: number | null;
     lng: number | null;
     zone_id: string | null;
+    photos?: { id: string; url: string; caption: string | null }[];
   };
   zones: Array<{ id: string; name: string; color: string | null }>;
   onSave: () => void;
@@ -70,10 +73,12 @@ const COMMON_PURPOSE_TAGS = [
 
 export function AssetEditForm({ asset, zones, onSave, onCancel }: AssetEditFormProps) {
   const { language } = useLanguage();
+  const { currentEstate } = useEstate();
   const [saving, setSaving] = useState(false);
   const [showLocationPicker, setShowLocationPicker] = useState(false);
   const [tagPopoverOpen, setTagPopoverOpen] = useState(false);
   const [riskPopoverOpen, setRiskPopoverOpen] = useState(false);
+  const [currentPhotos, setCurrentPhotos] = useState(asset.photos || []);
   
   const [formData, setFormData] = useState({
     name: asset.name,
@@ -192,6 +197,22 @@ export function AssetEditForm({ asset, zones, onSave, onCancel }: AssetEditFormP
           </CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Photo Upload Section */}
+          <AssetPhotoUpload
+            assetId={asset.id}
+            assetName={asset.name}
+            currentPhotos={currentPhotos}
+            onPhotoUploaded={async () => {
+              // Refresh photos
+              const { data } = await supabase
+                .from('asset_photos')
+                .select('id, url, caption')
+                .eq('asset_id', asset.id)
+                .order('created_at', { ascending: true });
+              if (data) setCurrentPhotos(data);
+            }}
+          />
+
           {/* Basic Info */}
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="space-y-2">
@@ -453,6 +474,8 @@ export function AssetEditForm({ asset, zones, onSave, onCancel }: AssetEditFormP
         onOpenChange={setShowLocationPicker}
         initialLat={formData.lat ? parseFloat(formData.lat) : undefined}
         initialLng={formData.lng ? parseFloat(formData.lng) : undefined}
+        estateLat={currentEstate?.lat}
+        estateLng={currentEstate?.lng}
         onConfirm={handleLocationConfirm}
       />
     </>
