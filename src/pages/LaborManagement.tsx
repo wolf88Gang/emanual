@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Download, Loader2, Clock, FileText, Plus } from 'lucide-react';
+import { Download, Loader2, Clock, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
@@ -11,14 +11,16 @@ import jsPDF from 'jspdf';
 
 // Labor components
 import { useLaborData } from '@/components/labor/useLaborData';
+import { useWorkerRates } from '@/components/labor/useWorkerRates';
 import { WeekNavigator } from '@/components/labor/WeekNavigator';
-import { RateConfigCard } from '@/components/labor/RateConfigCard';
 import { WeekSummaryCard } from '@/components/labor/WeekSummaryCard';
 import { WorkerShiftCard } from '@/components/labor/WorkerShiftCard';
 import { ValidationModal } from '@/components/labor/ValidationModal';
 import { PaymentModal } from '@/components/labor/PaymentModal';
 import { ManualShiftDialog } from '@/components/labor/ManualShiftDialog';
-import type { WorkerShift, Currency, RateType, ValidationStatus, DecisionType } from '@/components/labor/types';
+import { EstateRateDialog } from '@/components/labor/EstateRateDialog';
+import { CurrentRateBadge } from '@/components/labor/CurrentRateBadge';
+import type { WorkerShift, Currency, ValidationStatus, DecisionType } from '@/components/labor/types';
 
 function formatMinutes(minutes: number): string {
   const hours = Math.floor(minutes / 60);
@@ -30,11 +32,6 @@ export default function LaborManagement() {
   const { language } = useLanguage();
   const { currentEstate } = useEstate();
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
-  
-  // Rate configuration
-  const [currency, setCurrency] = useState<Currency>('USD');
-  const [rateType, setRateType] = useState<RateType>('hourly');
-  const [rateAmount, setRateAmount] = useState(15);
 
   // Modals
   const [validatingShift, setValidatingShift] = useState<WorkerShift | null>(null);
@@ -48,9 +45,20 @@ export default function LaborManagement() {
     refetch,
   } = useLaborData(weekStart, language);
 
+  const {
+    estateDefaultRate,
+    saveEstateDefaultRate,
+    calculatePay,
+  } = useWorkerRates(language);
+
   const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
   const dateLocale = language === 'es' ? es : undefined;
-  const currencySymbol = currency === 'CRC' ? '₡' : '$';
+  
+  // Get currency and rate from estate default or fallback
+  const effectiveCurrency = (estateDefaultRate?.currency as Currency) || 'USD';
+  const effectiveRateAmount = estateDefaultRate?.rate_amount || 15;
+  const effectiveRateType = estateDefaultRate?.rate_type || 'hourly';
+  const currencySymbol = effectiveCurrency === 'CRC' ? '₡' : '$';
 
   const handleValidation = (
     shiftId: string,
@@ -105,7 +113,7 @@ export default function LaborManagement() {
     );
     yPos += 6;
     doc.text(
-      `${isSpanish ? 'Tarifa:' : 'Rate:'} ${currencySymbol}${rateAmount.toFixed(2)}/${rateType === 'hourly' ? 'hr' : 'día'}`,
+      `${isSpanish ? 'Tarifa:' : 'Rate:'} ${currencySymbol}${effectiveRateAmount.toFixed(2)}/${effectiveRateType === 'hourly' ? 'hr' : 'día'}`,
       margin,
       yPos
     );
@@ -136,16 +144,18 @@ export default function LaborManagement() {
         yPos = margin;
       }
 
-      const approvedPay = (worker.approvedMinutes / 60) * rateAmount;
-      const paidPay = (worker.paidMinutes / 60) * rateAmount;
-      totalApproved += approvedPay;
-      totalPaid += paidPay;
+      // Use calculatePay for each worker to respect individual rates
+      const approvedPayData = calculatePay(worker.userId, worker.approvedMinutes);
+      const paidPayData = calculatePay(worker.userId, worker.paidMinutes);
+      
+      totalApproved += approvedPayData.amount;
+      totalPaid += paidPayData.amount;
 
       doc.text(worker.userName.substring(0, 20), margin, yPos);
       doc.text(worker.totalShifts.toString(), margin + 55, yPos);
       doc.text(formatMinutes(worker.totalMinutes), margin + 75, yPos);
-      doc.text(`${currencySymbol}${approvedPay.toFixed(2)}`, margin + 95, yPos);
-      doc.text(`${currencySymbol}${paidPay.toFixed(2)}`, margin + 125, yPos);
+      doc.text(`${currencySymbol}${approvedPayData.amount.toFixed(2)}`, margin + 95, yPos);
+      doc.text(`${currencySymbol}${paidPayData.amount.toFixed(2)}`, margin + 125, yPos);
       doc.text(`${worker.pendingShifts}`, margin + 155, yPos);
       yPos += 7;
     });
@@ -188,13 +198,20 @@ export default function LaborManagement() {
             <h1 className="text-2xl font-serif font-bold">
               {language === 'es' ? 'Gobernanza Laboral' : 'Labor Governance'}
             </h1>
-            <p className="text-muted-foreground text-sm">
+            <p className="text-muted-foreground text-sm flex items-center gap-2 mt-1">
               {language === 'es' 
                 ? 'Tiempo, evidencia, validación y pagos' 
                 : 'Time, evidence, validation and payments'}
+              <span className="text-muted-foreground/50">•</span>
+              <CurrentRateBadge rate={estateDefaultRate} language={language} />
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
+            <EstateRateDialog 
+              language={language}
+              currentRate={estateDefaultRate}
+              onSave={saveEstateDefaultRate}
+            />
             <ManualShiftDialog onShiftAdded={refetch} />
             <Button onClick={exportToPDF} disabled={workerSummaries.length === 0}>
               <Download className="h-4 w-4 mr-2" />
@@ -210,22 +227,11 @@ export default function LaborManagement() {
           language={language} 
         />
 
-        {/* Rate Configuration */}
-        <RateConfigCard
-          language={language}
-          currency={currency}
-          onCurrencyChange={setCurrency}
-          rateType={rateType}
-          onRateTypeChange={setRateType}
-          rateAmount={rateAmount}
-          onRateAmountChange={setRateAmount}
-        />
-
         {/* Week Summary Stats */}
         <WeekSummaryCard
           language={language}
-          currency={currency}
-          hourlyRate={rateAmount}
+          currency={effectiveCurrency}
+          hourlyRate={effectiveRateAmount}
           workerSummaries={workerSummaries}
         />
 
@@ -259,8 +265,8 @@ export default function LaborManagement() {
                   key={worker.userId}
                   worker={worker}
                   language={language}
-                  currency={currency}
-                  hourlyRate={rateAmount}
+                  currency={effectiveCurrency}
+                  hourlyRate={effectiveRateAmount}
                   onValidateShift={setValidatingShift}
                   onPayShift={setPayingShift}
                 />
@@ -284,8 +290,8 @@ export default function LaborManagement() {
           onOpenChange={(open) => !open && setPayingShift(null)}
           shift={payingShift}
           language={language}
-          defaultCurrency={currency}
-          hourlyRate={rateAmount}
+          defaultCurrency={effectiveCurrency}
+          hourlyRate={effectiveRateAmount}
           onConfirm={handlePayment}
         />
       </div>
