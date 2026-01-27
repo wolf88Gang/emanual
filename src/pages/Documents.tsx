@@ -466,29 +466,55 @@ export default function Documents() {
           
           if (asset.critical_care_note) {
             yPos += 3;
-            pdf.setFillColor(255, 243, 224);
-            pdf.roundedRect(margin, yPos - 2, contentWidth, 12, 2, 2, 'F');
+            const labelCritical = 'CUIDADO CRÍTICO: ';
             pdf.setFontSize(9);
+            const criticalLines = pdf.splitTextToSize(asset.critical_care_note, contentWidth - 50);
+            const criticalBoxHeight = Math.max(14, criticalLines.length * 5 + 8);
+            checkPageBreak(criticalBoxHeight + 5);
+            pdf.setFillColor(255, 243, 224);
+            pdf.roundedRect(margin, yPos - 2, contentWidth, criticalBoxHeight, 2, 2, 'F');
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(200, 100, 0);
-            pdf.text('⚠ CUIDADO CRÍTICO:', margin + 3, yPos + 5);
+            pdf.text(labelCritical, margin + 3, yPos + 5);
+            const labelCriticalWidth = pdf.getTextWidth(labelCritical);
             pdf.setFont('helvetica', 'normal');
-            pdf.text(asset.critical_care_note, margin + 45, yPos + 5);
+            let criticalY = yPos + 5;
+            for (let i = 0; i < criticalLines.length; i++) {
+              if (i === 0) {
+                pdf.text(criticalLines[i], margin + 3 + labelCriticalWidth, criticalY);
+              } else {
+                criticalY += 5;
+                pdf.text(criticalLines[i], margin + 3, criticalY);
+              }
+            }
             pdf.setTextColor(0, 0, 0);
-            yPos += 15;
+            yPos += criticalBoxHeight + 3;
           }
           
           if (asset.do_not_do_warnings) {
-            pdf.setFillColor(255, 235, 238);
-            pdf.roundedRect(margin, yPos - 2, contentWidth, 12, 2, 2, 'F');
+            const labelNoHacer = 'NO HACER: ';
             pdf.setFontSize(9);
+            const noHacerLines = pdf.splitTextToSize(asset.do_not_do_warnings, contentWidth - 40);
+            const noHacerBoxHeight = Math.max(14, noHacerLines.length * 5 + 8);
+            checkPageBreak(noHacerBoxHeight + 5);
+            pdf.setFillColor(255, 235, 238);
+            pdf.roundedRect(margin, yPos - 2, contentWidth, noHacerBoxHeight, 2, 2, 'F');
             pdf.setFont('helvetica', 'bold');
             pdf.setTextColor(200, 50, 50);
-            pdf.text('🚫 NO HACER:', margin + 3, yPos + 5);
+            pdf.text(labelNoHacer, margin + 3, yPos + 5);
+            const labelNoHacerWidth = pdf.getTextWidth(labelNoHacer);
             pdf.setFont('helvetica', 'normal');
-            pdf.text(asset.do_not_do_warnings, margin + 35, yPos + 5);
+            let noHacerY = yPos + 5;
+            for (let i = 0; i < noHacerLines.length; i++) {
+              if (i === 0) {
+                pdf.text(noHacerLines[i], margin + 3 + labelNoHacerWidth, noHacerY);
+              } else {
+                noHacerY += 5;
+                pdf.text(noHacerLines[i], margin + 3, noHacerY);
+              }
+            }
             pdf.setTextColor(0, 0, 0);
-            yPos += 15;
+            yPos += noHacerBoxHeight + 3;
           }
 
           if (asset.description) {
