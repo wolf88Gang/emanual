@@ -4,26 +4,20 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Crown, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-// Safe import - don't throw if no provider
-const SubscriptionContext = React.createContext<any>(undefined);
+// Import the raw context to avoid the throwing hook
+import { SubscriptionContextRaw } from '@/contexts/SubscriptionContext';
 
 export function TrialBanner() {
-  // Use the actual context from SubscriptionContext module
-  let sub: any;
-  try {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    const mod = require('@/contexts/SubscriptionContext');
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    sub = mod.useSubscription();
-  } catch {
-    return null; // No provider available, skip banner
-  }
-  
-  const { isTrial, isExpired, trialDaysLeft, isPaid, status } = sub;
+  const sub = useContext(SubscriptionContextRaw);
   const { language } = useLanguage();
   const navigate = useNavigate();
   const es = language === 'es';
   const de = language === 'de';
+
+  // If no provider is available, don't render
+  if (!sub) return null;
+
+  const { isTrial, isExpired, trialDaysLeft, isPaid, status } = sub;
 
   if (isPaid || status === 'loading') return null;
   if (!isTrial && !isExpired && status !== 'none') return null;
