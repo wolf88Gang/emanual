@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { EstateProvider } from "./contexts/EstateContext";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SidebarLayout } from "./components/layout/SidebarLayout";
+import { TrialGate } from "./components/subscription/TrialGate";
 
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -120,13 +121,13 @@ function AppRoutes() {
       <Route path="/inventory" element={<EstateRoute><Inventory /></EstateRoute>} />
       <Route path="/plants" element={<EstateRoute><PlantRegistry /></EstateRoute>} />
       <Route path="/checkin" element={<EstateRoute><WorkerCheckin /></EstateRoute>} />
-      <Route path="/reports" element={<EstateRoute><Reports /></EstateRoute>} />
+      <Route path="/reports" element={<EstateRoute><TrialGate feature="reports"><Reports /></TrialGate></EstateRoute>} />
       <Route path="/estates" element={<EstateRoute><EstateManagement /></EstateRoute>} />
-      <Route path="/labor" element={<EstateRoute><LaborManagement /></EstateRoute>} />
-      <Route path="/topography" element={<EstateRoute><TopographyRisks /></EstateRoute>} />
+      <Route path="/labor" element={<EstateRoute><TrialGate feature="labor"><LaborManagement /></TrialGate></EstateRoute>} />
+      <Route path="/topography" element={<EstateRoute><TrialGate feature="topography"><TopographyRisks /></TrialGate></EstateRoute>} />
       <Route path="/subscription" element={<EstateRoute><Subscription /></EstateRoute>} />
-      <Route path="/compost" element={<EstateRoute><CompostManager /></EstateRoute>} />
-      <Route path="/crm" element={<EstateRoute><CRM /></EstateRoute>} />
+      <Route path="/compost" element={<EstateRoute><TrialGate feature="compost"><CompostManager /></TrialGate></EstateRoute>} />
+      <Route path="/crm" element={<EstateRoute><TrialGate feature="crm"><CRM /></TrialGate></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
