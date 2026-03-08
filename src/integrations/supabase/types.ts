@@ -1136,6 +1136,56 @@ export type Database = {
           },
         ]
       }
+      notifications: {
+        Row: {
+          body: string | null
+          body_es: string | null
+          created_at: string
+          estate_id: string | null
+          id: string
+          link: string | null
+          read_at: string | null
+          title: string
+          title_es: string | null
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          body_es?: string | null
+          created_at?: string
+          estate_id?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title: string
+          title_es?: string | null
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          body_es?: string | null
+          created_at?: string
+          estate_id?: string | null
+          id?: string
+          link?: string | null
+          read_at?: string | null
+          title?: string
+          title_es?: string | null
+          type?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -1802,6 +1852,120 @@ export type Database = {
             columns: ["zone_id"]
             isOneToOne: false
             referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_invites: {
+        Row: {
+          active: boolean
+          code: string
+          created_at: string
+          created_by: string
+          estate_id: string | null
+          expires_at: string | null
+          id: string
+          max_uses: number | null
+          org_id: string
+          role: string
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          code: string
+          created_at?: string
+          created_by: string
+          estate_id?: string | null
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          org_id: string
+          role?: string
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          code?: string
+          created_at?: string
+          created_by?: string
+          estate_id?: string | null
+          expires_at?: string | null
+          id?: string
+          max_uses?: number | null
+          org_id?: string
+          role?: string
+          used_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invites_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_invites_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_members: {
+        Row: {
+          created_at: string
+          estate_id: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          org_id: string
+          phone: string | null
+          role: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          estate_id?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          org_id: string
+          phone?: string | null
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          estate_id?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          phone?: string | null
+          role?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_members_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_members_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]

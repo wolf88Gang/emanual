@@ -11,8 +11,10 @@ import {
   Phone,
   ChevronRight,
   Settings,
-  Printer
+  Printer,
+  UserPlus
 } from 'lucide-react';
+import { TeamManagement } from '@/components/team/TeamManagement';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
@@ -210,6 +212,10 @@ export default function Admin() {
             <TabsTrigger value="qr" className="gap-2">
               <QrCode className="h-4 w-4" />
               {t('admin.qrLabels')}
+            </TabsTrigger>
+            <TabsTrigger value="team" className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              {language === 'es' ? 'Equipo' : 'Team'}
             </TabsTrigger>
           </TabsList>
 
@@ -447,6 +453,11 @@ export default function Admin() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          {/* Team Tab */}
+          <TabsContent value="team">
+            <TeamManagement />
           </TabsContent>
         </Tabs>
       </div>

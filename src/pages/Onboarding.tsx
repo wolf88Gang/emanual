@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Check, Building2, RotateCcw } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Building2, RotateCcw, Users } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -328,6 +328,16 @@ export default function Onboarding() {
                 <Button className="w-full" size="lg" onClick={handleProfileContinue} disabled={!selectedClientType}>
                   {l('Continue', 'Continuar', 'Weiter')}
                   <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                  <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{l('or', 'o', 'oder')}</span></div>
+                </div>
+
+                <Button variant="outline" className="w-full" onClick={() => navigate('/join-team')}>
+                  <Users className="h-4 w-4 mr-2" />
+                  {l('I have an invite code', 'Tengo un código de invitación', 'Ich habe einen Einladungscode')}
                 </Button>
               </CardContent>
             </Card>
