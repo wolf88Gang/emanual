@@ -114,6 +114,18 @@ export function AssetWizard() {
       return;
     }
 
+    // Check asset limit for trial users
+    const totalSavedInWizard = Object.values(savedCounts).reduce((a, b) => a + b, 0);
+    const wouldHave = totalExistingAssets + totalSavedInWizard + validEntries.length;
+    if (assetLimit && wouldHave > assetLimit) {
+      const remaining = Math.max(0, assetLimit - totalExistingAssets - totalSavedInWizard);
+      toast.error(es 
+        ? `Límite de prueba: solo puedes agregar ${remaining} activo(s) más. Suscríbete para ilimitados.`
+        : `Trial limit: you can only add ${remaining} more asset(s). Subscribe for unlimited.`
+      );
+      return;
+    }
+
     setSaving(true);
     try {
       const inserts = validEntries.map(e => ({
