@@ -28,6 +28,7 @@ import TopographyRisks from "./pages/TopographyRisks";
 import Subscription from "./pages/Subscription";
 import CompostManager from "./pages/CompostManager";
 import CRM from "./pages/CRM";
+import Features from "./pages/Features";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -93,6 +94,7 @@ function AppRoutes() {
 
   return (
     <Routes>
+      <Route path="/features" element={<Features />} />
       <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/"} replace /> : <Auth />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       
