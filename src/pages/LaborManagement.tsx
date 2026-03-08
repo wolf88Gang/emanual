@@ -195,6 +195,7 @@ export default function LaborManagement() {
   }
 
   return (
+    <ModernAppLayout>
       <div className="p-4 space-y-6 max-w-6xl mx-auto">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
