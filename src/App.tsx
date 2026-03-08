@@ -43,7 +43,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <HGLogo size="lg" />
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
@@ -74,7 +75,8 @@ function PlatformRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <HGLogo size="lg" />
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
@@ -91,7 +93,8 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <HGLogo size="lg" />
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
