@@ -11,6 +11,7 @@ import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
 import { EstateStatsCard } from '@/components/dashboard/EstateStatsCard';
 import { CheckinDialog } from '@/components/checkin/CheckinDialog';
 import { Building2 } from 'lucide-react';
+import { NoEstateGuide } from '@/components/layout/NoEstateGuide';
 
 export default function Dashboard() {
   const { t } = useLanguage();
