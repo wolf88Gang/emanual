@@ -198,6 +198,345 @@ export type Database = {
           },
         ]
       }
+      client_payments: {
+        Row: {
+          amount: number
+          client_id: string
+          created_at: string
+          currency: string
+          id: string
+          invoice_id: string | null
+          notes: string | null
+          org_id: string
+          payment_date: string
+          payment_method: string
+          reference: string | null
+        }
+        Insert: {
+          amount: number
+          client_id: string
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          org_id: string
+          payment_date?: string
+          payment_method?: string
+          reference?: string | null
+        }
+        Update: {
+          amount?: number
+          client_id?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          invoice_id?: string | null
+          notes?: string | null
+          org_id?: string
+          payment_date?: string
+          payment_method?: string
+          reference?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_payments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_payments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          created_at: string
+          email: string | null
+          estate_id: string | null
+          id: string
+          name: string
+          notes: string | null
+          org_id: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          estate_id?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          org_id: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          email?: string | null
+          estate_id?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          org_id?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compost_applications: {
+        Row: {
+          applied_at: string
+          applied_by: string | null
+          asset_id: string | null
+          id: string
+          notes: string | null
+          pile_id: string
+          quantity_kg: number | null
+          zone_id: string | null
+        }
+        Insert: {
+          applied_at?: string
+          applied_by?: string | null
+          asset_id?: string | null
+          id?: string
+          notes?: string | null
+          pile_id: string
+          quantity_kg?: number | null
+          zone_id?: string | null
+        }
+        Update: {
+          applied_at?: string
+          applied_by?: string | null
+          asset_id?: string | null
+          id?: string
+          notes?: string | null
+          pile_id?: string
+          quantity_kg?: number | null
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compost_applications_applied_by_fkey"
+            columns: ["applied_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compost_applications_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compost_applications_pile_id_fkey"
+            columns: ["pile_id"]
+            isOneToOne: false
+            referencedRelation: "compost_piles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compost_applications_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compost_ingredients: {
+        Row: {
+          added_at: string
+          added_by: string | null
+          id: string
+          ingredient_type: Database["public"]["Enums"]["compost_ingredient_type"]
+          name: string
+          notes: string | null
+          pile_id: string
+          quantity_kg: number | null
+        }
+        Insert: {
+          added_at?: string
+          added_by?: string | null
+          id?: string
+          ingredient_type: Database["public"]["Enums"]["compost_ingredient_type"]
+          name: string
+          notes?: string | null
+          pile_id: string
+          quantity_kg?: number | null
+        }
+        Update: {
+          added_at?: string
+          added_by?: string | null
+          id?: string
+          ingredient_type?: Database["public"]["Enums"]["compost_ingredient_type"]
+          name?: string
+          notes?: string | null
+          pile_id?: string
+          quantity_kg?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compost_ingredients_added_by_fkey"
+            columns: ["added_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compost_ingredients_pile_id_fkey"
+            columns: ["pile_id"]
+            isOneToOne: false
+            referencedRelation: "compost_piles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compost_logs: {
+        Row: {
+          id: string
+          logged_at: string
+          logged_by: string | null
+          moisture_percent: number | null
+          notes: string | null
+          photo_url: string | null
+          pile_id: string
+          temperature_c: number | null
+          turned: boolean | null
+        }
+        Insert: {
+          id?: string
+          logged_at?: string
+          logged_by?: string | null
+          moisture_percent?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          pile_id: string
+          temperature_c?: number | null
+          turned?: boolean | null
+        }
+        Update: {
+          id?: string
+          logged_at?: string
+          logged_by?: string | null
+          moisture_percent?: number | null
+          notes?: string | null
+          photo_url?: string | null
+          pile_id?: string
+          temperature_c?: number | null
+          turned?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compost_logs_logged_by_fkey"
+            columns: ["logged_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compost_logs_pile_id_fkey"
+            columns: ["pile_id"]
+            isOneToOne: false
+            referencedRelation: "compost_piles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      compost_piles: {
+        Row: {
+          actual_ready_at: string | null
+          created_at: string
+          estate_id: string
+          estimated_ready_at: string | null
+          id: string
+          name: string
+          notes: string | null
+          started_at: string
+          status: Database["public"]["Enums"]["compost_pile_status"]
+          updated_at: string
+          volume_liters: number | null
+          zone_id: string | null
+        }
+        Insert: {
+          actual_ready_at?: string | null
+          created_at?: string
+          estate_id: string
+          estimated_ready_at?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["compost_pile_status"]
+          updated_at?: string
+          volume_liters?: number | null
+          zone_id?: string | null
+        }
+        Update: {
+          actual_ready_at?: string | null
+          created_at?: string
+          estate_id?: string
+          estimated_ready_at?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          started_at?: string
+          status?: Database["public"]["Enums"]["compost_pile_status"]
+          updated_at?: string
+          volume_liters?: number | null
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "compost_piles_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "compost_piles_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       documents: {
         Row: {
           asset_id: string | null
@@ -419,6 +758,117 @@ export type Database = {
           },
         ]
       }
+      invoice_items: {
+        Row: {
+          description: string
+          id: string
+          invoice_id: string
+          product_id: string | null
+          quantity: number
+          total: number
+          unit_price: number
+        }
+        Insert: {
+          description: string
+          id?: string
+          invoice_id: string
+          product_id?: string | null
+          quantity?: number
+          total?: number
+          unit_price?: number
+        }
+        Update: {
+          description?: string
+          id?: string
+          invoice_id?: string
+          product_id?: string | null
+          quantity?: number
+          total?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "invoices"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "product_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      invoices: {
+        Row: {
+          client_id: string
+          created_at: string
+          currency: string
+          due_date: string | null
+          id: string
+          invoice_number: string
+          issue_date: string
+          notes: string | null
+          org_id: string
+          status: Database["public"]["Enums"]["invoice_status"]
+          subtotal: number
+          tax_percent: number | null
+          total: number
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          invoice_number: string
+          issue_date?: string
+          notes?: string | null
+          org_id: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal?: number
+          tax_percent?: number | null
+          total?: number
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          currency?: string
+          due_date?: string | null
+          id?: string
+          invoice_number?: string
+          issue_date?: string
+          notes?: string | null
+          org_id?: string
+          status?: Database["public"]["Enums"]["invoice_status"]
+          subtotal?: number
+          tax_percent?: number | null
+          total?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "invoices_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoices_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
@@ -547,6 +997,59 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      product_catalog: {
+        Row: {
+          category: string
+          created_at: string
+          currency: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          name_es: string | null
+          org_id: string
+          unit: string | null
+          unit_price: number
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          name_es?: string | null
+          org_id: string
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          name_es?: string | null
+          org_id?: string
+          unit?: string | null
+          unit_price?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_catalog_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -852,6 +1355,78 @@ export type Database = {
             columns: ["task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_templates: {
+        Row: {
+          asset_type: string | null
+          created_at: string
+          description: string | null
+          description_es: string | null
+          enabled: boolean | null
+          estate_id: string
+          frequency: string
+          id: string
+          is_ai_generated: boolean | null
+          plant_profile_id: string | null
+          priority: number | null
+          required_photo: boolean | null
+          season_months: number[] | null
+          title: string
+          title_es: string | null
+          updated_at: string
+        }
+        Insert: {
+          asset_type?: string | null
+          created_at?: string
+          description?: string | null
+          description_es?: string | null
+          enabled?: boolean | null
+          estate_id: string
+          frequency?: string
+          id?: string
+          is_ai_generated?: boolean | null
+          plant_profile_id?: string | null
+          priority?: number | null
+          required_photo?: boolean | null
+          season_months?: number[] | null
+          title: string
+          title_es?: string | null
+          updated_at?: string
+        }
+        Update: {
+          asset_type?: string | null
+          created_at?: string
+          description?: string | null
+          description_es?: string | null
+          enabled?: boolean | null
+          estate_id?: string
+          frequency?: string
+          id?: string
+          is_ai_generated?: boolean | null
+          plant_profile_id?: string | null
+          priority?: number | null
+          required_photo?: boolean | null
+          season_months?: number[] | null
+          title?: string
+          title_es?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_templates_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_templates_plant_profile_id_fkey"
+            columns: ["plant_profile_id"]
+            isOneToOne: false
+            referencedRelation: "plant_profiles"
             referencedColumns: ["id"]
           },
         ]
@@ -1513,6 +2088,18 @@ export type Database = {
         | "hardscape"
         | "equipment"
         | "structure"
+      compost_ingredient_type:
+        | "green"
+        | "brown"
+        | "activator"
+        | "water"
+        | "other"
+      compost_pile_status:
+        | "active"
+        | "curing"
+        | "ready"
+        | "applied"
+        | "archived"
       document_category:
         | "warranty"
         | "asbuilt"
@@ -1529,6 +2116,7 @@ export type Database = {
         | "fair"
         | "needs_repair"
         | "out_of_service"
+      invoice_status: "draft" | "sent" | "paid" | "overdue" | "cancelled"
       native_status: "native" | "naturalized" | "exotic" | "invasive"
       plant_category:
         | "ornamental"
@@ -1684,6 +2272,14 @@ export const Constants = {
         "equipment",
         "structure",
       ],
+      compost_ingredient_type: [
+        "green",
+        "brown",
+        "activator",
+        "water",
+        "other",
+      ],
+      compost_pile_status: ["active", "curing", "ready", "applied", "archived"],
       document_category: [
         "warranty",
         "asbuilt",
@@ -1702,6 +2298,7 @@ export const Constants = {
         "needs_repair",
         "out_of_service",
       ],
+      invoice_status: ["draft", "sent", "paid", "overdue", "cancelled"],
       native_status: ["native", "naturalized", "exotic", "invasive"],
       plant_category: [
         "ornamental",
