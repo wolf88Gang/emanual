@@ -1,10 +1,14 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { Language, t as translate, LANGUAGE_OPTIONS } from '@/lib/i18n';
 
+type LocalizedText = { en: string; es: string; de?: string } | string;
+
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (path: string) => string;
+  /** Translate a literal {en, es, de} object */
+  tl: (text: LocalizedText) => string;
   toggleLanguage: () => void;
 }
 
@@ -32,8 +36,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const t = useCallback((path: string) => translate(language, path), [language]);
 
+  const tl = useCallback((text: LocalizedText): string => {
+    if (typeof text === 'string') return text;
+    return text[language] ?? text.en;
+  }, [language]);
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, toggleLanguage }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, tl, toggleLanguage }}>
       {children}
     </LanguageContext.Provider>
   );
