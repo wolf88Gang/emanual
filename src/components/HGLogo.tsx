@@ -7,13 +7,18 @@ interface HGLogoProps {
 }
 
 export function HGLogo({ className = '', size = 'md', variant = 'dark' }: HGLogoProps) {
-  const sizeMap = { sm: 'w-8 h-8', md: 'w-12 h-12', lg: 'w-20 h-20' };
+  const sizeMap = { sm: 'w-12 h-12', md: 'w-20 h-20', lg: 'w-32 h-32' };
 
   return (
-    <img
-      src="/images/hg-logo.png"
-      alt="HG"
-      className={`${sizeMap[size]} object-contain ${variant === 'light' ? 'invert brightness-200' : ''} ${className}`}
-    />
+    <div className={`inline-flex items-center justify-center ${className}`}>
+      <div className={`${sizeMap[size]} relative`}>
+        <div className="absolute inset-0 rounded-2xl bg-primary/5 blur-xl scale-125" />
+        <img
+          src="/images/hg-logo.png"
+          alt="HG"
+          className={`relative w-full h-full object-contain drop-shadow-lg ${variant === 'light' ? 'invert brightness-200' : ''}`}
+        />
+      </div>
+    </div>
   );
 }
