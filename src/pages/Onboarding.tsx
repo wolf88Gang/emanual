@@ -4,7 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Leaf, ArrowRight, ArrowLeft, Check, CreditCard, Building2, Sparkles } from 'lucide-react';
+import { Leaf, ArrowRight, ArrowLeft, Check, CreditCard, Building2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -51,14 +51,51 @@ const plans: PlanOption[] = [
 
 const STEPS = ['welcome', 'plan', 'payment', 'estate'] as const;
 type Step = typeof STEPS[number];
+type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'other';
+
+const CLIENT_TYPE_OPTIONS: { id: ClientType; label: string; labelEs: string; description: string; descriptionEs: string; emoji: string }[] = [
+  {
+    id: 'property_owner',
+    label: 'Property Owner',
+    labelEs: 'Dueño de propiedad',
+    description: 'I manage my own estates',
+    descriptionEs: 'Gestiono mis propias propiedades',
+    emoji: '🏡',
+  },
+  {
+    id: 'landscaping_company',
+    label: 'Landscaping Company',
+    labelEs: 'Empresa de landscaping',
+    description: 'I manage multiple client estates',
+    descriptionEs: 'Gestiono múltiples propiedades de clientes',
+    emoji: '🏢',
+  },
+  {
+    id: 'hybrid',
+    label: 'Both',
+    labelEs: 'Ambos',
+    description: 'I manage client estates and private estates',
+    descriptionEs: 'Gestiono propiedades de clientes y privadas',
+    emoji: '🔀',
+  },
+  {
+    id: 'other',
+    label: 'Other',
+    labelEs: 'Otro',
+    description: 'I need a custom setup',
+    descriptionEs: 'Necesito una configuración personalizada',
+    emoji: '⚙️',
+  },
+];
 
 export default function Onboarding() {
-  const { user, profile } = useAuth();
+  const { user, profile, signOut } = useAuth();
   const { language } = useLanguage();
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState<Step>('welcome');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly');
+  const [selectedClientType, setSelectedClientType] = useState<ClientType | ''>('');
   const [paymentComplete, setPaymentComplete] = useState(false);
   const [estateName, setEstateName] = useState('');
   const [estateCountry, setEstateCountry] = useState('');
@@ -69,6 +106,19 @@ export default function Onboarding() {
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
 
   const es = language === 'es';
+
+  const handleStart = () => {
+    if (!selectedClientType) {
+      toast.error(es ? 'Selecciona tu tipo de cliente' : 'Please select your client type');
+      return;
+    }
+    nextStep();
+  };
+
+  const handleCancelOnboarding = async () => {
+    await signOut();
+    navigate('/auth', { replace: true });
+  };
 
   const nextStep = () => {
     const idx = STEPS.indexOf(currentStep);
@@ -166,13 +216,15 @@ export default function Onboarding() {
 
         if (orgError) throw orgError;
         orgId = newOrg.id;
-
-        // Update profile with org_id
-        await supabase
-          .from('profiles')
-          .update({ org_id: orgId })
-          .eq('id', user.id);
       }
+
+      // Persist onboarding context (org + client type)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ org_id: orgId, client_type: selectedClientType || null } as any)
+        .eq('id', user.id);
+
+      if (profileError) throw profileError;
 
       // Assign owner role if not present
       const { data: existingRole } = await supabase
@@ -212,11 +264,16 @@ export default function Onboarding() {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
-      <header className="p-4 flex items-center gap-2 border-b border-border">
-        <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-          <Leaf className="h-5 w-5 text-primary-foreground" />
+      <header className="p-4 flex items-center justify-between gap-2 border-b border-border">
+        <div className="flex items-center gap-2">
+          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
+            <Leaf className="h-5 w-5 text-primary-foreground" />
+          </div>
+          <span className="text-xl font-serif font-semibold text-primary">Estate Manual</span>
         </div>
-        <span className="text-xl font-serif font-semibold text-primary">Estate Manual</span>
+        <Button variant="ghost" size="sm" onClick={handleCancelOnboarding}>
+          {es ? 'Salir' : 'Exit'}
+        </Button>
       </header>
 
       {/* Progress */}
@@ -234,19 +291,46 @@ export default function Onboarding() {
           {currentStep === 'welcome' && (
             <Card className="border-0 shadow-xl">
               <CardHeader className="text-center pb-2">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <Sparkles className="h-8 w-8 text-primary" />
-                </div>
                 <CardTitle className="text-3xl font-serif">
                   {es ? '¡Bienvenido a Estate Manual!' : 'Welcome to Estate Manual!'}
                 </CardTitle>
                 <CardDescription className="text-base mt-2">
                   {es
-                    ? 'Configura tu cuenta en minutos. Gestiona activos vivos, intención de diseño y riesgo a largo plazo.'
-                    : 'Set up your account in minutes. Manage living assets, design intent, and long-term risk.'}
+                    ? 'Configura tu cuenta en minutos. Primero dinos qué tipo de cliente eres para personalizar la plataforma.'
+                    : 'Set up your account in minutes. First tell us your client type so we can personalize the platform.'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>{es ? '¿Qué tipo de cliente eres? *' : 'What type of client are you? *'}</Label>
+                  <div className="grid gap-2">
+                    {CLIENT_TYPE_OPTIONS.map((option) => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        onClick={() => setSelectedClientType(option.id)}
+                        className={`w-full text-left p-3 rounded-lg border transition-all ${
+                          selectedClientType === option.id
+                            ? 'border-primary bg-primary/5'
+                            : 'border-border bg-secondary/50 hover:border-primary/30'
+                        }`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <span className="text-lg mt-0.5">{option.emoji}</span>
+                          <div>
+                            <p className="text-sm font-semibold text-foreground">
+                              {es ? option.labelEs : option.label}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {es ? option.descriptionEs : option.description}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <div className="space-y-3">
                   {[
                     { icon: '🌿', text: es ? 'Gestión digital de propiedades' : 'Digital estate management' },
@@ -260,7 +344,7 @@ export default function Onboarding() {
                     </div>
                   ))}
                 </div>
-                <Button className="w-full" size="lg" onClick={nextStep}>
+                <Button className="w-full" size="lg" onClick={handleStart} disabled={!selectedClientType}>
                   {es ? 'Comenzar' : 'Get Started'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
