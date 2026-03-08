@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Plus, Users, ShoppingBag, FileText, DollarSign, Search, ChevronRight } from 'lucide-react';
+import { Plus, Users, ShoppingBag, FileText, DollarSign, Search, ChevronRight, ArrowLeft, Star, Phone, Mail, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
+import { formatCurrency, formatCurrencyDual } from '@/lib/currency';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -55,6 +56,7 @@ export default function CRM() {
   const [payments, setPayments] = useState<Payment[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
+  const [selectedClient, setSelectedClient] = useState<Client | null>(null);
 
   // Dialog states
   const [showClientDialog, setShowClientDialog] = useState(false);
@@ -198,8 +200,8 @@ export default function CRM() {
           {[
             { label: es ? 'Clientes' : 'Clients', value: clients.length, icon: Users, color: 'text-primary' },
             { label: es ? 'Productos' : 'Products', value: products.length, icon: ShoppingBag, color: 'text-purple-600' },
-            { label: es ? 'Pendiente' : 'Pending', value: `$${pendingTotal.toFixed(0)}`, icon: FileText, color: 'text-amber-600' },
-            { label: es ? 'Ingresos' : 'Revenue', value: `$${totalRevenue.toFixed(0)}`, icon: DollarSign, color: 'text-green-600' },
+            { label: es ? 'Pendiente' : 'Pending', value: formatCurrency(pendingTotal, 'CRC'), icon: FileText, color: 'text-amber-600' },
+            { label: es ? 'Ingresos' : 'Revenue', value: formatCurrency(totalRevenue, 'CRC'), icon: DollarSign, color: 'text-green-600' },
           ].map(s => (
             <Card key={s.label} className="estate-card">
               <CardContent className="p-4 flex items-center gap-3">
@@ -235,32 +237,121 @@ export default function CRM() {
             )}
           </div>
 
-          {/* Clients Tab */}
           <TabsContent value="clients">
-            <Card className="estate-card">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{es ? 'Nombre' : 'Name'}</TableHead>
-                    <TableHead>{es ? 'Email' : 'Email'}</TableHead>
-                    <TableHead>{es ? 'Teléfono' : 'Phone'}</TableHead>
-                    <TableHead>{es ? 'Dirección' : 'Address'}</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {clients.length === 0 ? (
-                    <TableRow><TableCell colSpan={4} className="text-center text-muted-foreground py-8">{es ? 'Sin clientes aún' : 'No clients yet'}</TableCell></TableRow>
-                  ) : clients.map(c => (
-                    <TableRow key={c.id}>
-                      <TableCell className="font-medium">{c.name}</TableCell>
-                      <TableCell>{c.email || '-'}</TableCell>
-                      <TableCell>{c.phone || '-'}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">{c.address || '-'}</TableCell>
+            {selectedClient ? (
+              /* Client Detail View */
+              <Card className="estate-card">
+                <CardContent className="p-6 space-y-6">
+                  <div className="flex items-start justify-between">
+                    <div>
+                      <Button variant="ghost" size="sm" className="mb-2 -ml-2" onClick={() => setSelectedClient(null)}>
+                        <ArrowLeft className="h-4 w-4 mr-1" /> {es ? 'Volver' : 'Back'}
+                      </Button>
+                      <h2 className="text-2xl font-serif font-bold">{selectedClient.name}</h2>
+                      <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
+                        {selectedClient.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{selectedClient.email}</span>}
+                        {selectedClient.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{selectedClient.phone}</span>}
+                        {selectedClient.address && <span className="flex items-center gap-1"><MapPin className="h-3.5 w-3.5" />{selectedClient.address}</span>}
+                      </div>
+                      {selectedClient.notes && <p className="text-sm text-muted-foreground mt-2 italic">{selectedClient.notes}</p>}
+                    </div>
+                  </div>
+
+                  {/* Client invoices */}
+                  <div>
+                    <h3 className="font-semibold mb-3">{es ? 'Facturas' : 'Invoices'}</h3>
+                    {invoices.filter(i => i.client?.id === selectedClient.id || (i as any).client_id === selectedClient.id).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">{es ? 'Sin facturas' : 'No invoices'}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {invoices.filter(i => i.client?.id === selectedClient.id || (i as any).client_id === selectedClient.id).map(inv => (
+                          <div key={inv.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border">
+                            <div>
+                              <span className="font-mono text-sm">{inv.invoice_number}</span>
+                              <span className="text-sm text-muted-foreground ml-2">{format(new Date(inv.issue_date), 'MMM d, yyyy')}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <span className="font-medium">{formatCurrency(Number(inv.total), inv.currency)}</span>
+                              <Badge className={INVOICE_STATUS_COLORS[inv.status] || ''}>{inv.status}</Badge>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Client payments */}
+                  <div>
+                    <h3 className="font-semibold mb-3">{es ? 'Pagos recibidos' : 'Payments received'}</h3>
+                    {payments.filter(p => p.client?.id === selectedClient.id || (p as any).client_id === selectedClient.id).length === 0 ? (
+                      <p className="text-sm text-muted-foreground">{es ? 'Sin pagos' : 'No payments'}</p>
+                    ) : (
+                      <div className="space-y-2">
+                        {payments.filter(p => p.client?.id === selectedClient.id || (p as any).client_id === selectedClient.id).map(pay => (
+                          <div key={pay.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30 border border-border">
+                            <div>
+                              <span className="font-medium text-green-600">{formatCurrency(Number(pay.amount), pay.currency)}</span>
+                              <span className="text-sm text-muted-foreground ml-2">{format(new Date(pay.payment_date), 'MMM d, yyyy')}</span>
+                            </div>
+                            <Badge variant="outline">{pay.payment_method}</Badge>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Summary */}
+                  <div className="grid grid-cols-2 gap-4 p-4 rounded-xl bg-primary/5 border border-primary/20">
+                    <div>
+                      <p className="text-xs text-muted-foreground">{es ? 'Total facturado' : 'Total invoiced'}</p>
+                      <p className="text-lg font-bold">
+                        {formatCurrency(
+                          invoices.filter(i => i.client?.id === selectedClient.id).reduce((a, i) => a + Number(i.total), 0),
+                          'CRC'
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-muted-foreground">{es ? 'Total pagado' : 'Total paid'}</p>
+                      <p className="text-lg font-bold text-green-600">
+                        {formatCurrency(
+                          payments.filter(p => p.client?.id === selectedClient.id).reduce((a, p) => a + Number(p.amount), 0),
+                          'CRC'
+                        )}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ) : (
+              /* Client List */
+              <Card className="estate-card">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{es ? 'Nombre' : 'Name'}</TableHead>
+                      <TableHead>{es ? 'Email' : 'Email'}</TableHead>
+                      <TableHead>{es ? 'Teléfono' : 'Phone'}</TableHead>
+                      <TableHead>{es ? 'Dirección' : 'Address'}</TableHead>
+                      <TableHead></TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </Card>
+                  </TableHeader>
+                  <TableBody>
+                    {clients.length === 0 ? (
+                      <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">{es ? 'Sin clientes aún' : 'No clients yet'}</TableCell></TableRow>
+                    ) : clients.map(c => (
+                      <TableRow key={c.id} className="cursor-pointer hover:bg-primary/5" onClick={() => setSelectedClient(c)}>
+                        <TableCell className="font-medium">{c.name}</TableCell>
+                        <TableCell>{c.email || '-'}</TableCell>
+                        <TableCell>{c.phone || '-'}</TableCell>
+                        <TableCell className="max-w-[200px] truncate">{c.address || '-'}</TableCell>
+                        <TableCell><ChevronRight className="h-4 w-4 text-muted-foreground" /></TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </Card>
+            )}
           </TabsContent>
 
           {/* Products Tab */}
