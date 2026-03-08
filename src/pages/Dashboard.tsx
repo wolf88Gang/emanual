@@ -11,6 +11,7 @@ import { RecentActivityCard } from '@/components/dashboard/RecentActivityCard';
 import { EstateStatsCard } from '@/components/dashboard/EstateStatsCard';
 import { CheckinDialog } from '@/components/checkin/CheckinDialog';
 import { Building2 } from 'lucide-react';
+import { NoEstateGuide } from '@/components/layout/NoEstateGuide';
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -147,14 +148,7 @@ export default function Dashboard() {
   if (!currentEstate) {
     return (
       <AppLayout>
-        <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
-          <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-serif font-semibold mb-2">No Estate Selected</h2>
-          <p className="text-muted-foreground max-w-md">
-            You don't have access to any estates yet. Contact your administrator 
-            to get access to an estate.
-          </p>
-        </div>
+        <NoEstateGuide />
       </AppLayout>
     );
   }

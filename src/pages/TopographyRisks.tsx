@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
+import { NoEstateGuide } from '@/components/layout/NoEstateGuide';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -261,11 +262,7 @@ export default function TopographyRisks() {
   if (!currentEstate) {
     return (
       <ModernAppLayout>
-        <div className="flex items-center justify-center h-96">
-          <p className="text-muted-foreground">
-            {language === 'es' ? 'Selecciona una propiedad' : 'Select a property'}
-          </p>
-        </div>
+        <NoEstateGuide />
       </ModernAppLayout>
     );
   }

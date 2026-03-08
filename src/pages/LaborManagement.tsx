@@ -3,6 +3,7 @@ import { Download, Loader2, Clock, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
+import { NoEstateGuide } from '@/components/layout/NoEstateGuide';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
@@ -187,6 +188,10 @@ export default function LaborManagement() {
     const filename = `labor-report-${format(weekStart, 'yyyy-MM-dd')}.pdf`;
     doc.save(filename);
     toast.success(isSpanish ? 'Reporte descargado' : 'Report downloaded');
+  }
+
+  if (!currentEstate) {
+    return <ModernAppLayout><NoEstateGuide sectionHint={{ en: 'Add a property first to manage labor shifts and payments.', es: 'Agrega una propiedad primero para gestionar turnos y pagos de trabajo.', de: 'Fügen Sie zuerst eine Immobilie hinzu, um Arbeitsschichten zu verwalten.' }} /></ModernAppLayout>;
   }
 
   return (
