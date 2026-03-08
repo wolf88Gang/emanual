@@ -24,21 +24,19 @@ type AssetType = 'plant' | 'tree' | 'irrigation_controller' | 'valve' | 'lightin
 interface WizardStep {
   type: AssetType;
   icon: React.ComponentType<{ className?: string }>;
-  label: string;
-  labelEs: string;
-  description: string;
-  descriptionEs: string;
+  label: { en: string; es: string; de: string };
+  description: { en: string; es: string; de: string };
 }
 
 const WIZARD_STEPS: WizardStep[] = [
-  { type: 'tree', icon: TreePine, label: 'Trees', labelEs: 'Árboles', description: 'Add trees on your property', descriptionEs: 'Agrega los árboles de tu propiedad' },
-  { type: 'plant', icon: Sprout, label: 'Plants & Beds', labelEs: 'Plantas y Jardineras', description: 'Add plant beds, shrubs, flowers', descriptionEs: 'Agrega jardineras, arbustos, flores' },
-  { type: 'irrigation_controller', icon: Droplets, label: 'Irrigation', labelEs: 'Riego', description: 'Add irrigation controllers', descriptionEs: 'Agrega controladores de riego' },
-  { type: 'valve', icon: Cog, label: 'Valves', labelEs: 'Válvulas', description: 'Add irrigation valves', descriptionEs: 'Agrega válvulas de riego' },
-  { type: 'lighting_transformer', icon: Lightbulb, label: 'Lighting', labelEs: 'Iluminación', description: 'Add lighting transformers', descriptionEs: 'Agrega transformadores de iluminación' },
-  { type: 'hardscape', icon: Fence, label: 'Hardscape', labelEs: 'Hardscape', description: 'Add patios, walls, pathways', descriptionEs: 'Agrega patios, muros, caminos' },
-  { type: 'structure', icon: Building, label: 'Structures', labelEs: 'Estructuras', description: 'Add buildings, sheds, pergolas', descriptionEs: 'Agrega edificios, cobertizos, pérgolas' },
-  { type: 'equipment', icon: Hammer, label: 'Equipment', labelEs: 'Equipos', description: 'Add tools and equipment', descriptionEs: 'Agrega herramientas y equipos' },
+  { type: 'tree', icon: TreePine, label: { en: 'Trees', es: 'Árboles', de: 'Bäume' }, description: { en: 'Add trees on your property', es: 'Agrega los árboles de tu propiedad', de: 'Bäume auf Ihrem Grundstück hinzufügen' } },
+  { type: 'plant', icon: Sprout, label: { en: 'Plants & Beds', es: 'Plantas y Jardineras', de: 'Pflanzen & Beete' }, description: { en: 'Add plant beds, shrubs, flowers', es: 'Agrega jardineras, arbustos, flores', de: 'Beete, Sträucher, Blumen hinzufügen' } },
+  { type: 'irrigation_controller', icon: Droplets, label: { en: 'Irrigation', es: 'Riego', de: 'Bewässerung' }, description: { en: 'Add irrigation controllers', es: 'Agrega controladores de riego', de: 'Bewässerungssteuerungen hinzufügen' } },
+  { type: 'valve', icon: Cog, label: { en: 'Valves', es: 'Válvulas', de: 'Ventile' }, description: { en: 'Add irrigation valves', es: 'Agrega válvulas de riego', de: 'Bewässerungsventile hinzufügen' } },
+  { type: 'lighting_transformer', icon: Lightbulb, label: { en: 'Lighting', es: 'Iluminación', de: 'Beleuchtung' }, description: { en: 'Add lighting transformers', es: 'Agrega transformadores de iluminación', de: 'Beleuchtungstransformatoren hinzufügen' } },
+  { type: 'hardscape', icon: Fence, label: { en: 'Hardscape', es: 'Hardscape', de: 'Hardscape' }, description: { en: 'Add patios, walls, pathways', es: 'Agrega patios, muros, caminos', de: 'Terrassen, Mauern, Wege hinzufügen' } },
+  { type: 'structure', icon: Building, label: { en: 'Structures', es: 'Estructuras', de: 'Gebäude' }, description: { en: 'Add buildings, sheds, pergolas', es: 'Agrega edificios, cobertizos, pérgolas', de: 'Gebäude, Schuppen, Pergolen hinzufügen' } },
+  { type: 'equipment', icon: Hammer, label: { en: 'Equipment', es: 'Equipos', de: 'Ausrüstung' }, description: { en: 'Add tools and equipment', es: 'Agrega herramientas y equipos', de: 'Werkzeuge und Ausrüstung hinzufügen' } },
 ];
 
 interface AssetEntry {
