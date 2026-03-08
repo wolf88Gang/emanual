@@ -94,14 +94,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRoles(rolesData.map(r => r.role as AppRole));
       }
 
-      // Check platform admin
-      const { data: adminData } = await supabase
-        .from('platform_admins')
-        .select('id')
-        .eq('user_id', userId)
-        .maybeSingle();
-
-      setIsPlatformAdmin(!!adminData);
+      // Check platform admin (graceful fallback if policy errors)
+      try {
+        const { data: adminData } = await supabase
+          .from('platform_admins')
+          .select('id')
+          .eq('user_id', userId)
+          .maybeSingle();
+        setIsPlatformAdmin(!!adminData);
+      } catch {
+        setIsPlatformAdmin(false);
+      }
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
