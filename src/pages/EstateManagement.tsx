@@ -1,9 +1,10 @@
  import React, { useState } from 'react';
- import { MapPin, Plus, Loader2, Building, Mountain } from 'lucide-react';
+ import { MapPin, Plus, Loader2, Building, Mountain, Lock } from 'lucide-react';
  import { useNavigate } from 'react-router-dom';
  import { useLanguage } from '@/contexts/LanguageContext';
  import { useAuth } from '@/contexts/AuthContext';
  import { useEstate } from '@/contexts/EstateContext';
+ import { useSubscription } from '@/contexts/SubscriptionContext';
  import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
  import { Button } from '@/components/ui/button';
  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
