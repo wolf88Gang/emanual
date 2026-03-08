@@ -374,13 +374,30 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
             </div>
           )}
 
+          {/* Report Issue Toggle */}
+          <div className="flex items-center justify-between p-3 rounded-xl border bg-destructive/5 border-destructive/20">
+            <div>
+              <p className="font-medium text-sm">
+                {language === 'es' ? '⚠️ Reportar problema' : '⚠️ Report issue'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {language === 'es'
+                  ? 'Crea una tarea automática de mantenimiento'
+                  : 'Auto-creates a maintenance task'}
+              </p>
+            </div>
+            <Switch checked={reportIssue} onCheckedChange={setReportIssue} />
+          </div>
+
           {/* Notes */}
           <div className="space-y-2">
-            <Label>{language === 'es' ? 'Notas (opcional)' : 'Notes (optional)'}</Label>
+            <Label>{language === 'es' ? (reportIssue ? 'Descripción del problema' : 'Notas (opcional)') : (reportIssue ? 'Issue description' : 'Notes (optional)')}</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={language === 'es' ? 'Añadir observaciones...' : 'Add observations...'}
+              placeholder={language === 'es' 
+                ? (reportIssue ? 'Describa el problema encontrado...' : 'Añadir observaciones...') 
+                : (reportIssue ? 'Describe the issue found...' : 'Add observations...')}
               className="resize-none"
               rows={3}
             />
