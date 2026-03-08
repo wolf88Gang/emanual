@@ -148,6 +148,11 @@ export default function Onboarding() {
     nextStep();
   };
 
+  const handleStartTrial = () => {
+    // Skip plan and payment, go directly to estate creation
+    setCurrentStep('estate');
+  };
+
   const handlePayPalPayment = async () => {
     if (!user) return;
     if (!window.paypal) {
@@ -262,6 +267,31 @@ export default function Onboarding() {
       });
 
       if (estateError) throw estateError;
+
+      // Check if user paid or should start free trial
+      const { data: existingSub } = await supabase
+        .from('subscriptions')
+        .select('id')
+        .eq('user_id', user.id)
+        .maybeSingle();
+
+      if (!existingSub) {
+        // Auto-create 15-day free trial subscription
+        const trialStart = new Date();
+        const trialEnd = new Date();
+        trialEnd.setDate(trialEnd.getDate() + 15);
+
+        await supabase.from('subscriptions').insert({
+          user_id: user.id,
+          plan_type: 'trial',
+          status: 'active',
+          amount: 0,
+          trial_started_at: trialStart.toISOString(),
+          trial_ends_at: trialEnd.toISOString(),
+          current_period_start: trialStart.toISOString(),
+          current_period_end: trialEnd.toISOString(),
+        });
+      }
 
       toast.success(es ? '¡Propiedad creada! Bienvenido a Home Guide' : 'Property created! Welcome to Home Guide');
       navigate('/', { replace: true });
@@ -400,6 +430,30 @@ export default function Onboarding() {
                     </button>
                   );
                 })}
+
+                {/* Free trial option */}
+                <div className="relative py-3">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                  <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{es ? 'o' : 'or'}</span></div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleStartTrial}
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-accent/50 text-left transition-all hover:border-accent hover:bg-accent/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎁</span>
+                    <div>
+                      <div className="font-semibold text-foreground">
+                        {es ? 'Prueba gratuita de 15 días' : '15-Day Free Trial'}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {es ? 'Máx 3 activos · Sin reportes · Sin exportar PDF' : 'Max 3 assets · No reports · No PDF export'}
+                      </div>
+                    </div>
+                  </div>
+                </button>
 
                 <div className="flex gap-3 pt-2">
                   <Button variant="outline" onClick={prevStep} className="flex-1">

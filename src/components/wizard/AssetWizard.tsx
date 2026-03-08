@@ -15,6 +15,7 @@ import { Badge } from '@/components/ui/badge';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -52,6 +53,7 @@ const emptyEntry = (): AssetEntry => ({ name: '', description: '', zone_id: '', 
 export function AssetWizard() {
   const { language } = useLanguage();
   const { currentEstate } = useEstate();
+  const { assetLimit, isPaid } = useSubscription();
   const navigate = useNavigate();
   const es = language === 'es';
 
@@ -60,14 +62,27 @@ export function AssetWizard() {
   const [zones, setZones] = useState<{ id: string; name: string }[]>([]);
   const [saving, setSaving] = useState(false);
   const [savedCounts, setSavedCounts] = useState<Record<string, number>>({});
+  const [totalExistingAssets, setTotalExistingAssets] = useState(0);
 
   const totalSteps = WIZARD_STEPS.length;
   const step = WIZARD_STEPS[currentStep];
   const progress = ((currentStep) / totalSteps) * 100;
 
   useEffect(() => {
-    if (currentEstate) fetchZones();
+    if (currentEstate) {
+      fetchZones();
+      fetchAssetCount();
+    }
   }, [currentEstate]);
+
+  async function fetchAssetCount() {
+    if (!currentEstate) return;
+    const { count } = await supabase
+      .from('assets')
+      .select('id', { count: 'exact', head: true })
+      .eq('estate_id', currentEstate.id);
+    setTotalExistingAssets(count || 0);
+  }
 
   async function fetchZones() {
     const { data } = await supabase
@@ -96,6 +111,18 @@ export function AssetWizard() {
     const validEntries = entries.filter(e => e.name.trim());
     if (validEntries.length === 0) {
       goNext();
+      return;
+    }
+
+    // Check asset limit for trial users
+    const totalSavedInWizard = Object.values(savedCounts).reduce((a, b) => a + b, 0);
+    const wouldHave = totalExistingAssets + totalSavedInWizard + validEntries.length;
+    if (assetLimit && wouldHave > assetLimit) {
+      const remaining = Math.max(0, assetLimit - totalExistingAssets - totalSavedInWizard);
+      toast.error(es 
+        ? `Límite de prueba: solo puedes agregar ${remaining} activo(s) más. Suscríbete para ilimitados.`
+        : `Trial limit: you can only add ${remaining} more asset(s). Subscribe for unlimited.`
+      );
       return;
     }
 
