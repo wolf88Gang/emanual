@@ -179,7 +179,7 @@ export default function Auth() {
                         <account.icon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-foreground">{account.role}</div>
+                        <div className="font-medium text-sm text-foreground">{es ? account.roleEs : account.role}</div>
                         <div className="text-xs text-muted-foreground">{es ? account.descriptionEs : account.description}</div>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
