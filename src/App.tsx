@@ -95,7 +95,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/features" element={<Features />} />
-      <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/"} replace /> : <Auth />} />
+      <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/map"} replace /> : <Auth />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       
       {/* Platform Admin routes */}
