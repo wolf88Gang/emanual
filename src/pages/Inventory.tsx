@@ -4,6 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
+import { NoEstateGuide } from '@/components/layout/NoEstateGuide';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -206,6 +207,10 @@ export default function Inventory() {
     item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     item.name_es?.toLowerCase().includes(searchQuery.toLowerCase())
   );
+
+  if (!currentEstate) {
+    return <ModernAppLayout><NoEstateGuide sectionHint={{ en: 'Add a property first to manage your inventory and tools.', es: 'Agrega una propiedad primero para gestionar tu inventario y herramientas.', de: 'Fügen Sie zuerst eine Immobilie hinzu, um Inventar und Werkzeuge zu verwalten.' }} /></ModernAppLayout>;
+  }
 
   return (
     <ModernAppLayout>

@@ -6,6 +6,7 @@ import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
+import { NoEstateGuide } from '@/components/layout/NoEstateGuide';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -151,6 +152,10 @@ export default function CompostManager() {
     curing: piles.filter(p => p.status === 'curing').length,
     ready: piles.filter(p => p.status === 'ready').length,
   };
+
+  if (!currentEstate) {
+    return <ModernAppLayout><NoEstateGuide sectionHint={{ en: 'Add a property first to manage your compost piles.', es: 'Agrega una propiedad primero para gestionar tus pilas de compost.', de: 'Fügen Sie zuerst eine Immobilie hinzu, um Komposthaufen zu verwalten.' }} /></ModernAppLayout>;
+  }
 
   return (
     <ModernAppLayout>
