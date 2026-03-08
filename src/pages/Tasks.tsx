@@ -361,6 +361,8 @@ export default function Tasks() {
                           {task.zone && <span className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: task.zone.color }} />{task.zone.name}</span>}
                           {task.asset && <span className="flex items-center gap-1"><AssetTypeIcon type={task.asset.asset_type as any} size="sm" />{task.asset.name}</span>}
                           {task.required_photo && <span className="flex items-center gap-1 text-primary"><Camera className="h-3.5 w-3.5" />{es ? 'Foto' : 'Photo'}</span>}
+                          {task.frequency !== 'once' && <span className="flex items-center gap-1 text-accent"><Clock className="h-3.5 w-3.5" />{FREQUENCY_OPTIONS.find(f => f.value === task.frequency)?.[es ? 'labelEs' : 'label']}</span>}
+                          {task.priority === 1 && <Badge variant="destructive" className="text-[10px] h-4 px-1.5">{es ? 'Alta' : 'High'}</Badge>}
                         </div>
                         {task.assigned_user && <div className="flex items-center gap-2 mt-2"><User className="h-3.5 w-3.5 text-muted-foreground" /><span className="text-sm">{task.assigned_user.full_name}</span></div>}
                       </div>
