@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { Search, MapPin, DollarSign, Clock, Briefcase, Send, Plus, ArrowLeft, Star } from 'lucide-react';
+import { Search, MapPin, DollarSign, Clock, Briefcase, Send, Plus, ArrowLeft, Star, User } from 'lucide-react';
 
 interface JobPosting {
   id: string;
@@ -126,9 +126,23 @@ export default function JobBoard() {
       {/* Hero header */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-accent/10 border-b border-border">
         <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
-          <div className="flex items-center gap-3 mb-4">
-            <img src="/images/hg-logo.png" alt="HG" className="w-10 h-10 object-contain" />
-            <span className="text-xl font-serif font-semibold text-primary">Home Guide</span>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <img src="/images/hg-logo.png" alt="HG" className="w-10 h-10 object-contain" />
+              <span className="text-xl font-serif font-semibold text-primary">Home Guide</span>
+            </div>
+            <div className="flex items-center gap-2">
+              {user && (
+                <Button variant="outline" size="sm" onClick={() => navigate('/my-profile')}>
+                  <User className="h-4 w-4 mr-1" />
+                  {es ? 'Mi Perfil' : 'My Profile'}
+                </Button>
+              )}
+              <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+                <ArrowLeft className="h-4 w-4 mr-1" />
+                {es ? 'Inicio' : 'Home'}
+              </Button>
+            </div>
           </div>
           <h1 className="text-3xl sm:text-4xl font-serif font-bold text-foreground mb-2">
             {es ? 'Bolsa de Trabajo' : 'Job Board'}

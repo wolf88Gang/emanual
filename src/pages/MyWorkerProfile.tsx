@@ -14,8 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/currency';
+import { useNavigate } from 'react-router-dom';
 import {
-  Star, MapPin, Briefcase, Save, Loader2, Plus, X, User, Award, Calendar
+  Star, MapPin, Briefcase, Save, Loader2, Plus, X, User, Award, Calendar, ArrowLeft
 } from 'lucide-react';
 
 const SKILL_OPTIONS = [
@@ -27,6 +28,7 @@ const SKILL_OPTIONS = [
 export default function MyWorkerProfile() {
   const { language } = useLanguage();
   const { user, profile } = useAuth();
+  const navigate = useNavigate();
   const es = language === 'es';
 
   const [loading, setLoading] = useState(true);
@@ -149,6 +151,16 @@ export default function MyWorkerProfile() {
 
   return (
     <div className="container py-6 space-y-6 max-w-3xl">
+      {/* Back nav */}
+      <div className="flex items-center gap-2">
+        <Button variant="ghost" size="sm" onClick={() => navigate('/jobs')}>
+          <ArrowLeft className="h-4 w-4 mr-1" />
+          {es ? 'Bolsa de Trabajo' : 'Job Board'}
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => navigate('/')}>
+          {es ? 'Inicio' : 'Home'}
+        </Button>
+      </div>
       {/* Header with stats */}
       <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
         <div>
