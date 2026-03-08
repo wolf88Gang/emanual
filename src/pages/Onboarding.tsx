@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'other';
+type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'worker' | 'other';
 type Step = 'profile' | 'plan' | 'estate';
 
 const STEPS: Step[] = ['profile', 'plan', 'estate'];
@@ -63,6 +63,16 @@ const CLIENT_TYPE_OPTIONS: {
     descriptionEs: 'Gestiono propiedades privadas y de clientes',
     descriptionDe: 'Ich verwalte private und Kundenimmobilien',
     emoji: '🔀',
+  },
+  {
+    id: 'worker',
+    label: 'Looking for work',
+    labelEs: 'Busco trabajo',
+    labelDe: 'Arbeit suchen',
+    description: 'I want to find landscaping jobs near me',
+    descriptionEs: 'Quiero encontrar trabajos de jardinería cerca de mí',
+    descriptionDe: 'Ich möchte Gartenbauarbeiten in meiner Nähe finden',
+    emoji: '👷',
   },
   {
     id: 'other',
