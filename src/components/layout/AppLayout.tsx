@@ -161,18 +161,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               </DropdownMenu>
             )}
 
-            {/* Language Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleLanguage}
-              title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
-            >
-              <Globe className="h-5 w-5" />
-              <span className="sr-only ml-1 text-xs font-medium">
-                {language.toUpperCase()}
-              </span>
-            </Button>
+            {/* Language Picker */}
+            <LanguagePicker />
 
             {/* Profile */}
             <DropdownMenu>

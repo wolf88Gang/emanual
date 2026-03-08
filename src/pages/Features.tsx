@@ -1,6 +1,7 @@
 import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguagePicker } from '@/components/LanguagePicker';
 import {
   Leaf, Map, Box, ClipboardList, FolderOpen, Package, Mountain, BookOpen,
   DollarSign, Recycle, ShoppingBag, Users, Clock, Shield, Wrench, BarChart3,
@@ -101,11 +102,14 @@ export default function Features() {
             <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain" />
             <span className="text-base font-serif font-semibold text-foreground tracking-tight">Home Guide</span>
           </Link>
-          <Link to="/auth">
-            <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase">
-              {es ? 'Comenzar' : 'Get Started'}
-            </Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <LanguagePicker />
+            <Link to="/auth">
+              <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase">
+                {es ? 'Comenzar' : language === 'de' ? 'Starten' : 'Get Started'}
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
