@@ -261,11 +261,7 @@ export default function TopographyRisks() {
   if (!currentEstate) {
     return (
       <ModernAppLayout>
-        <div className="flex items-center justify-center h-96">
-          <p className="text-muted-foreground">
-            {language === 'es' ? 'Selecciona una propiedad' : 'Select a property'}
-          </p>
-        </div>
+        <NoEstateGuide />
       </ModernAppLayout>
     );
   }
