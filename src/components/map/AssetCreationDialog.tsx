@@ -7,9 +7,10 @@
  import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
  import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
  import { Badge } from '@/components/ui/badge';
- import { useLanguage } from '@/contexts/LanguageContext';
- import { supabase } from '@/integrations/supabase/client';
- import { toast } from 'sonner';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useSubscription } from '@/contexts/SubscriptionContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
  
  interface AssetCreationDialogProps {
    estateId: string;
@@ -48,8 +49,9 @@
  ];
  
  export function AssetCreationDialog({ estateId, lat, lng, zones, onSave, onCancel }: AssetCreationDialogProps) {
-   const { language } = useLanguage();
-   const [saving, setSaving] = useState(false);
+  const { language } = useLanguage();
+  const { assetLimit } = useSubscription();
+  const [saving, setSaving] = useState(false);
    const [formData, setFormData] = useState({
      name: '',
      description: '',
@@ -64,11 +66,26 @@
    const [newTag, setNewTag] = useState('');
    const [newRisk, setNewRisk] = useState('');
  
-   async function handleSave() {
-     if (!formData.name.trim()) {
-       toast.error(language === 'es' ? 'Nombre requerido' : 'Name is required');
-       return;
-     }
+  async function handleSave() {
+    if (!formData.name.trim()) {
+      toast.error(language === 'es' ? 'Nombre requerido' : 'Name is required');
+      return;
+    }
+
+    // Check trial asset limit
+    if (assetLimit) {
+      const { count } = await supabase
+        .from('assets')
+        .select('id', { count: 'exact', head: true })
+        .eq('estate_id', estateId);
+      if ((count || 0) >= assetLimit) {
+        toast.error(language === 'es' 
+          ? `Límite de prueba: máximo ${assetLimit} activos. Suscríbete para ilimitados.`
+          : `Trial limit: max ${assetLimit} assets. Subscribe for unlimited.`
+        );
+        return;
+      }
+    }
  
      setSaving(true);
      try {
