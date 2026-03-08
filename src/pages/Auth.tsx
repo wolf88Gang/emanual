@@ -106,9 +106,7 @@ export default function Auth() {
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
         <div className="relative z-10 flex flex-col justify-end p-12 pb-16 text-white">
           <div className="flex items-center gap-3 mb-6">
-            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20">
-              <Leaf className="h-6 w-6 text-white" />
-            </div>
+            <img src="/images/hg-logo.png" alt="HG" className="w-12 h-12 object-contain invert brightness-200" />
             <span className="text-3xl font-serif font-semibold tracking-tight">Home Guide</span>
           </div>
           <p className="text-xl font-light text-white/90 max-w-lg leading-relaxed">
@@ -135,9 +133,7 @@ export default function Auth() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-6">
           <div className="flex items-center gap-2 mb-2">
-            <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-              <Leaf className="h-4 w-4 text-white" />
-            </div>
+            <img src="/images/hg-logo.png" alt="HG" className="w-9 h-9 object-contain invert brightness-200" />
             <span className="text-2xl font-serif font-semibold">Home Guide</span>
           </div>
           <p className="text-sm text-white/80">
