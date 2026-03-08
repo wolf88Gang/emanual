@@ -174,37 +174,7 @@ export function EstateMap({
       }
     });
 
-    // Add zone polygons
-    zones.forEach((zone) => {
-      if (zone.geometry_geojson) {
-        try {
-          const geoJsonLayer = L.geoJSON(zone.geometry_geojson, {
-            style: {
-              fillColor: zone.color || '#10b981',
-              fillOpacity: selectedZone?.id === zone.id ? 0.4 : 0.2,
-              color: zone.color || '#10b981',
-              weight: selectedZone?.id === zone.id ? 3 : 2,
-            },
-          });
-
-          (geoJsonLayer as any)._isZoneLayer = true;
-
-          geoJsonLayer.on('click', () => {
-            onZoneSelect(selectedZone?.id === zone.id ? null : zone);
-          });
-
-          geoJsonLayer.bindTooltip(zone.name, {
-            permanent: false,
-            direction: 'center',
-            className: 'zone-tooltip',
-          });
-
-          geoJsonLayer.addTo(map);
-        } catch (e) {
-          console.error('Error adding zone polygon:', e);
-        }
-      }
-    });
+    // Zone polygons hidden - assets are shown via clustering only
   }, [zones, selectedZone, onZoneSelect, isMapReady]);
 
   // Fit to selected zone
