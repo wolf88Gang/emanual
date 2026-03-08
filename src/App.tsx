@@ -73,6 +73,7 @@ function AppRoutes() {
       <Route path="/estates" element={<ProtectedRoute><EstateManagement /></ProtectedRoute>} />
       <Route path="/labor" element={<ProtectedRoute><LaborManagement /></ProtectedRoute>} />
       <Route path="/topography" element={<ProtectedRoute><TopographyRisks /></ProtectedRoute>} />
+      <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
