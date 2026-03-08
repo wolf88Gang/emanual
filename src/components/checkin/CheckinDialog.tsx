@@ -135,6 +135,7 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
     setSelectedZone('');
     setSelectedAsset('');
     setNotes('');
+    setReportIssue(false);
     photoCapture.reset();
     geolocation.reset();
   }
