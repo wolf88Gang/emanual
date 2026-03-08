@@ -390,6 +390,7 @@ export default function Tasks() {
               );
             })}
           </div>
+          )}
         </Tabs>
 
         {/* New Task Dialog */}
