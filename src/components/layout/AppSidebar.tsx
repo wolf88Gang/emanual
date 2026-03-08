@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Briefcase, Map, Box, ClipboardList, FolderOpen, Settings, Package,
   Leaf, Clock, Users, BarChart3, CreditCard, Activity, Wrench,
-  Mountain, DollarSign, BookOpen, LayoutDashboard
+  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -62,6 +62,8 @@ export function AppSidebar() {
     { path: '/inventory', icon: Package, label: es ? 'Inventario' : 'Inventory', tooltip: es ? 'Herramientas y suministros' : 'Tools & supplies' },
     { path: '/documents', icon: FolderOpen, label: es ? 'Documentos' : 'Documents', tooltip: es ? 'Archivos y documentos' : 'Files & documents' },
     { path: '/labor', icon: DollarSign, label: es ? 'Laboral' : 'Labor', tooltip: es ? 'Gestión laboral' : 'Labor management' },
+    { path: '/compost', icon: Recycle, label: 'Compost', tooltip: es ? 'Gestor de compost' : 'Compost manager' },
+    { path: '/crm', icon: ShoppingBag, label: es ? 'Ventas' : 'Sales', tooltip: es ? 'Clientes, facturas y pagos' : 'Clients, invoices & payments' },
     { path: '/topography', icon: Mountain, label: es ? 'Topografía' : 'Topography', tooltip: es ? 'Análisis topográfico' : 'Topographic analysis' },
     { path: '/reports', icon: BookOpen, label: es ? 'Reportes' : 'Reports', tooltip: es ? 'Reportes y manuales' : 'Reports & manuals' },
     { path: '/admin', icon: Settings, label: es ? 'Admin' : 'Admin', tooltip: es ? 'Configuración' : 'Settings' },
