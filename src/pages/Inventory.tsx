@@ -354,51 +354,39 @@ export default function Inventory() {
               />
             </div>
 
-            {/* Items Grid */}
-            <div className="grid gap-3">
-              {filteredItems.map((item) => (
-                <Card key={item.id}>
-                  <CardContent className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div className="flex items-start gap-3">
-                        <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                          {categoryIcons[item.category]}
-                        </div>
-                        <div>
-                          <h3 className="font-semibold">
-                            {language === 'es' && item.name_es ? item.name_es : item.name}
-                          </h3>
-                          <p className="text-sm text-muted-foreground">
-                            {item.quantity} {item.unit}
-                          </p>
-                          <div className="flex gap-2 mt-2">
-                            <Badge variant="secondary" className="text-xs">
-                              {categoryLabels[item.category]?.[language === 'es' ? 'es' : 'en']}
-                            </Badge>
-                            <Badge 
-                              variant={item.condition === 'good' || item.condition === 'new' ? 'outline' : 'destructive'}
-                              className="text-xs"
-                            >
-                              {conditionLabels[item.condition]?.[language === 'es' ? 'es' : 'en']}
-                            </Badge>
-                          </div>
-                        </div>
+            {/* Items Grid - Visual cards */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+              {filteredItems.map((item) => {
+                const conditionColor = item.condition === 'good' || item.condition === 'new' 
+                  ? 'text-success' 
+                  : item.condition === 'needs_repair' || item.condition === 'out_of_service' 
+                    ? 'text-destructive' 
+                    : 'text-warning';
+                return (
+                  <Card 
+                    key={item.id} 
+                    className="estate-card cursor-pointer hover:border-primary/50 transition-all"
+                    onClick={() => { setSelectedItem(item); setShowAssignSheet(true); }}
+                  >
+                    <CardContent className="p-3 flex flex-col items-center text-center gap-2">
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                        {categoryIcons[item.category]}
                       </div>
-                      <Button 
-                        size="sm" 
-                        variant="outline"
-                        onClick={() => {
-                          setSelectedItem(item);
-                          setShowAssignSheet(true);
-                        }}
-                      >
-                        <User className="h-4 w-4 mr-1" />
-                        {language === 'es' ? 'Asignar' : 'Assign'}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <div>
+                        <h3 className="font-semibold text-sm leading-tight">
+                          {language === 'es' && item.name_es ? item.name_es : item.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground mt-0.5">
+                          {item.quantity} {item.unit}
+                        </p>
+                      </div>
+                      <Badge variant="outline" className={`text-[10px] ${conditionColor}`}>
+                        {conditionLabels[item.condition]?.[language === 'es' ? 'es' : 'en']}
+                      </Badge>
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
 

@@ -37,6 +37,7 @@ import FeatureRequests from "./pages/FeatureRequests";
 import JobBoard from "./pages/JobBoard";
 import PostJob from "./pages/PostJob";
 import MyJobPostings from "./pages/MyJobPostings";
+import WorkerProfilePage from "./pages/WorkerProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -148,6 +149,7 @@ function AppRoutes() {
 
       {/* Public marketplace routes */}
       <Route path="/jobs" element={<JobBoard />} />
+      <Route path="/worker/:id" element={<WorkerProfilePage />} />
       <Route path="/jobs/post" element={user ? <EstateRoute><PostJob /></EstateRoute> : <Navigate to="/auth" replace />} />
 
       <Route path="*" element={<NotFound />} />
