@@ -4,12 +4,13 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Leaf, ArrowRight, ArrowLeft, Check, CreditCard, Building2 } from 'lucide-react';
+import { Leaf, ArrowRight, ArrowLeft, Check, CreditCard, Building2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 declare global {
   interface Window {
@@ -27,6 +28,9 @@ interface PlanOption {
   savings?: string;
   savingsEs?: string;
 }
+
+type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'other';
+type Step = 'profile' | 'plan' | 'payment' | 'estate';
 
 const plans: PlanOption[] = [
   {
@@ -49,16 +53,21 @@ const plans: PlanOption[] = [
   },
 ];
 
-const STEPS = ['welcome', 'plan', 'payment', 'estate'] as const;
-type Step = typeof STEPS[number];
-type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'other';
+const STEPS: Step[] = ['profile', 'plan', 'payment', 'estate'];
 
-const CLIENT_TYPE_OPTIONS: { id: ClientType; label: string; labelEs: string; description: string; descriptionEs: string; emoji: string }[] = [
+const CLIENT_TYPE_OPTIONS: {
+  id: ClientType;
+  label: string;
+  labelEs: string;
+  description: string;
+  descriptionEs: string;
+  emoji: string;
+}[] = [
   {
     id: 'property_owner',
     label: 'Property Owner',
     labelEs: 'Dueño de propiedad',
-    description: 'I manage my own estates',
+    description: 'I manage my own properties',
     descriptionEs: 'Gestiono mis propias propiedades',
     emoji: '🏡',
   },
@@ -66,16 +75,16 @@ const CLIENT_TYPE_OPTIONS: { id: ClientType; label: string; labelEs: string; des
     id: 'landscaping_company',
     label: 'Landscaping Company',
     labelEs: 'Empresa de landscaping',
-    description: 'I manage multiple client estates',
-    descriptionEs: 'Gestiono múltiples propiedades de clientes',
+    description: 'I manage client properties',
+    descriptionEs: 'Gestiono propiedades de clientes',
     emoji: '🏢',
   },
   {
     id: 'hybrid',
     label: 'Both',
     labelEs: 'Ambos',
-    description: 'I manage client estates and private estates',
-    descriptionEs: 'Gestiono propiedades de clientes y privadas',
+    description: 'I manage private and client properties',
+    descriptionEs: 'Gestiono propiedades privadas y de clientes',
     emoji: '🔀',
   },
   {
@@ -93,7 +102,7 @@ export default function Onboarding() {
   const { language } = useLanguage();
   const navigate = useNavigate();
 
-  const [currentStep, setCurrentStep] = useState<Step>('welcome');
+  const [currentStep, setCurrentStep] = useState<Step>('profile');
   const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly');
   const [selectedClientType, setSelectedClientType] = useState<ClientType | ''>('');
   const [paymentComplete, setPaymentComplete] = useState(false);
@@ -104,20 +113,16 @@ export default function Onboarding() {
 
   const stepIndex = STEPS.indexOf(currentStep);
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
-
   const es = language === 'es';
 
-  const handleStart = () => {
-    if (!selectedClientType) {
-      toast.error(es ? 'Selecciona tu tipo de cliente' : 'Please select your client type');
-      return;
-    }
-    nextStep();
-  };
-
-  const handleCancelOnboarding = async () => {
-    await signOut();
-    navigate('/auth', { replace: true });
+  const resetWizard = () => {
+    setCurrentStep('profile');
+    setSelectedPlan('monthly');
+    setSelectedClientType('');
+    setPaymentComplete(false);
+    setEstateName('');
+    setEstateCountry('');
+    setEstateAddress('');
   };
 
   const nextStep = () => {
@@ -130,35 +135,49 @@ export default function Onboarding() {
     if (idx > 0) setCurrentStep(STEPS[idx - 1]);
   };
 
+  const handleCancelOnboarding = async () => {
+    await signOut();
+    navigate('/auth', { replace: true });
+  };
+
+  const handleProfileContinue = () => {
+    if (!selectedClientType) {
+      toast.error(es ? 'Selecciona un tipo de cuenta' : 'Please select an account type');
+      return;
+    }
+    nextStep();
+  };
+
   const handlePayPalPayment = async () => {
     if (!user) return;
+    if (!window.paypal) {
+      toast.error(es ? 'PayPal no está disponible en este momento' : 'PayPal is not available right now');
+      return;
+    }
+
     setIsLoading(true);
 
     try {
-      const plan = plans.find(p => p.id === selectedPlan)!;
+      const plan = plans.find((p) => p.id === selectedPlan)!;
 
-      // Create order via edge function
-      const { data: orderData, error: orderError } = await supabase.functions.invoke(
-        'paypal-create-order',
-        {
-          body: {
-            plan_type: selectedPlan,
-            amount: plan.price.toFixed(2),
-          },
-        }
-      );
+      const { data: orderData, error: orderError } = await supabase.functions.invoke('paypal-create-order', {
+        body: {
+          plan_type: selectedPlan,
+          amount: plan.price.toFixed(2),
+        },
+      });
 
       if (orderError) throw orderError;
 
       const orderId = orderData?.id;
       if (!orderId) throw new Error('No order ID returned');
 
-      // Render PayPal buttons in a modal-like approach
       const container = document.getElementById('paypal-button-container');
-      if (container) container.innerHTML = '';
+      if (!container) return;
+      container.innerHTML = '';
 
-      if (window.paypal) {
-        window.paypal.Buttons({
+      window.paypal
+        .Buttons({
           createOrder: () => orderId,
           onApprove: async (data: any) => {
             try {
@@ -175,22 +194,21 @@ export default function Onboarding() {
               );
 
               if (captureError) throw captureError;
+              if (captureData?.error) throw new Error(captureData.message || 'Payment capture failed');
 
               setPaymentComplete(true);
               toast.success(es ? '¡Pago exitoso!' : 'Payment successful!');
-              nextStep();
             } catch (err: any) {
-              toast.error(err.message || 'Payment capture failed');
+              toast.error(err.message || (es ? 'Error al confirmar el pago' : 'Payment capture failed'));
             }
           },
-          onError: (err: any) => {
-            console.error('PayPal error:', err);
+          onError: () => {
             toast.error(es ? 'Error en el pago' : 'Payment error');
           },
-        }).render('#paypal-button-container');
-      }
+        })
+        .render('#paypal-button-container');
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create payment');
+      toast.error(err.message || (es ? 'No se pudo iniciar el pago' : 'Failed to start payment'));
     } finally {
       setIsLoading(false);
     }
@@ -198,13 +216,12 @@ export default function Onboarding() {
 
   const handleCreateEstate = async () => {
     if (!user || !estateName.trim()) {
-      toast.error(es ? 'Ingresa el nombre de la propiedad' : 'Enter the estate name');
+      toast.error(es ? 'Ingresa el nombre de la propiedad' : 'Enter the property name');
       return;
     }
 
     setIsLoading(true);
     try {
-      // Create org for the new client if they don't have one
       let orgId = profile?.org_id;
 
       if (!orgId) {
@@ -218,7 +235,6 @@ export default function Onboarding() {
         orgId = newOrg.id;
       }
 
-      // Persist onboarding context (org + client type)
       const { error: profileError } = await supabase
         .from('profiles')
         .update({ org_id: orgId, client_type: selectedClientType || null } as any)
@@ -226,7 +242,6 @@ export default function Onboarding() {
 
       if (profileError) throw profileError;
 
-      // Assign owner role if not present
       const { data: existingRole } = await supabase
         .from('user_roles')
         .select('id')
@@ -235,27 +250,23 @@ export default function Onboarding() {
         .maybeSingle();
 
       if (!existingRole) {
-        await supabase
-          .from('user_roles')
-          .insert({ user_id: user.id, role: 'owner' });
+        const { error: roleError } = await supabase.from('user_roles').insert({ user_id: user.id, role: 'owner' });
+        if (roleError) throw roleError;
       }
 
-      // Create the estate
-      const { error: estateError } = await supabase
-        .from('estates')
-        .insert({
-          name: estateName,
-          org_id: orgId,
-          country: estateCountry || null,
-          address_text: estateAddress || null,
-        });
+      const { error: estateError } = await supabase.from('estates').insert({
+        name: estateName,
+        org_id: orgId,
+        country: estateCountry || null,
+        address_text: estateAddress || null,
+      });
 
       if (estateError) throw estateError;
 
-      toast.success(es ? '¡Propiedad creada! Bienvenido a Casa Guide' : 'Estate created! Welcome to Casa Guide');
+      toast.success(es ? '¡Propiedad creada! Bienvenido a Casa Guide' : 'Property created! Welcome to Casa Guide');
       navigate('/', { replace: true });
     } catch (err: any) {
-      toast.error(err.message || 'Failed to create estate');
+      toast.error(err.message || (es ? 'No se pudo crear la propiedad' : 'Failed to create property'));
     } finally {
       setIsLoading(false);
     }
@@ -263,7 +274,6 @@ export default function Onboarding() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      {/* Header */}
       <header className="p-4 flex items-center justify-between gap-2 border-b border-border">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
@@ -271,12 +281,17 @@ export default function Onboarding() {
           </div>
           <span className="text-xl font-serif font-semibold text-primary">Casa Guide</span>
         </div>
-        <Button variant="ghost" size="sm" onClick={handleCancelOnboarding}>
-          {es ? 'Salir' : 'Exit'}
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button variant="ghost" size="sm" onClick={resetWizard}>
+            <RotateCcw className="h-4 w-4 mr-2" />
+            {es ? 'Reiniciar' : 'Restart'}
+          </Button>
+          <Button variant="ghost" size="sm" onClick={handleCancelOnboarding}>
+            {es ? 'Salir' : 'Exit'}
+          </Button>
+        </div>
       </header>
 
-      {/* Progress */}
       <div className="px-6 pt-4">
         <Progress value={progress} className="h-2" />
         <p className="text-xs text-muted-foreground mt-1 text-right">
@@ -284,124 +299,109 @@ export default function Onboarding() {
         </p>
       </div>
 
-      {/* Content */}
       <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-lg">
-          {/* Step 1: Welcome */}
-          {currentStep === 'welcome' && (
+        <div className="w-full max-w-xl">
+          {currentStep === 'profile' && (
             <Card className="border-0 shadow-xl">
-              <CardHeader className="text-center pb-2">
-                <CardTitle className="text-3xl font-serif">
-                  {es ? '¡Bienvenido a Casa Guide!' : 'Welcome to Casa Guide!'}
+              <CardHeader>
+                <CardTitle className="text-2xl font-serif">
+                  {es ? '¿Qué tipo de cuenta quieres crear?' : 'What type of account do you want to create?'}
                 </CardTitle>
-                <CardDescription className="text-base mt-2">
+                <CardDescription>
                   {es
-                    ? 'Configura tu cuenta en minutos. Primero dinos qué tipo de cliente eres para personalizar la plataforma.'
-                    : 'Set up your account in minutes. First tell us your client type so we can personalize the platform.'}
+                    ? 'Selecciona una opción para personalizar la plataforma.'
+                    : 'Select one option to personalize the platform.'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <Label>{es ? '¿Qué tipo de cliente eres? *' : 'What type of client are you? *'}</Label>
-                  <div className="grid gap-2">
-                    {CLIENT_TYPE_OPTIONS.map((option) => (
-                      <button
+              <CardContent className="space-y-4">
+                <RadioGroup
+                  value={selectedClientType}
+                  onValueChange={(value) => setSelectedClientType(value as ClientType)}
+                  className="space-y-3"
+                >
+                  {CLIENT_TYPE_OPTIONS.map((option) => {
+                    const selected = selectedClientType === option.id;
+                    return (
+                      <label
                         key={option.id}
-                        type="button"
-                        onClick={() => setSelectedClientType(option.id)}
-                        className={`w-full text-left p-3 rounded-lg border transition-all ${
-                          selectedClientType === option.id
+                        htmlFor={option.id}
+                        className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
+                          selected
                             ? 'border-primary bg-primary/5'
-                            : 'border-border bg-secondary/50 hover:border-primary/30'
+                            : 'border-border hover:border-primary/40 bg-secondary/30'
                         }`}
                       >
-                        <div className="flex items-start gap-3">
+                        <RadioGroupItem id={option.id} value={option.id} className="mt-1" />
+                        <div className="flex items-start gap-3 flex-1">
                           <span className="text-lg mt-0.5">{option.emoji}</span>
                           <div>
-                            <p className="text-sm font-semibold text-foreground">
+                            <p className="font-semibold text-foreground text-base">
                               {es ? option.labelEs : option.label}
                             </p>
-                            <p className="text-xs text-muted-foreground">
+                            <p className="text-sm text-muted-foreground">
                               {es ? option.descriptionEs : option.description}
                             </p>
                           </div>
                         </div>
-                      </button>
-                    ))}
-                  </div>
-                </div>
+                      </label>
+                    );
+                  })}
+                </RadioGroup>
 
-                <div className="space-y-3">
-                  {[
-                    { icon: '🌿', text: es ? 'Gestión digital de propiedades' : 'Digital estate management' },
-                    { icon: '📋', text: es ? 'Tareas, activos y documentos' : 'Tasks, assets & documents' },
-                    { icon: '👥', text: es ? 'Gestión de equipo y contratistas' : 'Team & vendor management' },
-                    { icon: '🗺️', text: es ? 'Mapa interactivo con zonas' : 'Interactive map with zones' },
-                  ].map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 p-3 rounded-lg bg-secondary/50">
-                      <span className="text-xl">{item.icon}</span>
-                      <span className="text-sm font-medium text-foreground">{item.text}</span>
-                    </div>
-                  ))}
-                </div>
-                <Button className="w-full" size="lg" onClick={handleStart} disabled={!selectedClientType}>
-                  {es ? 'Comenzar' : 'Get Started'}
+                <Button className="w-full" size="lg" onClick={handleProfileContinue} disabled={!selectedClientType}>
+                  {es ? 'Continuar' : 'Continue'}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
             </Card>
           )}
 
-          {/* Step 2: Select Plan */}
           {currentStep === 'plan' && (
             <Card className="border-0 shadow-xl">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <CreditCard className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl font-serif">
-                  {es ? 'Elige tu plan' : 'Choose your plan'}
-                </CardTitle>
+              <CardHeader>
+                <CardTitle className="text-2xl font-serif">{es ? 'Elige tu plan' : 'Choose your plan'}</CardTitle>
                 <CardDescription>
-                  {es ? 'Selecciona el plan que mejor se adapte a tu necesidad' : 'Select the plan that best fits your needs'}
+                  {es ? 'Puedes cambiar de plan más adelante.' : 'You can change your plan later.'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
-                {plans.map((plan) => (
-                  <button
-                    key={plan.id}
-                    onClick={() => setSelectedPlan(plan.id)}
-                    className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                      selectedPlan === plan.id
-                        ? 'border-primary bg-primary/5'
-                        : 'border-border hover:border-primary/30'
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <div className="font-semibold text-foreground text-lg">
-                          {es ? plan.nameEs : plan.name}
+              <CardContent className="space-y-4">
+                {plans.map((plan) => {
+                  const selected = selectedPlan === plan.id;
+                  return (
+                    <button
+                      key={plan.id}
+                      type="button"
+                      onClick={() => setSelectedPlan(plan.id)}
+                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
+                        selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-semibold text-foreground text-lg">{es ? plan.nameEs : plan.name}</div>
+                          <div className="text-2xl font-bold text-primary mt-1">
+                            ${plan.price}
+                            <span className="text-sm font-normal text-muted-foreground">
+                              {es ? plan.periodEs : plan.period}
+                            </span>
+                          </div>
+                          {plan.savings && (
+                            <span className="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
+                              {es ? plan.savingsEs : plan.savings}
+                            </span>
+                          )}
                         </div>
-                        <div className="text-2xl font-bold text-primary mt-1">
-                          ${plan.price}
-                          <span className="text-sm font-normal text-muted-foreground">
-                            {es ? plan.periodEs : plan.period}
-                          </span>
+                        <div
+                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
+                            selected ? 'border-primary bg-primary' : 'border-muted-foreground/30'
+                          }`}
+                        >
+                          {selected && <Check className="h-4 w-4 text-primary-foreground" />}
                         </div>
-                        {plan.savings && (
-                          <span className="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
-                            {es ? plan.savingsEs : plan.savings}
-                          </span>
-                        )}
                       </div>
-                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                        selectedPlan === plan.id ? 'border-primary bg-primary' : 'border-muted-foreground/30'
-                      }`}>
-                        {selectedPlan === plan.id && <Check className="h-4 w-4 text-primary-foreground" />}
-                      </div>
-                    </div>
-                  </button>
-                ))}
+                    </button>
+                  );
+                })}
 
                 <div className="flex gap-3 pt-2">
                   <Button variant="outline" onClick={prevStep} className="flex-1">
@@ -417,25 +417,19 @@ export default function Onboarding() {
             </Card>
           )}
 
-          {/* Step 3: Payment */}
           {currentStep === 'payment' && (
             <Card className="border-0 shadow-xl">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <CreditCard className="h-8 w-8 text-primary" />
-                </div>
-                <CardTitle className="text-2xl font-serif">
-                  {es ? 'Método de pago' : 'Payment'}
-                </CardTitle>
+              <CardHeader>
+                <CardTitle className="text-2xl font-serif">{es ? 'Pago' : 'Payment'}</CardTitle>
                 <CardDescription>
                   {es
-                    ? `Plan ${selectedPlan === 'monthly' ? 'Mensual' : 'Anual'} — $${plans.find(p => p.id === selectedPlan)!.price}`
-                    : `${selectedPlan === 'monthly' ? 'Monthly' : 'Annual'} Plan — $${plans.find(p => p.id === selectedPlan)!.price}`}
+                    ? `Plan ${selectedPlan === 'monthly' ? 'Mensual' : 'Anual'} — $${plans.find((p) => p.id === selectedPlan)?.price}`
+                    : `${selectedPlan === 'monthly' ? 'Monthly' : 'Annual'} plan — $${plans.find((p) => p.id === selectedPlan)?.price}`}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
+              <CardContent className="space-y-4">
                 {paymentComplete ? (
-                  <div className="text-center py-8">
+                  <div className="text-center py-4">
                     <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
                       <Check className="h-8 w-8 text-accent-foreground" />
                     </div>
@@ -443,56 +437,57 @@ export default function Onboarding() {
                       {es ? '¡Pago completado!' : 'Payment complete!'}
                     </p>
                     <Button className="mt-4" onClick={nextStep}>
-                      {es ? 'Crear mi propiedad' : 'Create my estate'}
+                      {es ? 'Continuar a propiedad' : 'Continue to property'}
                       <ArrowRight className="ml-2 h-4 w-4" />
                     </Button>
                   </div>
                 ) : (
                   <>
-                    <div id="paypal-button-container" className="min-h-[50px]" />
-                    {!document.getElementById('paypal-button-container')?.hasChildNodes() && (
-                      <Button
-                        className="w-full"
-                        size="lg"
-                        onClick={handlePayPalPayment}
-                        disabled={isLoading}
-                      >
-                        {isLoading
-                          ? (es ? 'Procesando...' : 'Processing...')
-                          : (es ? 'Pagar con PayPal' : 'Pay with PayPal')}
-                      </Button>
-                    )}
-                    <div className="flex gap-3 pt-2">
-                      <Button variant="outline" onClick={prevStep} className="flex-1">
-                        <ArrowLeft className="mr-2 h-4 w-4" />
-                        {es ? 'Atrás' : 'Back'}
-                      </Button>
-                    </div>
+                    <Button className="w-full" size="lg" onClick={handlePayPalPayment} disabled={isLoading}>
+                      <CreditCard className="h-4 w-4 mr-2" />
+                      {isLoading
+                        ? es
+                          ? 'Preparando PayPal...'
+                          : 'Preparing PayPal...'
+                        : es
+                          ? 'Pagar con PayPal'
+                          : 'Pay with PayPal'}
+                    </Button>
+                    <div id="paypal-button-container" className="min-h-[52px]" />
+                    <p className="text-xs text-muted-foreground text-center">
+                      {es
+                        ? 'Haz clic en “Pagar con PayPal” para mostrar los botones de pago.'
+                        : 'Click “Pay with PayPal” to load the payment buttons.'}
+                    </p>
                   </>
                 )}
+
+                <div className="flex gap-3 pt-2">
+                  <Button variant="outline" onClick={prevStep} className="flex-1">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    {es ? 'Atrás' : 'Back'}
+                  </Button>
+                </div>
               </CardContent>
             </Card>
           )}
 
-          {/* Step 4: Create Estate */}
           {currentStep === 'estate' && (
             <Card className="border-0 shadow-xl">
-              <CardHeader className="text-center pb-2">
-                <div className="mx-auto w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
-                  <Building2 className="h-8 w-8 text-primary" />
+              <CardHeader>
+                <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-2">
+                  <Building2 className="h-7 w-7 text-primary" />
                 </div>
-                <CardTitle className="text-2xl font-serif">
-                  {es ? 'Crea tu primera propiedad' : 'Create your first estate'}
+                <CardTitle className="text-2xl font-serif text-center">
+                  {es ? 'Crea tu primera propiedad' : 'Create your first property'}
                 </CardTitle>
-                <CardDescription>
-                  {es ? 'Configura la información básica de tu propiedad' : 'Set up your estate basic information'}
+                <CardDescription className="text-center">
+                  {es ? 'Último paso para entrar a Casa Guide.' : 'Final step before entering Casa Guide.'}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4 pt-4">
+              <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="estateName">
-                    {es ? 'Nombre de la propiedad *' : 'Estate name *'}
-                  </Label>
+                  <Label htmlFor="estateName">{es ? 'Nombre de la propiedad *' : 'Property name *'}</Label>
                   <Input
                     id="estateName"
                     placeholder={es ? 'Ej: Villa Hermosa' : 'e.g. Villa Hermosa'}
@@ -500,6 +495,7 @@ export default function Onboarding() {
                     onChange={(e) => setEstateName(e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="estateCountry">{es ? 'País' : 'Country'}</Label>
                   <Input
@@ -509,11 +505,12 @@ export default function Onboarding() {
                     onChange={(e) => setEstateCountry(e.target.value)}
                   />
                 </div>
+
                 <div className="space-y-2">
                   <Label htmlFor="estateAddress">{es ? 'Dirección' : 'Address'}</Label>
                   <Input
                     id="estateAddress"
-                    placeholder={es ? 'Dirección de la propiedad' : 'Estate address'}
+                    placeholder={es ? 'Dirección de la propiedad' : 'Property address'}
                     value={estateAddress}
                     onChange={(e) => setEstateAddress(e.target.value)}
                   />
@@ -524,14 +521,8 @@ export default function Onboarding() {
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     {es ? 'Atrás' : 'Back'}
                   </Button>
-                  <Button
-                    onClick={handleCreateEstate}
-                    className="flex-1"
-                    disabled={isLoading || !estateName.trim()}
-                  >
-                    {isLoading
-                      ? (es ? 'Creando...' : 'Creating...')
-                      : (es ? 'Crear propiedad' : 'Create estate')}
+                  <Button onClick={handleCreateEstate} className="flex-1" disabled={isLoading || !estateName.trim()}>
+                    {isLoading ? (es ? 'Creando...' : 'Creating...') : es ? 'Finalizar' : 'Finish'}
                     <Check className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
