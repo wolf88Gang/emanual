@@ -73,17 +73,17 @@ export function AppSidebar() {
 
   // Crew nav
   const crewNav: NavItem[] = [
-    { path: '/', icon: Briefcase, label: es ? 'Trabajo' : 'Work', tooltip: es ? 'Vista de trabajo' : 'Work view' },
-    { path: '/map', icon: Map, label: es ? 'Mapa' : 'Map', tooltip: es ? 'Mapa' : 'Map' },
-    { path: '/checkin', icon: Clock, label: es ? 'Turno' : 'Shift', tooltip: es ? 'Registrar turno' : 'Clock in/out' },
-    { path: '/tasks', icon: ClipboardList, label: es ? 'Tareas' : 'Tasks', tooltip: es ? 'Mis tareas' : 'My tasks' },
-    { path: '/assets', icon: Box, label: es ? 'Activos' : 'Assets', tooltip: es ? 'Ver activos' : 'View assets' },
+    { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
+    { path: '/map', icon: Map, label: l('Map', 'Mapa', 'Karte'), tooltip: l('Map', 'Mapa', 'Karte') },
+    { path: '/checkin', icon: Clock, label: l('Shift', 'Turno', 'Schicht'), tooltip: l('Clock in/out', 'Registrar turno', 'Ein-/Ausstempeln') },
+    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('My tasks', 'Mis tareas', 'Meine Aufgaben') },
+    { path: '/assets', icon: Box, label: l('Assets', 'Activos', 'Anlagen'), tooltip: l('View assets', 'Ver activos', 'Anlagen ansehen') },
   ];
 
   // Vendor nav
   const vendorNav: NavItem[] = [
-    { path: '/', icon: Briefcase, label: es ? 'Trabajo' : 'Work', tooltip: es ? 'Vista de trabajo' : 'Work view' },
-    { path: '/tasks', icon: ClipboardList, label: es ? 'Tareas' : 'Tasks', tooltip: es ? 'Tareas asignadas' : 'Assigned tasks' },
+    { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
+    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('Assigned tasks', 'Tareas asignadas', 'Zugewiesene Aufgaben') },
   ];
 
   let navItems: NavItem[];
@@ -94,13 +94,13 @@ export function AppSidebar() {
     groupLabel = 'Platform';
   } else if (isVendor) {
     navItems = vendorNav;
-    groupLabel = es ? 'Proveedor' : 'Vendor';
+    groupLabel = l('Vendor', 'Proveedor', 'Lieferant');
   } else if (isCrew) {
     navItems = crewNav;
-    groupLabel = es ? 'Equipo' : 'Crew';
+    groupLabel = l('Crew', 'Equipo', 'Team');
   } else {
     navItems = ownerNav;
-    groupLabel = es ? 'Gestión' : 'Management';
+    groupLabel = l('Management', 'Gestión', 'Verwaltung');
   }
 
   const isActive = (path: string) => {
@@ -169,7 +169,7 @@ export function AppSidebar() {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
-              {es ? 'Cerrar sesión' : 'Sign out'}
+              {l('Sign out', 'Cerrar sesión', 'Abmelden')}
             </TooltipContent>
           </Tooltip>
         </div>
