@@ -11,17 +11,22 @@ interface SubscriptionState {
   isExpired: boolean;
   canAccessFeature: (feature: TrialFeature) => boolean;
   assetLimit: number | null; // null = unlimited
+  propertyLimit: number; // how many properties user can have
+  paidPropertyCount: number; // how many properties are paid for
+  pricePerProperty: number;
   refetch: () => Promise<void>;
 }
 
-type TrialFeature = 'reports' | 'pdf_export' | 'unlimited_assets' | 'labor' | 'compost' | 'crm' | 'topography' | 'ai_manual';
+type TrialFeature = 'reports' | 'pdf_export' | 'unlimited_assets' | 'labor' | 'compost' | 'crm' | 'topography' | 'ai_manual' | 'add_property';
 
 const TRIAL_ASSET_LIMIT = 3;
+const TRIAL_PROPERTY_LIMIT = 1;
 const TRIAL_DAYS = 15;
+const PRICE_PER_PROPERTY = 20;
 
 // Features blocked during trial
 const BLOCKED_IN_TRIAL: TrialFeature[] = [
-  'reports', 'pdf_export', 'labor', 'compost', 'crm', 'topography', 'ai_manual', 'unlimited_assets'
+  'reports', 'pdf_export', 'labor', 'compost', 'crm', 'topography', 'ai_manual', 'unlimited_assets', 'add_property'
 ];
 
 const SubscriptionContext = createContext<SubscriptionState | undefined>(undefined);
@@ -37,6 +42,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     isExpired: false,
     canAccessFeature: () => true,
     assetLimit: null,
+    propertyLimit: TRIAL_PROPERTY_LIMIT,
+    paidPropertyCount: 0,
+    pricePerProperty: PRICE_PER_PROPERTY,
     refetch: async () => {},
   });
 
@@ -64,6 +72,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
           isExpired: false,
           canAccessFeature: () => false,
           assetLimit: TRIAL_ASSET_LIMIT,
+          propertyLimit: TRIAL_PROPERTY_LIMIT,
+          paidPropertyCount: 0,
+          pricePerProperty: PRICE_PER_PROPERTY,
         }));
         return;
       }
@@ -73,10 +84,14 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       const trialEndsAt = data.trial_ends_at ? new Date(data.trial_ends_at) : null;
       const now = new Date();
       const trialExpired = isTrial && trialEndsAt && now > trialEndsAt;
-      const isActive = isPaid || (isTrial && !trialExpired);
+
       const trialDaysLeft = trialEndsAt 
         ? Math.max(0, Math.ceil((trialEndsAt.getTime() - now.getTime()) / (1000 * 60 * 60 * 24))) 
         : 0;
+
+      // Calculate paid property count from amount ($20/property)
+      const paidPropertyCount = isPaid ? Math.max(1, Math.floor(data.amount / PRICE_PER_PROPERTY)) : 0;
+      const propertyLimit = isPaid ? paidPropertyCount : TRIAL_PROPERTY_LIMIT;
 
       const canAccessFeature = (feature: TrialFeature): boolean => {
         if (isPaid) return true;
@@ -95,6 +110,9 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
         isExpired: !!trialExpired,
         canAccessFeature,
         assetLimit: isPaid ? null : TRIAL_ASSET_LIMIT,
+        propertyLimit,
+        paidPropertyCount,
+        pricePerProperty: PRICE_PER_PROPERTY,
         refetch: fetchSubscription,
       });
     } catch (error) {
@@ -121,4 +139,4 @@ export function useSubscription() {
   return context;
 }
 
-export { TRIAL_ASSET_LIMIT, TRIAL_DAYS };
+export { TRIAL_ASSET_LIMIT, TRIAL_DAYS, TRIAL_PROPERTY_LIMIT, PRICE_PER_PROPERTY };
