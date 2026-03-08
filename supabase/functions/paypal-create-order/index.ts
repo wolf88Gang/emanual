@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
                 name: plan.label,
                 unit_amount: { currency_code: "USD", value: plan.amount },
                 quantity: "1",
-                description: `Suscripción ${plan_type === "annual" ? "anual" : "mensual"} a Casa Guide`,
+                description: `Suscripción ${plan_type === "annual" ? "anual" : "mensual"} a Home Guide`,
               },
             ],
           },

@@ -204,10 +204,10 @@ export const translations = {
   es: {
     // Product
     product: {
-      name: 'Casa Guide',
+      name: 'Home Guide',
       tagline: 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.',
-      description: 'Casa Guide es una plataforma integral de gestión de propiedades para fincas, paisajes, activos, tareas, compost, CRM y más.',
-      differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Casa Guide gestiona activos vivos, operaciones, ventas y riesgo a largo plazo.',
+      description: 'Home Guide es una plataforma integral de gestión de propiedades para fincas, paisajes, activos, tareas, compost, CRM y más.',
+      differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Home Guide gestiona activos vivos, operaciones, ventas y riesgo a largo plazo.',
     },
     // Navigation
     nav: {
