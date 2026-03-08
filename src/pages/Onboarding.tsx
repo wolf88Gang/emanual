@@ -252,7 +252,7 @@ export default function Onboarding() {
 
       if (estateError) throw estateError;
 
-      toast.success(es ? '¡Propiedad creada! Bienvenido a Estate Manual' : 'Estate created! Welcome to Estate Manual');
+      toast.success(es ? '¡Propiedad creada! Bienvenido a Casa Guide' : 'Estate created! Welcome to Casa Guide');
       navigate('/', { replace: true });
     } catch (err: any) {
       toast.error(err.message || 'Failed to create estate');
@@ -269,7 +269,7 @@ export default function Onboarding() {
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
             <Leaf className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-serif font-semibold text-primary">Estate Manual</span>
+          <span className="text-xl font-serif font-semibold text-primary">Casa Guide</span>
         </div>
         <Button variant="ghost" size="sm" onClick={handleCancelOnboarding}>
           {es ? 'Salir' : 'Exit'}
@@ -292,7 +292,7 @@ export default function Onboarding() {
             <Card className="border-0 shadow-xl">
               <CardHeader className="text-center pb-2">
                 <CardTitle className="text-3xl font-serif">
-                  {es ? '¡Bienvenido a Estate Manual!' : 'Welcome to Estate Manual!'}
+                  {es ? '¡Bienvenido a Casa Guide!' : 'Welcome to Casa Guide!'}
                 </CardTitle>
                 <CardDescription className="text-base mt-2">
                   {es

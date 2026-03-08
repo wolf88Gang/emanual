@@ -126,7 +126,7 @@ export default function Auth() {
         // If login fails, try to create the account first
         toast.error(`Demo account not set up. Please contact support.`);
       } else {
-        toast.success('Welcome to Estate Manual!');
+        toast.success('Welcome to Casa Guide!');
         navigate('/');
       }
     } finally {
@@ -135,8 +135,8 @@ export default function Auth() {
   };
 
   const tagline = language === 'es' 
-    ? 'Preserva la intención del diseño. Evidencia el cuidado. Protege el valor.'
-    : 'Preserve design intent. Prove duty of care. Protect estate value.';
+    ? 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.'
+    : 'Manage properties, landscapes, and living assets — all in one place.';
 
   return (
     <div className="min-h-screen flex flex-col bg-background">
@@ -147,7 +147,7 @@ export default function Auth() {
             <Leaf className="h-5 w-5 text-primary-foreground" />
           </div>
           <span className="text-xl font-serif font-semibold text-primary">
-            Estate Manual
+            Casa Guide
           </span>
         </div>
         <Button variant="ghost" size="sm" onClick={toggleLanguage}>
@@ -172,8 +172,8 @@ export default function Auth() {
                 </CardTitle>
                 <CardDescription>
                   {language === 'es' 
-                    ? 'Selecciona un perfil para explorar Estate Manual'
-                    : 'Select a profile to explore Estate Manual'}
+                    ? 'Selecciona un perfil para explorar Casa Guide'
+                    : 'Select a profile to explore Casa Guide'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-3">
@@ -333,8 +333,8 @@ export default function Auth() {
           <div className="mt-6 p-4 rounded-xl bg-secondary/50 text-center">
             <p className="text-xs text-muted-foreground">
               {language === 'es' 
-                ? 'Estate Manual gestiona activos vivos, intención de diseño y riesgo a largo plazo — no tareas genéricas.'
-                : 'Estate Manual manages living assets, design intent, and long-term risk — not generic tasks.'}
+                ? 'Casa Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo — no tareas genéricas.'
+                : 'Casa Guide manages living assets, design intent, and long-term risk — not generic tasks.'}
             </p>
           </div>
         </div>
@@ -342,7 +342,7 @@ export default function Auth() {
 
       {/* Footer */}
       <footer className="p-4 text-center text-sm text-muted-foreground">
-        <p>Digital Estate Landscape & Maintenance Manual</p>
+        <p>Casa Guide — Digital Property & Landscape Management</p>
       </footer>
     </div>
   );
