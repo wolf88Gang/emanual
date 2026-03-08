@@ -95,7 +95,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/features" element={<Features />} />
-      <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/"} replace /> : <Auth />} />
+      <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/map"} replace /> : <Auth />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       
       {/* Platform Admin routes */}
@@ -106,8 +106,9 @@ function AppRoutes() {
       <Route path="/platform/metrics" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
       <Route path="/platform/system" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
 
-      {/* Estate routes */}
-      <Route path="/" element={<EstateRoute><WorkView /></EstateRoute>} />
+      {/* Public landing for unauthenticated, dashboard for authenticated */}
+      <Route path="/" element={user ? <EstateRoute><WorkView /></EstateRoute> : <Features />} />
+
       <Route path="/map" element={<EstateRoute><MapView /></EstateRoute>} />
       <Route path="/tasks" element={<EstateRoute><Tasks /></EstateRoute>} />
       <Route path="/assets" element={<EstateRoute><Assets /></EstateRoute>} />
