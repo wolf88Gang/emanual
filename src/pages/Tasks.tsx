@@ -374,7 +374,7 @@ export default function Tasks() {
                           </div>
                         </div>
                         <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-muted-foreground">
-                          {task.due_date && <span className="flex items-center gap-1"><Calendar className="h-3.5 w-3.5" />{format(parseISO(task.due_date), 'MMM d')}</span>}
+                          {task.due_date && <span className="flex items-center gap-1"><CalendarIcon className="h-3.5 w-3.5" />{format(parseISO(task.due_date), 'MMM d')}</span>}
                           {task.zone && <span className="flex items-center gap-1"><div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: task.zone.color }} />{task.zone.name}</span>}
                           {task.asset && <span className="flex items-center gap-1"><AssetTypeIcon type={task.asset.asset_type as any} size="sm" />{task.asset.name}</span>}
                           {task.required_photo && <span className="flex items-center gap-1 text-primary"><Camera className="h-3.5 w-3.5" />{es ? 'Foto' : 'Photo'}</span>}
