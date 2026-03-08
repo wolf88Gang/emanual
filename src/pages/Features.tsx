@@ -197,7 +197,7 @@ export default function Features() {
           <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4">
             {es ? 'Tu propiedad merece más' : 'Your property deserves more'}
           </h2>
-          <p className="text-base text-white/50 max-w-lg mx-auto mb-10">
+          <p className="text-base text-white/80 max-w-lg mx-auto mb-10">
             {es
               ? 'Configura tu primera propiedad en minutos. Sin compromiso.'
               : 'Set up your first property in minutes. No commitment required.'}
