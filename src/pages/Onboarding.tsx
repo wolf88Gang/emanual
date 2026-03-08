@@ -276,9 +276,7 @@ export default function Onboarding() {
     <div className="min-h-screen bg-background flex flex-col">
       <header className="p-4 flex items-center justify-between gap-2 border-b border-border">
         <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-            <Leaf className="h-5 w-5 text-primary-foreground" />
-          </div>
+          <img src="/images/hg-logo.png" alt="HG" className="w-10 h-10 object-contain" />
           <span className="text-xl font-serif font-semibold text-primary">Home Guide</span>
         </div>
         <div className="flex items-center gap-2">
