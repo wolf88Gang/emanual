@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Plus, Users, ShoppingBag, FileText, DollarSign, Search, ChevronRight, ArrowLeft, Star, Phone, Mail, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { formatCurrency, formatCurrencyDual } from '@/lib/currency';
@@ -47,7 +48,23 @@ export default function CRM() {
   const { language } = useLanguage();
   const { currentEstate } = useEstate();
   const { isOwnerOrManager, profile } = useAuth();
+  const navigate = useNavigate();
   const es = language === 'es';
+  const [orgType, setOrgType] = useState<string>('');
+
+  // Check org type - redirect residential owners away
+  useEffect(() => {
+    if (profile?.org_id) {
+      supabase.from('organizations').select('org_type').eq('id', profile.org_id).single()
+        .then(({ data }) => {
+          const type = (data as any)?.org_type || 'residential';
+          setOrgType(type);
+          if (type === 'residential') {
+            navigate('/', { replace: true });
+          }
+        });
+    }
+  }, [profile?.org_id]);
 
   const [activeTab, setActiveTab] = useState('clients');
   const [clients, setClients] = useState<Client[]>([]);
