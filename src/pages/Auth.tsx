@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -9,7 +9,6 @@ import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { toast } from 'sonner';
 
 const authSchema = z.object({
@@ -29,34 +28,10 @@ interface DemoAccount {
 }
 
 const demoAccounts: DemoAccount[] = [
-  { 
-    email: 'owner@demo.com', 
-    role: 'Owner',
-    icon: Building,
-    description: 'Full access to all features',
-    descriptionEs: 'Acceso completo a todas las funciones'
-  },
-  { 
-    email: 'manager@demo.com', 
-    role: 'Manager',
-    icon: Shield,
-    description: 'Manage assets, tasks & team',
-    descriptionEs: 'Gestionar activos, tareas y equipo'
-  },
-  { 
-    email: 'crew@demo.com', 
-    role: 'Crew',
-    icon: Wrench,
-    description: 'Complete tasks & check-ins',
-    descriptionEs: 'Completar tareas y registros'
-  },
-  { 
-    email: 'vendor@demo.com', 
-    role: 'Vendor',
-    icon: Users,
-    description: 'View assigned tasks only',
-    descriptionEs: 'Ver solo tareas asignadas'
-  },
+  { email: 'owner@demo.com', role: 'Owner', icon: Building, description: 'Full access to all features', descriptionEs: 'Acceso completo a todas las funciones' },
+  { email: 'manager@demo.com', role: 'Manager', icon: Shield, description: 'Manage assets, tasks & team', descriptionEs: 'Gestionar activos, tareas y equipo' },
+  { email: 'crew@demo.com', role: 'Crew', icon: Wrench, description: 'Complete tasks & check-ins', descriptionEs: 'Completar tareas y registros' },
+  { email: 'vendor@demo.com', role: 'Vendor', icon: Users, description: 'View assigned tasks only', descriptionEs: 'Ver solo tareas asignadas' },
 ];
 
 export default function Auth() {
@@ -68,33 +43,21 @@ export default function Auth() {
   const [isLoading, setIsLoading] = useState(false);
   const [showDemoAccess, setShowDemoAccess] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    reset,
-  } = useForm<AuthFormData>({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
   });
 
   useEffect(() => {
-    if (user) {
-      navigate('/', { replace: true });
-    }
+    if (user) navigate('/', { replace: true });
   }, [user, navigate]);
 
   const onSubmit = async (data: AuthFormData) => {
     setIsLoading(true);
-    
     try {
       if (isSignUp) {
         const { error } = await signUp(data.email, data.password, data.fullName);
         if (error) {
-          if (error.message.includes('already registered')) {
-            toast.error('This email is already registered. Please sign in instead.');
-          } else {
-            toast.error(error.message);
-          }
+          toast.error(error.message.includes('already registered') ? 'This email is already registered. Please sign in instead.' : error.message);
         } else {
           toast.success('Account created! Please check your email to confirm.');
           setIsSignUp(false);
@@ -103,11 +66,7 @@ export default function Auth() {
       } else {
         const { error } = await signIn(data.email, data.password);
         if (error) {
-          if (error.message.includes('Invalid login')) {
-            toast.error('Invalid email or password. Please try again.');
-          } else {
-            toast.error(error.message);
-          }
+          toast.error(error.message.includes('Invalid login') ? 'Invalid email or password.' : error.message);
         } else {
           toast.success('Welcome back!');
           navigate('/');
@@ -123,8 +82,7 @@ export default function Auth() {
     try {
       const { error } = await signIn(email, 'Demo1234!');
       if (error) {
-        // If login fails, try to create the account first
-        toast.error(`Demo account not set up. Please contact support.`);
+        toast.error('Demo account not set up. Please contact support.');
       } else {
         toast.success('Welcome to Casa Guide!');
         navigate('/');
@@ -134,108 +92,130 @@ export default function Auth() {
     }
   };
 
-  const tagline = language === 'es' 
-    ? 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.'
-    : 'Manage properties, landscapes, and living assets — all in one place.';
+  const es = language === 'es';
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      {/* Header */}
-      <header className="p-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-            <Leaf className="h-5 w-5 text-primary-foreground" />
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      {/* Left side — background image */}
+      <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
+        <img
+          src="/images/estate_guide_2.jpg"
+          alt="Luxury estate at night"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
+        <div className="relative z-10 flex flex-col justify-end p-12 pb-16 text-white">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20">
+              <Leaf className="h-6 w-6 text-white" />
+            </div>
+            <span className="text-3xl font-serif font-semibold tracking-tight">Casa Guide</span>
           </div>
-          <span className="text-xl font-serif font-semibold text-primary">
-            Casa Guide
-          </span>
-        </div>
-        <Button variant="ghost" size="sm" onClick={toggleLanguage}>
-          {language === 'en' ? '🇪🇸 Español' : '🇺🇸 English'}
-        </Button>
-      </header>
-
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center p-4">
-        <div className="w-full max-w-md">
-          {/* Tagline */}
-          <p className="text-center text-muted-foreground mb-6 text-sm">
-            {tagline}
+          <p className="text-xl font-light text-white/90 max-w-lg leading-relaxed">
+            {es
+              ? 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.'
+              : 'Manage properties, landscapes, and living assets — all in one place.'}
           </p>
+          <Link
+            to="/features"
+            className="mt-6 text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4"
+          >
+            {es ? 'Ver todas las funciones →' : 'See all features →'}
+          </Link>
+        </div>
+      </div>
 
-          {showDemoAccess ? (
-            /* Demo Access Panel */
-            <Card className="estate-card border-0 shadow-xl">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-serif">
-                  {language === 'es' ? 'Acceso Demo' : 'Demo Access'}
-                </CardTitle>
-                <CardDescription>
-                  {language === 'es' 
-                    ? 'Selecciona un perfil para explorar Casa Guide'
-                    : 'Select a profile to explore Casa Guide'}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {demoAccounts.map((account) => (
-                  <button
-                    key={account.email}
-                    onClick={() => handleDemoLogin(account.email)}
-                    disabled={isLoading}
-                    className="w-full flex items-center gap-4 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/50 transition-all text-left group"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                      <account.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <div className="flex-1">
-                      <div className="font-medium text-foreground">{account.role}</div>
-                      <div className="text-sm text-muted-foreground">
-                        {language === 'es' ? account.descriptionEs : account.description}
-                      </div>
-                    </div>
-                    <ArrowRight className="h-5 w-5 text-muted-foreground group-hover:text-primary transition-colors" />
-                  </button>
-                ))}
+      {/* Mobile hero banner */}
+      <div className="lg:hidden relative h-48 overflow-hidden">
+        <img
+          src="/images/estate_guide_2.jpg"
+          alt="Luxury estate at night"
+          className="absolute inset-0 w-full h-full object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70" />
+        <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-6">
+          <div className="flex items-center gap-2 mb-2">
+            <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+              <Leaf className="h-4 w-4 text-white" />
+            </div>
+            <span className="text-2xl font-serif font-semibold">Casa Guide</span>
+          </div>
+          <p className="text-sm text-white/80">
+            {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
+          </p>
+        </div>
+      </div>
 
-                <div className="pt-4 border-t border-border mt-4">
-                  <button
-                    onClick={() => setShowDemoAccess(false)}
-                    className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {language === 'es' ? '← Volver a inicio de sesión' : '← Back to sign in'}
-                  </button>
+      {/* Right side — form */}
+      <div className="flex-1 flex flex-col bg-background">
+        <header className="p-4 flex justify-end">
+          <Button variant="ghost" size="sm" onClick={toggleLanguage}>
+            {language === 'en' ? '🇪🇸 Español' : '🇺🇸 English'}
+          </Button>
+        </header>
+
+        <main className="flex-1 flex items-center justify-center p-6">
+          <div className="w-full max-w-sm">
+            {showDemoAccess ? (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h1 className="text-2xl font-serif font-bold text-foreground">
+                    {es ? 'Acceso Demo' : 'Demo Access'}
+                  </h1>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {es ? 'Selecciona un perfil para explorar' : 'Select a profile to explore'}
+                  </p>
                 </div>
-              </CardContent>
-            </Card>
-          ) : (
-            /* Login/Signup Form */
-            <Card className="estate-card border-0 shadow-xl">
-              <CardHeader className="text-center pb-4">
-                <CardTitle className="text-2xl font-serif">
-                  {isSignUp ? t('auth.signUp') : t('auth.signIn')}
-                </CardTitle>
-                <CardDescription>
-                  {isSignUp 
-                    ? (language === 'es' ? 'Crea tu cuenta para gestionar tu propiedad' : 'Create your account to manage your estate')
-                    : (language === 'es' ? 'Bienvenido de nuevo a tu sistema de gestión' : 'Welcome back to your estate management platform')}
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
+
+                <div className="space-y-2">
+                  {demoAccounts.map((account) => (
+                    <button
+                      key={account.email}
+                      onClick={() => handleDemoLogin(account.email)}
+                      disabled={isLoading}
+                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-accent/50 transition-all text-left group"
+                    >
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
+                        <account.icon className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-sm text-foreground">{account.role}</div>
+                        <div className="text-xs text-muted-foreground">{es ? account.descriptionEs : account.description}</div>
+                      </div>
+                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
+                    </button>
+                  ))}
+                </div>
+
+                <button
+                  onClick={() => setShowDemoAccess(false)}
+                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {es ? '← Volver' : '← Back to sign in'}
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="text-center">
+                  <h1 className="text-2xl font-serif font-bold text-foreground">
+                    {isSignUp ? t('auth.signUp') : t('auth.signIn')}
+                  </h1>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {isSignUp
+                      ? (es ? 'Crea tu cuenta para gestionar tu propiedad' : 'Create your account to manage your estate')
+                      : (es ? 'Bienvenido de nuevo' : 'Welcome back')}
+                  </p>
+                </div>
+
                 <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                   {isSignUp && (
-                    <div className="space-y-2">
-                      <Label htmlFor="fullName">
-                        {language === 'es' ? 'Nombre completo' : 'Full Name'}
-                      </Label>
-                      <Input
-                        id="fullName"
-                        placeholder={language === 'es' ? 'Juan García' : 'John Smith'}
-                        {...register('fullName')}
-                      />
+                    <div className="space-y-1.5">
+                      <Label htmlFor="fullName">{es ? 'Nombre completo' : 'Full Name'}</Label>
+                      <Input id="fullName" placeholder={es ? 'Juan García' : 'John Smith'} {...register('fullName')} />
                     </div>
                   )}
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label htmlFor="email">{t('auth.email')}</Label>
                     <Input
                       id="email"
@@ -244,12 +224,10 @@ export default function Auth() {
                       {...register('email')}
                       className={errors.email ? 'border-destructive' : ''}
                     />
-                    {errors.email && (
-                      <p className="text-sm text-destructive">{errors.email.message}</p>
-                    )}
+                    {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5">
                     <Label htmlFor="password">{t('auth.password')}</Label>
                     <div className="relative">
                       <Input
@@ -264,28 +242,15 @@ export default function Auth() {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                       >
-                        {showPassword ? (
-                          <EyeOff className="h-4 w-4" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
+                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                    {errors.password && (
-                      <p className="text-sm text-destructive">{errors.password.message}</p>
-                    )}
+                    {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
                   </div>
 
-                  <Button 
-                    type="submit" 
-                    className="w-full" 
-                    size="lg"
-                    disabled={isLoading}
-                  >
+                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                     {isLoading ? (
-                      <span className="animate-pulse">
-                        {language === 'es' ? 'Cargando...' : 'Loading...'}
-                      </span>
+                      <span className="animate-pulse">{es ? 'Cargando...' : 'Loading...'}</span>
                     ) : (
                       <>
                         {isSignUp ? t('auth.signUp') : t('auth.signIn')}
@@ -295,55 +260,37 @@ export default function Auth() {
                   </Button>
                 </form>
 
-                <div className="mt-6 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsSignUp(!isSignUp);
-                        reset();
-                      }}
-                      className="text-primary font-medium hover:underline"
-                    >
-                      {isSignUp ? t('auth.signIn') : t('auth.signUp')}
-                    </button>
-                  </p>
+                <p className="text-center text-sm text-muted-foreground">
+                  {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
+                  <button
+                    type="button"
+                    onClick={() => { setIsSignUp(!isSignUp); reset(); }}
+                    className="text-primary font-medium hover:underline"
+                  >
+                    {isSignUp ? t('auth.signIn') : t('auth.signUp')}
+                  </button>
+                </p>
+
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                  <div className="relative flex justify-center text-xs"><span className="px-2 bg-background text-muted-foreground">{es ? 'o' : 'or'}</span></div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
 
-          {/* Demo Access Button */}
-          {!showDemoAccess && (
-            <div className="mt-6">
-              <Button
-                variant="outline"
-                className="w-full"
-                size="lg"
-                onClick={() => setShowDemoAccess(true)}
-              >
-                <Users className="mr-2 h-5 w-5" />
-                {language === 'es' ? 'Acceso Demo (Sin Contraseña)' : 'Demo Access (No Password)'}
-              </Button>
-            </div>
-          )}
+                <Button variant="outline" className="w-full" onClick={() => setShowDemoAccess(true)}>
+                  <Users className="mr-2 h-4 w-4" />
+                  {es ? 'Acceso Demo' : 'Demo Access'}
+                </Button>
+              </div>
+            )}
 
-          {/* Value Proposition */}
-          <div className="mt-6 p-4 rounded-xl bg-secondary/50 text-center">
-            <p className="text-xs text-muted-foreground">
-              {language === 'es' 
-                ? 'Casa Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo — no tareas genéricas.'
-                : 'Casa Guide manages living assets, design intent, and long-term risk — not generic tasks.'}
+            <p className="text-center text-[11px] text-muted-foreground mt-8">
+              {es
+                ? 'Casa Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo.'
+                : 'Casa Guide manages living assets, design intent, and long-term risk.'}
             </p>
           </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="p-4 text-center text-sm text-muted-foreground">
-        <p>Casa Guide — Digital Property & Landscape Management</p>
-      </footer>
+        </main>
+      </div>
     </div>
   );
 }
