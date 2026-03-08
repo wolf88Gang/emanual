@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { EstateProvider } from "./contexts/EstateContext";
+import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SidebarLayout } from "./components/layout/SidebarLayout";
 
 import Auth from "./pages/Auth";
@@ -54,7 +55,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/onboarding" replace />;
   }
   
-  return <EstateProvider>{children}</EstateProvider>;
+  return <EstateProvider><SubscriptionProvider>{children}</SubscriptionProvider></EstateProvider>;
 }
 
 function EstateRoute({ children }: { children: React.ReactNode }) {

@@ -431,6 +431,30 @@ export default function Onboarding() {
                   );
                 })}
 
+                {/* Free trial option */}
+                <div className="relative py-3">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                  <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{es ? 'o' : 'or'}</span></div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleStartTrial}
+                  className="w-full p-4 rounded-xl border-2 border-dashed border-accent/50 text-left transition-all hover:border-accent hover:bg-accent/5"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="text-2xl">🎁</span>
+                    <div>
+                      <div className="font-semibold text-foreground">
+                        {es ? 'Prueba gratuita de 15 días' : '15-Day Free Trial'}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {es ? 'Máx 3 activos · Sin reportes · Sin exportar PDF' : 'Max 3 assets · No reports · No PDF export'}
+                      </div>
+                    </div>
+                  </div>
+                </button>
+
                 <div className="flex gap-3 pt-2">
                   <Button variant="outline" onClick={prevStep} className="flex-1">
                     <ArrowLeft className="mr-2 h-4 w-4" />

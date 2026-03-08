@@ -4,6 +4,7 @@ import { AppSidebar } from './AppSidebar';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
+import { TrialBanner } from '@/components/subscription/TrialBanner';
 
 interface SidebarLayoutProps {
   children: ReactNode;
@@ -26,6 +27,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               </Button>
             </div>
           </header>
+          <TrialBanner />
           <main className="flex-1 overflow-auto">
             {children}
           </main>
