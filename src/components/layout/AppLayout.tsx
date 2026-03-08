@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguagePicker } from '@/components/LanguagePicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { Button } from '@/components/ui/button';
@@ -161,18 +162,8 @@ export function AppLayout({ children }: AppLayoutProps) {
               </DropdownMenu>
             )}
 
-            {/* Language Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={toggleLanguage}
-              title={language === 'en' ? 'Cambiar a Español' : 'Switch to English'}
-            >
-              <Globe className="h-5 w-5" />
-              <span className="sr-only ml-1 text-xs font-medium">
-                {language.toUpperCase()}
-              </span>
-            </Button>
+            {/* Language Picker */}
+            <LanguagePicker />
 
             {/* Profile */}
             <DropdownMenu>

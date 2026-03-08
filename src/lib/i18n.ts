@@ -1,18 +1,22 @@
 // Internationalization for Home Guide
-// Supports English and Spanish with icon-first approach for crew users
+// Supports English, Spanish, and German
 
-export type Language = 'en' | 'es';
+export type Language = 'en' | 'es' | 'de';
+
+export const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
+  { code: 'en', label: 'English', flag: '🇺🇸' },
+  { code: 'es', label: 'Español', flag: '🇪🇸' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+];
 
 export const translations = {
   en: {
-    // Product
     product: {
       name: 'Home Guide',
       tagline: 'Manage properties, landscapes, and living assets — all in one place.',
       description: 'Home Guide is a comprehensive property management platform for estates, landscapes, assets, tasks, compost, CRM, and more.',
       differentiator: 'Property management tools manage people and generic tasks. Home Guide manages living assets, operations, sales, and long-term risk.',
     },
-    // Navigation
     nav: {
       home: 'Home',
       map: 'Map',
@@ -24,7 +28,6 @@ export const translations = {
       settings: 'Settings',
       logout: 'Sign Out',
     },
-    // Common
     common: {
       search: 'Search...',
       save: 'Save',
@@ -55,7 +58,6 @@ export const translations = {
       sort: 'Sort',
       export: 'Export',
     },
-    // Dashboard / Home
     dashboard: {
       welcome: 'Welcome back',
       weatherWatch: 'Weather Watch',
@@ -69,7 +71,6 @@ export const translations = {
       noAlerts: 'No active alerts',
       alertsActive: 'alerts active',
     },
-    // Tasks
     tasks: {
       title: 'Tasks',
       myTasks: 'My Tasks',
@@ -94,7 +95,6 @@ export const translations = {
         seasonal: 'Seasonal',
       },
     },
-    // Assets
     assets: {
       title: 'Assets',
       allAssets: 'All Assets',
@@ -125,7 +125,6 @@ export const translations = {
       addAsset: 'Add Asset',
       noAssets: 'No assets found',
     },
-    // Documents
     documents: {
       title: 'Documents',
       digitalBinder: 'Digital Binder',
@@ -145,7 +144,6 @@ export const translations = {
       linkToZone: 'Link to Zone',
       expiryDate: 'Expiry Date',
     },
-    // Check-ins / Log
     checkins: {
       title: 'Activity Log',
       newCheckin: 'New Check-in',
@@ -157,7 +155,6 @@ export const translations = {
       recentCheckins: 'Recent Check-ins',
       checkinComplete: 'Check-in Complete',
     },
-    // Weather
     weather: {
       title: 'Weather Watch',
       freeze: 'Freeze Warning',
@@ -169,7 +166,6 @@ export const translations = {
       viewRules: 'View Rules',
       simulateAlert: 'Simulate Alert',
     },
-    // Admin
     admin: {
       title: 'Admin',
       users: 'Users',
@@ -180,7 +176,6 @@ export const translations = {
       generateLabels: 'Generate Labels',
       printLabels: 'Print Labels',
     },
-    // Auth
     auth: {
       signIn: 'Sign In',
       signUp: 'Create Account',
@@ -193,7 +188,6 @@ export const translations = {
       demoAccess: 'Demo Access',
       continueAsDemo: 'Continue as Demo User',
     },
-    // Roles
     roles: {
       owner: 'Owner',
       manager: 'Manager',
@@ -202,14 +196,12 @@ export const translations = {
     },
   },
   es: {
-    // Product
     product: {
       name: 'Home Guide',
       tagline: 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.',
       description: 'Home Guide es una plataforma integral de gestión de propiedades para fincas, paisajes, activos, tareas, compost, CRM y más.',
       differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Home Guide gestiona activos vivos, operaciones, ventas y riesgo a largo plazo.',
     },
-    // Navigation
     nav: {
       home: 'Inicio',
       map: 'Mapa',
@@ -221,7 +213,6 @@ export const translations = {
       settings: 'Ajustes',
       logout: 'Cerrar Sesión',
     },
-    // Common
     common: {
       search: 'Buscar...',
       save: 'Guardar',
@@ -252,7 +243,6 @@ export const translations = {
       sort: 'Ordenar',
       export: 'Exportar',
     },
-    // Dashboard / Home
     dashboard: {
       welcome: 'Bienvenido',
       weatherWatch: 'Clima y Alertas',
@@ -266,7 +256,6 @@ export const translations = {
       noAlerts: 'Sin alertas activas',
       alertsActive: 'alertas activas',
     },
-    // Tasks
     tasks: {
       title: 'Tareas',
       myTasks: 'Mis Tareas',
@@ -291,7 +280,6 @@ export const translations = {
         seasonal: 'Estacional',
       },
     },
-    // Assets
     assets: {
       title: 'Activos',
       allAssets: 'Todos los Activos',
@@ -322,7 +310,6 @@ export const translations = {
       addAsset: 'Agregar Activo',
       noAssets: 'Sin activos',
     },
-    // Documents
     documents: {
       title: 'Documentos',
       digitalBinder: 'Carpeta Digital',
@@ -342,7 +329,6 @@ export const translations = {
       linkToZone: 'Vincular a Zona',
       expiryDate: 'Fecha de Vencimiento',
     },
-    // Check-ins / Log
     checkins: {
       title: 'Registro de Actividad',
       newCheckin: 'Nuevo Registro',
@@ -354,7 +340,6 @@ export const translations = {
       recentCheckins: 'Registros Recientes',
       checkinComplete: 'Registro Completo',
     },
-    // Weather
     weather: {
       title: 'Clima y Alertas',
       freeze: 'Alerta de Helada',
@@ -366,7 +351,6 @@ export const translations = {
       viewRules: 'Ver Reglas',
       simulateAlert: 'Simular Alerta',
     },
-    // Admin
     admin: {
       title: 'Admin',
       users: 'Usuarios',
@@ -377,7 +361,6 @@ export const translations = {
       generateLabels: 'Generar Etiquetas',
       printLabels: 'Imprimir Etiquetas',
     },
-    // Auth
     auth: {
       signIn: 'Iniciar Sesión',
       signUp: 'Crear Cuenta',
@@ -390,12 +373,196 @@ export const translations = {
       demoAccess: 'Acceso Demo',
       continueAsDemo: 'Continuar como Usuario Demo',
     },
-    // Roles
     roles: {
       owner: 'Propietario',
       manager: 'Gerente',
       crew: 'Equipo',
       vendor: 'Proveedor',
+    },
+  },
+  de: {
+    product: {
+      name: 'Home Guide',
+      tagline: 'Verwalte Immobilien, Landschaften und lebende Anlagen — alles an einem Ort.',
+      description: 'Home Guide ist eine umfassende Plattform zur Immobilienverwaltung für Anwesen, Landschaften, Anlagen, Aufgaben, Kompost, CRM und mehr.',
+      differentiator: 'Immobilienverwaltungs-Tools verwalten Menschen und allgemeine Aufgaben. Home Guide verwaltet lebende Anlagen, Betrieb, Verkauf und langfristiges Risiko.',
+    },
+    nav: {
+      home: 'Startseite',
+      map: 'Karte',
+      assets: 'Anlagen',
+      tasks: 'Aufgaben',
+      log: 'Protokoll',
+      documents: 'Dokumente',
+      admin: 'Admin',
+      settings: 'Einstellungen',
+      logout: 'Abmelden',
+    },
+    common: {
+      search: 'Suchen...',
+      save: 'Speichern',
+      cancel: 'Abbrechen',
+      delete: 'Löschen',
+      edit: 'Bearbeiten',
+      add: 'Hinzufügen',
+      view: 'Ansehen',
+      close: 'Schließen',
+      loading: 'Laden...',
+      noData: 'Keine Daten verfügbar',
+      confirm: 'Bestätigen',
+      back: 'Zurück',
+      next: 'Weiter',
+      today: 'Heute',
+      yesterday: 'Gestern',
+      all: 'Alle',
+      allTypes: 'Alle Typen',
+      allZones: 'Alle Zonen',
+      filterByType: 'Nach Typ filtern',
+      filterByZone: 'Nach Zone filtern',
+      noResults: 'Keine Ergebnisse gefunden',
+      tryAdjusting: 'Versuche die Filter anzupassen',
+      startAdding: 'Beginne mit dem Hinzufügen deiner ersten',
+      assetsCount: 'Anlagen',
+      zonesCount: 'Zonen',
+      filter: 'Filter',
+      sort: 'Sortieren',
+      export: 'Exportieren',
+    },
+    dashboard: {
+      welcome: 'Willkommen zurück',
+      weatherWatch: 'Wetterüberwachung',
+      todaysObligations: 'Heutige Aufgaben',
+      quickActions: 'Schnellaktionen',
+      recentActivity: 'Letzte Aktivität',
+      newCheckin: 'Neuer Check-in',
+      addAsset: 'Anlage hinzufügen',
+      uploadDocument: 'Dokument hochladen',
+      viewAllTasks: 'Alle Aufgaben anzeigen',
+      noAlerts: 'Keine aktiven Warnungen',
+      alertsActive: 'aktive Warnungen',
+    },
+    tasks: {
+      title: 'Aufgaben',
+      myTasks: 'Meine Aufgaben',
+      allTasks: 'Alle Aufgaben',
+      due: 'Fällig',
+      overdue: 'Überfällig',
+      done: 'Erledigt',
+      dueToday: 'Heute fällig',
+      dueThisWeek: 'Diese Woche fällig',
+      markComplete: 'Als erledigt markieren',
+      assignTo: 'Zuweisen an',
+      photoProofRequired: 'Fotonachweis erforderlich',
+      addPhoto: 'Foto hinzufügen',
+      taskDetails: 'Aufgabendetails',
+      newTask: 'Neue Aufgabe',
+      frequency: {
+        once: 'Einmalig',
+        weekly: 'Wöchentlich',
+        monthly: 'Monatlich',
+        quarterly: 'Vierteljährlich',
+        annual: 'Jährlich',
+        seasonal: 'Saisonal',
+      },
+    },
+    assets: {
+      title: 'Anlagen',
+      allAssets: 'Alle Anlagen',
+      byZone: 'Nach Zone',
+      byType: 'Nach Typ',
+      plants: 'Pflanzen',
+      trees: 'Bäume',
+      irrigation: 'Bewässerung',
+      irrigationController: 'Bewässerungssteuerung',
+      valve: 'Ventil',
+      lightingTransformer: 'Beleuchtung',
+      lighting: 'Beleuchtung',
+      hardscape: 'Hardscape',
+      equipment: 'Ausrüstung',
+      structures: 'Gebäude',
+      assetDetails: 'Anlagendetails',
+      purpose: 'Zweck',
+      riskFlags: 'Risikohinweise',
+      criticalCare: 'Kritische Pflege',
+      doNotDo: 'Nicht tun',
+      lastService: 'Letzter Service',
+      installDate: 'Installationsdatum',
+      photos: 'Fotos',
+      relatedTasks: 'Zugehörige Aufgaben',
+      relatedDocs: 'Zugehörige Dokumente',
+      scanQR: 'QR scannen',
+      generateQR: 'QR erstellen',
+      addAsset: 'Anlage hinzufügen',
+      noAssets: 'Keine Anlagen gefunden',
+    },
+    documents: {
+      title: 'Dokumente',
+      digitalBinder: 'Digitaler Ordner',
+      categories: {
+        warranty: 'Garantie',
+        asbuilt: 'Bestandsplan',
+        irrigation: 'Bewässerung',
+        lighting: 'Beleuchtung',
+        planting_plan: 'Pflanzplan',
+        vendor_contract: 'Lieferantenvertrag',
+        insurance: 'Versicherung',
+        other: 'Sonstiges',
+      },
+      expiringSoon: 'Bald ablaufend',
+      upload: 'Dokument hochladen',
+      linkToAsset: 'Mit Anlage verknüpfen',
+      linkToZone: 'Mit Zone verknüpfen',
+      expiryDate: 'Ablaufdatum',
+    },
+    checkins: {
+      title: 'Aktivitätsprotokoll',
+      newCheckin: 'Neuer Check-in',
+      selectZone: 'Zone auswählen',
+      selectAsset: 'Anlage auswählen (Optional)',
+      takePhoto: 'Foto aufnehmen',
+      addNotes: 'Notizen hinzufügen (Optional)',
+      submit: 'Check-in absenden',
+      recentCheckins: 'Letzte Check-ins',
+      checkinComplete: 'Check-in abgeschlossen',
+    },
+    weather: {
+      title: 'Wetterüberwachung',
+      freeze: 'Frostwarnung',
+      heavyRain: 'Starkregen',
+      highWind: 'Starker Wind',
+      drought: 'Dürrewarnung',
+      next48h: 'Nächste 48 Stunden',
+      activeAlerts: 'Aktive Warnungen',
+      viewRules: 'Regeln anzeigen',
+      simulateAlert: 'Warnung simulieren',
+    },
+    admin: {
+      title: 'Admin',
+      users: 'Benutzer',
+      vendors: 'Lieferanten',
+      zones: 'Zonen',
+      weatherRules: 'Wetterregeln',
+      qrLabels: 'QR-Etiketten',
+      generateLabels: 'Etiketten erstellen',
+      printLabels: 'Etiketten drucken',
+    },
+    auth: {
+      signIn: 'Anmelden',
+      signUp: 'Konto erstellen',
+      email: 'E-Mail',
+      password: 'Passwort',
+      forgotPassword: 'Passwort vergessen?',
+      noAccount: 'Noch kein Konto?',
+      hasAccount: 'Bereits ein Konto?',
+      signInWith: 'Anmelden mit',
+      demoAccess: 'Demo-Zugang',
+      continueAsDemo: 'Als Demo-Benutzer fortfahren',
+    },
+    roles: {
+      owner: 'Eigentümer',
+      manager: 'Verwalter',
+      crew: 'Team',
+      vendor: 'Lieferant',
     },
   },
 } as const;
@@ -416,7 +583,7 @@ export function t(lang: Language, path: string): string {
         if (result && typeof result === 'object' && k in result) {
           result = (result as Record<string, unknown>)[k];
         } else {
-          return path; // Return path if not found
+          return path;
         }
       }
       break;

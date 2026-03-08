@@ -36,53 +36,54 @@ export function AppSidebar() {
   const collapsed = state === 'collapsed';
   const location = useLocation();
   const { hasRole, isOwnerOrManager, isPlatformAdmin, signOut, profile } = useAuth();
-  const { language } = useLanguage();
-  const es = language === 'es';
+  const { language, tl } = useLanguage();
 
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
 
+  const l = (en: string, es: string, de: string) => tl({ en, es, de });
+
   // Platform Admin nav
   const adminNav: NavItem[] = [
-    { path: '/platform', icon: LayoutDashboard, label: 'Dashboard', tooltip: es ? 'Panel de control' : 'Dashboard' },
-    { path: '/platform/clients', icon: Users, label: es ? 'Clientes' : 'Clients', tooltip: es ? 'Gestionar clientes' : 'Manage clients' },
-    { path: '/platform/subscriptions', icon: CreditCard, label: es ? 'Suscripciones' : 'Subscriptions', tooltip: es ? 'Planes y pagos' : 'Plans & payments' },
-    { path: '/platform/payments', icon: DollarSign, label: es ? 'Pagos' : 'Payments', tooltip: es ? 'Historial de pagos PayPal' : 'PayPal payment history' },
-    { path: '/platform/metrics', icon: BarChart3, label: es ? 'Métricas' : 'Metrics', tooltip: es ? 'Uso y estadísticas' : 'Usage & statistics' },
-    { path: '/platform/system', icon: Activity, label: es ? 'Sistema' : 'System', tooltip: es ? 'Salud del sistema' : 'System health' },
+    { path: '/platform', icon: LayoutDashboard, label: 'Dashboard', tooltip: l('Dashboard', 'Panel de control', 'Dashboard') },
+    { path: '/platform/clients', icon: Users, label: l('Clients', 'Clientes', 'Kunden'), tooltip: l('Manage clients', 'Gestionar clientes', 'Kunden verwalten') },
+    { path: '/platform/subscriptions', icon: CreditCard, label: l('Subscriptions', 'Suscripciones', 'Abonnements'), tooltip: l('Plans & payments', 'Planes y pagos', 'Pläne & Zahlungen') },
+    { path: '/platform/payments', icon: DollarSign, label: l('Payments', 'Pagos', 'Zahlungen'), tooltip: l('Payment history', 'Historial de pagos', 'Zahlungsverlauf') },
+    { path: '/platform/metrics', icon: BarChart3, label: l('Metrics', 'Métricas', 'Metriken'), tooltip: l('Usage & statistics', 'Uso y estadísticas', 'Nutzung & Statistiken') },
+    { path: '/platform/system', icon: Activity, label: l('System', 'Sistema', 'System'), tooltip: l('System health', 'Salud del sistema', 'Systemzustand') },
   ];
 
   // Account Owner / Manager nav
   const ownerNav: NavItem[] = [
-    { path: '/', icon: Briefcase, label: es ? 'Trabajo' : 'Work', tooltip: es ? 'Vista de trabajo' : 'Work view' },
-    { path: '/map', icon: Map, label: es ? 'Mapa' : 'Map', tooltip: es ? 'Mapa interactivo' : 'Interactive map' },
-    { path: '/assets', icon: Box, label: es ? 'Activos' : 'Assets', tooltip: es ? 'Gestionar activos' : 'Manage assets' },
-    { path: '/tasks', icon: ClipboardList, label: es ? 'Tareas' : 'Tasks', tooltip: es ? 'Lista de tareas' : 'Task list' },
-    { path: '/plants', icon: Leaf, label: es ? 'Plantas' : 'Plants', tooltip: es ? 'Registro de plantas' : 'Plant registry' },
-    { path: '/inventory', icon: Package, label: es ? 'Inventario' : 'Inventory', tooltip: es ? 'Herramientas y suministros' : 'Tools & supplies' },
-    { path: '/documents', icon: FolderOpen, label: es ? 'Documentos' : 'Documents', tooltip: es ? 'Archivos y documentos' : 'Files & documents' },
-    { path: '/labor', icon: DollarSign, label: es ? 'Laboral' : 'Labor', tooltip: es ? 'Gestión laboral' : 'Labor management' },
-    { path: '/compost', icon: Recycle, label: 'Compost', tooltip: es ? 'Gestor de compost' : 'Compost manager' },
-    { path: '/crm', icon: ShoppingBag, label: es ? 'Ventas' : 'Sales', tooltip: es ? 'Clientes, facturas y pagos' : 'Clients, invoices & payments' },
-    { path: '/topography', icon: Mountain, label: es ? 'Topografía' : 'Topography', tooltip: es ? 'Análisis topográfico' : 'Topographic analysis' },
-    { path: '/reports', icon: BookOpen, label: es ? 'Reportes' : 'Reports', tooltip: es ? 'Reportes y manuales' : 'Reports & manuals' },
-    { path: '/admin', icon: Settings, label: es ? 'Admin' : 'Admin', tooltip: es ? 'Configuración' : 'Settings' },
-    { path: '/setup-wizard', icon: Wand2, label: es ? 'Asistente' : 'Setup Wizard', tooltip: es ? 'Asistente de configuración' : 'Guided asset setup' },
+    { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
+    { path: '/map', icon: Map, label: l('Map', 'Mapa', 'Karte'), tooltip: l('Interactive map', 'Mapa interactivo', 'Interaktive Karte') },
+    { path: '/assets', icon: Box, label: l('Assets', 'Activos', 'Anlagen'), tooltip: l('Manage assets', 'Gestionar activos', 'Anlagen verwalten') },
+    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('Task list', 'Lista de tareas', 'Aufgabenliste') },
+    { path: '/plants', icon: Leaf, label: l('Plants', 'Plantas', 'Pflanzen'), tooltip: l('Plant registry', 'Registro de plantas', 'Pflanzenregister') },
+    { path: '/inventory', icon: Package, label: l('Inventory', 'Inventario', 'Inventar'), tooltip: l('Tools & supplies', 'Herramientas y suministros', 'Werkzeuge & Materialien') },
+    { path: '/documents', icon: FolderOpen, label: l('Documents', 'Documentos', 'Dokumente'), tooltip: l('Files & documents', 'Archivos y documentos', 'Dateien & Dokumente') },
+    { path: '/labor', icon: DollarSign, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
+    { path: '/compost', icon: Recycle, label: 'Compost', tooltip: l('Compost manager', 'Gestor de compost', 'Kompostverwaltung') },
+    { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
+    { path: '/topography', icon: Mountain, label: l('Topography', 'Topografía', 'Topographie'), tooltip: l('Topographic analysis', 'Análisis topográfico', 'Topographische Analyse') },
+    { path: '/reports', icon: BookOpen, label: l('Reports', 'Reportes', 'Berichte'), tooltip: l('Reports & manuals', 'Reportes y manuales', 'Berichte & Handbücher') },
+    { path: '/admin', icon: Settings, label: 'Admin', tooltip: l('Settings', 'Configuración', 'Einstellungen') },
+    { path: '/setup-wizard', icon: Wand2, label: l('Setup Wizard', 'Asistente', 'Assistent'), tooltip: l('Guided asset setup', 'Asistente de configuración', 'Geführte Anlageneinrichtung') },
   ];
 
   // Crew nav
   const crewNav: NavItem[] = [
-    { path: '/', icon: Briefcase, label: es ? 'Trabajo' : 'Work', tooltip: es ? 'Vista de trabajo' : 'Work view' },
-    { path: '/map', icon: Map, label: es ? 'Mapa' : 'Map', tooltip: es ? 'Mapa' : 'Map' },
-    { path: '/checkin', icon: Clock, label: es ? 'Turno' : 'Shift', tooltip: es ? 'Registrar turno' : 'Clock in/out' },
-    { path: '/tasks', icon: ClipboardList, label: es ? 'Tareas' : 'Tasks', tooltip: es ? 'Mis tareas' : 'My tasks' },
-    { path: '/assets', icon: Box, label: es ? 'Activos' : 'Assets', tooltip: es ? 'Ver activos' : 'View assets' },
+    { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
+    { path: '/map', icon: Map, label: l('Map', 'Mapa', 'Karte'), tooltip: l('Map', 'Mapa', 'Karte') },
+    { path: '/checkin', icon: Clock, label: l('Shift', 'Turno', 'Schicht'), tooltip: l('Clock in/out', 'Registrar turno', 'Ein-/Ausstempeln') },
+    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('My tasks', 'Mis tareas', 'Meine Aufgaben') },
+    { path: '/assets', icon: Box, label: l('Assets', 'Activos', 'Anlagen'), tooltip: l('View assets', 'Ver activos', 'Anlagen ansehen') },
   ];
 
   // Vendor nav
   const vendorNav: NavItem[] = [
-    { path: '/', icon: Briefcase, label: es ? 'Trabajo' : 'Work', tooltip: es ? 'Vista de trabajo' : 'Work view' },
-    { path: '/tasks', icon: ClipboardList, label: es ? 'Tareas' : 'Tasks', tooltip: es ? 'Tareas asignadas' : 'Assigned tasks' },
+    { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
+    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('Assigned tasks', 'Tareas asignadas', 'Zugewiesene Aufgaben') },
   ];
 
   let navItems: NavItem[];
@@ -93,13 +94,13 @@ export function AppSidebar() {
     groupLabel = 'Platform';
   } else if (isVendor) {
     navItems = vendorNav;
-    groupLabel = es ? 'Proveedor' : 'Vendor';
+    groupLabel = l('Vendor', 'Proveedor', 'Lieferant');
   } else if (isCrew) {
     navItems = crewNav;
-    groupLabel = es ? 'Equipo' : 'Crew';
+    groupLabel = l('Crew', 'Equipo', 'Team');
   } else {
     navItems = ownerNav;
-    groupLabel = es ? 'Gestión' : 'Management';
+    groupLabel = l('Management', 'Gestión', 'Verwaltung');
   }
 
   const isActive = (path: string) => {
@@ -168,7 +169,7 @@ export function AppSidebar() {
               </Button>
             </TooltipTrigger>
             <TooltipContent side="right">
-              {es ? 'Cerrar sesión' : 'Sign out'}
+              {l('Sign out', 'Cerrar sesión', 'Abmelden')}
             </TooltipContent>
           </Tooltip>
         </div>

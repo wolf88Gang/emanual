@@ -1,19 +1,26 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
-import { Language, t as translate } from '@/lib/i18n';
+import { Language, t as translate, LANGUAGE_OPTIONS } from '@/lib/i18n';
+
+type LocalizedText = { en: string; es: string; de?: string } | string;
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   t: (path: string) => string;
+  /** Translate a literal {en, es, de} object */
+  tl: (text: LocalizedText) => string;
   toggleLanguage: () => void;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
+const LANG_CYCLE: Language[] = ['en', 'es', 'de'];
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguageState] = useState<Language>(() => {
     const saved = localStorage.getItem('estate-manual-language');
-    return (saved === 'es' || saved === 'en') ? saved : 'en';
+    if (saved === 'en' || saved === 'es' || saved === 'de') return saved;
+    return 'en';
   });
 
   const setLanguage = useCallback((lang: Language) => {
@@ -22,14 +29,20 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const toggleLanguage = useCallback(() => {
-    const newLang = language === 'en' ? 'es' : 'en';
-    setLanguage(newLang);
+    const idx = LANG_CYCLE.indexOf(language);
+    const next = LANG_CYCLE[(idx + 1) % LANG_CYCLE.length];
+    setLanguage(next);
   }, [language, setLanguage]);
 
   const t = useCallback((path: string) => translate(language, path), [language]);
 
+  const tl = useCallback((text: LocalizedText): string => {
+    if (typeof text === 'string') return text;
+    return text[language] ?? text.en;
+  }, [language]);
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t, toggleLanguage }}>
+    <LanguageContext.Provider value={{ language, setLanguage, t, tl, toggleLanguage }}>
       {children}
     </LanguageContext.Provider>
   );

@@ -1,9 +1,8 @@
 import React, { ReactNode } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { ThemeToggle } from '@/components/ThemeToggle';
-import { Button } from '@/components/ui/button';
+import { LanguagePicker } from '@/components/LanguagePicker';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 
 interface SidebarLayoutProps {
@@ -11,8 +10,6 @@ interface SidebarLayoutProps {
 }
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
-  const { language, toggleLanguage } = useLanguage();
-
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">
@@ -22,9 +19,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             <SidebarTrigger className="h-8 w-8" />
             <div className="flex items-center gap-1">
               <ThemeToggle />
-              <Button variant="ghost" size="sm" onClick={toggleLanguage} className="text-xs h-8">
-                {language === 'en' ? '🇪🇸' : '🇺🇸'}
-              </Button>
+              <LanguagePicker />
             </div>
           </header>
           <TrialBanner />
