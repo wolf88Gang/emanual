@@ -129,7 +129,7 @@ export default function CompostManager() {
     }
   }
 
-  async function updatePileStatus(pile: CompostPile, newStatus: string) {
+  async function updatePileStatus(pile: CompostPile, newStatus: 'active' | 'curing' | 'ready' | 'applied' | 'archived') {
     try {
       const { error } = await supabase.from('compost_piles').update({ status: newStatus }).eq('id', pile.id);
       if (error) throw error;

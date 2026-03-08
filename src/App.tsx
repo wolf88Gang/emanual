@@ -26,6 +26,8 @@ import EstateManagement from "./pages/EstateManagement";
 import LaborManagement from "./pages/LaborManagement";
 import TopographyRisks from "./pages/TopographyRisks";
 import Subscription from "./pages/Subscription";
+import CompostManager from "./pages/CompostManager";
+import CRM from "./pages/CRM";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -118,6 +120,8 @@ function AppRoutes() {
       <Route path="/labor" element={<EstateRoute><LaborManagement /></EstateRoute>} />
       <Route path="/topography" element={<EstateRoute><TopographyRisks /></EstateRoute>} />
       <Route path="/subscription" element={<EstateRoute><Subscription /></EstateRoute>} />
+      <Route path="/compost" element={<EstateRoute><CompostManager /></EstateRoute>} />
+      <Route path="/crm" element={<EstateRoute><CRM /></EstateRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
