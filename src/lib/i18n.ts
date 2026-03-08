@@ -1,4 +1,4 @@
-// Internationalization for Casa Guide
+// Internationalization for Home Guide
 // Supports English and Spanish with icon-first approach for crew users
 
 export type Language = 'en' | 'es';
@@ -7,10 +7,10 @@ export const translations = {
   en: {
     // Product
     product: {
-      name: 'Casa Guide',
+      name: 'Home Guide',
       tagline: 'Manage properties, landscapes, and living assets — all in one place.',
-      description: 'Casa Guide is a comprehensive property management platform for estates, landscapes, assets, tasks, compost, CRM, and more.',
-      differentiator: 'Property management tools manage people and generic tasks. Casa Guide manages living assets, operations, sales, and long-term risk.',
+      description: 'Home Guide is a comprehensive property management platform for estates, landscapes, assets, tasks, compost, CRM, and more.',
+      differentiator: 'Property management tools manage people and generic tasks. Home Guide manages living assets, operations, sales, and long-term risk.',
     },
     // Navigation
     nav: {
@@ -204,10 +204,10 @@ export const translations = {
   es: {
     // Product
     product: {
-      name: 'Casa Guide',
+      name: 'Home Guide',
       tagline: 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.',
-      description: 'Casa Guide es una plataforma integral de gestión de propiedades para fincas, paisajes, activos, tareas, compost, CRM y más.',
-      differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Casa Guide gestiona activos vivos, operaciones, ventas y riesgo a largo plazo.',
+      description: 'Home Guide es una plataforma integral de gestión de propiedades para fincas, paisajes, activos, tareas, compost, CRM y más.',
+      differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Home Guide gestiona activos vivos, operaciones, ventas y riesgo a largo plazo.',
     },
     // Navigation
     nav: {

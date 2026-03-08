@@ -68,8 +68,8 @@ Deno.serve(async (req) => {
 
     // Define pricing
     const prices: Record<string, { amount: string; label: string }> = {
-      monthly: { amount: "19.99", label: "Casa Guide - Plan Mensual" },
-      annual: { amount: "199.99", label: "Casa Guide - Plan Anual" },
+      monthly: { amount: "19.99", label: "Home Guide - Plan Mensual" },
+      annual: { amount: "199.99", label: "Home Guide - Plan Anual" },
     };
 
     const plan = prices[plan_type] || prices.monthly;
@@ -101,7 +101,7 @@ Deno.serve(async (req) => {
                 name: plan.label,
                 unit_amount: { currency_code: "USD", value: plan.amount },
                 quantity: "1",
-                description: `Suscripción ${plan_type === "annual" ? "anual" : "mensual"} a Casa Guide`,
+                description: `Suscripción ${plan_type === "annual" ? "anual" : "mensual"} a Home Guide`,
               },
             ],
           },

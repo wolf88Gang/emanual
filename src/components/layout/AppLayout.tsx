@@ -93,7 +93,7 @@ export function AppLayout({ children }: AppLayoutProps) {
                 <div className="flex flex-col h-full">
                   <div className="p-6 border-b border-border">
                     <h2 className="text-xl font-serif font-semibold text-primary">
-                      Casa Guide
+                      Home Guide
                     </h2>
                   </div>
                   <nav className="flex-1 p-4 space-y-2">
@@ -119,7 +119,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             </Sheet>
 
             <h1 className="text-xl font-serif font-semibold text-primary hidden sm:block">
-              Casa Guide
+              Home Guide
             </h1>
           </div>
 
