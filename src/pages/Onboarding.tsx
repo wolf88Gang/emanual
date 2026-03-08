@@ -181,9 +181,15 @@ export default function Onboarding() {
       let orgId = profile?.org_id;
 
       if (!orgId) {
+        const orgTypeMap: Record<string, string> = {
+          property_owner: 'residential',
+          landscaping_company: 'landscaping_company',
+          hybrid: 'hybrid',
+          other: 'residential',
+        };
         const { data: newOrg, error: orgError } = await supabase
           .from('organizations')
-          .insert({ name: estateName })
+          .insert({ name: estateName, org_type: orgTypeMap[selectedClientType] || 'residential' } as any)
           .select('id')
           .single();
         if (orgError) throw orgError;
