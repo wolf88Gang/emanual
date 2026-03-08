@@ -15,7 +15,7 @@ interface MaintenanceStats {
   tasksByZone: { name: string; count: number }[];
   tasksByAssetType: { name: string; count: number }[];
   completionsByMonth: { month: string; completed: number; created: number }[];
-  topAssets: { name: string; taskCount: number }[];
+  topAssets: { name: string; count: number }[];
 }
 
 const COLORS = [
