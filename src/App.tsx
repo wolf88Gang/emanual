@@ -6,9 +6,11 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { EstateProvider } from "./contexts/EstateContext";
+import { SidebarLayout } from "./components/layout/SidebarLayout";
 
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
+import PlatformAdmin from "./pages/PlatformAdmin";
 import WorkView from "./pages/WorkView";
 import MapView from "./pages/MapView";
 import Tasks from "./pages/Tasks";
@@ -51,8 +53,33 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <EstateProvider>{children}</EstateProvider>;
 }
 
+function EstateRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ProtectedRoute>
+      <SidebarLayout>{children}</SidebarLayout>
+    </ProtectedRoute>
+  );
+}
+
+function PlatformRoute({ children }: { children: React.ReactNode }) {
+  const { user, isPlatformAdmin, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/auth" replace />;
+  if (!isPlatformAdmin) return <Navigate to="/" replace />;
+
+  return <>{children}</>;
+}
+
 function AppRoutes() {
-  const { user, loading } = useAuth();
+  const { user, isPlatformAdmin, loading } = useAuth();
 
   if (loading) {
     return (
@@ -64,23 +91,33 @@ function AppRoutes() {
 
   return (
     <Routes>
-      <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/"} replace /> : <Auth />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
-      <Route path="/" element={<ProtectedRoute><WorkView /></ProtectedRoute>} />
-      <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
-      <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
-      <Route path="/assets" element={<ProtectedRoute><Assets /></ProtectedRoute>} />
-      <Route path="/assets/:id" element={<ProtectedRoute><AssetDetail /></ProtectedRoute>} />
-      <Route path="/documents" element={<ProtectedRoute><Documents /></ProtectedRoute>} />
-      <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
-      <Route path="/inventory" element={<ProtectedRoute><Inventory /></ProtectedRoute>} />
-      <Route path="/plants" element={<ProtectedRoute><PlantRegistry /></ProtectedRoute>} />
-      <Route path="/checkin" element={<ProtectedRoute><WorkerCheckin /></ProtectedRoute>} />
-      <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
-      <Route path="/estates" element={<ProtectedRoute><EstateManagement /></ProtectedRoute>} />
-      <Route path="/labor" element={<ProtectedRoute><LaborManagement /></ProtectedRoute>} />
-      <Route path="/topography" element={<ProtectedRoute><TopographyRisks /></ProtectedRoute>} />
-      <Route path="/subscription" element={<ProtectedRoute><Subscription /></ProtectedRoute>} />
+      
+      {/* Platform Admin routes */}
+      <Route path="/platform" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/clients" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/subscriptions" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/payments" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/metrics" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/system" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+
+      {/* Estate routes */}
+      <Route path="/" element={<EstateRoute><WorkView /></EstateRoute>} />
+      <Route path="/map" element={<EstateRoute><MapView /></EstateRoute>} />
+      <Route path="/tasks" element={<EstateRoute><Tasks /></EstateRoute>} />
+      <Route path="/assets" element={<EstateRoute><Assets /></EstateRoute>} />
+      <Route path="/assets/:id" element={<EstateRoute><AssetDetail /></EstateRoute>} />
+      <Route path="/documents" element={<EstateRoute><Documents /></EstateRoute>} />
+      <Route path="/admin" element={<EstateRoute><Admin /></EstateRoute>} />
+      <Route path="/inventory" element={<EstateRoute><Inventory /></EstateRoute>} />
+      <Route path="/plants" element={<EstateRoute><PlantRegistry /></EstateRoute>} />
+      <Route path="/checkin" element={<EstateRoute><WorkerCheckin /></EstateRoute>} />
+      <Route path="/reports" element={<EstateRoute><Reports /></EstateRoute>} />
+      <Route path="/estates" element={<EstateRoute><EstateManagement /></EstateRoute>} />
+      <Route path="/labor" element={<EstateRoute><LaborManagement /></EstateRoute>} />
+      <Route path="/topography" element={<EstateRoute><TopographyRisks /></EstateRoute>} />
+      <Route path="/subscription" element={<EstateRoute><Subscription /></EstateRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
