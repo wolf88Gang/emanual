@@ -24,6 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
 import {
   Select,
@@ -63,6 +64,7 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
   const [selectedZone, setSelectedZone] = useState<string>('');
   const [selectedAsset, setSelectedAsset] = useState<string>('');
   const [notes, setNotes] = useState('');
+  const [reportIssue, setReportIssue] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loadingZones, setLoadingZones] = useState(false);
 
@@ -134,6 +136,7 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
     setSelectedZone('');
     setSelectedAsset('');
     setNotes('');
+    setReportIssue(false);
     photoCapture.reset();
     geolocation.reset();
   }
@@ -195,10 +198,27 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
 
       if (error) throw error;
 
+      // Auto-create task if issue reported
+      if (reportIssue && notes.trim()) {
+        await supabase.from('tasks').insert({
+          estate_id: currentEstate.id,
+          title: `Issue reported: ${notes.slice(0, 60)}`,
+          title_es: `Problema reportado: ${notes.slice(0, 60)}`,
+          description: `Auto-generated from check-in. Notes: ${notes}`,
+          description_es: `Auto-generada desde check-in. Notas: ${notes}`,
+          asset_id: selectedAsset || null,
+          zone_id: selectedZone || null,
+          priority: 2,
+          frequency: 'once',
+          due_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          status: 'pending',
+        });
+      }
+
       toast.success(
         language === 'es' 
-          ? '¡Check-in registrado!' 
-          : 'Check-in recorded!'
+          ? reportIssue ? '¡Check-in registrado y tarea creada!' : '¡Check-in registrado!'
+          : reportIssue ? 'Check-in recorded & task created!' : 'Check-in recorded!'
       );
       
       onOpenChange(false);
@@ -355,13 +375,30 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
             </div>
           )}
 
+          {/* Report Issue Toggle */}
+          <div className="flex items-center justify-between p-3 rounded-xl border bg-destructive/5 border-destructive/20">
+            <div>
+              <p className="font-medium text-sm">
+                {language === 'es' ? '⚠️ Reportar problema' : '⚠️ Report issue'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {language === 'es'
+                  ? 'Crea una tarea automática de mantenimiento'
+                  : 'Auto-creates a maintenance task'}
+              </p>
+            </div>
+            <Switch checked={reportIssue} onCheckedChange={setReportIssue} />
+          </div>
+
           {/* Notes */}
           <div className="space-y-2">
-            <Label>{language === 'es' ? 'Notas (opcional)' : 'Notes (optional)'}</Label>
+            <Label>{language === 'es' ? (reportIssue ? 'Descripción del problema' : 'Notas (opcional)') : (reportIssue ? 'Issue description' : 'Notes (optional)')}</Label>
             <Textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              placeholder={language === 'es' ? 'Añadir observaciones...' : 'Add observations...'}
+              placeholder={language === 'es' 
+                ? (reportIssue ? 'Describa el problema encontrado...' : 'Añadir observaciones...') 
+                : (reportIssue ? 'Describe the issue found...' : 'Add observations...')}
               className="resize-none"
               rows={3}
             />
