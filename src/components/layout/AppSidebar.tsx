@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Briefcase, Map, Box, ClipboardList, FolderOpen, Settings, Package,
   Leaf, Clock, Users, BarChart3, CreditCard, Activity, Wrench,
-  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2
+  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -69,6 +69,7 @@ export function AppSidebar() {
     { path: '/reports', icon: BookOpen, label: l('Reports', 'Reportes', 'Berichte'), tooltip: l('Reports & manuals', 'Reportes y manuales', 'Berichte & Handbücher') },
     { path: '/admin', icon: Settings, label: 'Admin', tooltip: l('Settings', 'Configuración', 'Einstellungen') },
     { path: '/setup-wizard', icon: Wand2, label: l('Setup Wizard', 'Asistente', 'Assistent'), tooltip: l('Guided asset setup', 'Asistente de configuración', 'Geführte Anlageneinrichtung') },
+    { path: '/requests', icon: MessageSquarePlus, label: l('Requests', 'Solicitudes', 'Anfragen'), tooltip: l('Feature requests & feedback', 'Solicitudes y comentarios', 'Anfragen & Feedback') },
   ];
 
   // Crew nav
