@@ -317,6 +317,13 @@ export default function WorkView() {
                   <p className="font-medium">
                     {language === 'es' ? 'Sin tareas pendientes' : 'No pending tasks'}
                   </p>
+                  <p className="text-xs mt-1">
+                    {language === 'es' ? 'Crea tareas desde la sección de Tareas' : 'Create tasks from the Tasks section'}
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate('/tasks')}>
+                    <Plus className="h-3 w-3 mr-1" />
+                    {language === 'es' ? 'Ir a Tareas' : 'Go to Tasks'}
+                  </Button>
                 </div>
               ) : (
                 upcomingTasks.map((task) => (

@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { 
   Search, 
   Plus,
+  MapPin,
   Grid3X3,
   List,
   ChevronRight,
@@ -346,13 +347,26 @@ export default function Assets() {
         ) : filteredAssets.length === 0 ? (
           <Card className="estate-card">
             <CardContent className="py-12 text-center">
-              <Camera className="h-12 w-12 mx-auto text-muted-foreground mb-4" />
+              <Camera className="h-12 w-12 mx-auto text-muted-foreground/40 mb-4" />
               <h3 className="font-medium text-lg">{t('assets.noAssets')}</h3>
-              <p className="text-muted-foreground mt-1">
+              <p className="text-muted-foreground mt-1 max-w-sm mx-auto">
                 {searchQuery || filterType !== 'all' || filterZone !== 'all'
                   ? t('common.tryAdjusting')
-                  : `${t('common.startAdding')} ${t('assets.title').toLowerCase()}`}
+                  : language === 'es' 
+                    ? 'Agrega tu primer activo usando el botón de arriba, o usa el asistente de configuración para una guía paso a paso.'
+                    : 'Add your first asset using the button above, or use the setup wizard for a step-by-step guide.'}
               </p>
+              {!searchQuery && filterType === 'all' && filterZone === 'all' && isOwnerOrManager && (
+                <div className="flex gap-3 justify-center mt-4">
+                  <Button onClick={() => navigate('/setup-wizard')}>
+                    {language === 'es' ? 'Asistente de Configuración' : 'Setup Wizard'}
+                  </Button>
+                  <Button variant="outline" onClick={() => navigate('/map')}>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    {language === 'es' ? 'Agregar en Mapa' : 'Add on Map'}
+                  </Button>
+                </div>
+              )}
             </CardContent>
           </Card>
         ) : viewMode === 'grid' ? (
