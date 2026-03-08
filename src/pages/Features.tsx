@@ -4,7 +4,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import {
   Leaf, Map, Box, ClipboardList, FolderOpen, Package, Mountain, BookOpen,
   DollarSign, Recycle, ShoppingBag, Users, Clock, Shield, Wrench, BarChart3,
-  Camera, QrCode, Bell, Zap, Globe, ArrowLeft
+  Camera, QrCode, Bell, Zap, Globe, ArrowRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -31,11 +31,11 @@ const sections: FeatureSection[] = [
     labelEs: 'Gestión de Propiedad',
     image: '/images/estate_guide_1.jpg',
     features: [
-      { icon: Map, title: 'Interactive Estate Map', titleEs: 'Mapa Interactivo', description: 'GIS-lite map with zones, asset pins, KML import, and zone drawing tools.', descriptionEs: 'Mapa GIS con zonas, pins de activos, importación KML y herramientas de dibujo.' },
-      { icon: Box, title: 'Asset Registry', titleEs: 'Registro de Activos', description: 'Catalog every living asset, irrigation system, hardscape, and equipment with full history.', descriptionEs: 'Cataloga cada activo vivo, riego, hardscape y equipo con historial completo.' },
-      { icon: ClipboardList, title: 'Smart Tasks (Recurring + AI)', titleEs: 'Tareas Inteligentes (IA)', description: 'One-time or recurring tasks. AI analyzes assets and suggests maintenance templates.', descriptionEs: 'Tareas únicas o recurrentes. La IA analiza activos y sugiere plantillas de mantenimiento.' },
-      { icon: Leaf, title: 'Plant Registry & Care Protocols', titleEs: 'Registro de Plantas', description: 'Botanical library with scientific names, care templates, and AI-generated protocols.', descriptionEs: 'Biblioteca botánica con nombres científicos, plantillas de cuidado y protocolos IA.' },
-      { icon: FolderOpen, title: 'Document Vault', titleEs: 'Bóveda de Documentos', description: 'Warranties, as-builts, contracts, insurance. Track expiry dates and link to assets.', descriptionEs: 'Garantías, planos, contratos, seguros. Rastrea vencimientos y vincula a activos.' },
+      { icon: Map, title: 'Interactive Estate Map', titleEs: 'Mapa Interactivo', description: 'GIS-lite map with zones, asset pins, KML import, and zone drawing tools to visualize your entire property spatially.', descriptionEs: 'Mapa GIS con zonas, pins de activos, importación KML y herramientas de dibujo para visualizar tu propiedad.' },
+      { icon: Box, title: 'Asset Registry', titleEs: 'Registro de Activos', description: 'Catalog every living asset, irrigation system, hardscape, and equipment. Track install dates, service history, and risk flags.', descriptionEs: 'Cataloga cada activo vivo, riego, hardscape y equipo. Rastrea instalación, historial y riesgos.' },
+      { icon: ClipboardList, title: 'Smart Tasks', titleEs: 'Tareas Inteligentes', description: 'Recurring tasks with AI-suggested maintenance templates based on your asset profiles and seasonal patterns.', descriptionEs: 'Tareas recurrentes con plantillas de mantenimiento sugeridas por IA basadas en tus activos y estaciones.' },
+      { icon: Leaf, title: 'Plant Registry & Protocols', titleEs: 'Registro de Plantas', description: 'Botanical library with scientific names, care templates, native status, and AI-generated care protocols per asset.', descriptionEs: 'Biblioteca botánica con nombres científicos, plantillas de cuidado y protocolos generados por IA.' },
+      { icon: FolderOpen, title: 'Document Vault', titleEs: 'Bóveda de Documentos', description: 'Digital binder for warranties, as-builts, contracts, and insurance. Track expiry dates and link to assets or zones.', descriptionEs: 'Carpeta digital para garantías, planos, contratos y seguros. Rastrea vencimientos y vincula a activos.' },
     ],
   },
   {
@@ -44,21 +44,21 @@ const sections: FeatureSection[] = [
     labelEs: 'Operaciones y Personal',
     image: '/images/estate_guide_3.jpg',
     features: [
-      { icon: Clock, title: 'Worker Check-in & Shifts', titleEs: 'Registro de Turnos', description: 'QR-based clock-in/out with GPS, work logs, and payment tracking per worker.', descriptionEs: 'Entrada/salida QR con GPS, bitácoras y seguimiento de pagos por trabajador.' },
-      { icon: DollarSign, title: 'Labor Management', titleEs: 'Gestión Laboral', description: 'Weekly summaries, hourly/daily rates, payments (cash, PayPal, transfer), AI validation.', descriptionEs: 'Resúmenes semanales, tarifas, pagos (efectivo, PayPal, transferencia), validación IA.' },
-      { icon: Package, title: 'Tool & Supply Inventory', titleEs: 'Inventario', description: 'Track tools, chemicals, fertilizers. Assign to workers and manage returns.', descriptionEs: 'Rastrea herramientas, químicos, fertilizantes. Asigna y gestiona devoluciones.' },
-      { icon: Camera, title: 'Photo Evidence', titleEs: 'Evidencia Fotográfica', description: 'Geotagged, timestamped photos for check-ins, tasks, and duty-of-care reports.', descriptionEs: 'Fotos geoetiquetadas para registros, tareas e informes de deber de cuidado.' },
+      { icon: Clock, title: 'Worker Check-in & Shifts', titleEs: 'Registro de Turnos', description: 'QR-based clock-in/out with GPS tracking, work logs, shift validations, and per-worker payment tracking.', descriptionEs: 'Entrada/salida por QR con GPS, bitácoras, validaciones de turno y seguimiento de pagos por trabajador.' },
+      { icon: DollarSign, title: 'Labor Management', titleEs: 'Gestión Laboral', description: 'Weekly shift summaries, configurable rates, multi-method payments, and AI-powered shift validation.', descriptionEs: 'Resúmenes semanales, tarifas configurables, pagos multi-método y validación de turnos con IA.' },
+      { icon: Package, title: 'Tool & Supply Inventory', titleEs: 'Inventario', description: 'Track tools, chemicals, fertilizers, and supplies. Assign to workers, monitor condition, manage returns.', descriptionEs: 'Rastrea herramientas, químicos, fertilizantes. Asigna a trabajadores, monitorea y gestiona devoluciones.' },
+      { icon: Camera, title: 'Photo Evidence System', titleEs: 'Evidencia Fotográfica', description: 'Geotagged, timestamped documentation for check-ins, task completions, and duty-of-care reporting.', descriptionEs: 'Documentación geoetiquetada para registros, tareas completadas e informes de deber de cuidado.' },
     ],
   },
   {
     key: 'sustainability',
     labelEn: 'Sustainability & Environment',
-    labelEs: 'Sostenibilidad',
+    labelEs: 'Sostenibilidad y Medio Ambiente',
     image: '/images/estate_guide_5.jpg',
     features: [
-      { icon: Recycle, title: 'Compost Manager', titleEs: 'Gestor de Compost', description: 'Full cycle: creation to application. Log ingredients, temperature, moisture, turns.', descriptionEs: 'Ciclo completo: creación a aplicación. Registra ingredientes, temperatura, humedad.' },
-      { icon: Mountain, title: 'Topography & Risk Analysis', titleEs: 'Topografía y Riesgos', description: 'Import topographic data, elevation transects, slope analysis, erosion risk mapping.', descriptionEs: 'Datos topográficos, transectos, análisis de pendientes, mapeo de riesgos de erosión.' },
-      { icon: Bell, title: 'Weather Alerts & Rules', titleEs: 'Alertas Climáticas', description: 'Custom rules for freeze, rain, wind, drought. Auto-create tasks on threshold triggers.', descriptionEs: 'Reglas para helada, lluvia, viento, sequía. Crea tareas automáticamente.' },
+      { icon: Recycle, title: 'Compost Manager', titleEs: 'Gestor de Compost', description: 'Full-cycle tracking from creation to application. Log ingredients, temperature, moisture, and turns.', descriptionEs: 'Seguimiento completo desde creación hasta aplicación. Registra ingredientes, temperatura y humedad.' },
+      { icon: Mountain, title: 'Topography & Risk Analysis', titleEs: 'Topografía y Riesgos', description: 'Import topographic data, draw elevation transects, analyze slopes and drainage, map erosion risks.', descriptionEs: 'Importa datos topográficos, traza transectos, analiza pendientes y drenaje, mapea riesgos de erosión.' },
+      { icon: Bell, title: 'Weather Alerts & Rules', titleEs: 'Alertas Climáticas', description: 'Define threshold rules for freeze, rain, wind, or drought. System auto-creates tasks and alerts your team.', descriptionEs: 'Define umbrales para helada, lluvia, viento o sequía. El sistema crea tareas y alerta al equipo.' },
     ],
   },
   {
@@ -67,9 +67,9 @@ const sections: FeatureSection[] = [
     labelEs: 'Negocios y Reportes',
     image: '/images/estate_guide_4.jpg',
     features: [
-      { icon: ShoppingBag, title: 'CRM & Sales Suite', titleEs: 'CRM y Ventas', description: 'Client directory, product catalog, invoicing, payment tracking, and revenue history.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos.' },
-      { icon: BookOpen, title: 'AI Estate Manual', titleEs: 'Manual con IA', description: 'AI generates comprehensive property manual from verified system data. Export Markdown.', descriptionEs: 'La IA genera manual integral desde datos del sistema. Exporta Markdown.' },
-      { icon: BarChart3, title: 'Duty of Care Reports', titleEs: 'Informes de Cumplimiento', description: 'PDF reports with completed tasks, field check-ins, photo evidence, and compliance docs.', descriptionEs: 'Informes PDF con tareas, registros, evidencia fotográfica y documentación.' },
+      { icon: ShoppingBag, title: 'CRM & Sales Suite', titleEs: 'CRM y Ventas', description: 'Client directory, product/service catalog, invoice generation, payment tracking, and revenue history.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos.' },
+      { icon: BookOpen, title: 'AI Estate Manual', titleEs: 'Manual con IA', description: 'AI generates a comprehensive property manual from verified data: zones, assets, history, and routines.', descriptionEs: 'La IA genera un manual integral desde datos verificados: zonas, activos, historial y rutinas.' },
+      { icon: BarChart3, title: 'Duty of Care Reports', titleEs: 'Informes de Cumplimiento', description: 'Generate date-range PDF reports with completed tasks, field check-ins, and photo evidence.', descriptionEs: 'Genera informes PDF por rango de fechas con tareas, registros y evidencia fotográfica.' },
     ],
   },
   {
@@ -78,11 +78,11 @@ const sections: FeatureSection[] = [
     labelEs: 'Plataforma e Inteligencia',
     image: '/images/estate_guide_2.jpg',
     features: [
-      { icon: Users, title: 'Role-based Access', titleEs: 'Acceso por Roles', description: 'Owner, Manager, Crew, Vendor — each sees only what they need.', descriptionEs: 'Dueño, Gerente, Equipo, Proveedor — cada rol ve solo lo necesario.' },
-      { icon: QrCode, title: 'QR Code System', titleEs: 'Códigos QR', description: 'Generate labels for assets. Scan to view details, start shifts, or log check-ins.', descriptionEs: 'Genera etiquetas. Escanea para detalles, turnos o registros.' },
-      { icon: Globe, title: 'Bilingual (EN/ES)', titleEs: 'Bilingüe', description: 'Full interface in English and Spanish. Switch instantly.', descriptionEs: 'Interfaz completa en inglés y español. Cambia al instante.' },
-      { icon: Zap, title: 'AI-Powered Intelligence', titleEs: 'Inteligencia IA', description: 'AI suggests tasks, generates care protocols, validates shifts, produces manuals.', descriptionEs: 'La IA sugiere tareas, genera protocolos, valida turnos, produce manuales.' },
-      { icon: Shield, title: 'Subscription & Payments', titleEs: 'Suscripción y Pagos', description: 'Monthly ($19.99) or annual ($199.99) via PayPal with automatic management.', descriptionEs: 'Mensual ($19.99) o anual ($199.99) por PayPal con gestión automática.' },
+      { icon: Users, title: 'Role-based Access Control', titleEs: 'Control de Acceso por Roles', description: 'Owner, Manager, Crew, Vendor — each role sees precisely what they need, nothing more.', descriptionEs: 'Dueño, Gerente, Equipo, Proveedor — cada rol ve exactamente lo que necesita.' },
+      { icon: QrCode, title: 'QR Code System', titleEs: 'Sistema QR', description: 'Generate and print labels for any asset. Scan to view details, start shifts, or log check-ins.', descriptionEs: 'Genera e imprime etiquetas para activos. Escanea para detalles, turnos o registros.' },
+      { icon: Globe, title: 'Bilingual Interface', titleEs: 'Interfaz Bilingüe', description: 'Full English and Spanish support across the entire platform. Switch languages instantly.', descriptionEs: 'Soporte completo en inglés y español en toda la plataforma. Cambia al instante.' },
+      { icon: Zap, title: 'AI-Powered Intelligence', titleEs: 'Inteligencia Artificial', description: 'AI suggests tasks, generates care protocols, validates worker shifts, and produces property manuals.', descriptionEs: 'La IA sugiere tareas, genera protocolos, valida turnos y produce manuales de propiedad.' },
+      { icon: Shield, title: 'Subscription Management', titleEs: 'Gestión de Suscripción', description: 'Monthly or annual plans via PayPal with secure processing and automatic subscription management.', descriptionEs: 'Planes mensuales o anuales por PayPal con procesamiento seguro y gestión automática.' },
     ],
   },
 ];
@@ -93,114 +93,140 @@ export default function Features() {
   const es = language === 'es';
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-                <Leaf className="h-4 w-4 text-primary-foreground" />
-              </div>
-              <span className="text-lg font-serif font-semibold text-primary">Casa Guide</span>
+    <div className="min-h-screen bg-background text-foreground">
+      {/* Minimal header */}
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
+              <Leaf className="h-4 w-4 text-primary-foreground" />
             </div>
-          </div>
+            <span className="text-base font-serif font-semibold text-foreground tracking-tight">Casa Guide</span>
+          </Link>
           <Link to="/auth">
-            <Button size="sm">{es ? 'Comenzar' : 'Get Started'}</Button>
+            <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase">
+              {es ? 'Comenzar' : 'Get Started'}
+            </Button>
           </Link>
         </div>
       </header>
 
-      {/* Hero with background image */}
-      <section className="relative h-[50vh] min-h-[360px] flex items-center justify-center overflow-hidden">
+      {/* Hero */}
+      <section className="relative h-[70vh] min-h-[500px] flex items-end overflow-hidden">
         <img
           src="/images/estate_guide_4.jpg"
           alt="Estate landscape"
           className="absolute inset-0 w-full h-full object-cover"
         />
-        <div className="absolute inset-0 bg-black/55" />
-        <div className="relative z-10 text-center px-6 max-w-3xl">
-          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-white mb-4 leading-tight">
-            {es ? 'Todo lo que Casa Guide puede hacer' : 'Everything Casa Guide Can Do'}
-          </h1>
-          <p className="text-lg text-white/80 max-w-2xl mx-auto">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
+        <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full">
+          <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/50 mb-4">
+            {es ? 'Plataforma' : 'Platform Overview'}
+          </p>
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-[1.05] max-w-4xl">
             {es
-              ? 'Plataforma integral para gestionar propiedades, paisajes, equipos, compost, ventas y más.'
-              : 'A comprehensive platform to manage properties, landscapes, teams, compost, sales, and more.'}
+              ? 'Gestión de propiedades con precisión y propósito'
+              : 'Property management with precision and purpose'}
+          </h1>
+          <p className="mt-6 text-base md:text-lg text-white/60 max-w-2xl leading-relaxed">
+            {es
+              ? '19 módulos integrados para propiedades que exigen excelencia operativa y cuidado a largo plazo.'
+              : '19 integrated modules for properties that demand operational excellence and long-term stewardship.'}
           </p>
         </div>
       </section>
 
-      {/* Feature Sections */}
-      {sections.map((section, sIdx) => {
-        const isReversed = sIdx % 2 !== 0;
-        return (
-          <section key={section.key} className="relative">
-            {/* Section hero band */}
-            <div className="relative h-48 md:h-64 overflow-hidden">
-              <img
-                src={section.image}
-                alt={es ? section.labelEs : section.labelEn}
-                className="absolute inset-0 w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/50" />
-              <div className="relative z-10 flex items-center justify-center h-full">
-                <h2 className="text-3xl md:text-4xl font-serif font-bold text-white text-center px-4">
-                  {es ? section.labelEs : section.labelEn}
-                </h2>
-              </div>
+      {/* Sections */}
+      {sections.map((section, sIdx) => (
+        <section key={section.key}>
+          {/* Section divider with image */}
+          <div className="relative h-64 md:h-80 overflow-hidden">
+            <img
+              src={section.image}
+              alt={es ? section.labelEs : section.labelEn}
+              className="absolute inset-0 w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-black/55" />
+            <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-10">
+              <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/40 mb-3">
+                {String(sIdx + 1).padStart(2, '0')} / 05
+              </span>
+              <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
+                {es ? section.labelEs : section.labelEn}
+              </h2>
             </div>
+          </div>
 
-            {/* Feature cards */}
-            <div className="max-w-6xl mx-auto px-4 py-12">
-              <div className={`grid gap-6 ${section.features.length <= 3 ? 'sm:grid-cols-2 lg:grid-cols-3' : 'sm:grid-cols-2 lg:grid-cols-3'}`}>
-                {section.features.map((feature, fIdx) => (
-                  <div
-                    key={fIdx}
-                    className="group p-6 rounded-2xl border border-border bg-card hover:shadow-lg hover:border-primary/30 transition-all duration-300"
-                  >
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary/20 transition-colors">
-                      <feature.icon className="h-6 w-6 text-primary" />
-                    </div>
-                    <h3 className="font-semibold text-foreground text-base mb-2">
+          {/* Feature grid */}
+          <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+            <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border">
+              {section.features.map((feature, fIdx) => (
+                <div
+                  key={fIdx}
+                  className="bg-card p-8 md:p-10 flex flex-col sm:flex-row gap-6 items-start"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-primary/8 border border-primary/15 flex items-center justify-center flex-shrink-0">
+                    <feature.icon className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="text-base font-semibold text-foreground mb-1.5 tracking-tight">
                       {es ? feature.titleEs : feature.title}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {es ? feature.descriptionEs : feature.description}
                     </p>
                   </div>
-                ))}
-              </div>
+                </div>
+              ))}
             </div>
-          </section>
-        );
-      })}
+          </div>
+        </section>
+      ))}
 
       {/* CTA */}
-      <section className="relative h-72 flex items-center justify-center overflow-hidden">
-        <img
-          src="/images/estate_guide_2.jpg"
-          alt="Estate at night"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="relative z-10 text-center px-6">
-          <h2 className="text-3xl font-serif font-bold text-white mb-3">
-            {es ? '¿Listo para empezar?' : 'Ready to get started?'}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0">
+          <img
+            src="/images/estate_guide_2.jpg"
+            alt="Estate at night"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/70" />
+        </div>
+        <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
+          <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4">
+            {es ? 'Tu propiedad merece más' : 'Your property deserves more'}
           </h2>
-          <p className="text-white/70 mb-6 max-w-md mx-auto">
+          <p className="text-base text-white/50 max-w-lg mx-auto mb-10">
             {es
-              ? 'Crea tu cuenta y configura tu primera propiedad en minutos.'
-              : 'Create your account and set up your first property in minutes.'}
+              ? 'Configura tu primera propiedad en minutos. Sin compromiso.'
+              : 'Set up your first property in minutes. No commitment required.'}
           </p>
-          <Button size="lg" onClick={() => navigate('/auth')} className="bg-white text-black hover:bg-white/90">
-            {es ? 'Crear cuenta' : 'Create account'}
+          <Button
+            size="lg"
+            onClick={() => navigate('/auth')}
+            className="bg-white text-foreground hover:bg-white/90 font-medium tracking-wide px-8"
+          >
+            {es ? 'Comenzar ahora' : 'Get started'}
+            <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-card border-t border-border">
+        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-2">
+            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
+              <Leaf className="h-3 w-3 text-primary-foreground" />
+            </div>
+            <span className="text-sm font-serif font-medium text-foreground">Casa Guide</span>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }
