@@ -49,9 +49,9 @@ interface AssetEntry {
 const emptyEntry = (): AssetEntry => ({ name: '', description: '', zone_id: '', critical_care_note: '' });
 
 export function AssetWizard() {
-  const { language, tl } = useLanguage();
+  const { tl } = useLanguage();
   const { currentEstate } = useEstate();
-  const { assetLimit, isPaid } = useSubscription();
+  const { assetLimit } = useSubscription();
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState(0);
@@ -64,6 +64,7 @@ export function AssetWizard() {
   const totalSteps = WIZARD_STEPS.length;
   const step = WIZARD_STEPS[currentStep];
   const progress = ((currentStep) / totalSteps) * 100;
+  const stepLabel = tl(step.label);
 
   useEffect(() => {
     if (currentEstate) {
@@ -111,15 +112,15 @@ export function AssetWizard() {
       return;
     }
 
-    // Check asset limit for trial users
     const totalSavedInWizard = Object.values(savedCounts).reduce((a, b) => a + b, 0);
     const wouldHave = totalExistingAssets + totalSavedInWizard + validEntries.length;
     if (assetLimit && wouldHave > assetLimit) {
       const remaining = Math.max(0, assetLimit - totalExistingAssets - totalSavedInWizard);
-      toast.error(es 
-        ? `Límite de prueba: solo puedes agregar ${remaining} activo(s) más. Suscríbete para ilimitados.`
-        : `Trial limit: you can only add ${remaining} more asset(s). Subscribe for unlimited.`
-      );
+      toast.error(tl({
+        en: `Trial limit: you can only add ${remaining} more asset(s). Subscribe for unlimited.`,
+        es: `Límite de prueba: solo puedes agregar ${remaining} activo(s) más. Suscríbete para ilimitados.`,
+        de: `Testlimit: Sie können nur noch ${remaining} Anlage(n) hinzufügen. Abonnieren Sie für unbegrenzt.`,
+      }));
       return;
     }
 
@@ -138,14 +139,11 @@ export function AssetWizard() {
       if (error) throw error;
 
       setSavedCounts(prev => ({ ...prev, [step.type]: (prev[step.type] || 0) + validEntries.length }));
-      toast.success(es 
-        ? `✅ ${validEntries.length} ${step.labelEs.toLowerCase()} guardados` 
-        : `✅ ${validEntries.length} ${step.label.toLowerCase()} saved`
-      );
+      toast.success(`✅ ${validEntries.length} ${stepLabel.toLowerCase()} ${tl({ en: 'saved', es: 'guardados', de: 'gespeichert' })}`);
       goNext();
     } catch (error) {
       console.error('Error saving assets:', error);
-      toast.error(es ? 'Error al guardar' : 'Failed to save');
+      toast.error(tl({ en: 'Failed to save', es: 'Error al guardar', de: 'Fehler beim Speichern' }));
     } finally {
       setSaving(false);
     }
@@ -170,7 +168,11 @@ export function AssetWizard() {
   function finishWizard() {
     const total = Object.values(savedCounts).reduce((a, b) => a + b, 0);
     if (total > 0) {
-      toast.success(es ? `🎉 ${total} activos creados en total` : `🎉 ${total} total assets created`);
+      toast.success(tl({
+        en: `🎉 ${total} total assets created`,
+        es: `🎉 ${total} activos creados en total`,
+        de: `🎉 ${total} Anlagen insgesamt erstellt`,
+      }));
     }
     navigate('/map');
   }
@@ -180,26 +182,23 @@ export function AssetWizard() {
   return (
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
-        {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-serif font-semibold text-foreground">
-            {es ? 'Asistente de Configuración' : 'Setup Wizard'}
+            {tl({ en: 'Setup Wizard', es: 'Asistente de Configuración', de: 'Einrichtungsassistent' })}
           </h1>
           <p className="text-muted-foreground mt-2">
-            {es ? 'Agrega tus activos paso a paso. Puedes saltar cualquier sección.' : 'Add your assets step by step. You can skip any section.'}
+            {tl({ en: 'Add your assets step by step. You can skip any section.', es: 'Agrega tus activos paso a paso. Puedes saltar cualquier sección.', de: 'Fügen Sie Ihre Anlagen Schritt für Schritt hinzu. Sie können jeden Abschnitt überspringen.' })}
           </p>
         </div>
 
-        {/* Progress */}
         <div className="mb-6">
           <div className="flex items-center justify-between text-sm text-muted-foreground mb-2">
-            <span>{es ? 'Paso' : 'Step'} {currentStep + 1} / {totalSteps}</span>
+            <span>{tl({ en: 'Step', es: 'Paso', de: 'Schritt' })} {currentStep + 1} / {totalSteps}</span>
             <span>{Math.round(progress)}%</span>
           </div>
           <Progress value={progress} className="h-2" />
         </div>
 
-        {/* Step indicators */}
         <div className="flex gap-1 mb-8 overflow-x-auto pb-2">
           {WIZARD_STEPS.map((s, i) => {
             const Icon = s.icon;
@@ -217,14 +216,13 @@ export function AssetWizard() {
                 }`}
               >
                 <Icon className="h-3.5 w-3.5" />
-                {es ? s.labelEs : s.label}
+                {tl(s.label)}
                 {count > 0 && <Badge variant="secondary" className="ml-1 h-4 px-1 text-[10px]">{count}</Badge>}
               </button>
             );
           })}
         </div>
 
-        {/* Current step card */}
         <Card className="mb-6">
           <CardContent className="pt-6">
             <div className="flex items-center gap-3 mb-6">
@@ -232,54 +230,42 @@ export function AssetWizard() {
                 <StepIcon className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-serif font-semibold text-foreground">
-                  {es ? step.labelEs : step.label}
-                </h2>
-                <p className="text-sm text-muted-foreground">
-                  {es ? step.descriptionEs : step.description}
-                </p>
+                <h2 className="text-xl font-serif font-semibold text-foreground">{stepLabel}</h2>
+                <p className="text-sm text-muted-foreground">{tl(step.description)}</p>
               </div>
             </div>
 
-            {/* Asset entries */}
             <div className="space-y-4">
               {entries.map((entry, index) => (
                 <div key={index} className="border border-border rounded-lg p-4 space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-foreground">
-                      {es ? step.labelEs : step.label} #{index + 1}
-                    </span>
+                    <span className="text-sm font-medium text-foreground">{stepLabel} #{index + 1}</span>
                     {entries.length > 1 && (
-                      <Button variant="ghost" size="sm" onClick={() => removeEntry(index)} className="text-destructive h-7 px-2">
-                        ✕
-                      </Button>
+                      <Button variant="ghost" size="sm" onClick={() => removeEntry(index)} className="text-destructive h-7 px-2">✕</Button>
                     )}
                   </div>
-
                   <div>
-                    <Label className="text-xs">{es ? 'Nombre *' : 'Name *'}</Label>
+                    <Label className="text-xs">{tl({ en: 'Name *', es: 'Nombre *', de: 'Name *' })}</Label>
                     <Input
-                      placeholder={es ? `Ej: ${step.labelEs} principal` : `E.g.: Main ${step.label.toLowerCase()}`}
+                      placeholder={tl({ en: `E.g.: Main ${stepLabel.toLowerCase()}`, es: `Ej: ${stepLabel} principal`, de: `Z.B.: Haupt-${stepLabel}` })}
                       value={entry.name}
                       onChange={e => updateEntry(index, 'name', e.target.value)}
                     />
                   </div>
-
                   <div>
-                    <Label className="text-xs">{es ? 'Descripción' : 'Description'}</Label>
+                    <Label className="text-xs">{tl({ en: 'Description', es: 'Descripción', de: 'Beschreibung' })}</Label>
                     <Input
-                      placeholder={es ? 'Opcional' : 'Optional'}
+                      placeholder={tl({ en: 'Optional', es: 'Opcional', de: 'Optional' })}
                       value={entry.description}
                       onChange={e => updateEntry(index, 'description', e.target.value)}
                     />
                   </div>
-
                   {zones.length > 0 && (
                     <div>
-                      <Label className="text-xs">{es ? 'Zona' : 'Zone'}</Label>
+                      <Label className="text-xs">{tl({ en: 'Zone', es: 'Zona', de: 'Zone' })}</Label>
                       <Select value={entry.zone_id} onValueChange={v => updateEntry(index, 'zone_id', v)}>
                         <SelectTrigger>
-                          <SelectValue placeholder={es ? 'Seleccionar zona' : 'Select zone'} />
+                          <SelectValue placeholder={tl({ en: 'Select zone', es: 'Seleccionar zona', de: 'Zone auswählen' })} />
                         </SelectTrigger>
                         <SelectContent>
                           {zones.map(z => (
@@ -289,11 +275,10 @@ export function AssetWizard() {
                       </Select>
                     </div>
                   )}
-
                   <div>
-                    <Label className="text-xs">{es ? 'Nota de cuidado' : 'Care note'}</Label>
+                    <Label className="text-xs">{tl({ en: 'Care note', es: 'Nota de cuidado', de: 'Pflegehinweis' })}</Label>
                     <Textarea
-                      placeholder={es ? 'Instrucciones especiales de cuidado...' : 'Special care instructions...'}
+                      placeholder={tl({ en: 'Special care instructions...', es: 'Instrucciones especiales de cuidado...', de: 'Besondere Pflegeanweisungen...' })}
                       value={entry.critical_care_note}
                       onChange={e => updateEntry(index, 'critical_care_note', e.target.value)}
                       rows={2}
@@ -301,46 +286,41 @@ export function AssetWizard() {
                   </div>
                 </div>
               ))}
-
               <Button variant="outline" onClick={addEntry} className="w-full border-dashed">
                 <Plus className="h-4 w-4 mr-2" />
-                {es ? `Agregar otro ${step.labelEs.toLowerCase()}` : `Add another ${step.label.toLowerCase()}`}
+                {tl({ en: `Add another ${stepLabel.toLowerCase()}`, es: `Agregar otro ${stepLabel.toLowerCase()}`, de: `Weitere ${stepLabel} hinzufügen` })}
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Navigation buttons */}
         <div className="flex items-center justify-between gap-3">
           <Button variant="outline" onClick={goBack} disabled={currentStep === 0}>
             <ArrowLeft className="h-4 w-4 mr-1" />
-            {es ? 'Anterior' : 'Back'}
+            {tl({ en: 'Back', es: 'Anterior', de: 'Zurück' })}
           </Button>
-
           <div className="flex gap-2">
             <Button variant="ghost" onClick={goNext}>
               <SkipForward className="h-4 w-4 mr-1" />
-              {es ? 'Saltar' : 'Skip'}
+              {tl({ en: 'Skip', es: 'Saltar', de: 'Überspringen' })}
             </Button>
-
             {currentStep === totalSteps - 1 ? (
               <Button onClick={saveCurrentStep} disabled={saving}>
                 <Check className="h-4 w-4 mr-1" />
-                {saving ? (es ? 'Guardando...' : 'Saving...') : (es ? 'Finalizar' : 'Finish')}
+                {saving ? tl({ en: 'Saving...', es: 'Guardando...', de: 'Speichern...' }) : tl({ en: 'Finish', es: 'Finalizar', de: 'Fertig' })}
               </Button>
             ) : (
               <Button onClick={saveCurrentStep} disabled={saving}>
-                {saving ? (es ? 'Guardando...' : 'Saving...') : (es ? 'Guardar y continuar' : 'Save & Continue')}
+                {saving ? tl({ en: 'Saving...', es: 'Guardando...', de: 'Speichern...' }) : tl({ en: 'Save & Continue', es: 'Guardar y continuar', de: 'Speichern & Weiter' })}
                 <ArrowRight className="h-4 w-4 ml-1" />
               </Button>
             )}
           </div>
         </div>
 
-        {/* Skip all */}
         <div className="text-center mt-6">
           <Button variant="link" onClick={finishWizard} className="text-muted-foreground">
-            {es ? 'Saltar todo y ir al mapa →' : 'Skip all and go to map →'}
+            {tl({ en: 'Skip all and go to map →', es: 'Saltar todo y ir al mapa →', de: 'Alles überspringen und zur Karte →' })}
           </Button>
         </div>
       </div>
