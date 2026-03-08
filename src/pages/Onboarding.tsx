@@ -305,7 +305,7 @@ export default function Onboarding() {
                           </span>
                         </div>
                         {plan.savings && (
-                          <span className="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400">
+                          <span className="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
                             {es ? plan.savingsEs : plan.savings}
                           </span>
                         )}
@@ -352,8 +352,8 @@ export default function Onboarding() {
               <CardContent className="space-y-4 pt-4">
                 {paymentComplete ? (
                   <div className="text-center py-8">
-                    <div className="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center mx-auto mb-4">
-                      <Check className="h-8 w-8 text-green-600 dark:text-green-400" />
+                    <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
+                      <Check className="h-8 w-8 text-accent-foreground" />
                     </div>
                     <p className="text-lg font-semibold text-foreground">
                       {es ? '¡Pago completado!' : 'Payment complete!'}
