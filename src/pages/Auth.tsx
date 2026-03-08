@@ -144,7 +144,10 @@ export default function Auth() {
 
       {/* Right side — form */}
       <div className="flex-1 flex flex-col bg-background">
-        <header className="p-4 flex justify-end">
+        <header className="p-4 flex justify-between items-center">
+          <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
+            ← {language === 'es' ? 'Inicio' : 'Home'}
+          </Link>
           <Button variant="ghost" size="sm" onClick={toggleLanguage}>
             {language === 'en' ? '🇪🇸 Español' : '🇺🇸 English'}
           </Button>
