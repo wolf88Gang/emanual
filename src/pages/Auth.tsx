@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, Leaf, ArrowRight, Users, Shield, Wrench, Building } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguagePicker } from '@/components/LanguagePicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -146,11 +147,9 @@ export default function Auth() {
       <div className="flex-1 flex flex-col bg-background">
         <header className="p-4 flex justify-between items-center">
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            ← {language === 'es' ? 'Inicio' : 'Home'}
+            ← {t('nav.home')}
           </Link>
-          <Button variant="ghost" size="sm" onClick={toggleLanguage}>
-            {language === 'en' ? '🇪🇸 Español' : '🇺🇸 English'}
-          </Button>
+          <LanguagePicker variant="full" />
         </header>
 
         <main className="flex-1 flex items-center justify-center p-6">
