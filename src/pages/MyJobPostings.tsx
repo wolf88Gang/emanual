@@ -167,30 +167,47 @@ export default function MyJobPostings() {
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {applications.map(app => {
                 const wp = workerProfiles[app.worker_id];
+                const workerName = wp?.full_name || wp?.email || 'Worker';
                 return (
                   <Card key={app.id}>
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-medium">{wp?.full_name || wp?.email || 'Worker'}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="font-medium text-primary hover:underline"
+                              onClick={() => navigate(`/worker/${app.worker_id}`)}
+                            >
+                              {workerName}
+                            </button>
+                            <Badge variant="outline" className="text-xs">{app.status}</Badge>
+                          </div>
                           {app.message && <p className="text-sm text-muted-foreground mt-1">{app.message}</p>}
                           {app.proposed_rate && (
                             <p className="text-sm text-primary font-medium mt-1">
                               {es ? 'Tarifa propuesta' : 'Proposed rate'}: ${app.proposed_rate}
                             </p>
                           )}
-                          <Badge variant="outline" className="mt-2 text-xs">{app.status}</Badge>
                         </div>
-                        {app.status === 'pending' && (
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="default" onClick={() => updateApplicationStatus(app.id, 'accepted')}>
-                              <CheckCircle className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button size="sm" variant="ghost" onClick={() => updateApplicationStatus(app.id, 'rejected')}>
-                              <XCircle className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setChatTarget({ jobId: selectedJobId!, userId: app.worker_id, name: workerName })}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                          </Button>
+                          {app.status === 'pending' && (
+                            <>
+                              <Button size="sm" variant="default" onClick={() => updateApplicationStatus(app.id, 'accepted')}>
+                                <CheckCircle className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => updateApplicationStatus(app.id, 'rejected')}>
+                                <XCircle className="h-3.5 w-3.5" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
