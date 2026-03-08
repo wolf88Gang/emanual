@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { LanguagePicker } from '@/components/LanguagePicker';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { Button } from '@/components/ui/button';
