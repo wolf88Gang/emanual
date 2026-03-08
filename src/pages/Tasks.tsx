@@ -307,9 +307,25 @@ export default function Tasks() {
           <div className="space-y-3">
             {loading ? [1, 2, 3].map(i => <div key={i} className="h-24 rounded-xl shimmer" />) : filteredTasks.length === 0 ? (
               <Card className="estate-card"><CardContent className="py-12 text-center">
-                <CheckCircle2 className="h-12 w-12 mx-auto text-success mb-4" />
+                <CheckCircle2 className="h-12 w-12 mx-auto text-success/40 mb-4" />
                 <h3 className="font-medium text-lg">{es ? '¡Todo al día!' : 'All caught up!'}</h3>
-                <p className="text-muted-foreground mt-1">{es ? 'Sin tareas en esta categoría' : 'No tasks in this category'}</p>
+                <p className="text-muted-foreground mt-1 max-w-sm mx-auto">
+                  {tasks.length === 0
+                    ? (es ? 'Crea tu primera tarea manualmente o deja que la IA te sugiera tareas basadas en tus activos.' : 'Create your first task manually or let AI suggest tasks based on your assets.')
+                    : (es ? 'Sin tareas en esta categoría' : 'No tasks in this category')}
+                </p>
+                {tasks.length === 0 && isOwnerOrManager && (
+                  <div className="flex gap-3 justify-center mt-4">
+                    <Button onClick={() => setShowNewTask(true)}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      {es ? 'Nueva Tarea' : 'New Task'}
+                    </Button>
+                    <Button variant="outline" onClick={() => { setShowAISuggest(true); handleAISuggest(); }}>
+                      <Sparkles className="h-4 w-4 mr-2" />
+                      {es ? 'Sugerencias IA' : 'AI Suggestions'}
+                    </Button>
+                  </div>
+                )}
               </CardContent></Card>
             ) : filteredTasks.map(task => {
               const config = statusConfig[task.status];

@@ -6,7 +6,8 @@ import {
   Clock, 
   AlertTriangle,
   CheckCircle2,
-  Navigation
+  Navigation,
+  Plus
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -227,15 +228,26 @@ export default function WorkView() {
     return (
       <>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
-          <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
+          <Building2 className="h-16 w-16 text-muted-foreground/40 mb-4" />
           <h2 className="text-2xl font-serif font-semibold mb-2">
-            {language === 'es' ? 'Sin Propiedad Seleccionada' : 'No Estate Selected'}
+            {language === 'es' ? 'Sin Propiedad Configurada' : language === 'de' ? 'Keine Immobilie konfiguriert' : 'No Property Set Up'}
           </h2>
-          <p className="text-muted-foreground max-w-md">
+          <p className="text-muted-foreground max-w-md mb-6">
             {language === 'es' 
-              ? 'No tienes acceso a ninguna propiedad. Contacta a tu administrador.'
-              : 'You don\'t have access to any estates. Contact your administrator.'}
+              ? 'Para comenzar, agrega tu primera propiedad. Desde ahí podrás crear zonas, activos y tareas.'
+              : language === 'de'
+              ? 'Fügen Sie zunächst Ihre erste Immobilie hinzu. Von dort aus können Sie Zonen, Anlagen und Aufgaben erstellen.'
+              : 'To get started, add your first property. From there you can create zones, assets, and tasks.'}
           </p>
+          <div className="flex gap-3">
+            <Button onClick={() => navigate('/estates')}>
+              <Plus className="h-4 w-4 mr-2" />
+              {language === 'es' ? 'Agregar Propiedad' : language === 'de' ? 'Immobilie hinzufügen' : 'Add Property'}
+            </Button>
+            <Button variant="outline" onClick={() => navigate('/setup-wizard')}>
+              {language === 'es' ? 'Asistente de Configuración' : language === 'de' ? 'Einrichtungsassistent' : 'Setup Wizard'}
+            </Button>
+          </div>
         </div>
       </>
     );
@@ -305,6 +317,13 @@ export default function WorkView() {
                   <p className="font-medium">
                     {language === 'es' ? 'Sin tareas pendientes' : 'No pending tasks'}
                   </p>
+                  <p className="text-xs mt-1">
+                    {language === 'es' ? 'Crea tareas desde la sección de Tareas' : 'Create tasks from the Tasks section'}
+                  </p>
+                  <Button variant="outline" size="sm" className="mt-3" onClick={() => navigate('/tasks')}>
+                    <Plus className="h-3 w-3 mr-1" />
+                    {language === 'es' ? 'Ir a Tareas' : 'Go to Tasks'}
+                  </Button>
                 </div>
               ) : (
                 upcomingTasks.map((task) => (
