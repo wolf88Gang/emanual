@@ -38,7 +38,7 @@ serve(async (req) => {
     const { data: orgData } = await supabaseAdmin
       .from('organizations')
       .select('id')
-      .eq('name', 'Bahia Vista Holdings')
+      .eq('name', 'Bahia Vista Holdings')  // Demo org
       .single();
 
     const orgId = orgData?.id;
