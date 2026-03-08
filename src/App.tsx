@@ -38,6 +38,7 @@ import JobBoard from "./pages/JobBoard";
 import PostJob from "./pages/PostJob";
 import MyJobPostings from "./pages/MyJobPostings";
 import WorkerProfilePage from "./pages/WorkerProfile";
+import MyWorkerProfile from "./pages/MyWorkerProfile";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
