@@ -111,9 +111,7 @@ export function AppSidebar() {
       <SidebarContent>
         {/* Brand */}
         <div className={`flex items-center gap-2 px-3 py-4 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-            <Leaf className="h-4 w-4 text-primary-foreground" />
-          </div>
+          <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain flex-shrink-0" />
           {!collapsed && (
             <span className="text-sm font-serif font-semibold text-primary truncate">
               Home Guide

@@ -98,9 +98,7 @@ export default function Features() {
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Leaf className="h-4 w-4 text-primary-foreground" />
-            </div>
+            <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain" />
             <span className="text-base font-serif font-semibold text-foreground tracking-tight">Home Guide</span>
           </Link>
           <Link to="/auth">
@@ -217,9 +215,7 @@ export default function Features() {
       <footer className="bg-card border-t border-border">
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
-              <Leaf className="h-3 w-3 text-primary-foreground" />
-            </div>
+            <img src="/images/hg-logo.png" alt="HG" className="w-6 h-6 object-contain" />
             <span className="text-sm font-serif font-medium text-foreground">Home Guide</span>
           </div>
           <p className="text-xs text-muted-foreground">
