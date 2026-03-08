@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { FileText, Download, Calendar, Loader2, BookOpen, AlertCircle } from 'lucide-react';
+import { FileText, Download, Calendar, Loader2, BookOpen, AlertCircle, BarChart3 } from 'lucide-react';
+import { MaintenanceDashboard } from '@/components/reports/MaintenanceDashboard';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
@@ -262,17 +263,26 @@ export default function Reports() {
           </p>
         </div>
 
-        <Tabs defaultValue="duty-of-care" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-2">
+        <Tabs defaultValue="maintenance" className="space-y-4">
+          <TabsList className="grid w-full grid-cols-3">
+            <TabsTrigger value="maintenance" className="gap-2">
+              <BarChart3 className="h-4 w-4" />
+              {language === 'es' ? 'Mantenimiento' : 'Maintenance'}
+            </TabsTrigger>
             <TabsTrigger value="duty-of-care" className="gap-2">
               <FileText className="h-4 w-4" />
               {language === 'es' ? 'Deber de Cuidado' : 'Duty of Care'}
             </TabsTrigger>
             <TabsTrigger value="estate-manual" className="gap-2">
               <BookOpen className="h-4 w-4" />
-              {language === 'es' ? 'Manual Integral' : 'Estate Manual'}
+              {language === 'es' ? 'Manual' : 'Manual'}
             </TabsTrigger>
           </TabsList>
+
+          {/* Maintenance Analytics */}
+          <TabsContent value="maintenance">
+            <MaintenanceDashboard />
+          </TabsContent>
 
           {/* Duty of Care Report */}
           <TabsContent value="duty-of-care">
