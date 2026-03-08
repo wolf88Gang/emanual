@@ -23,16 +23,18 @@ type AuthFormData = z.infer<typeof authSchema>;
 interface DemoAccount {
   email: string;
   role: string;
+  roleEs: string;
+  roleDe: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
   descriptionEs: string;
 }
 
 const demoAccounts: DemoAccount[] = [
-  { email: 'owner@demo.com', role: 'Owner', icon: Building, description: 'Full access to all features', descriptionEs: 'Acceso completo a todas las funciones' },
-  { email: 'manager@demo.com', role: 'Manager', icon: Shield, description: 'Manage assets, tasks & team', descriptionEs: 'Gestionar activos, tareas y equipo' },
-  { email: 'crew@demo.com', role: 'Crew', icon: Wrench, description: 'Complete tasks & check-ins', descriptionEs: 'Completar tareas y registros' },
-  { email: 'vendor@demo.com', role: 'Vendor', icon: Users, description: 'View assigned tasks only', descriptionEs: 'Ver solo tareas asignadas' },
+  { email: 'owner@demo.com', role: 'Owner', roleEs: 'Propietario', roleDe: 'Eigentümer', icon: Building, description: 'Full access to all features', descriptionEs: 'Acceso completo a todas las funciones' },
+  { email: 'manager@demo.com', role: 'Manager', roleEs: 'Administrador', roleDe: 'Verwalter', icon: Shield, description: 'Manage assets, tasks & team', descriptionEs: 'Gestionar activos, tareas y equipo' },
+  { email: 'crew@demo.com', role: 'Crew', roleEs: 'Equipo', roleDe: 'Team', icon: Wrench, description: 'Complete tasks & check-ins', descriptionEs: 'Completar tareas y registros' },
+  { email: 'vendor@demo.com', role: 'Vendor', roleEs: 'Proveedor', roleDe: 'Lieferant', icon: Users, description: 'View assigned tasks only', descriptionEs: 'Ver solo tareas asignadas' },
 ];
 
 export default function Auth() {
