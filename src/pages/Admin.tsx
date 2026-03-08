@@ -454,6 +454,11 @@ export default function Admin() {
               </div>
             )}
           </TabsContent>
+
+          {/* Team Tab */}
+          <TabsContent value="team">
+            <TeamManagement />
+          </TabsContent>
         </Tabs>
       </div>
     </ModernAppLayout>
