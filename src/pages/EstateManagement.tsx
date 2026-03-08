@@ -1,9 +1,10 @@
  import React, { useState } from 'react';
- import { MapPin, Plus, Loader2, Building, Mountain } from 'lucide-react';
+ import { MapPin, Plus, Loader2, Building, Mountain, Lock } from 'lucide-react';
  import { useNavigate } from 'react-router-dom';
  import { useLanguage } from '@/contexts/LanguageContext';
  import { useAuth } from '@/contexts/AuthContext';
  import { useEstate } from '@/contexts/EstateContext';
+ import { useSubscription } from '@/contexts/SubscriptionContext';
  import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
  import { Button } from '@/components/ui/button';
  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -32,12 +33,19 @@
      lng: null as number | null
    });
  
+   const { propertyLimit, isPaid, isTrial } = useSubscription();
+   const canAddProperty = isPaid || estates.length < propertyLimit;
+
    async function createEstate() {
+     if (!canAddProperty) {
+       toast.error(language === 'es' ? 'Límite de propiedades alcanzado. Suscríbete para agregar más.' : 'Property limit reached. Subscribe to add more.');
+       return;
+     }
      if (!newEstate.name.trim()) {
        toast.error(language === 'es' ? 'Ingrese el nombre de la finca' : 'Enter estate name');
        return;
      }
- 
+
      if (!profile?.org_id) {
        toast.error(language === 'es' ? 'No hay organización' : 'No organization found');
        return;
