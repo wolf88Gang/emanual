@@ -4,7 +4,7 @@
  import { useLanguage } from '@/contexts/LanguageContext';
  import { useAuth } from '@/contexts/AuthContext';
  import { useEstate } from '@/contexts/EstateContext';
- import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
+ 
  import { Button } from '@/components/ui/button';
  import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
  import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
