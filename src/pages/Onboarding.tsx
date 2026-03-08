@@ -4,13 +4,14 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { Leaf, ArrowRight, ArrowLeft, Check, CreditCard, Building2, RotateCcw } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Check, Building2, RotateCcw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { PRICE_PER_PROPERTY, TRIAL_DAYS } from '@/contexts/SubscriptionContext';
 
 declare global {
   interface Window {
@@ -18,81 +19,59 @@ declare global {
   }
 }
 
-interface PlanOption {
-  id: 'monthly' | 'annual';
-  name: string;
-  nameEs: string;
-  price: number;
-  period: string;
-  periodEs: string;
-  savings?: string;
-  savingsEs?: string;
-}
-
 type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'other';
-type Step = 'profile' | 'plan' | 'payment' | 'estate';
+type Step = 'profile' | 'plan' | 'estate';
 
-const plans: PlanOption[] = [
-  {
-    id: 'monthly',
-    name: 'Monthly',
-    nameEs: 'Mensual',
-    price: 19.99,
-    period: '/month',
-    periodEs: '/mes',
-  },
-  {
-    id: 'annual',
-    name: 'Annual',
-    nameEs: 'Anual',
-    price: 199.99,
-    period: '/year',
-    periodEs: '/año',
-    savings: 'Save ~17%',
-    savingsEs: 'Ahorra ~17%',
-  },
-];
-
-const STEPS: Step[] = ['profile', 'plan', 'payment', 'estate'];
+const STEPS: Step[] = ['profile', 'plan', 'estate'];
 
 const CLIENT_TYPE_OPTIONS: {
   id: ClientType;
   label: string;
   labelEs: string;
+  labelDe: string;
   description: string;
   descriptionEs: string;
+  descriptionDe: string;
   emoji: string;
 }[] = [
   {
     id: 'property_owner',
     label: 'Property Owner',
     labelEs: 'Dueño de propiedad',
+    labelDe: 'Immobilienbesitzer',
     description: 'I manage my own properties',
     descriptionEs: 'Gestiono mis propias propiedades',
+    descriptionDe: 'Ich verwalte meine eigenen Immobilien',
     emoji: '🏡',
   },
   {
     id: 'landscaping_company',
     label: 'Landscaping Company',
     labelEs: 'Empresa de landscaping',
+    labelDe: 'Landschaftsbau-Unternehmen',
     description: 'I manage client properties',
     descriptionEs: 'Gestiono propiedades de clientes',
+    descriptionDe: 'Ich verwalte Kundenimmobilien',
     emoji: '🏢',
   },
   {
     id: 'hybrid',
     label: 'Both',
     labelEs: 'Ambos',
+    labelDe: 'Beides',
     description: 'I manage private and client properties',
     descriptionEs: 'Gestiono propiedades privadas y de clientes',
+    descriptionDe: 'Ich verwalte private und Kundenimmobilien',
     emoji: '🔀',
   },
   {
     id: 'other',
     label: 'Other',
     labelEs: 'Otro',
+    labelDe: 'Andere',
     description: 'I need a custom setup',
     descriptionEs: 'Necesito una configuración personalizada',
+    descriptionDe: 'Ich brauche eine individuelle Konfiguration',
     emoji: '⚙️',
   },
 ];
@@ -103,23 +82,24 @@ export default function Onboarding() {
   const navigate = useNavigate();
 
   const [currentStep, setCurrentStep] = useState<Step>('profile');
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('monthly');
   const [selectedClientType, setSelectedClientType] = useState<ClientType | ''>('');
-  const [paymentComplete, setPaymentComplete] = useState(false);
   const [estateName, setEstateName] = useState('');
   const [estateCountry, setEstateCountry] = useState('');
   const [estateAddress, setEstateAddress] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedPath, setSelectedPath] = useState<'trial' | 'paid' | ''>('');
 
   const stepIndex = STEPS.indexOf(currentStep);
   const progress = ((stepIndex + 1) / STEPS.length) * 100;
   const es = language === 'es';
+  const de = language === 'de';
+
+  const l = (en: string, esStr: string, deStr: string) => de ? deStr : es ? esStr : en;
 
   const resetWizard = () => {
     setCurrentStep('profile');
-    setSelectedPlan('monthly');
     setSelectedClientType('');
-    setPaymentComplete(false);
+    setSelectedPath('');
     setEstateName('');
     setEstateCountry('');
     setEstateAddress('');
@@ -142,86 +122,20 @@ export default function Onboarding() {
 
   const handleProfileContinue = () => {
     if (!selectedClientType) {
-      toast.error(es ? 'Selecciona un tipo de cuenta' : 'Please select an account type');
+      toast.error(l('Please select an account type', 'Selecciona un tipo de cuenta', 'Bitte wählen Sie einen Kontotyp'));
       return;
     }
     nextStep();
   };
 
   const handleStartTrial = () => {
-    // Skip plan and payment, go directly to estate creation
+    setSelectedPath('trial');
     setCurrentStep('estate');
-  };
-
-  const handlePayPalPayment = async () => {
-    if (!user) return;
-    if (!window.paypal) {
-      toast.error(es ? 'PayPal no está disponible en este momento' : 'PayPal is not available right now');
-      return;
-    }
-
-    setIsLoading(true);
-
-    try {
-      const plan = plans.find((p) => p.id === selectedPlan)!;
-
-      const { data: orderData, error: orderError } = await supabase.functions.invoke('paypal-create-order', {
-        body: {
-          plan_type: selectedPlan,
-          amount: plan.price.toFixed(2),
-        },
-      });
-
-      if (orderError) throw orderError;
-
-      const orderId = orderData?.id;
-      if (!orderId) throw new Error('No order ID returned');
-
-      const container = document.getElementById('paypal-button-container');
-      if (!container) return;
-      container.innerHTML = '';
-
-      window.paypal
-        .Buttons({
-          createOrder: () => orderId,
-          onApprove: async (data: any) => {
-            try {
-              const { data: captureData, error: captureError } = await supabase.functions.invoke(
-                'paypal-capture-order',
-                {
-                  body: {
-                    order_id: data.orderID,
-                    user_id: user.id,
-                    plan_type: selectedPlan,
-                    amount: plan.price,
-                  },
-                }
-              );
-
-              if (captureError) throw captureError;
-              if (captureData?.error) throw new Error(captureData.message || 'Payment capture failed');
-
-              setPaymentComplete(true);
-              toast.success(es ? '¡Pago exitoso!' : 'Payment successful!');
-            } catch (err: any) {
-              toast.error(err.message || (es ? 'Error al confirmar el pago' : 'Payment capture failed'));
-            }
-          },
-          onError: () => {
-            toast.error(es ? 'Error en el pago' : 'Payment error');
-          },
-        })
-        .render('#paypal-button-container');
-    } catch (err: any) {
-      toast.error(err.message || (es ? 'No se pudo iniciar el pago' : 'Failed to start payment'));
-    } finally {
-      setIsLoading(false);
-    }
   };
 
   const handleCreateEstate = async () => {
     if (!user || !estateName.trim()) {
-      toast.error(es ? 'Ingresa el nombre de la propiedad' : 'Enter the property name');
+      toast.error(l('Enter the property name', 'Ingresa el nombre de la propiedad', 'Geben Sie den Immobiliennamen ein'));
       return;
     }
 
@@ -235,7 +149,6 @@ export default function Onboarding() {
           .insert({ name: estateName })
           .select('id')
           .single();
-
         if (orgError) throw orgError;
         orgId = newOrg.id;
       }
@@ -244,7 +157,6 @@ export default function Onboarding() {
         .from('profiles')
         .update({ org_id: orgId, client_type: selectedClientType || null } as any)
         .eq('id', user.id);
-
       if (profileError) throw profileError;
 
       const { data: existingRole } = await supabase
@@ -265,10 +177,9 @@ export default function Onboarding() {
         country: estateCountry || null,
         address_text: estateAddress || null,
       });
-
       if (estateError) throw estateError;
 
-      // Check if user paid or should start free trial
+      // Create trial subscription (1 property, 15 days)
       const { data: existingSub } = await supabase
         .from('subscriptions')
         .select('id')
@@ -276,10 +187,9 @@ export default function Onboarding() {
         .maybeSingle();
 
       if (!existingSub) {
-        // Auto-create 15-day free trial subscription
         const trialStart = new Date();
         const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + 15);
+        trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
 
         await supabase.from('subscriptions').insert({
           user_id: user.id,
@@ -293,10 +203,10 @@ export default function Onboarding() {
         });
       }
 
-      toast.success(es ? '¡Propiedad creada! Bienvenido a Home Guide' : 'Property created! Welcome to Home Guide');
+      toast.success(l('Property created! Welcome to Home Guide', '¡Propiedad creada! Bienvenido a Home Guide', 'Immobilie erstellt! Willkommen bei Home Guide'));
       navigate('/', { replace: true });
     } catch (err: any) {
-      toast.error(err.message || (es ? 'No se pudo crear la propiedad' : 'Failed to create property'));
+      toast.error(err.message || l('Failed to create property', 'No se pudo crear la propiedad', 'Immobilie konnte nicht erstellt werden'));
     } finally {
       setIsLoading(false);
     }
@@ -312,10 +222,10 @@ export default function Onboarding() {
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={resetWizard}>
             <RotateCcw className="h-4 w-4 mr-2" />
-            {es ? 'Reiniciar' : 'Restart'}
+            {l('Restart', 'Reiniciar', 'Neustart')}
           </Button>
           <Button variant="ghost" size="sm" onClick={handleCancelOnboarding}>
-            {es ? 'Salir' : 'Exit'}
+            {l('Exit', 'Salir', 'Beenden')}
           </Button>
         </div>
       </header>
@@ -323,7 +233,7 @@ export default function Onboarding() {
       <div className="px-6 pt-4">
         <Progress value={progress} className="h-2" />
         <p className="text-xs text-muted-foreground mt-1 text-right">
-          {es ? `Paso ${stepIndex + 1} de ${STEPS.length}` : `Step ${stepIndex + 1} of ${STEPS.length}`}
+          {l(`Step ${stepIndex + 1} of ${STEPS.length}`, `Paso ${stepIndex + 1} de ${STEPS.length}`, `Schritt ${stepIndex + 1} von ${STEPS.length}`)}
         </p>
       </div>
 
@@ -333,12 +243,10 @@ export default function Onboarding() {
             <Card className="border-0 shadow-xl">
               <CardHeader>
                 <CardTitle className="text-2xl font-serif">
-                  {es ? '¿Qué tipo de cuenta quieres crear?' : 'What type of account do you want to create?'}
+                  {l('What type of account do you want to create?', '¿Qué tipo de cuenta quieres crear?', 'Welche Art von Konto möchten Sie erstellen?')}
                 </CardTitle>
                 <CardDescription>
-                  {es
-                    ? 'Selecciona una opción para personalizar la plataforma.'
-                    : 'Select one option to personalize the platform.'}
+                  {l('Select one option to personalize the platform.', 'Selecciona una opción para personalizar la plataforma.', 'Wählen Sie eine Option, um die Plattform zu personalisieren.')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
@@ -354,9 +262,7 @@ export default function Onboarding() {
                         key={option.id}
                         htmlFor={option.id}
                         className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                          selected
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/40 bg-secondary/30'
+                          selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40 bg-secondary/30'
                         }`}
                       >
                         <RadioGroupItem id={option.id} value={option.id} className="mt-1" />
@@ -364,10 +270,10 @@ export default function Onboarding() {
                           <span className="text-lg mt-0.5">{option.emoji}</span>
                           <div>
                             <p className="font-semibold text-foreground text-base">
-                              {es ? option.labelEs : option.label}
+                              {de ? option.labelDe : es ? option.labelEs : option.label}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {es ? option.descriptionEs : option.description}
+                              {de ? option.descriptionDe : es ? option.descriptionEs : option.description}
                             </p>
                           </div>
                         </div>
@@ -377,7 +283,7 @@ export default function Onboarding() {
                 </RadioGroup>
 
                 <Button className="w-full" size="lg" onClick={handleProfileContinue} disabled={!selectedClientType}>
-                  {es ? 'Continuar' : 'Continue'}
+                  {l('Continue', 'Continuar', 'Weiter')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </CardContent>
@@ -387,56 +293,56 @@ export default function Onboarding() {
           {currentStep === 'plan' && (
             <Card className="border-0 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-2xl font-serif">{es ? 'Elige tu plan' : 'Choose your plan'}</CardTitle>
+                <CardTitle className="text-2xl font-serif">
+                  {l('How would you like to start?', '¿Cómo te gustaría empezar?', 'Wie möchten Sie beginnen?')}
+                </CardTitle>
                 <CardDescription>
-                  {es ? 'Puedes cambiar de plan más adelante.' : 'You can change your plan later.'}
+                  {l(
+                    `Home Guide is $${PRICE_PER_PROPERTY}/month per property. All features included.`,
+                    `Home Guide cuesta $${PRICE_PER_PROPERTY}/mes por propiedad. Todas las funciones incluidas.`,
+                    `Home Guide kostet $${PRICE_PER_PROPERTY}/Monat pro Immobilie. Alle Funktionen inklusive.`
+                  )}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {plans.map((plan) => {
-                  const selected = selectedPlan === plan.id;
-                  return (
-                    <button
-                      key={plan.id}
-                      type="button"
-                      onClick={() => setSelectedPlan(plan.id)}
-                      className={`w-full p-4 rounded-xl border-2 text-left transition-all ${
-                        selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-semibold text-foreground text-lg">{es ? plan.nameEs : plan.name}</div>
-                          <div className="text-2xl font-bold text-primary mt-1">
-                            ${plan.price}
-                            <span className="text-sm font-normal text-muted-foreground">
-                              {es ? plan.periodEs : plan.period}
-                            </span>
-                          </div>
-                          {plan.savings && (
-                            <span className="inline-block mt-1 text-xs font-medium px-2 py-0.5 rounded-full bg-accent text-accent-foreground">
-                              {es ? plan.savingsEs : plan.savings}
-                            </span>
-                          )}
-                        </div>
-                        <div
-                          className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                            selected ? 'border-primary bg-primary' : 'border-muted-foreground/30'
-                          }`}
-                        >
-                          {selected && <Check className="h-4 w-4 text-primary-foreground" />}
-                        </div>
+                {/* Paid option */}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedPath('paid');
+                    setCurrentStep('estate');
+                  }}
+                  className="w-full p-5 rounded-xl border-2 border-primary/50 text-left transition-all hover:border-primary hover:bg-primary/5"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
+                      <Building2 className="h-6 w-6 text-primary" />
+                    </div>
+                    <div>
+                      <div className="font-semibold text-foreground text-lg">
+                        {l('Subscribe', 'Suscribirse', 'Abonnieren')}
                       </div>
-                    </button>
-                  );
-                })}
+                      <div className="text-2xl font-bold text-primary mt-1">
+                        ${PRICE_PER_PROPERTY}<span className="text-sm font-normal text-muted-foreground">
+                          {l('/mo per property', '/mes por propiedad', '/Monat pro Immobilie')}
+                        </span>
+                      </div>
+                      <ul className="mt-2 text-sm text-muted-foreground space-y-1">
+                        <li className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> {l('Unlimited assets & zones', 'Activos y zonas ilimitados', 'Unbegrenzte Assets & Zonen')}</li>
+                        <li className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> {l('Reports, PDF export, AI', 'Reportes, PDF, IA', 'Berichte, PDF-Export, KI')}</li>
+                        <li className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> {l('Labor & CRM tools', 'Herramientas laborales y CRM', 'Arbeits- & CRM-Tools')}</li>
+                      </ul>
+                    </div>
+                  </div>
+                </button>
 
-                {/* Free trial option */}
-                <div className="relative py-3">
+                {/* Divider */}
+                <div className="relative py-1">
                   <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                  <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{es ? 'o' : 'or'}</span></div>
+                  <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{l('or', 'o', 'oder')}</span></div>
                 </div>
 
+                {/* Trial option */}
                 <button
                   type="button"
                   onClick={handleStartTrial}
@@ -446,10 +352,14 @@ export default function Onboarding() {
                     <span className="text-2xl">🎁</span>
                     <div>
                       <div className="font-semibold text-foreground">
-                        {es ? 'Prueba gratuita de 15 días' : '15-Day Free Trial'}
+                        {l(`${TRIAL_DAYS}-Day Free Trial`, `Prueba gratuita de ${TRIAL_DAYS} días`, `${TRIAL_DAYS}-Tage Testversion`)}
                       </div>
                       <div className="text-sm text-muted-foreground">
-                        {es ? 'Máx 3 activos · Sin reportes · Sin exportar PDF' : 'Max 3 assets · No reports · No PDF export'}
+                        {l(
+                          '1 property · Max 3 assets · No reports or PDF export',
+                          '1 propiedad · Máx 3 activos · Sin reportes ni PDF',
+                          '1 Immobilie · Max 3 Assets · Keine Berichte oder PDF'
+                        )}
                       </div>
                     </div>
                   </div>
@@ -458,66 +368,7 @@ export default function Onboarding() {
                 <div className="flex gap-3 pt-2">
                   <Button variant="outline" onClick={prevStep} className="flex-1">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    {es ? 'Atrás' : 'Back'}
-                  </Button>
-                  <Button onClick={nextStep} className="flex-1">
-                    {es ? 'Continuar' : 'Continue'}
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {currentStep === 'payment' && (
-            <Card className="border-0 shadow-xl">
-              <CardHeader>
-                <CardTitle className="text-2xl font-serif">{es ? 'Pago' : 'Payment'}</CardTitle>
-                <CardDescription>
-                  {es
-                    ? `Plan ${selectedPlan === 'monthly' ? 'Mensual' : 'Anual'} — $${plans.find((p) => p.id === selectedPlan)?.price}`
-                    : `${selectedPlan === 'monthly' ? 'Monthly' : 'Annual'} plan — $${plans.find((p) => p.id === selectedPlan)?.price}`}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {paymentComplete ? (
-                  <div className="text-center py-4">
-                    <div className="w-16 h-16 rounded-full bg-accent flex items-center justify-center mx-auto mb-4">
-                      <Check className="h-8 w-8 text-accent-foreground" />
-                    </div>
-                    <p className="text-lg font-semibold text-foreground">
-                      {es ? '¡Pago completado!' : 'Payment complete!'}
-                    </p>
-                    <Button className="mt-4" onClick={nextStep}>
-                      {es ? 'Continuar a propiedad' : 'Continue to property'}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <Button className="w-full" size="lg" onClick={handlePayPalPayment} disabled={isLoading}>
-                      <CreditCard className="h-4 w-4 mr-2" />
-                      {isLoading
-                        ? es
-                          ? 'Preparando PayPal...'
-                          : 'Preparing PayPal...'
-                        : es
-                          ? 'Pagar con PayPal'
-                          : 'Pay with PayPal'}
-                    </Button>
-                    <div id="paypal-button-container" className="min-h-[52px]" />
-                    <p className="text-xs text-muted-foreground text-center">
-                      {es
-                        ? 'Haz clic en “Pagar con PayPal” para mostrar los botones de pago.'
-                        : 'Click “Pay with PayPal” to load the payment buttons.'}
-                    </p>
-                  </>
-                )}
-
-                <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={prevStep} className="flex-1">
-                    <ArrowLeft className="mr-2 h-4 w-4" />
-                    {es ? 'Atrás' : 'Back'}
+                    {l('Back', 'Atrás', 'Zurück')}
                   </Button>
                 </div>
               </CardContent>
@@ -531,38 +382,49 @@ export default function Onboarding() {
                   <Building2 className="h-7 w-7 text-primary" />
                 </div>
                 <CardTitle className="text-2xl font-serif text-center">
-                  {es ? 'Crea tu primera propiedad' : 'Create your first property'}
+                  {l('Create your first property', 'Crea tu primera propiedad', 'Erstellen Sie Ihre erste Immobilie')}
                 </CardTitle>
                 <CardDescription className="text-center">
-                  {es ? 'Último paso para entrar a Home Guide.' : 'Final step before entering Home Guide.'}
+                  {selectedPath === 'trial'
+                    ? l(
+                        `${TRIAL_DAYS}-day free trial · 1 property included`,
+                        `Prueba de ${TRIAL_DAYS} días · 1 propiedad incluida`,
+                        `${TRIAL_DAYS}-Tage Test · 1 Immobilie inklusive`
+                      )
+                    : l(
+                        `$${PRICE_PER_PROPERTY}/mo · All features included`,
+                        `$${PRICE_PER_PROPERTY}/mes · Todas las funciones incluidas`,
+                        `$${PRICE_PER_PROPERTY}/Monat · Alle Funktionen inklusive`
+                      )
+                  }
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="estateName">{es ? 'Nombre de la propiedad *' : 'Property name *'}</Label>
+                  <Label htmlFor="estateName">{l('Property name *', 'Nombre de la propiedad *', 'Immobilienname *')}</Label>
                   <Input
                     id="estateName"
-                    placeholder={es ? 'Ej: Villa Hermosa' : 'e.g. Villa Hermosa'}
+                    placeholder={l('e.g. Villa Hermosa', 'Ej: Villa Hermosa', 'z.B. Villa Hermosa')}
                     value={estateName}
                     onChange={(e) => setEstateName(e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="estateCountry">{es ? 'País' : 'Country'}</Label>
+                  <Label htmlFor="estateCountry">{l('Country', 'País', 'Land')}</Label>
                   <Input
                     id="estateCountry"
-                    placeholder={es ? 'Ej: Costa Rica' : 'e.g. Costa Rica'}
+                    placeholder={l('e.g. Costa Rica', 'Ej: Costa Rica', 'z.B. Costa Rica')}
                     value={estateCountry}
                     onChange={(e) => setEstateCountry(e.target.value)}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="estateAddress">{es ? 'Dirección' : 'Address'}</Label>
+                  <Label htmlFor="estateAddress">{l('Address', 'Dirección', 'Adresse')}</Label>
                   <Input
                     id="estateAddress"
-                    placeholder={es ? 'Dirección de la propiedad' : 'Property address'}
+                    placeholder={l('Property address', 'Dirección de la propiedad', 'Immobilienadresse')}
                     value={estateAddress}
                     onChange={(e) => setEstateAddress(e.target.value)}
                   />
@@ -571,10 +433,10 @@ export default function Onboarding() {
                 <div className="flex gap-3 pt-2">
                   <Button variant="outline" onClick={prevStep} className="flex-1">
                     <ArrowLeft className="mr-2 h-4 w-4" />
-                    {es ? 'Atrás' : 'Back'}
+                    {l('Back', 'Atrás', 'Zurück')}
                   </Button>
                   <Button onClick={handleCreateEstate} className="flex-1" disabled={isLoading || !estateName.trim()}>
-                    {isLoading ? (es ? 'Creando...' : 'Creating...') : es ? 'Finalizar' : 'Finish'}
+                    {isLoading ? l('Creating...', 'Creando...', 'Erstellen...') : l('Finish', 'Finalizar', 'Abschließen')}
                     <Check className="ml-2 h-4 w-4" />
                   </Button>
                 </div>

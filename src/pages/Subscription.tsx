@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Crown, ArrowLeft, Shield } from 'lucide-react';
+import { Check, Crown, ArrowLeft, Shield, Building2, Plus } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEstate } from '@/contexts/EstateContext';
+import { useSubscription, PRICE_PER_PROPERTY } from '@/contexts/SubscriptionContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,57 +17,35 @@ declare global {
   }
 }
 
-interface Plan {
-  id: 'monthly' | 'annual';
-  price: string;
-  priceNum: number;
-  period: string;
-  periodEs: string;
-  savings?: string;
-  savingsEs?: string;
-}
-
-const plans: Plan[] = [
-  {
-    id: 'monthly',
-    price: '$19.99',
-    priceNum: 19.99,
-    period: '/month',
-    periodEs: '/mes',
-  },
-  {
-    id: 'annual',
-    price: '$199.99',
-    priceNum: 199.99,
-    period: '/year',
-    periodEs: '/año',
-    savings: 'Save $39.89/year',
-    savingsEs: 'Ahorra $39.89/año',
-  },
-];
-
 const features = [
-  { en: 'Unlimited assets & zones', es: 'Activos y zonas ilimitados' },
-  { en: 'Weather alerts & automation', es: 'Alertas meteorológicas y automatización' },
-  { en: 'Labor management & shifts', es: 'Gestión de mano de obra y turnos' },
-  { en: 'QR check-in system', es: 'Sistema de check-in QR' },
-  { en: 'Document storage', es: 'Almacenamiento de documentos' },
-  { en: 'Topography & risk analysis', es: 'Topografía y análisis de riesgos' },
-  { en: 'Plant care protocols (AI)', es: 'Protocolos de cuidado (IA)' },
-  { en: 'Priority support', es: 'Soporte prioritario' },
+  { en: 'Unlimited assets & zones per property', es: 'Activos y zonas ilimitados por propiedad', de: 'Unbegrenzte Assets & Zonen pro Immobilie' },
+  { en: 'Weather alerts & automation', es: 'Alertas meteorológicas y automatización', de: 'Wetterwarnung & Automatisierung' },
+  { en: 'Labor management & shifts', es: 'Gestión de mano de obra y turnos', de: 'Arbeitsverwaltung & Schichten' },
+  { en: 'QR check-in system', es: 'Sistema de check-in QR', de: 'QR-Check-in-System' },
+  { en: 'Document storage', es: 'Almacenamiento de documentos', de: 'Dokumentenspeicher' },
+  { en: 'Topography & risk analysis', es: 'Topografía y análisis de riesgos', de: 'Topografie & Risikoanalyse' },
+  { en: 'Plant care protocols (AI)', es: 'Protocolos de cuidado (IA)', de: 'Pflegeprotokolle (KI)' },
+  { en: 'Reports & PDF export', es: 'Reportes y exportar PDF', de: 'Berichte & PDF-Export' },
 ];
 
 export default function Subscription() {
   const { language } = useLanguage();
-  const { user, session } = useAuth();
+  const { user } = useAuth();
+  const { estates } = useEstate();
+  const { isPaid, isTrial, trialDaysLeft, paidPropertyCount, status } = useSubscription();
   const navigate = useNavigate();
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'annual'>('annual');
   const [currentSub, setCurrentSub] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const paypalRef = useRef<HTMLDivElement>(null);
   const buttonsRendered = useRef(false);
 
-  // Fetch current subscription
+  const es = language === 'es';
+  const de = language === 'de';
+  const l = (en: string, esStr: string, deStr: string) => de ? deStr : es ? esStr : en;
+
+  const propertyCount = estates.length;
+  const totalMonthly = propertyCount * PRICE_PER_PROPERTY;
+
   useEffect(() => {
     async function fetchSub() {
       if (!user) return;
@@ -83,197 +63,133 @@ export default function Subscription() {
   // Render PayPal buttons
   useEffect(() => {
     if (!window.paypal || !paypalRef.current || buttonsRendered.current) return;
-    if (currentSub?.status === 'active') return;
+    if (isPaid) return;
 
     buttonsRendered.current = true;
 
     window.paypal
       .Buttons({
-        style: {
-          shape: 'rect',
-          color: 'gold',
-          layout: 'vertical',
-          label: 'subscribe',
-        },
+        style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
         createOrder: async () => {
+          const amount = Math.max(propertyCount, 1) * PRICE_PER_PROPERTY;
           const { data, error } = await supabase.functions.invoke('paypal-create-order', {
-            body: { plan_type: selectedPlan },
+            body: { plan_type: 'monthly', amount: amount.toFixed(2) },
           });
           if (error) throw error;
           return data.id;
         },
         onApprove: async (data: any) => {
+          const amount = Math.max(propertyCount, 1) * PRICE_PER_PROPERTY;
           const { error } = await supabase.functions.invoke('paypal-capture-order', {
-            body: { order_id: data.orderID, plan_type: selectedPlan },
+            body: { order_id: data.orderID, plan_type: 'monthly', amount },
           });
           if (error) {
-            toast.error(language === 'es' ? 'Error al procesar el pago' : 'Error processing payment');
+            toast.error(l('Error processing payment', 'Error al procesar el pago', 'Fehler bei der Zahlung'));
             return;
           }
-          toast.success(
-            language === 'es' ? '¡Suscripción activada!' : 'Subscription activated!'
-          );
-          // Refresh subscription state
-          const { data: sub } = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user!.id)
-            .maybeSingle();
+          toast.success(l('Subscription activated!', '¡Suscripción activada!', 'Abonnement aktiviert!'));
+          const { data: sub } = await supabase.from('subscriptions').select('*').eq('user_id', user!.id).maybeSingle();
           setCurrentSub(sub);
         },
         onError: (err: any) => {
           console.error('PayPal error:', err);
-          toast.error(language === 'es' ? 'Error con PayPal' : 'PayPal error');
+          toast.error(l('PayPal error', 'Error con PayPal', 'PayPal-Fehler'));
         },
       })
       .render(paypalRef.current);
-  }, [window.paypal, currentSub, loading]);
-
-  // Re-render buttons when plan changes
-  useEffect(() => {
-    if (!paypalRef.current || !buttonsRendered.current) return;
-    // Clear and re-render
-    buttonsRendered.current = false;
-    paypalRef.current.innerHTML = '';
-    
-    if (!window.paypal || currentSub?.status === 'active') return;
-    buttonsRendered.current = true;
-
-    window.paypal
-      .Buttons({
-        style: {
-          shape: 'rect',
-          color: 'gold',
-          layout: 'vertical',
-          label: 'subscribe',
-        },
-        createOrder: async () => {
-          const { data, error } = await supabase.functions.invoke('paypal-create-order', {
-            body: { plan_type: selectedPlan },
-          });
-          if (error) throw error;
-          return data.id;
-        },
-        onApprove: async (data: any) => {
-          const { error } = await supabase.functions.invoke('paypal-capture-order', {
-            body: { order_id: data.orderID, plan_type: selectedPlan },
-          });
-          if (error) {
-            toast.error(language === 'es' ? 'Error al procesar el pago' : 'Error processing payment');
-            return;
-          }
-          toast.success(
-            language === 'es' ? '¡Suscripción activada!' : 'Subscription activated!'
-          );
-          const { data: sub } = await supabase
-            .from('subscriptions')
-            .select('*')
-            .eq('user_id', user!.id)
-            .maybeSingle();
-          setCurrentSub(sub);
-        },
-        onError: (err: any) => {
-          console.error('PayPal error:', err);
-          toast.error(language === 'es' ? 'Error con PayPal' : 'PayPal error');
-        },
-      })
-      .render(paypalRef.current);
-  }, [selectedPlan]);
-
-  const isActive = currentSub?.status === 'active';
+  }, [window.paypal, isPaid, loading, propertyCount]);
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border p-4">
         <div className="max-w-4xl mx-auto flex items-center gap-3">
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-xl font-serif font-semibold text-foreground">
-            {language === 'es' ? 'Suscripción' : 'Subscription'}
+            {l('Subscription', 'Suscripción', 'Abonnement')}
           </h1>
         </div>
       </header>
 
       <main className="max-w-4xl mx-auto p-4 space-y-6">
-        {/* Active subscription banner */}
-        {isActive && (
-          <Card className="border-primary/50 bg-primary/5">
-            <CardContent className="p-6 flex items-center gap-4">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <Crown className="h-6 w-6 text-primary" />
+        {/* Pricing explanation */}
+        <div className="text-center space-y-2">
+          <h2 className="text-3xl font-serif font-bold text-foreground">
+            ${PRICE_PER_PROPERTY}<span className="text-lg font-normal text-muted-foreground">
+              {l('/mo per property', '/mes por propiedad', '/Monat pro Immobilie')}
+            </span>
+          </h2>
+          <p className="text-muted-foreground">
+            {l(
+              'Pay only for the properties you manage. All features included.',
+              'Paga solo por las propiedades que gestionas. Todas las funciones incluidas.',
+              'Zahlen Sie nur für verwaltete Immobilien. Alle Funktionen inklusive.'
+            )}
+          </p>
+        </div>
+
+        {/* Current status */}
+        <Card className={isPaid ? 'border-primary/50 bg-primary/5' : isTrial ? 'border-accent/50 bg-accent/5' : 'border-border'}>
+          <CardContent className="p-6">
+            <div className="flex items-center gap-4">
+              <div className={`w-12 h-12 rounded-full flex items-center justify-center ${isPaid ? 'bg-primary/10' : 'bg-accent/10'}`}>
+                {isPaid ? <Crown className="h-6 w-6 text-primary" /> : <Building2 className="h-6 w-6 text-accent" />}
               </div>
-              <div>
+              <div className="flex-1">
                 <p className="font-semibold text-foreground">
-                  {language === 'es' ? 'Suscripción Activa' : 'Active Subscription'}
+                  {isPaid
+                    ? l('Active Subscription', 'Suscripción Activa', 'Aktives Abonnement')
+                    : isTrial
+                      ? l('Free Trial', 'Prueba Gratuita', 'Testversion')
+                      : l('No Subscription', 'Sin Suscripción', 'Kein Abonnement')
+                  }
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {language === 'es' ? 'Plan' : 'Plan'}: {currentSub.plan_type === 'annual' ? (language === 'es' ? 'Anual' : 'Annual') : (language === 'es' ? 'Mensual' : 'Monthly')}
-                  {' · '}
-                  {language === 'es' ? 'Vence' : 'Expires'}: {new Date(currentSub.current_period_end).toLocaleDateString()}
+                  {isPaid
+                    ? l(
+                        `${paidPropertyCount} ${paidPropertyCount === 1 ? 'property' : 'properties'} · $${paidPropertyCount * PRICE_PER_PROPERTY}/mo`,
+                        `${paidPropertyCount} ${paidPropertyCount === 1 ? 'propiedad' : 'propiedades'} · $${paidPropertyCount * PRICE_PER_PROPERTY}/mes`,
+                        `${paidPropertyCount} ${paidPropertyCount === 1 ? 'Immobilie' : 'Immobilien'} · $${paidPropertyCount * PRICE_PER_PROPERTY}/Monat`
+                      )
+                    : isTrial
+                      ? l(
+                          `${trialDaysLeft} days left · 1 property · Max 3 assets`,
+                          `${trialDaysLeft} días restantes · 1 propiedad · Máx 3 activos`,
+                          `${trialDaysLeft} Tage verbleibend · 1 Immobilie · Max 3 Assets`
+                        )
+                      : l('Subscribe to get started', 'Suscríbete para comenzar', 'Abonnieren Sie um zu beginnen')
+                  }
                 </p>
               </div>
+              {propertyCount > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  {propertyCount} {l('properties', 'propiedades', 'Immobilien')}
+                </Badge>
+              )}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* PayPal for non-paid users */}
+        {!isPaid && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">
+                {l('Subscribe Now', 'Suscríbete Ahora', 'Jetzt Abonnieren')}
+              </CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {l(
+                  `You have ${propertyCount} ${propertyCount === 1 ? 'property' : 'properties'}. Total: $${totalMonthly || PRICE_PER_PROPERTY}/month`,
+                  `Tienes ${propertyCount} ${propertyCount === 1 ? 'propiedad' : 'propiedades'}. Total: $${totalMonthly || PRICE_PER_PROPERTY}/mes`,
+                  `Sie haben ${propertyCount} ${propertyCount === 1 ? 'Immobilie' : 'Immobilien'}. Gesamt: $${totalMonthly || PRICE_PER_PROPERTY}/Monat`
+                )}
+              </p>
+            </CardHeader>
+            <CardContent>
+              <div ref={paypalRef} className="min-h-[150px]" />
             </CardContent>
           </Card>
-        )}
-
-        {/* Plan selection */}
-        {!isActive && (
-          <>
-            <div className="text-center space-y-2">
-              <h2 className="text-2xl font-serif font-bold text-foreground">
-                {language === 'es' ? 'Elige tu plan' : 'Choose your plan'}
-              </h2>
-              <p className="text-muted-foreground">
-                {language === 'es'
-                  ? 'Acceso completo a todas las funciones de Estate Manual'
-                  : 'Full access to all Estate Manual features'}
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {plans.map((plan) => (
-                <Card
-                  key={plan.id}
-                  className={`cursor-pointer transition-all ${
-                    selectedPlan === plan.id
-                      ? 'border-primary ring-2 ring-primary/20'
-                      : 'border-border hover:border-primary/40'
-                  }`}
-                  onClick={() => setSelectedPlan(plan.id)}
-                >
-                  <CardHeader className="pb-2">
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">
-                        {plan.id === 'annual'
-                          ? language === 'es' ? 'Anual' : 'Annual'
-                          : language === 'es' ? 'Mensual' : 'Monthly'}
-                      </CardTitle>
-                      {plan.savings && (
-                        <Badge variant="secondary" className="text-xs">
-                          {language === 'es' ? plan.savingsEs : plan.savings}
-                        </Badge>
-                      )}
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-foreground">{plan.price}</span>
-                      <span className="text-muted-foreground">
-                        {language === 'es' ? plan.periodEs : plan.period}
-                      </span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-
-            {/* PayPal buttons container */}
-            <div className="max-w-md mx-auto">
-              <div ref={paypalRef} className="min-h-[150px]" />
-            </div>
-          </>
         )}
 
         {/* Features */}
@@ -281,7 +197,7 @@ export default function Subscription() {
           <CardHeader>
             <CardTitle className="text-lg flex items-center gap-2">
               <Shield className="h-5 w-5 text-primary" />
-              {language === 'es' ? 'Incluido en tu plan' : 'Included in your plan'}
+              {l('Included per property', 'Incluido por propiedad', 'Pro Immobilie inklusive')}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -290,7 +206,7 @@ export default function Subscription() {
                 <div key={i} className="flex items-center gap-2">
                   <Check className="h-4 w-4 text-primary flex-shrink-0" />
                   <span className="text-sm text-foreground">
-                    {language === 'es' ? f.es : f.en}
+                    {de ? f.de : es ? f.es : f.en}
                   </span>
                 </div>
               ))}
@@ -299,9 +215,11 @@ export default function Subscription() {
         </Card>
 
         <p className="text-center text-xs text-muted-foreground">
-          {language === 'es'
-            ? 'Los pagos se procesan de forma segura a través de PayPal. Modo sandbox activo.'
-            : 'Payments are securely processed via PayPal. Sandbox mode active.'}
+          {l(
+            'Payments are securely processed via PayPal.',
+            'Los pagos se procesan de forma segura a través de PayPal.',
+            'Zahlungen werden sicher über PayPal abgewickelt.'
+          )}
         </p>
       </main>
     </div>
