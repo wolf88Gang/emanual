@@ -84,7 +84,7 @@ export default function Auth() {
       if (error) {
         toast.error('Demo account not set up. Please contact support.');
       } else {
-        toast.success('Welcome to Casa Guide!');
+        toast.success('Welcome to Home Guide!');
         navigate('/');
       }
     } finally {
@@ -109,7 +109,7 @@ export default function Auth() {
             <div className="w-12 h-12 rounded-xl bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/20">
               <Leaf className="h-6 w-6 text-white" />
             </div>
-            <span className="text-3xl font-serif font-semibold tracking-tight">Casa Guide</span>
+            <span className="text-3xl font-serif font-semibold tracking-tight">Home Guide</span>
           </div>
           <p className="text-xl font-light text-white/90 max-w-lg leading-relaxed">
             {es
@@ -138,7 +138,7 @@ export default function Auth() {
             <div className="w-9 h-9 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
               <Leaf className="h-4 w-4 text-white" />
             </div>
-            <span className="text-2xl font-serif font-semibold">Casa Guide</span>
+            <span className="text-2xl font-serif font-semibold">Home Guide</span>
           </div>
           <p className="text-sm text-white/80">
             {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
@@ -285,8 +285,8 @@ export default function Auth() {
 
             <p className="text-center text-[11px] text-muted-foreground mt-8">
               {es
-                ? 'Casa Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo.'
-                : 'Casa Guide manages living assets, design intent, and long-term risk.'}
+                ? 'Home Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo.'
+                : 'Home Guide manages living assets, design intent, and long-term risk.'}
             </p>
           </div>
         </main>

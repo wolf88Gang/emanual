@@ -68,8 +68,8 @@ Deno.serve(async (req) => {
 
     // Define pricing
     const prices: Record<string, { amount: string; label: string }> = {
-      monthly: { amount: "19.99", label: "Casa Guide - Plan Mensual" },
-      annual: { amount: "199.99", label: "Casa Guide - Plan Anual" },
+      monthly: { amount: "19.99", label: "Home Guide - Plan Mensual" },
+      annual: { amount: "199.99", label: "Home Guide - Plan Anual" },
     };
 
     const plan = prices[plan_type] || prices.monthly;

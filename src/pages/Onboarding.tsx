@@ -263,7 +263,7 @@ export default function Onboarding() {
 
       if (estateError) throw estateError;
 
-      toast.success(es ? '¡Propiedad creada! Bienvenido a Casa Guide' : 'Property created! Welcome to Casa Guide');
+      toast.success(es ? '¡Propiedad creada! Bienvenido a Home Guide' : 'Property created! Welcome to Home Guide');
       navigate('/', { replace: true });
     } catch (err: any) {
       toast.error(err.message || (es ? 'No se pudo crear la propiedad' : 'Failed to create property'));
@@ -279,7 +279,7 @@ export default function Onboarding() {
           <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
             <Leaf className="h-5 w-5 text-primary-foreground" />
           </div>
-          <span className="text-xl font-serif font-semibold text-primary">Casa Guide</span>
+          <span className="text-xl font-serif font-semibold text-primary">Home Guide</span>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={resetWizard}>
@@ -482,7 +482,7 @@ export default function Onboarding() {
                   {es ? 'Crea tu primera propiedad' : 'Create your first property'}
                 </CardTitle>
                 <CardDescription className="text-center">
-                  {es ? 'Último paso para entrar a Casa Guide.' : 'Final step before entering Casa Guide.'}
+                  {es ? 'Último paso para entrar a Home Guide.' : 'Final step before entering Home Guide.'}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">

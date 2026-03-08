@@ -101,7 +101,7 @@ export default function Features() {
             <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
               <Leaf className="h-4 w-4 text-primary-foreground" />
             </div>
-            <span className="text-base font-serif font-semibold text-foreground tracking-tight">Casa Guide</span>
+            <span className="text-base font-serif font-semibold text-foreground tracking-tight">Home Guide</span>
           </Link>
           <Link to="/auth">
             <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase">
@@ -220,7 +220,7 @@ export default function Features() {
             <div className="w-6 h-6 rounded bg-primary flex items-center justify-center">
               <Leaf className="h-3 w-3 text-primary-foreground" />
             </div>
-            <span className="text-sm font-serif font-medium text-foreground">Casa Guide</span>
+            <span className="text-sm font-serif font-medium text-foreground">Home Guide</span>
           </div>
           <p className="text-xs text-muted-foreground">
             {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}

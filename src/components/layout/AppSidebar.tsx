@@ -116,7 +116,7 @@ export function AppSidebar() {
           </div>
           {!collapsed && (
             <span className="text-sm font-serif font-semibold text-primary truncate">
-              Casa Guide
+              Home Guide
             </span>
           )}
         </div>
