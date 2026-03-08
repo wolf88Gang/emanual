@@ -57,6 +57,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/auth" replace />;
   }
 
+  // Workers go to the job board, not estate management
+  const isWorker = roles.includes('worker_marketplace' as any);
+  if (isWorker) {
+    return <Navigate to="/jobs" replace />;
+  }
+
   // Redirect new users without org to onboarding
   if (profile && !profile.org_id && roles.length === 0) {
     return <Navigate to="/onboarding" replace />;
