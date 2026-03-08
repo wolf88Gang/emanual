@@ -926,23 +926,236 @@ export type Database = {
           },
         ]
       }
+      job_applications: {
+        Row: {
+          created_at: string
+          id: string
+          job_id: string
+          message: string | null
+          proposed_rate: number | null
+          status: string
+          updated_at: string
+          worker_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_id: string
+          message?: string | null
+          proposed_rate?: number | null
+          status?: string
+          updated_at?: string
+          worker_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_id?: string
+          message?: string | null
+          proposed_rate?: number | null
+          status?: string
+          updated_at?: string
+          worker_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          job_id: string
+          read_at: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          job_id: string
+          read_at?: string | null
+          receiver_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          job_id?: string
+          read_at?: string | null
+          receiver_id?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_messages_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_postings: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          currency: string
+          description: string
+          description_es: string | null
+          estate_id: string | null
+          expires_at: string | null
+          id: string
+          job_type: string
+          location_lat: number | null
+          location_lng: number | null
+          location_text: string | null
+          max_applicants: number | null
+          org_id: string
+          pay_amount: number | null
+          pay_type: string | null
+          required_skills: string[] | null
+          schedule_text: string | null
+          starts_at: string | null
+          status: string
+          title: string
+          title_es: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description: string
+          description_es?: string | null
+          estate_id?: string | null
+          expires_at?: string | null
+          id?: string
+          job_type?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          location_text?: string | null
+          max_applicants?: number | null
+          org_id: string
+          pay_amount?: number | null
+          pay_type?: string | null
+          required_skills?: string[] | null
+          schedule_text?: string | null
+          starts_at?: string | null
+          status?: string
+          title: string
+          title_es?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          currency?: string
+          description?: string
+          description_es?: string | null
+          estate_id?: string | null
+          expires_at?: string | null
+          id?: string
+          job_type?: string
+          location_lat?: number | null
+          location_lng?: number | null
+          location_text?: string | null
+          max_applicants?: number | null
+          org_id?: string
+          pay_amount?: number | null
+          pay_type?: string | null
+          required_skills?: string[] | null
+          schedule_text?: string | null
+          starts_at?: string | null
+          status?: string
+          title?: string
+          title_es?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_postings_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_postings_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_ratings: {
+        Row: {
+          comment: string | null
+          created_at: string
+          from_user_id: string
+          id: string
+          job_id: string
+          score: number
+          to_user_id: string
+        }
+        Insert: {
+          comment?: string | null
+          created_at?: string
+          from_user_id: string
+          id?: string
+          job_id: string
+          score: number
+          to_user_id: string
+        }
+        Update: {
+          comment?: string | null
+          created_at?: string
+          from_user_id?: string
+          id?: string
+          job_id?: string
+          score?: number
+          to_user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_ratings_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       organizations: {
         Row: {
           created_at: string
           id: string
           name: string
+          org_type: string
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
           name: string
+          org_type?: string
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
           name?: string
+          org_type?: string
           updated_at?: string
         }
         Relationships: []
@@ -1919,6 +2132,66 @@ export type Database = {
           },
         ]
       }
+      worker_profiles: {
+        Row: {
+          available: boolean
+          bio: string | null
+          bio_es: string | null
+          created_at: string
+          currency: string
+          hourly_rate: number | null
+          id: string
+          portfolio_urls: string[] | null
+          rating_avg: number | null
+          rating_count: number | null
+          service_radius_km: number | null
+          service_zone_lat: number | null
+          service_zone_lng: number | null
+          service_zone_text: string | null
+          skills: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          available?: boolean
+          bio?: string | null
+          bio_es?: string | null
+          created_at?: string
+          currency?: string
+          hourly_rate?: number | null
+          id?: string
+          portfolio_urls?: string[] | null
+          rating_avg?: number | null
+          rating_count?: number | null
+          service_radius_km?: number | null
+          service_zone_lat?: number | null
+          service_zone_lng?: number | null
+          service_zone_text?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          available?: boolean
+          bio?: string | null
+          bio_es?: string | null
+          created_at?: string
+          currency?: string
+          hourly_rate?: number | null
+          id?: string
+          portfolio_urls?: string[] | null
+          rating_avg?: number | null
+          rating_count?: number | null
+          service_radius_km?: number | null
+          service_zone_lat?: number | null
+          service_zone_lng?: number | null
+          service_zone_text?: string | null
+          skills?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       worker_rates: {
         Row: {
           created_at: string
@@ -2144,7 +2417,7 @@ export type Database = {
     }
     Enums: {
       alert_status: "active" | "acknowledged" | "resolved"
-      app_role: "owner" | "manager" | "crew" | "vendor"
+      app_role: "owner" | "manager" | "crew" | "vendor" | "worker_marketplace"
       asset_type:
         | "plant"
         | "tree"
@@ -2328,7 +2601,7 @@ export const Constants = {
   public: {
     Enums: {
       alert_status: ["active", "acknowledged", "resolved"],
-      app_role: ["owner", "manager", "crew", "vendor"],
+      app_role: ["owner", "manager", "crew", "vendor", "worker_marketplace"],
       asset_type: [
         "plant",
         "tree",
