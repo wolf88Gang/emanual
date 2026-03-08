@@ -30,6 +30,7 @@ const BLOCKED_IN_TRIAL: TrialFeature[] = [
 ];
 
 const SubscriptionContext = createContext<SubscriptionState | undefined>(undefined);
+export { SubscriptionContext as SubscriptionContextRaw };
 
 export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
