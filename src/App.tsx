@@ -44,7 +44,23 @@ const MyWorkerProfile = lazy(() => import("./pages/MyWorkerProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const JoinTeam = lazy(() => import("./pages/JoinTeam"));
 
-const queryClient = new QueryClient();
+const PageLoader = () => (
+  <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+    <HGLogo size="lg" />
+    <div className="animate-pulse text-muted-foreground">Loading...</div>
+  </div>
+);
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 min
+      gcTime: 10 * 60 * 1000, // 10 min
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { user, profile, roles, loading } = useAuth();
