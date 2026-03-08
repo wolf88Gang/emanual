@@ -34,6 +34,9 @@ import CRM from "./pages/CRM";
 import Features from "./pages/Features";
 import SetupWizard from "./pages/SetupWizard";
 import FeatureRequests from "./pages/FeatureRequests";
+import JobBoard from "./pages/JobBoard";
+import PostJob from "./pages/PostJob";
+import MyJobPostings from "./pages/MyJobPostings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -135,6 +138,12 @@ function AppRoutes() {
       <Route path="/crm" element={<EstateRoute><TrialGate feature="crm"><CRM /></TrialGate></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
+      <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />
+
+      {/* Public marketplace routes */}
+      <Route path="/jobs" element={<JobBoard />} />
+      <Route path="/jobs/post" element={user ? <EstateRoute><PostJob /></EstateRoute> : <Navigate to="/auth" replace />} />
+
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
