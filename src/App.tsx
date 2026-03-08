@@ -29,6 +29,7 @@ import Subscription from "./pages/Subscription";
 import CompostManager from "./pages/CompostManager";
 import CRM from "./pages/CRM";
 import Features from "./pages/Features";
+import SetupWizard from "./pages/SetupWizard";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -125,6 +126,7 @@ function AppRoutes() {
       <Route path="/subscription" element={<EstateRoute><Subscription /></EstateRoute>} />
       <Route path="/compost" element={<EstateRoute><CompostManager /></EstateRoute>} />
       <Route path="/crm" element={<EstateRoute><CRM /></EstateRoute>} />
+      <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

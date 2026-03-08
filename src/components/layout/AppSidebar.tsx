@@ -3,7 +3,7 @@ import { useLocation } from 'react-router-dom';
 import {
   Briefcase, Map, Box, ClipboardList, FolderOpen, Settings, Package,
   Leaf, Clock, Users, BarChart3, CreditCard, Activity, Wrench,
-  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag
+  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
 import { useAuth } from '@/contexts/AuthContext';
@@ -67,6 +67,7 @@ export function AppSidebar() {
     { path: '/topography', icon: Mountain, label: es ? 'Topografía' : 'Topography', tooltip: es ? 'Análisis topográfico' : 'Topographic analysis' },
     { path: '/reports', icon: BookOpen, label: es ? 'Reportes' : 'Reports', tooltip: es ? 'Reportes y manuales' : 'Reports & manuals' },
     { path: '/admin', icon: Settings, label: es ? 'Admin' : 'Admin', tooltip: es ? 'Configuración' : 'Settings' },
+    { path: '/setup-wizard', icon: Wand2, label: es ? 'Asistente' : 'Setup Wizard', tooltip: es ? 'Asistente de configuración' : 'Guided asset setup' },
   ];
 
   // Crew nav
