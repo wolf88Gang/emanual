@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Download, Loader2, Clock, FileText } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
-
+import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { format, startOfWeek, endOfWeek } from 'date-fns';
