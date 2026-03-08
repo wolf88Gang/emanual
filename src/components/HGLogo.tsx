@@ -7,7 +7,7 @@ interface HGLogoProps {
 }
 
 export function HGLogo({ className = '', size = 'md', variant = 'dark' }: HGLogoProps) {
-  const sizeMap = { sm: 'w-6 h-6', md: 'w-8 h-8', lg: 'w-12 h-12' };
+  const sizeMap = { sm: 'w-8 h-8', md: 'w-12 h-12', lg: 'w-20 h-20' };
 
   return (
     <img

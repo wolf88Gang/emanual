@@ -9,6 +9,7 @@ import { EstateProvider } from "./contexts/EstateContext";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SidebarLayout } from "./components/layout/SidebarLayout";
 import { TrialGate } from "./components/subscription/TrialGate";
+import { HGLogo } from "./components/HGLogo";
 
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
@@ -42,7 +43,8 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <HGLogo size="lg" />
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
@@ -73,7 +75,8 @@ function PlatformRoute({ children }: { children: React.ReactNode }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <HGLogo size="lg" />
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
@@ -90,7 +93,8 @@ function AppRoutes() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
+        <HGLogo size="lg" />
         <div className="animate-pulse text-muted-foreground">Loading...</div>
       </div>
     );
