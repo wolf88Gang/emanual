@@ -329,6 +329,16 @@ export default function Onboarding() {
                   {l('Continue', 'Continuar', 'Weiter')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
+
+                <div className="relative py-2">
+                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
+                  <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{l('or', 'o', 'oder')}</span></div>
+                </div>
+
+                <Button variant="outline" className="w-full" onClick={() => navigate('/join-team')}>
+                  <Users className="h-4 w-4 mr-2" />
+                  {l('I have an invite code', 'Tengo un código de invitación', 'Ich habe einen Einladungscode')}
+                </Button>
               </CardContent>
             </Card>
           )}
