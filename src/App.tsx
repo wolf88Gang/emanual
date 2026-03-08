@@ -9,6 +9,7 @@ import { EstateProvider } from "./contexts/EstateContext";
 import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SidebarLayout } from "./components/layout/SidebarLayout";
 import { TrialGate } from "./components/subscription/TrialGate";
+import { HGLogo } from "./components/HGLogo";
 
 import Auth from "./pages/Auth";
 import Onboarding from "./pages/Onboarding";
