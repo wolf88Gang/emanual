@@ -8,6 +8,7 @@ import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { EstateProvider } from "./contexts/EstateContext";
 
 import Auth from "./pages/Auth";
+import Onboarding from "./pages/Onboarding";
 import WorkView from "./pages/WorkView";
 import MapView from "./pages/MapView";
 import Tasks from "./pages/Tasks";
@@ -28,7 +29,7 @@ import NotFound from "./pages/NotFound";
 const queryClient = new QueryClient();
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, loading } = useAuth();
+  const { user, profile, roles, loading } = useAuth();
   
   if (loading) {
     return (
@@ -40,6 +41,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Redirect new users without org to onboarding
+  if (profile && !profile.org_id && roles.length === 0) {
+    return <Navigate to="/onboarding" replace />;
   }
   
   return <EstateProvider>{children}</EstateProvider>;
@@ -59,6 +65,7 @@ function AppRoutes() {
   return (
     <Routes>
       <Route path="/auth" element={user ? <Navigate to="/" replace /> : <Auth />} />
+      <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       <Route path="/" element={<ProtectedRoute><WorkView /></ProtectedRoute>} />
       <Route path="/map" element={<ProtectedRoute><MapView /></ProtectedRoute>} />
       <Route path="/tasks" element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
