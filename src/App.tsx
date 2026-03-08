@@ -122,15 +122,11 @@ function AppRoutes() {
   const { user, isPlatformAdmin, loading } = useAuth();
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
-        <HGLogo size="lg" />
-        <div className="animate-pulse text-muted-foreground">Loading...</div>
-      </div>
-    );
+    return <PageLoader />;
   }
 
   return (
+    <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/features" element={<Features />} />
       <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/map"} replace /> : <Auth />} />
