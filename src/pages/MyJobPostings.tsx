@@ -217,6 +217,16 @@ export default function MyJobPostings() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Message dialog */}
+      {chatTarget && (
+        <JobMessageDialog
+          open={!!chatTarget}
+          onOpenChange={() => setChatTarget(null)}
+          jobId={chatTarget.jobId}
+          otherUserId={chatTarget.userId}
+          otherUserName={chatTarget.name}
+        />
+      )}
     </div>
   );
 }
