@@ -63,6 +63,7 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
   const [selectedZone, setSelectedZone] = useState<string>('');
   const [selectedAsset, setSelectedAsset] = useState<string>('');
   const [notes, setNotes] = useState('');
+  const [reportIssue, setReportIssue] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [loadingZones, setLoadingZones] = useState(false);
 
