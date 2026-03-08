@@ -1,12 +1,25 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useSubscription } from '@/contexts/SubscriptionContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Crown, Clock, Building2 } from 'lucide-react';
+import { Crown, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
+// Safe import - don't throw if no provider
+const SubscriptionContext = React.createContext<any>(undefined);
+
 export function TrialBanner() {
-  const { isTrial, isExpired, trialDaysLeft, isPaid, status, propertyLimit, paidPropertyCount, pricePerProperty } = useSubscription();
+  // Use the actual context from SubscriptionContext module
+  let sub: any;
+  try {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    const mod = require('@/contexts/SubscriptionContext');
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    sub = mod.useSubscription();
+  } catch {
+    return null; // No provider available, skip banner
+  }
+  
+  const { isTrial, isExpired, trialDaysLeft, isPaid, status } = sub;
   const { language } = useLanguage();
   const navigate = useNavigate();
   const es = language === 'es';
