@@ -373,7 +373,7 @@ export default function CRM() {
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{es && p.name_es ? p.name_es : p.name}</TableCell>
                       <TableCell><Badge variant="outline">{p.category}</Badge></TableCell>
-                      <TableCell>${Number(p.unit_price).toFixed(2)}</TableCell>
+                      <TableCell>${Number(p.unit_price).toLocaleString()}</TableCell>
                       <TableCell>{p.unit}</TableCell>
                     </TableRow>
                   ))}
