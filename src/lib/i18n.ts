@@ -1,4 +1,4 @@
-// Internationalization for Estate Manual
+// Internationalization for Casa Guide
 // Supports English and Spanish with icon-first approach for crew users
 
 export type Language = 'en' | 'es';
@@ -7,10 +7,10 @@ export const translations = {
   en: {
     // Product
     product: {
-      name: 'Estate Manual',
-      tagline: 'Preserve design intent. Prove duty of care. Protect estate value.',
-      description: 'Estate Manual is a living asset registry and evidence system for estates, documenting what exists, why it exists, and how to care for it.',
-      differentiator: 'Property management tools manage people and generic tasks. Estate Manual manages living assets, design intent, and long-term risk.',
+      name: 'Casa Guide',
+      tagline: 'Manage properties, landscapes, and living assets — all in one place.',
+      description: 'Casa Guide is a comprehensive property management platform for estates, landscapes, assets, tasks, compost, CRM, and more.',
+      differentiator: 'Property management tools manage people and generic tasks. Casa Guide manages living assets, operations, sales, and long-term risk.',
     },
     // Navigation
     nav: {
@@ -204,10 +204,10 @@ export const translations = {
   es: {
     // Product
     product: {
-      name: 'Estate Manual',
-      tagline: 'Preserva la intención del diseño. Evidencia el cuidado. Protege el valor de la propiedad.',
-      description: 'Estate Manual es un registro de activos vivos y un sistema de evidencia para propiedades, que documenta qué existe, por qué existe y cómo se mantiene.',
-      differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Estate Manual gestiona activos vivos, intención de diseño y riesgo a largo plazo.',
+      name: 'Casa Guide',
+      tagline: 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.',
+      description: 'Casa Guide es una plataforma integral de gestión de propiedades para fincas, paisajes, activos, tareas, compost, CRM y más.',
+      differentiator: 'Las herramientas de gestión de propiedades manejan personas y tareas genéricas. Casa Guide gestiona activos vivos, operaciones, ventas y riesgo a largo plazo.',
     },
     // Navigation
     nav: {
