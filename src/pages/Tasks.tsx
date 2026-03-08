@@ -330,7 +330,7 @@ export default function Tasks() {
             ) : filteredTasks.map(task => {
               const config = statusConfig[task.status];
               return (
-                <Card key={task.id} className="estate-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { if (task.status !== 'completed') { setSelectedTask(task); setCompletionDialogOpen(true); } }}>
+                <Card key={task.id} className="estate-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setSelectedTask(task); setCompletionDialogOpen(true); }}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       <div className={cn('status-dot mt-2 shrink-0', config.dotClass)} />
