@@ -174,7 +174,7 @@ export function TaskCompletionDialog({
           <div className="p-4 rounded-xl bg-secondary/50 border border-border">
             <h3 className="font-medium">{taskTitle}</h3>
             {taskDescription && (
-              <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
+              <p className="text-sm text-muted-foreground mt-1">
                 {taskDescription}
               </p>
             )}
@@ -189,6 +189,11 @@ export function TaskCompletionDialog({
                 <span className="flex items-center gap-1">
                   <MapPin className="h-3.5 w-3.5" />
                   {task.zone.name}
+                </span>
+              )}
+              {task.asset && (
+                <span className="flex items-center gap-1">
+                  📌 {task.asset.name}
                 </span>
               )}
             </div>
