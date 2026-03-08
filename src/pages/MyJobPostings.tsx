@@ -32,6 +32,7 @@ export default function MyJobPostings() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loadingApps, setLoadingApps] = useState(false);
   const [workerProfiles, setWorkerProfiles] = useState<Record<string, any>>({});
+  const [chatTarget, setChatTarget] = useState<{ jobId: string; userId: string; name: string } | null>(null);
 
   useEffect(() => {
     if (profile?.org_id) fetchJobs();
