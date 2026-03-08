@@ -197,10 +197,27 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
 
       if (error) throw error;
 
+      // Auto-create task if issue reported
+      if (reportIssue && notes.trim()) {
+        await supabase.from('tasks').insert({
+          estate_id: currentEstate.id,
+          title: `Issue reported: ${notes.slice(0, 60)}`,
+          title_es: `Problema reportado: ${notes.slice(0, 60)}`,
+          description: `Auto-generated from check-in. Notes: ${notes}`,
+          description_es: `Auto-generada desde check-in. Notas: ${notes}`,
+          asset_id: selectedAsset || null,
+          zone_id: selectedZone || null,
+          priority: 2,
+          frequency: 'once',
+          due_date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+          status: 'pending',
+        });
+      }
+
       toast.success(
         language === 'es' 
-          ? '¡Check-in registrado!' 
-          : 'Check-in recorded!'
+          ? reportIssue ? '¡Check-in registrado y tarea creada!' : '¡Check-in registrado!'
+          : reportIssue ? 'Check-in recorded & task created!' : 'Check-in recorded!'
       );
       
       onOpenChange(false);
