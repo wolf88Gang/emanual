@@ -19,6 +19,7 @@ interface AuthContextType {
   profile: Profile | null;
   roles: AppRole[];
   loading: boolean;
+  isPlatformAdmin: boolean;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -33,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,6 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setProfile(null);
           setRoles([]);
+          setIsPlatformAdmin(false);
         }
       }
     );
@@ -90,6 +93,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (rolesData) {
         setRoles(rolesData.map(r => r.role as AppRole));
       }
+
+      // Check platform admin
+      const { data: adminData } = await supabase
+        .from('platform_admins')
+        .select('id')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      setIsPlatformAdmin(!!adminData);
     } catch (error) {
       console.error('Error fetching user data:', error);
     } finally {
@@ -124,6 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setRoles([]);
+    setIsPlatformAdmin(false);
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
@@ -137,6 +150,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         roles,
         loading,
+        isPlatformAdmin,
         signIn,
         signUp,
         signOut,

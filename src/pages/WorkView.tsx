@@ -12,7 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { supabase } from '@/integrations/supabase/client';
-import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -213,19 +213,19 @@ export default function WorkView() {
 
   if (estateLoading) {
     return (
-      <ModernAppLayout>
+      <>
         <div className="flex items-center justify-center min-h-[60vh]">
           <div className="animate-pulse text-muted-foreground">
             {language === 'es' ? 'Cargando...' : 'Loading...'}
           </div>
         </div>
-      </ModernAppLayout>
+      </>
     );
   }
 
   if (!currentEstate) {
     return (
-      <ModernAppLayout>
+      <>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
           <Building2 className="h-16 w-16 text-muted-foreground mb-4" />
           <h2 className="text-2xl font-serif font-semibold mb-2">
@@ -237,12 +237,12 @@ export default function WorkView() {
               : 'You don\'t have access to any estates. Contact your administrator.'}
           </p>
         </div>
-      </ModernAppLayout>
+      </>
     );
   }
 
   return (
-    <ModernAppLayout>
+    <>
       <div className="container py-6 space-y-6">
         {/* Welcome Header */}
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
@@ -392,6 +392,6 @@ export default function WorkView() {
           onSuccess={fetchWorkData}
         />
       </div>
-    </ModernAppLayout>
+    </>
   );
 }
