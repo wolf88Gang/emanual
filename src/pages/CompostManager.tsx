@@ -196,6 +196,35 @@ export default function CompostManager() {
           ))}
         </div>
 
+        {/* Agroecological Tips */}
+        <Card className="estate-card border-primary/20 bg-primary/5">
+          <CardContent className="p-4">
+            <h3 className="font-semibold flex items-center gap-2 mb-2">
+              <Leaf className="h-4 w-4 text-primary" />
+              {es ? 'Guía Agroecológica' : 'Agroecological Guide'}
+            </h3>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-sm">
+              <div className="p-3 rounded-lg bg-background/50">
+                <p className="font-medium text-foreground">{es ? '🌡️ Temperatura ideal' : '🌡️ Ideal temp'}</p>
+                <p className="text-muted-foreground">{es ? '55-65°C fase termófila. Voltear si >70°C.' : '55-65°C thermophilic phase. Turn if >70°C.'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-background/50">
+                <p className="font-medium text-foreground">{es ? '💧 Humedad' : '💧 Moisture'}</p>
+                <p className="text-muted-foreground">{es ? '50-60%. Prueba del puño: goteo ligero al apretar.' : '50-60%. Fist test: slight drip when squeezed.'}</p>
+              </div>
+              <div className="p-3 rounded-lg bg-background/50">
+                <p className="font-medium text-foreground">{es ? '⚖️ Relación C:N' : '⚖️ C:N Ratio'}</p>
+                <p className="text-muted-foreground">{es ? '25:1 a 30:1. Usar 3 partes marrones por 1 verde.' : '25:1 to 30:1. Use 3 parts brown per 1 green.'}</p>
+              </div>
+            </div>
+            <div className="mt-3 text-xs text-muted-foreground space-y-1">
+              <p>{es ? '🔄 Voltear cada 3-5 días en fase activa. Cada 7-14 en curado.' : '🔄 Turn every 3-5 days in active phase. Every 7-14 in curing.'}</p>
+              <p>{es ? '🌿 Materiales verdes: restos de cocina, césped, estiércol. Marrones: hojas secas, cartón, aserrín.' : '🌿 Greens: kitchen scraps, grass, manure. Browns: dry leaves, cardboard, sawdust.'}</p>
+              <p>{es ? '⚠️ No agregar: carne, lácteos, aceites, plantas enfermas, malezas con semillas.' : '⚠️ Avoid: meat, dairy, oils, diseased plants, weeds with seeds.'}</p>
+            </div>
+          </CardContent>
+        </Card>
+
         {/* Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab}>
           <TabsList>
