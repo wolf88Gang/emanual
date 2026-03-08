@@ -130,12 +130,39 @@ export default function Onboarding() {
     navigate('/auth', { replace: true });
   };
 
-  const handleProfileContinue = () => {
+  const handleProfileContinue = async () => {
     if (!selectedClientType) {
       toast.error(l('Please select an account type', 'Selecciona un tipo de cuenta', 'Bitte wählen Sie einen Kontotyp'));
       return;
     }
+    // Workers skip estate creation — go directly to marketplace
+    if (selectedClientType === 'worker') {
+      await handleWorkerSetup();
+      return;
+    }
     nextStep();
+  };
+
+  const handleWorkerSetup = async () => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      // Update profile with client_type
+      await supabase.from('profiles').update({ client_type: 'worker' } as any).eq('id', user.id);
+      // Add worker_marketplace role
+      const { data: existingRole } = await supabase.from('user_roles').select('id').eq('user_id', user.id).eq('role', 'worker_marketplace' as any).maybeSingle();
+      if (!existingRole) {
+        await supabase.from('user_roles').insert({ user_id: user.id, role: 'worker_marketplace' as any });
+      }
+      // Create worker profile
+      await supabase.from('worker_profiles').upsert({ user_id: user.id } as any, { onConflict: 'user_id' });
+      toast.success(l('Welcome! Find jobs on the marketplace', '¡Bienvenido! Encuentra trabajos en el marketplace', 'Willkommen! Finden Sie Jobs auf dem Marktplatz'));
+      navigate('/jobs', { replace: true });
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleStartTrial = () => {
