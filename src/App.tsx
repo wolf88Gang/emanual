@@ -40,6 +40,7 @@ import MyJobPostings from "./pages/MyJobPostings";
 import WorkerProfilePage from "./pages/WorkerProfile";
 import MyWorkerProfile from "./pages/MyWorkerProfile";
 import NotFound from "./pages/NotFound";
+import JoinTeam from "./pages/JoinTeam";
 
 const queryClient = new QueryClient();
 
@@ -116,6 +117,7 @@ function AppRoutes() {
       <Route path="/features" element={<Features />} />
       <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/map"} replace /> : <Auth />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
+      <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
       
       {/* Platform Admin routes */}
       <Route path="/platform" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
