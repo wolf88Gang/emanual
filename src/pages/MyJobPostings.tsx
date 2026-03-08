@@ -6,9 +6,10 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { toast } from 'sonner';
-import { Plus, Eye, Users, MessageCircle, CheckCircle, XCircle, Clock } from 'lucide-react';
+import { JobMessageDialog } from '@/components/messaging/JobMessageDialog';
+import { Plus, Eye, Users, MessageCircle, CheckCircle, XCircle, Clock, User } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -31,6 +32,7 @@ export default function MyJobPostings() {
   const [applications, setApplications] = useState<Application[]>([]);
   const [loadingApps, setLoadingApps] = useState(false);
   const [workerProfiles, setWorkerProfiles] = useState<Record<string, any>>({});
+  const [chatTarget, setChatTarget] = useState<{ jobId: string; userId: string; name: string } | null>(null);
 
   useEffect(() => {
     if (profile?.org_id) fetchJobs();
@@ -165,30 +167,47 @@ export default function MyJobPostings() {
             <div className="space-y-3 max-h-96 overflow-y-auto">
               {applications.map(app => {
                 const wp = workerProfiles[app.worker_id];
+                const workerName = wp?.full_name || wp?.email || 'Worker';
                 return (
                   <Card key={app.id}>
                     <CardContent className="p-3">
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="font-medium">{wp?.full_name || wp?.email || 'Worker'}</p>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <button
+                              className="font-medium text-primary hover:underline"
+                              onClick={() => navigate(`/worker/${app.worker_id}`)}
+                            >
+                              {workerName}
+                            </button>
+                            <Badge variant="outline" className="text-xs">{app.status}</Badge>
+                          </div>
                           {app.message && <p className="text-sm text-muted-foreground mt-1">{app.message}</p>}
                           {app.proposed_rate && (
                             <p className="text-sm text-primary font-medium mt-1">
                               {es ? 'Tarifa propuesta' : 'Proposed rate'}: ${app.proposed_rate}
                             </p>
                           )}
-                          <Badge variant="outline" className="mt-2 text-xs">{app.status}</Badge>
                         </div>
-                        {app.status === 'pending' && (
-                          <div className="flex gap-1">
-                            <Button size="sm" variant="default" onClick={() => updateApplicationStatus(app.id, 'accepted')}>
-                              <CheckCircle className="h-3.5 w-3.5" />
-                            </Button>
-                            <Button size="sm" variant="ghost" onClick={() => updateApplicationStatus(app.id, 'rejected')}>
-                              <XCircle className="h-3.5 w-3.5" />
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex gap-1 shrink-0">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setChatTarget({ jobId: selectedJobId!, userId: app.worker_id, name: workerName })}
+                          >
+                            <MessageCircle className="h-3.5 w-3.5" />
+                          </Button>
+                          {app.status === 'pending' && (
+                            <>
+                              <Button size="sm" variant="default" onClick={() => updateApplicationStatus(app.id, 'accepted')}>
+                                <CheckCircle className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button size="sm" variant="ghost" onClick={() => updateApplicationStatus(app.id, 'rejected')}>
+                                <XCircle className="h-3.5 w-3.5" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -198,6 +217,16 @@ export default function MyJobPostings() {
           )}
         </DialogContent>
       </Dialog>
+      {/* Message dialog */}
+      {chatTarget && (
+        <JobMessageDialog
+          open={!!chatTarget}
+          onOpenChange={() => setChatTarget(null)}
+          jobId={chatTarget.jobId}
+          otherUserId={chatTarget.userId}
+          otherUserName={chatTarget.name}
+        />
+      )}
     </div>
   );
 }
