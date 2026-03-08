@@ -23,16 +23,18 @@ type AuthFormData = z.infer<typeof authSchema>;
 interface DemoAccount {
   email: string;
   role: string;
+  roleEs: string;
+  roleDe: string;
   icon: React.ComponentType<{ className?: string }>;
   description: string;
   descriptionEs: string;
 }
 
 const demoAccounts: DemoAccount[] = [
-  { email: 'owner@demo.com', role: 'Owner', icon: Building, description: 'Full access to all features', descriptionEs: 'Acceso completo a todas las funciones' },
-  { email: 'manager@demo.com', role: 'Manager', icon: Shield, description: 'Manage assets, tasks & team', descriptionEs: 'Gestionar activos, tareas y equipo' },
-  { email: 'crew@demo.com', role: 'Crew', icon: Wrench, description: 'Complete tasks & check-ins', descriptionEs: 'Completar tareas y registros' },
-  { email: 'vendor@demo.com', role: 'Vendor', icon: Users, description: 'View assigned tasks only', descriptionEs: 'Ver solo tareas asignadas' },
+  { email: 'owner@demo.com', role: 'Owner', roleEs: 'Propietario', roleDe: 'Eigentümer', icon: Building, description: 'Full access to all features', descriptionEs: 'Acceso completo a todas las funciones' },
+  { email: 'manager@demo.com', role: 'Manager', roleEs: 'Administrador', roleDe: 'Verwalter', icon: Shield, description: 'Manage assets, tasks & team', descriptionEs: 'Gestionar activos, tareas y equipo' },
+  { email: 'crew@demo.com', role: 'Crew', roleEs: 'Equipo', roleDe: 'Team', icon: Wrench, description: 'Complete tasks & check-ins', descriptionEs: 'Completar tareas y registros' },
+  { email: 'vendor@demo.com', role: 'Vendor', roleEs: 'Proveedor', roleDe: 'Lieferant', icon: Users, description: 'View assigned tasks only', descriptionEs: 'Ver solo tareas asignadas' },
 ];
 
 export default function Auth() {
@@ -177,7 +179,7 @@ export default function Auth() {
                         <account.icon className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-foreground">{account.role}</div>
+                        <div className="font-medium text-sm text-foreground">{es ? account.roleEs : account.role}</div>
                         <div className="text-xs text-muted-foreground">{es ? account.descriptionEs : account.description}</div>
                       </div>
                       <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
