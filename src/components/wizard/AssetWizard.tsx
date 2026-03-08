@@ -49,11 +49,10 @@ interface AssetEntry {
 const emptyEntry = (): AssetEntry => ({ name: '', description: '', zone_id: '', critical_care_note: '' });
 
 export function AssetWizard() {
-  const { language } = useLanguage();
+  const { language, tl } = useLanguage();
   const { currentEstate } = useEstate();
   const { assetLimit, isPaid } = useSubscription();
   const navigate = useNavigate();
-  const es = language === 'es';
 
   const [currentStep, setCurrentStep] = useState(0);
   const [entries, setEntries] = useState<AssetEntry[]>([emptyEntry()]);
