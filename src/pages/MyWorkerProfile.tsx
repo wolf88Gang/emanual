@@ -14,8 +14,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { formatCurrency } from '@/lib/currency';
+import { useNavigate } from 'react-router-dom';
 import {
-  Star, MapPin, Briefcase, Save, Loader2, Plus, X, User, Award, Calendar
+  Star, MapPin, Briefcase, Save, Loader2, Plus, X, User, Award, Calendar, ArrowLeft
 } from 'lucide-react';
 
 const SKILL_OPTIONS = [
