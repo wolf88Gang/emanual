@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'other';
+type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'worker' | 'other';
 type Step = 'profile' | 'plan' | 'estate';
 
 const STEPS: Step[] = ['profile', 'plan', 'estate'];
@@ -63,6 +63,16 @@ const CLIENT_TYPE_OPTIONS: {
     descriptionEs: 'Gestiono propiedades privadas y de clientes',
     descriptionDe: 'Ich verwalte private und Kundenimmobilien',
     emoji: '🔀',
+  },
+  {
+    id: 'worker',
+    label: 'Looking for work',
+    labelEs: 'Busco trabajo',
+    labelDe: 'Arbeit suchen',
+    description: 'I want to find landscaping jobs near me',
+    descriptionEs: 'Quiero encontrar trabajos de jardinería cerca de mí',
+    descriptionDe: 'Ich möchte Gartenbauarbeiten in meiner Nähe finden',
+    emoji: '👷',
   },
   {
     id: 'other',
@@ -120,12 +130,39 @@ export default function Onboarding() {
     navigate('/auth', { replace: true });
   };
 
-  const handleProfileContinue = () => {
+  const handleProfileContinue = async () => {
     if (!selectedClientType) {
       toast.error(l('Please select an account type', 'Selecciona un tipo de cuenta', 'Bitte wählen Sie einen Kontotyp'));
       return;
     }
+    // Workers skip estate creation — go directly to marketplace
+    if (selectedClientType === 'worker') {
+      await handleWorkerSetup();
+      return;
+    }
     nextStep();
+  };
+
+  const handleWorkerSetup = async () => {
+    if (!user) return;
+    setIsLoading(true);
+    try {
+      // Update profile with client_type
+      await supabase.from('profiles').update({ client_type: 'worker' } as any).eq('id', user.id);
+      // Add worker_marketplace role
+      const { data: existingRole } = await supabase.from('user_roles').select('id').eq('user_id', user.id).eq('role', 'worker_marketplace' as any).maybeSingle();
+      if (!existingRole) {
+        await supabase.from('user_roles').insert({ user_id: user.id, role: 'worker_marketplace' as any });
+      }
+      // Create worker profile
+      await supabase.from('worker_profiles').upsert({ user_id: user.id } as any, { onConflict: 'user_id' });
+      toast.success(l('Welcome! Find jobs on the marketplace', '¡Bienvenido! Encuentra trabajos en el marketplace', 'Willkommen! Finden Sie Jobs auf dem Marktplatz'));
+      navigate('/jobs', { replace: true });
+    } catch (err: any) {
+      toast.error(err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleStartTrial = () => {
@@ -144,9 +181,15 @@ export default function Onboarding() {
       let orgId = profile?.org_id;
 
       if (!orgId) {
+        const orgTypeMap: Record<string, string> = {
+          property_owner: 'residential',
+          landscaping_company: 'landscaping_company',
+          hybrid: 'hybrid',
+          other: 'residential',
+        };
         const { data: newOrg, error: orgError } = await supabase
           .from('organizations')
-          .insert({ name: estateName })
+          .insert({ name: estateName, org_type: orgTypeMap[selectedClientType] || 'residential' } as any)
           .select('id')
           .single();
         if (orgError) throw orgError;

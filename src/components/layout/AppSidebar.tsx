@@ -1,11 +1,12 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import {
   Briefcase, Map, Box, ClipboardList, FolderOpen, Settings, Package,
   Leaf, Clock, Users, BarChart3, CreditCard, Activity, Wrench,
-  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus
+  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus, Megaphone
 } from 'lucide-react';
 import { NavLink } from '@/components/NavLink';
+import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
@@ -37,9 +38,19 @@ export function AppSidebar() {
   const location = useLocation();
   const { hasRole, isOwnerOrManager, isPlatformAdmin, signOut, profile } = useAuth();
   const { language, tl } = useLanguage();
+  const [orgType, setOrgType] = useState<string>('residential');
 
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
+
+  useEffect(() => {
+    if (profile?.org_id) {
+      supabase.from('organizations').select('org_type').eq('id', profile.org_id).single()
+        .then(({ data }) => { if (data) setOrgType((data as any).org_type || 'residential'); });
+    }
+  }, [profile?.org_id]);
+
+  const showCRM = orgType === 'landscaping_company' || orgType === 'hybrid';
 
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
@@ -64,7 +75,8 @@ export function AppSidebar() {
     { path: '/documents', icon: FolderOpen, label: l('Documents', 'Documentos', 'Dokumente'), tooltip: l('Files & documents', 'Archivos y documentos', 'Dateien & Dokumente') },
     { path: '/labor', icon: DollarSign, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
     { path: '/compost', icon: Recycle, label: 'Compost', tooltip: l('Compost manager', 'Gestor de compost', 'Kompostverwaltung') },
-    { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
+    ...(showCRM ? [{ path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') }] : []),
+    { path: '/my-jobs', icon: Megaphone, label: l('Jobs', 'Empleos', 'Jobs'), tooltip: l('Job postings & marketplace', 'Publicaciones de empleo', 'Stellenangebote & Marktplatz') },
     { path: '/topography', icon: Mountain, label: l('Topography', 'Topografía', 'Topographie'), tooltip: l('Topographic analysis', 'Análisis topográfico', 'Topographische Analyse') },
     { path: '/reports', icon: BookOpen, label: l('Reports', 'Reportes', 'Berichte'), tooltip: l('Reports & manuals', 'Reportes y manuales', 'Berichte & Handbücher') },
     { path: '/admin', icon: Settings, label: 'Admin', tooltip: l('Settings', 'Configuración', 'Einstellungen') },
