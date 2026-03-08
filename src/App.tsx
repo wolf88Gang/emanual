@@ -22,6 +22,7 @@ import Reports from "./pages/Reports";
 import EstateManagement from "./pages/EstateManagement";
 import LaborManagement from "./pages/LaborManagement";
 import TopographyRisks from "./pages/TopographyRisks";
+import Subscription from "./pages/Subscription";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
