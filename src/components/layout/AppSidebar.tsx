@@ -97,6 +97,8 @@ export function AppSidebar() {
   const vendorNav: NavItem[] = [
     { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
     { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('Assigned tasks', 'Tareas asignadas', 'Zugewiesene Aufgaben') },
+    { path: '/my-profile', icon: Users, label: l('Profile', 'Perfil', 'Profil'), tooltip: l('Edit profile & view ratings', 'Editar perfil y ver reseñas', 'Profil bearbeiten') },
+    { path: '/jobs', icon: Wrench, label: l('Job Board', 'Bolsa de Trabajo', 'Jobbörse'), tooltip: l('Find work opportunities', 'Buscar oportunidades de trabajo', 'Arbeitsmöglichkeiten finden') },
   ];
 
   let navItems: NavItem[];
