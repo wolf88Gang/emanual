@@ -390,7 +390,7 @@ export default function CRM() {
                     <TableRow key={p.id}>
                       <TableCell className="font-medium">{es && p.name_es ? p.name_es : p.name}</TableCell>
                       <TableCell><Badge variant="outline">{p.category}</Badge></TableCell>
-                      <TableCell>${Number(p.unit_price).toLocaleString()}</TableCell>
+                      <TableCell>{formatCurrency(Number(p.unit_price), p.currency)}</TableCell>
                       <TableCell>{p.unit}</TableCell>
                     </TableRow>
                   ))}
@@ -420,7 +420,7 @@ export default function CRM() {
                       <TableCell className="font-mono text-sm">{inv.invoice_number}</TableCell>
                       <TableCell>{inv.client?.name || '-'}</TableCell>
                       <TableCell>{format(new Date(inv.issue_date), 'MMM d, yyyy')}</TableCell>
-                      <TableCell className="font-medium">${Number(inv.total).toFixed(2)}</TableCell>
+                      <TableCell className="font-medium">{formatCurrency(Number(inv.total), inv.currency)}</TableCell>
                       <TableCell><Badge className={INVOICE_STATUS_COLORS[inv.status] || ''}>{inv.status}</Badge></TableCell>
                     </TableRow>
                   ))}
@@ -448,7 +448,7 @@ export default function CRM() {
                   ) : payments.map(p => (
                     <TableRow key={p.id}>
                       <TableCell>{p.client?.name || '-'}</TableCell>
-                      <TableCell className="font-medium">${Number(p.amount).toFixed(2)}</TableCell>
+                      <TableCell className="font-medium">{formatCurrency(Number(p.amount), p.currency)}</TableCell>
                       <TableCell><Badge variant="outline">{p.payment_method}</Badge></TableCell>
                       <TableCell>{format(new Date(p.payment_date), 'MMM d, yyyy')}</TableCell>
                       <TableCell>{p.invoice?.invoice_number || '-'}</TableCell>
@@ -547,7 +547,7 @@ export default function CRM() {
                       const items = [...invoiceForm.items]; items[idx] = { ...items[idx], unit_price: e.target.value };
                       setInvoiceForm(f => ({ ...f, items }));
                     }} />
-                    <p className="flex items-center text-sm font-medium">${(Number(item.quantity) * Number(item.unit_price) || 0).toFixed(2)}</p>
+                    <p className="flex items-center text-sm font-medium">{formatCurrency(Number(item.quantity) * Number(item.unit_price) || 0, 'CRC')}</p>
                   </div>
                 ))}
                 <Button variant="ghost" size="sm" onClick={() => setInvoiceForm(f => ({ ...f, items: [...f.items, { description: '', quantity: '1', unit_price: '' }] }))}>
@@ -555,7 +555,7 @@ export default function CRM() {
                 </Button>
               </div>
               <div className="text-right font-bold text-lg">
-                Total: ${invoiceForm.items.reduce((a, i) => a + (Number(i.quantity) * Number(i.unit_price) || 0), 0).toFixed(2)}
+                Total: {formatCurrency(invoiceForm.items.reduce((a, i) => a + (Number(i.quantity) * Number(i.unit_price) || 0), 0), 'CRC')}
               </div>
             </div>
             <DialogFooter>
@@ -587,7 +587,7 @@ export default function CRM() {
                     <SelectContent>
                       <SelectItem value="">-</SelectItem>
                       {invoices.filter(i => i.status !== 'paid' && i.status !== 'cancelled').map(i => (
-                        <SelectItem key={i.id} value={i.id}>{i.invoice_number} - ${Number(i.total).toFixed(2)}</SelectItem>
+                        <SelectItem key={i.id} value={i.id}>{i.invoice_number} - {formatCurrency(Number(i.total), i.currency)}</SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
