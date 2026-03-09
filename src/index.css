@@ -43,13 +43,13 @@
     --destructive-foreground: 0 0% 100%;
 
     --success: 142 70% 35%;
-    --success-foreground: 0 0% 100%;
+    --success-foreground: 142 70% 22%;
 
     --warning: 38 92% 50%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 30 80% 30%;
 
     --info: 199 89% 48%;
-    --info-foreground: 0 0% 100%;
+    --info-foreground: 199 80% 28%;
 
     /* Borders and inputs */
     --border: 40 15% 88%;
@@ -126,13 +126,13 @@
     --destructive-foreground: 0 0% 100%;
 
     --success: 142 60% 40%;
-    --success-foreground: 0 0% 100%;
+    --success-foreground: 142 60% 75%;
 
     --warning: 38 85% 45%;
-    --warning-foreground: 0 0% 100%;
+    --warning-foreground: 38 85% 75%;
 
     --info: 199 80% 45%;
-    --info-foreground: 0 0% 100%;
+    --info-foreground: 199 80% 78%;
 
     --border: 150 15% 20%;
     --input: 150 15% 20%;
