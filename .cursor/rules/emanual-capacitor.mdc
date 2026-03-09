@@ -1,0 +1,48 @@
+---
+description: Guía de desarrollo para emanual (Capacitor + React + Android)
+alwaysApply: true
+---
+
+# emanual - Guía de Desarrollo
+
+## Contexto del Proyecto
+
+- **App**: emanual
+- **Stack**: Capacitor 8, React (Vite), shadcn-ui, Tailwind CSS, Lucide Icons
+- **Objetivo**: Web app convertida en app móvil con hot-reload en emulador Android
+
+## Reglas de Desarrollo
+
+### 1. Compatibilidad Android
+- Todo cambio en código web debe funcionar en el emulador de Android
+- Probar que los componentes se vean bien en viewport móvil
+
+### 2. Plugins de Capacitor
+- Al sugerir plugins, incluir el comando exacto: `npm install @capacitor/nombre-plugin`
+- Tras instalar: `npx cap sync` (o `npx cap sync android` para solo Android)
+
+### 3. Configuración Capacitor
+- **No modificar** la URL de `server.url` en `capacitor.config.ts` salvo petición explícita
+- La URL de Lovable permite hot-reload directo en el emulador
+
+### 4. UI y Estilos
+- Priorizar **shadcn-ui** y **Tailwind** para mantener consistencia visual
+- Evitar librerías CSS adicionales que no estén en el stack
+
+## Depuración Android / Gradle
+
+Si hay errores de compilación:
+- **JAVA_HOME**: Debe apuntar a `C:\Program Files\Android\Android Studio\jbr`
+- **ANDROID_HOME**: Debe apuntar a `C:\Users\wolf2\AppData\Local\Android\Sdk`
+- **local.properties**: En `android/` debe existir con `sdk.dir` correcto
+
+Script rápido para sesión actual:
+```powershell
+$env:JAVA_HOME = "C:\Program Files\Android\Android Studio\jbr"
+$env:ANDROID_HOME = "C:\Users\wolf2\AppData\Local\Android\Sdk"
+```
+
+## Flujo de Trabajo
+
+1. `npm run build` → `npx cap sync` → `npx cap run android`
+2. O abrir en Android Studio: `npx cap open android`
