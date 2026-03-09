@@ -126,7 +126,7 @@ function AppRoutes() {
       
       {/* Platform Admin routes */}
       <Route path="/platform" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
-      <Route path="/platform/clients" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/clients" element={<PlatformRoute><PlatformClients /></PlatformRoute>} />
       <Route path="/platform/subscriptions" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
       <Route path="/platform/payments" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
       <Route path="/platform/metrics" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
