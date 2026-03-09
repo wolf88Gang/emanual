@@ -16,6 +16,7 @@ import { HGLogo } from "./components/HGLogo";
 const Auth = lazy(() => import("./pages/Auth"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PlatformAdmin = lazy(() => import("./pages/PlatformAdmin"));
+const PlatformClients = lazy(() => import("./pages/PlatformClients"));
 const WorkView = lazy(() => import("./pages/WorkView"));
 const MapView = lazy(() => import("./pages/MapView"));
 const Tasks = lazy(() => import("./pages/Tasks"));
