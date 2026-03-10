@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, ShoppingBag, FileText, DollarSign, Search, ChevronRight, ArrowLeft, Star, Phone, Mail, MapPin } from 'lucide-react';
+import { ClientAccessManager } from '@/components/crm/ClientAccessManager';
 import { format } from 'date-fns';
 import { formatCurrency, formatCurrencyDual } from '@/lib/currency';
 import { useLanguage } from '@/contexts/LanguageContext';
