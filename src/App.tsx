@@ -44,6 +44,7 @@ const WorkerProfilePage = lazy(() => import("./pages/WorkerProfile"));
 const MyWorkerProfile = lazy(() => import("./pages/MyWorkerProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const JoinTeam = lazy(() => import("./pages/JoinTeam"));
+const JoinClient = lazy(() => import("./pages/JoinClient"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
