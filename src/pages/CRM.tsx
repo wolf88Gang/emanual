@@ -240,6 +240,7 @@ export default function CRM() {
               <TabsTrigger value="products">{es ? 'Catálogo' : 'Catalog'}</TabsTrigger>
               <TabsTrigger value="invoices">{es ? 'Facturas' : 'Invoices'}</TabsTrigger>
               <TabsTrigger value="payments">{es ? 'Pagos' : 'Payments'}</TabsTrigger>
+              <TabsTrigger value="portal">{es ? 'Portal Cliente' : 'Client Portal'}</TabsTrigger>
             </TabsList>
             {isOwnerOrManager && (
               <Button size="sm" onClick={() => {
