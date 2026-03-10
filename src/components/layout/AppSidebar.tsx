@@ -42,6 +42,7 @@ export function AppSidebar() {
 
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
+  const isClient = hasRole('client');
 
   useEffect(() => {
     if (profile?.org_id) {
