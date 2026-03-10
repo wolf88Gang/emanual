@@ -70,8 +70,9 @@ function generateCode(): string {
 export function ClientAccessManager() {
   const { profile } = useAuth();
   const { currentEstate } = useEstate();
-  const { tl } = useLanguage();
+  const { tl, language } = useLanguage();
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
+  const getLang = (labels: { en: string; es: string; de: string }) => labels[language as keyof typeof labels] || labels.en;
 
   const [clients, setClients] = useState<ClientAccess[]>([]);
   const [invites, setInvites] = useState<ClientInvite[]>([]);
