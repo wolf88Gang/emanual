@@ -459,6 +459,11 @@ export default function CRM() {
               </Table>
             </Card>
           </TabsContent>
+
+          {/* Client Portal Tab */}
+          <TabsContent value="portal">
+            <ClientAccessManager />
+          </TabsContent>
         </Tabs>
 
         {/* Client Dialog */}
