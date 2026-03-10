@@ -198,6 +198,156 @@ export type Database = {
           },
         ]
       }
+      client_access: {
+        Row: {
+          can_view_assets: boolean
+          can_view_documents: boolean
+          can_view_map: boolean
+          can_view_photos: boolean
+          can_view_reports: boolean
+          can_view_statistics: boolean
+          can_view_tasks: boolean
+          can_view_work_hours: boolean
+          client_user_id: string
+          created_at: string
+          estate_id: string
+          granted_by: string
+          id: string
+          org_id: string
+          updated_at: string
+        }
+        Insert: {
+          can_view_assets?: boolean
+          can_view_documents?: boolean
+          can_view_map?: boolean
+          can_view_photos?: boolean
+          can_view_reports?: boolean
+          can_view_statistics?: boolean
+          can_view_tasks?: boolean
+          can_view_work_hours?: boolean
+          client_user_id: string
+          created_at?: string
+          estate_id: string
+          granted_by: string
+          id?: string
+          org_id: string
+          updated_at?: string
+        }
+        Update: {
+          can_view_assets?: boolean
+          can_view_documents?: boolean
+          can_view_map?: boolean
+          can_view_photos?: boolean
+          can_view_reports?: boolean
+          can_view_statistics?: boolean
+          can_view_tasks?: boolean
+          can_view_work_hours?: boolean
+          client_user_id?: string
+          created_at?: string
+          estate_id?: string
+          granted_by?: string
+          id?: string
+          org_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_access_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_access_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_invites: {
+        Row: {
+          active: boolean
+          can_view_assets: boolean
+          can_view_documents: boolean
+          can_view_map: boolean
+          can_view_photos: boolean
+          can_view_reports: boolean
+          can_view_statistics: boolean
+          can_view_tasks: boolean
+          can_view_work_hours: boolean
+          code: string
+          created_at: string
+          email: string | null
+          estate_id: string
+          expires_at: string | null
+          id: string
+          invited_by: string
+          max_uses: number | null
+          org_id: string
+          used_count: number
+        }
+        Insert: {
+          active?: boolean
+          can_view_assets?: boolean
+          can_view_documents?: boolean
+          can_view_map?: boolean
+          can_view_photos?: boolean
+          can_view_reports?: boolean
+          can_view_statistics?: boolean
+          can_view_tasks?: boolean
+          can_view_work_hours?: boolean
+          code: string
+          created_at?: string
+          email?: string | null
+          estate_id: string
+          expires_at?: string | null
+          id?: string
+          invited_by: string
+          max_uses?: number | null
+          org_id: string
+          used_count?: number
+        }
+        Update: {
+          active?: boolean
+          can_view_assets?: boolean
+          can_view_documents?: boolean
+          can_view_map?: boolean
+          can_view_photos?: boolean
+          can_view_reports?: boolean
+          can_view_statistics?: boolean
+          can_view_tasks?: boolean
+          can_view_work_hours?: boolean
+          code?: string
+          created_at?: string
+          email?: string | null
+          estate_id?: string
+          expires_at?: string | null
+          id?: string
+          invited_by?: string
+          max_uses?: number | null
+          org_id?: string
+          used_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_invites_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_invites_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_payments: {
         Row: {
           amount: number
@@ -2569,6 +2719,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_client_permissions: {
+        Args: { _estate_id: string; _user_id: string }
+        Returns: Json
+      }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
         Args: {
@@ -2581,7 +2735,13 @@ export type Database = {
     }
     Enums: {
       alert_status: "active" | "acknowledged" | "resolved"
-      app_role: "owner" | "manager" | "crew" | "vendor" | "worker_marketplace"
+      app_role:
+        | "owner"
+        | "manager"
+        | "crew"
+        | "vendor"
+        | "worker_marketplace"
+        | "client"
       asset_type:
         | "plant"
         | "tree"
@@ -2765,7 +2925,14 @@ export const Constants = {
   public: {
     Enums: {
       alert_status: ["active", "acknowledged", "resolved"],
-      app_role: ["owner", "manager", "crew", "vendor", "worker_marketplace"],
+      app_role: [
+        "owner",
+        "manager",
+        "crew",
+        "vendor",
+        "worker_marketplace",
+        "client",
+      ],
       asset_type: [
         "plant",
         "tree",
