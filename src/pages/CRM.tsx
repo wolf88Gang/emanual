@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, Users, ShoppingBag, FileText, DollarSign, Search, ChevronRight, ArrowLeft, Star, Phone, Mail, MapPin } from 'lucide-react';
+import { ClientAccessManager } from '@/components/crm/ClientAccessManager';
 import { format } from 'date-fns';
 import { formatCurrency, formatCurrencyDual } from '@/lib/currency';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -240,6 +241,7 @@ export default function CRM() {
               <TabsTrigger value="products">{es ? 'Catálogo' : 'Catalog'}</TabsTrigger>
               <TabsTrigger value="invoices">{es ? 'Facturas' : 'Invoices'}</TabsTrigger>
               <TabsTrigger value="payments">{es ? 'Pagos' : 'Payments'}</TabsTrigger>
+              <TabsTrigger value="portal">{es ? 'Portal Cliente' : 'Client Portal'}</TabsTrigger>
             </TabsList>
             {isOwnerOrManager && (
               <Button size="sm" onClick={() => {
@@ -457,6 +459,11 @@ export default function CRM() {
                 </TableBody>
               </Table>
             </Card>
+          </TabsContent>
+
+          {/* Client Portal Tab */}
+          <TabsContent value="portal">
+            <ClientAccessManager />
           </TabsContent>
         </Tabs>
 

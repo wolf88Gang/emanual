@@ -42,6 +42,7 @@ export function AppSidebar() {
 
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
+  const isClient = hasRole('client');
 
   useEffect(() => {
     if (profile?.org_id) {
@@ -120,12 +121,24 @@ export function AppSidebar() {
     { path: '/jobs', icon: Wrench, label: l('Job Board', 'Bolsa de Trabajo', 'Jobbörse'), tooltip: l('Find work opportunities', 'Buscar oportunidades de trabajo', 'Arbeitsmöglichkeiten finden') },
   ];
 
+  // Client nav - dynamically built based on permissions (all items shown, permission enforcement in pages)
+  const clientNav: NavItem[] = [
+    { path: '/map', icon: Map, label: l('Map', 'Mapa', 'Karte'), tooltip: l('Property map', 'Mapa de propiedad', 'Grundstückskarte') },
+    { path: '/assets', icon: Box, label: l('Assets', 'Activos', 'Anlagen'), tooltip: l('View assets', 'Ver activos', 'Anlagen ansehen') },
+    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('View tasks', 'Ver tareas', 'Aufgaben ansehen') },
+    { path: '/documents', icon: FolderOpen, label: l('Documents', 'Documentos', 'Dokumente'), tooltip: l('Documents', 'Documentos', 'Dokumente') },
+    { path: '/reports', icon: BookOpen, label: l('Reports', 'Reportes', 'Berichte'), tooltip: l('Reports', 'Reportes', 'Berichte') },
+  ];
+
   let navItems: NavItem[];
   let groupLabel: string;
 
   if (isPlatformAdmin) {
     navItems = adminNav;
     groupLabel = 'Platform';
+  } else if (isClient) {
+    navItems = clientNav;
+    groupLabel = l('My Property', 'Mi Propiedad', 'Meine Immobilie');
   } else if (isVendor) {
     navItems = vendorNav;
     groupLabel = l('Vendor', 'Proveedor', 'Lieferant');

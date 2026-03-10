@@ -44,6 +44,7 @@ const WorkerProfilePage = lazy(() => import("./pages/WorkerProfile"));
 const MyWorkerProfile = lazy(() => import("./pages/MyWorkerProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const JoinTeam = lazy(() => import("./pages/JoinTeam"));
+const JoinClient = lazy(() => import("./pages/JoinClient"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
@@ -123,6 +124,7 @@ function AppRoutes() {
       <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/map"} replace /> : <Auth />} />
       <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
       <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
+      <Route path="/join-client" element={user ? <JoinClient /> : <Navigate to="/auth" replace />} />
       
       {/* Platform Admin routes */}
       <Route path="/platform" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
