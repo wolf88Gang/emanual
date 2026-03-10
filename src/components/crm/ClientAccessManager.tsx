@@ -338,7 +338,7 @@ export function ClientAccessManager() {
               <Label>{l('Permissions', 'Permisos', 'Berechtigungen')}</Label>
               {PERM_KEYS.map(key => (
                 <div key={key} className="flex items-center justify-between">
-                  <span className="text-sm">{(PERMISSION_LABELS[key] as any)[useLanguage().language] || PERMISSION_LABELS[key].en}</span>
+                  <span className="text-sm">{getLang(PERMISSION_LABELS[key])}</span>
                   <Switch
                     checked={invitePerms[key] || false}
                     onCheckedChange={v => setInvitePerms(prev => ({ ...prev, [key]: v }))}
