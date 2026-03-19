@@ -80,7 +80,11 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm" style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)'
+      }}>
         <div className="flex h-16 items-center justify-between px-4 lg:px-6">
           {/* Left: Logo + Mobile Menu */}
           <div className="flex items-center gap-3">
@@ -135,7 +139,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-2">
             {/* Estate Selector */}
             {estates.length > 0 && (
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2 hidden sm:flex">
                     <Building2 className="h-4 w-4 text-primary" />
@@ -166,7 +170,7 @@ export function AppLayout({ children }: AppLayoutProps) {
             <LanguagePicker />
 
             {/* Profile */}
-            <DropdownMenu>
+            <DropdownMenu modal={false}>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <Avatar className="h-8 w-8">

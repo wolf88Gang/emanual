@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Briefcase, Map, Box, ClipboardList, FolderOpen, Settings, Package,
   Leaf, Clock, Users, BarChart3, CreditCard, Activity, Wrench,
   Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus, Megaphone
 } from 'lucide-react';
-import { NavLink } from '@/components/NavLink';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -24,6 +23,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface NavItem {
   path: string;
@@ -33,9 +33,10 @@ interface NavItem {
 }
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
+  const navigate = useNavigate();
   const { hasRole, isOwnerOrManager, isPlatformAdmin, signOut, profile } = useAuth();
   const { language, tl } = useLanguage();
   const [orgType, setOrgType] = useState<string>('residential');
@@ -159,7 +160,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         {/* Brand */}
-        <div className={`flex items-center gap-2 px-3 py-4 safe-area-pt ${collapsed ? 'justify-center' : ''}`}>
+        <div className={`flex items-center gap-2 px-3 pb-4 ${collapsed ? 'justify-center' : ''}`} style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
           <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain flex-shrink-0" />
           {!collapsed && (
             <span className="text-sm font-serif font-semibold text-primary truncate">
@@ -176,16 +177,19 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.path}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild isActive={isActive(item.path)}>
-                        <NavLink
-                          to={item.path}
-                          end={item.path === '/'}
-                          className="hover:bg-muted/50"
-                          activeClassName="bg-primary/10 text-primary font-medium"
-                        >
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          {!collapsed && <span>{item.label}</span>}
-                        </NavLink>
+                      <SidebarMenuButton
+                        isActive={isActive(item.path)}
+                        onClick={() => {
+                          navigate(item.path);
+                          if (isMobile) setOpenMobile(false);
+                        }}
+                        className={cn(
+                          "cursor-pointer",
+                          isActive(item.path) && "bg-primary/10 text-primary font-medium"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4 flex-shrink-0" />
+                        {!collapsed && <span>{item.label}</span>}
                       </SidebarMenuButton>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="font-medium">

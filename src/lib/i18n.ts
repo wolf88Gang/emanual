@@ -3,10 +3,10 @@
 
 export type Language = 'en' | 'es' | 'de';
 
-export const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string }[] = [
-  { code: 'en', label: 'English', flag: '🇺🇸' },
-  { code: 'es', label: 'Español', flag: '🇪🇸' },
-  { code: 'de', label: 'Deutsch', flag: '🇩🇪' },
+export const LANGUAGE_OPTIONS: { code: Language; label: string; flag: string; short: string }[] = [
+  { code: 'en', label: 'English', flag: '🇺🇸', short: 'EN' },
+  { code: 'es', label: 'Español', flag: '🇪🇸', short: 'ES' },
+  { code: 'de', label: 'Deutsch', flag: '🇩🇪', short: 'DE' },
 ];
 
 export const translations = {

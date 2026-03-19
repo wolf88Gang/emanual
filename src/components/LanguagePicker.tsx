@@ -21,19 +21,18 @@ export function LanguagePicker({ variant = 'icon' }: LanguagePickerProps) {
   return (
     <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
-          <span>{current.flag}</span>
-          {variant === 'full' && <span>{current.label}</span>}
+        <Button variant="ghost" size="sm" className="h-8 px-2 text-xs font-semibold tracking-wide">
+          {current.short}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[140px]" collisionPadding={12} sideOffset={8}>
+      <DropdownMenuContent align="end" sideOffset={8} collisionPadding={16} className="min-w-[120px]">
         {LANGUAGE_OPTIONS.map(opt => (
           <DropdownMenuItem
             key={opt.code}
             onClick={() => setLanguage(opt.code)}
             className={`gap-2 ${language === opt.code ? 'bg-accent/10 font-medium' : ''}`}
           >
-            <span>{opt.flag}</span>
+            <span className="font-semibold text-xs w-6">{opt.short}</span>
             <span>{opt.label}</span>
           </DropdownMenuItem>
         ))}
