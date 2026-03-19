@@ -180,8 +180,10 @@ export function AppSidebar() {
                       <SidebarMenuButton
                         isActive={isActive(item.path)}
                         onClick={() => {
+                          if (isMobile) {
+                            setOpenMobile(false);
+                          }
                           navigate(item.path);
-                          if (isMobile) setOpenMobile(false);
                         }}
                         className={cn(
                           "cursor-pointer",

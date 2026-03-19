@@ -121,24 +121,40 @@ export function EstateMap({
     };
   }, []);
 
-  // Recalculate map size after route transitions and viewport changes
+  // Recalculate map size after route transitions, drawer animations, and viewport changes
   useEffect(() => {
-    if (!mapRef.current || !isMapReady) return;
+    if (!mapRef.current || !isMapReady || !mapContainerRef.current) return;
 
     const map = mapRef.current;
-    const refreshSize = () => map.invalidateSize({ pan: false, animate: false });
+    let frameId: number | null = null;
 
-    const rafId = window.requestAnimationFrame(refreshSize);
+    const refreshSize = () => {
+      if (frameId !== null) return;
+      frameId = window.requestAnimationFrame(() => {
+        map.invalidateSize({ pan: false, animate: false });
+        frameId = null;
+      });
+    };
+
+    refreshSize();
     const timeoutId = window.setTimeout(refreshSize, 320);
+
+    const resizeObserver = new ResizeObserver(refreshSize);
+    resizeObserver.observe(mapContainerRef.current);
 
     window.addEventListener('resize', refreshSize);
     window.addEventListener('orientationchange', refreshSize);
+    document.addEventListener('visibilitychange', refreshSize);
 
     return () => {
-      window.cancelAnimationFrame(rafId);
+      if (frameId !== null) {
+        window.cancelAnimationFrame(frameId);
+      }
       window.clearTimeout(timeoutId);
+      resizeObserver.disconnect();
       window.removeEventListener('resize', refreshSize);
       window.removeEventListener('orientationchange', refreshSize);
+      document.removeEventListener('visibilitychange', refreshSize);
     };
   }, [isMapReady]);
 
