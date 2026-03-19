@@ -33,9 +33,10 @@ interface NavItem {
 }
 
 export function AppSidebar() {
-  const { state } = useSidebar();
+  const { state, isMobile, setOpenMobile } = useSidebar();
   const collapsed = state === 'collapsed';
   const location = useLocation();
+  const navigate = useNavigate();
   const { hasRole, isOwnerOrManager, isPlatformAdmin, signOut, profile } = useAuth();
   const { language, tl } = useLanguage();
   const [orgType, setOrgType] = useState<string>('residential');
