@@ -4,12 +4,10 @@ const config: CapacitorConfig = {
   appId: 'com.homeguide.casa',
   appName: 'HomeGuide.Casa',
   webDir: 'dist',
-  /* Hot-reload desde Lovable - descomenta para ver cambios en vivo desde la web
   server: {
     url: 'https://899c2177-f3cb-4399-b8c2-e639546f90c4.lovableproject.com?forceHideBadge=true',
     cleartext: true
   }
-  */
 };
 
 export default config;
