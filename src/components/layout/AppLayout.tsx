@@ -80,7 +80,7 @@ export function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm">
+      <header className="sticky top-0 z-50 border-b border-border bg-card/95 backdrop-blur-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
         <div className="flex h-16 items-center justify-between px-4 lg:px-6">
           {/* Left: Logo + Mobile Menu */}
           <div className="flex items-center gap-3">

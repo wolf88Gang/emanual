@@ -16,7 +16,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="h-12 flex items-center justify-between border-b border-border px-3 sticky top-0 z-40 bg-background/95 backdrop-blur-sm">
+          <header className="h-12 flex items-center justify-between border-b border-border px-3 sticky top-0 z-40 bg-background/95 backdrop-blur-sm" style={{ paddingTop: 'env(safe-area-inset-top)' }}>
             <SidebarTrigger className="h-8 w-8" />
             <div className="flex items-center gap-1">
               <NotificationBell />
