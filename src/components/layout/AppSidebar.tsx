@@ -177,16 +177,19 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.path}>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <SidebarMenuButton asChild isActive={isActive(item.path)}>
-                        <NavLink
-                          to={item.path}
-                          end={item.path === '/'}
-                          className="hover:bg-muted/50"
-                          activeClassName="bg-primary/10 text-primary font-medium"
-                        >
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          {!collapsed && <span>{item.label}</span>}
-                        </NavLink>
+                      <SidebarMenuButton
+                        isActive={isActive(item.path)}
+                        onClick={() => {
+                          navigate(item.path);
+                          if (isMobile) setOpenMobile(false);
+                        }}
+                        className={cn(
+                          "cursor-pointer",
+                          isActive(item.path) && "bg-primary/10 text-primary font-medium"
+                        )}
+                      >
+                        <item.icon className="h-4 w-4 flex-shrink-0" />
+                        {!collapsed && <span>{item.label}</span>}
                       </SidebarMenuButton>
                     </TooltipTrigger>
                     <TooltipContent side="right" className="font-medium">
