@@ -121,6 +121,27 @@ export function EstateMap({
     };
   }, []);
 
+  // Recalculate map size after route transitions and viewport changes
+  useEffect(() => {
+    if (!mapRef.current || !isMapReady) return;
+
+    const map = mapRef.current;
+    const refreshSize = () => map.invalidateSize({ pan: false, animate: false });
+
+    const rafId = window.requestAnimationFrame(refreshSize);
+    const timeoutId = window.setTimeout(refreshSize, 320);
+
+    window.addEventListener('resize', refreshSize);
+    window.addEventListener('orientationchange', refreshSize);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+      window.removeEventListener('resize', refreshSize);
+      window.removeEventListener('orientationchange', refreshSize);
+    };
+  }, [isMapReady]);
+
   // Handle map clicks for pin placement
   useEffect(() => {
     if (!mapRef.current) return;
@@ -320,7 +341,7 @@ export function EstateMap({
   }, [assets, language, isMapReady]);
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative z-0 isolate h-full w-full">
       {/* Custom CSS for marker cluster spiderfy */}
       <style>{`
         .leaflet-marker-icon.custom-asset-marker,
@@ -368,7 +389,7 @@ export function EstateMap({
       />
       
       {/* Satellite Toggle Button */}
-      <div className="absolute top-4 right-4 z-[1000]">
+      <div className="absolute top-4 right-4 z-20">
         <Button
           variant="secondary"
           size="sm"

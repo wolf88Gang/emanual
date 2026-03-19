@@ -184,12 +184,6 @@
     @apply font-semibold tracking-tight;
   }
 
-  /* Map page desktop: only subtract header */
-  @media (min-width: 1024px) {
-    .map-container-outer {
-      height: calc(100dvh - 3.5rem) !important;
-    }
-  }
 }
 
 @layer components {
