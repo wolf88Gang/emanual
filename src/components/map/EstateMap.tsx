@@ -121,6 +121,27 @@ export function EstateMap({
     };
   }, []);
 
+  // Recalculate map size after route transitions and viewport changes
+  useEffect(() => {
+    if (!mapRef.current || !isMapReady) return;
+
+    const map = mapRef.current;
+    const refreshSize = () => map.invalidateSize({ pan: false, animate: false });
+
+    const rafId = window.requestAnimationFrame(refreshSize);
+    const timeoutId = window.setTimeout(refreshSize, 320);
+
+    window.addEventListener('resize', refreshSize);
+    window.addEventListener('orientationchange', refreshSize);
+
+    return () => {
+      window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
+      window.removeEventListener('resize', refreshSize);
+      window.removeEventListener('orientationchange', refreshSize);
+    };
+  }, [isMapReady]);
+
   // Handle map clicks for pin placement
   useEffect(() => {
     if (!mapRef.current) return;
