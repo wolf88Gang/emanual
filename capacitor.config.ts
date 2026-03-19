@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.emanual.app',
-  appName: 'emanual',
+  appId: 'com.homeguide.casa',
+  appName: 'HomeGuide.Casa',
   webDir: 'dist',
   /* Hot-reload desde Lovable - descomenta para ver cambios en vivo desde la web
   server: {
