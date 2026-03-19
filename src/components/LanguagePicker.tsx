@@ -19,14 +19,14 @@ export function LanguagePicker({ variant = 'icon' }: LanguagePickerProps) {
   const current = LANGUAGE_OPTIONS.find(l => l.code === language)!;
 
   return (
-    <DropdownMenu>
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm" className="h-8 gap-1.5 text-xs">
           <span>{current.flag}</span>
           {variant === 'full' && <span>{current.label}</span>}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="min-w-[140px]">
+      <DropdownMenuContent align="end" className="min-w-[140px]" collisionPadding={12} sideOffset={8}>
         {LANGUAGE_OPTIONS.map(opt => (
           <DropdownMenuItem
             key={opt.code}

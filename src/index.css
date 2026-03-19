@@ -165,6 +165,11 @@
   body {
     @apply bg-background text-foreground antialiased;
     font-family: 'Inter', system-ui, sans-serif;
+    /* Android/iOS safe areas - fixed fallbacks when env() returns 0 */
+    padding-top: max(28px, env(safe-area-inset-top, 28px));
+    padding-bottom: max(48px, env(safe-area-inset-bottom, 48px));
+    padding-left: env(safe-area-inset-left, 0px);
+    padding-right: env(safe-area-inset-right, 0px);
   }
 
   h1, h2, h3, h4, h5, h6 {
@@ -325,6 +330,21 @@
 
   .scrollbar-thin::-webkit-scrollbar-thumb {
     @apply bg-border rounded-full;
+  }
+
+  /* Safe area top (status bar) */
+  .safe-area-pt {
+    padding-top: max(28px, env(safe-area-inset-top, 28px));
+  }
+
+  /* Safe area bottom (nav bar, home button) */
+  .safe-area-pb {
+    padding-bottom: max(48px, env(safe-area-inset-bottom, 48px));
+  }
+
+  /* Main content padding so scroll doesn't go under system nav bar */
+  .safe-area-content {
+    padding-bottom: max(48px, env(safe-area-inset-bottom, 48px));
   }
 
   /* Page transitions */

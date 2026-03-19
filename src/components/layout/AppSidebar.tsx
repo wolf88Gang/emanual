@@ -159,7 +159,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         {/* Brand */}
-        <div className={`flex items-center gap-2 px-3 py-4 ${collapsed ? 'justify-center' : ''}`}>
+        <div className={`flex items-center gap-2 px-3 py-4 safe-area-pt ${collapsed ? 'justify-center' : ''}`}>
           <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain flex-shrink-0" />
           {!collapsed && (
             <span className="text-sm font-serif font-semibold text-primary truncate">
@@ -199,7 +199,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="safe-area-pb">
         <div className={`flex items-center gap-2 px-2 py-2 ${collapsed ? 'justify-center' : ''}`}>
           {!collapsed && profile && (
             <div className="flex-1 min-w-0">

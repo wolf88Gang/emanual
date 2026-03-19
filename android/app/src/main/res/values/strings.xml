@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">HomeGuide.Casa</string>
-    <string name="title_activity_main">HomeGuide.Casa</string>
-    <string name="package_name">com.homeguide.casa</string>
-    <string name="custom_url_scheme">com.homeguide.casa</string>
+    <string name="app_name">HomeGuide</string>
+    <string name="title_activity_main">HomeGuide</string>
+    <string name="package_name">com.homeguide.app</string>
+    <string name="custom_url_scheme">com.homeguide.app</string>
 </resources>

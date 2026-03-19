@@ -4,6 +4,7 @@ import { AppSidebar } from './AppSidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
+import { DemoBanner } from '@/components/DemoBanner';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 
 interface SidebarLayoutProps {
@@ -24,8 +25,9 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <LanguagePicker />
             </div>
           </header>
+          <DemoBanner />
           <TrialBanner />
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto safe-area-content">
             {children}
           </main>
         </div>

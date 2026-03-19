@@ -1,15 +1,14 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.homeguide.casa',
-  appName: 'HomeGuide.Casa',
+  appId: 'com.homeguide.app',
+  appName: 'HomeGuide',
   webDir: 'dist',
-  /* Hot-reload desde Lovable - descomenta para ver cambios en vivo desde la web
   server: {
-    url: 'https://899c2177-f3cb-4399-b8c2-e639546f90c4.lovableproject.com?forceHideBadge=true',
+    // Using your official domain
+    url: 'https://homeguide.casa',
     cleartext: true
   }
-  */
 };
 
 export default config;
