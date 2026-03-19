@@ -101,7 +101,7 @@ export function MapActionsMenu({
   ];
 
   return (
-    <div className="fixed bottom-24 right-4 z-[1001] flex flex-col items-end gap-2 lg:bottom-6">
+    <div className="fixed bottom-24 right-4 z-30 flex flex-col items-end gap-2 lg:bottom-6">
       {/* Active Shift Indicator */}
       {hasActiveShift && !isOpen && (
         <div className="flex items-center gap-2 bg-primary/90 text-primary-foreground px-3 py-1.5 rounded-full shadow-lg text-sm animate-pulse">

@@ -303,7 +303,7 @@ export default function MapView() {
         )}
 
         {/* Map Container */}
-        <div className="flex-1 min-h-0 relative">
+        <div className="flex-1 min-h-0 relative z-0 isolate">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
               <div className="text-center">
@@ -358,12 +358,12 @@ export default function MapView() {
                 zones={zones}
                 selectedZone={selectedZone}
                 onZoneSelect={setSelectedZone}
-                className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] z-[1000]"
+                className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] z-20"
               />
 
               {/* Selected Zone Info */}
               {selectedZone && !editingZone && (
-                <div className="absolute top-4 left-4 right-4 z-[1000]">
+                <div className="absolute top-4 left-4 right-4 z-20">
                   <Card className="bg-card/95 backdrop-blur-sm">
                     <CardHeader className="py-3 px-4">
                       <div className="flex items-center justify-between">

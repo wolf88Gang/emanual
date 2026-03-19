@@ -341,7 +341,7 @@ export function EstateMap({
   }, [assets, language, isMapReady]);
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative z-0 isolate h-full w-full">
       {/* Custom CSS for marker cluster spiderfy */}
       <style>{`
         .leaflet-marker-icon.custom-asset-marker,
@@ -389,7 +389,7 @@ export function EstateMap({
       />
       
       {/* Satellite Toggle Button */}
-      <div className="absolute top-4 right-4 z-[1000]">
+      <div className="absolute top-4 right-4 z-20">
         <Button
           variant="secondary"
           size="sm"
