@@ -341,7 +341,7 @@ export function EstateMap({
   }, [assets, language, isMapReady]);
 
   return (
-    <div className="relative h-full w-full">
+    <div className="relative z-0 isolate h-full w-full">
       {/* Custom CSS for marker cluster spiderfy */}
       <style>{`
         .leaflet-marker-icon.custom-asset-marker,

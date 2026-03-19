@@ -303,7 +303,7 @@ export default function MapView() {
         )}
 
         {/* Map Container */}
-        <div className="flex-1 min-h-0 relative">
+        <div className="flex-1 min-h-0 relative z-0 isolate">
           {loading ? (
             <div className="absolute inset-0 flex items-center justify-center bg-muted/50">
               <div className="text-center">
