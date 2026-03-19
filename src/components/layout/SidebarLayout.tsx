@@ -16,7 +16,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
       <div className="min-h-screen flex w-full">
         <AppSidebar />
         <div className="flex-1 flex flex-col min-w-0">
-          <header className="flex items-center justify-between border-b border-border/30 px-3 sticky top-0 z-40 bg-sidebar backdrop-blur-sm" style={{
+          <header className="flex items-center justify-between border-b border-border/30 px-3 sticky top-0 z-40 bg-background" style={{
             paddingTop: 'calc(env(safe-area-inset-top) + 0.25rem)',
             paddingBottom: '0.25rem',
             paddingLeft: 'max(0.75rem, env(safe-area-inset-left))',
