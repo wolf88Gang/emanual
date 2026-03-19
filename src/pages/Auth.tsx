@@ -276,9 +276,9 @@ export default function Auth() {
                   <div className="relative flex justify-center text-xs"><span className="px-2 bg-background text-muted-foreground">{es ? 'o' : 'or'}</span></div>
                 </div>
 
-                <Button variant="outline" className="w-full" onClick={() => setShowDemoAccess(true)}>
+                <Button variant="secondary" className="w-full border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10" onClick={() => setShowDemoAccess(true)}>
                   <Users className="mr-2 h-4 w-4" />
-                  {es ? 'Acceso Demo' : 'Demo Access'}
+                  {es ? 'Probar Demo (sin registro)' : 'Try Demo (no signup)'}
                 </Button>
               </div>
             )}

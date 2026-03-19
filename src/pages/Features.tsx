@@ -106,7 +106,7 @@ export default function Features() {
             <LanguagePicker />
             <Link to="/auth">
               <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase">
-                {es ? 'Comenzar' : language === 'de' ? 'Starten' : 'Get Started'}
+                {es ? 'Probar Demo' : language === 'de' ? 'Demo testen' : 'Try Demo'}
               </Button>
             </Link>
           </div>
@@ -135,6 +135,24 @@ export default function Features() {
               ? '19 módulos integrados para propiedades que exigen excelencia operativa y cuidado a largo plazo.'
               : '19 integrated modules for properties that demand operational excellence and long-term stewardship.'}
           </p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Button
+              size="lg"
+              onClick={() => navigate('/auth')}
+              className="bg-white text-foreground hover:bg-white/90 font-medium tracking-wide px-6"
+            >
+              {es ? 'Probar Demo' : 'Try Demo'}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => navigate('/auth')}
+              className="border-white/50 text-white hover:bg-white/10 font-medium"
+            >
+              {es ? 'Crear cuenta' : 'Create Account'}
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -201,15 +219,15 @@ export default function Features() {
           </h2>
           <p className="text-base text-white/80 max-w-lg mx-auto mb-10">
             {es
-              ? 'Configura tu primera propiedad en minutos. Sin compromiso.'
-              : 'Set up your first property in minutes. No commitment required.'}
+              ? 'Prueba la demo en 30 segundos. Sin registro.'
+              : 'Try the demo in 30 seconds. No signup required.'}
           </p>
           <Button
             size="lg"
             onClick={() => navigate('/auth')}
             className="bg-white text-foreground hover:bg-white/90 font-medium tracking-wide px-8"
           >
-            {es ? 'Comenzar ahora' : 'Get started'}
+            {es ? 'Probar Demo' : 'Try Demo'}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
