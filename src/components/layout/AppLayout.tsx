@@ -135,7 +135,7 @@ export function AppLayout({ children }: AppLayoutProps) {
           <div className="flex items-center gap-2">
             {/* Estate Selector */}
             {estates.length > 0 && (
-              <DropdownMenu>
+              <DropdownMenu modal={false}>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="gap-2 hidden sm:flex">
                     <Building2 className="h-4 w-4 text-primary" />
