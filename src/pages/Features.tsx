@@ -96,7 +96,11 @@ export default function Features() {
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Minimal header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50" style={{
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingLeft: 'env(safe-area-inset-left)',
+        paddingRight: 'env(safe-area-inset-right)'
+      }}>
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
             <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain" />
