@@ -358,7 +358,7 @@ export default function MapView() {
                 zones={zones}
                 selectedZone={selectedZone}
                 onZoneSelect={setSelectedZone}
-                className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] z-[1000]"
+                className="absolute bottom-4 left-4 max-w-[calc(100%-2rem)] z-20"
               />
 
               {/* Selected Zone Info */}
