@@ -25,7 +25,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             </div>
           </header>
           <TrialBanner />
-          <main className="flex-1 overflow-auto">
+          <main className="flex-1 overflow-auto safe-area-content">
             {children}
           </main>
         </div>
