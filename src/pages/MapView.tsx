@@ -242,7 +242,15 @@ export default function MapView() {
 
   return (
     <ModernAppLayout>
-      <div className="h-[calc(100vh-4rem-4rem)] lg:h-[calc(100vh-3.5rem)] flex flex-col">
+      <div className="flex flex-col overflow-hidden" style={{
+        height: 'calc(100dvh - 4rem - 4rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px))',
+      }}>
+        {/* On large screens, adjust for sidebar header only */}
+        <style>{`
+          @media (min-width: 1024px) {
+            .map-container-outer { height: calc(100dvh - 3.5rem) !important; }
+          }
+        `}</style>
         {/* Search Bar with Fullscreen button */}
         <div className="p-3 border-b border-border bg-card flex gap-2">
           <div className="relative flex-1">
