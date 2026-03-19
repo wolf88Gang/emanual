@@ -199,7 +199,7 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
+      <SidebarFooter className="safe-area-pb">
         <div className={`flex items-center gap-2 px-2 py-2 ${collapsed ? 'justify-center' : ''}`}>
           {!collapsed && profile && (
             <div className="flex-1 min-w-0">

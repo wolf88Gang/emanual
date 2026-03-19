@@ -172,11 +172,11 @@
   }
 
   .safe-area-content {
-    padding-bottom: max(3rem, env(safe-area-inset-bottom, 3rem));
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 4rem);
   }
 
   .safe-area-pb {
-    padding-bottom: env(safe-area-inset-bottom, 0.5rem);
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
   }
 
   h1, h2, h3, h4, h5, h6 {
