@@ -389,7 +389,7 @@ export function EstateMap({
       />
       
       {/* Satellite Toggle Button */}
-      <div className="absolute top-4 right-4 z-[1000]">
+      <div className="absolute top-4 right-4 z-20">
         <Button
           variant="secondary"
           size="sm"

@@ -363,7 +363,7 @@ export default function MapView() {
 
               {/* Selected Zone Info */}
               {selectedZone && !editingZone && (
-                <div className="absolute top-4 left-4 right-4 z-[1000]">
+                <div className="absolute top-4 left-4 right-4 z-20">
                   <Card className="bg-card/95 backdrop-blur-sm">
                     <CardHeader className="py-3 px-4">
                       <div className="flex items-center justify-between">
