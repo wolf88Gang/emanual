@@ -159,7 +159,7 @@ export function AppSidebar() {
     <Sidebar collapsible="icon">
       <SidebarContent>
         {/* Brand */}
-        <div className={`flex items-center gap-2 px-3 py-4 ${collapsed ? 'justify-center' : ''}`}>
+        <div className={`flex items-center gap-2 px-3 pb-4 ${collapsed ? 'justify-center' : ''}`} style={{ paddingTop: 'max(1rem, env(safe-area-inset-top))' }}>
           <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain flex-shrink-0" />
           {!collapsed && (
             <span className="text-sm font-serif font-semibold text-primary truncate">
