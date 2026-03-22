@@ -148,16 +148,16 @@ export default function Features() {
               onClick={() => navigate('/auth')}
               className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-6"
             >
-              {es ? 'Probar Demo' : 'Try Demo'}
+              {es ? 'Comenzar' : 'Get Started'}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
             <Button
               size="lg"
               variant="outline"
               onClick={() => navigate('/auth')}
-              className="border-white/50 text-white hover:bg-white/10 font-medium"
+              className="border-white text-white hover:bg-white/20 font-medium"
             >
-              {es ? 'Crear cuenta' : 'Create Account'}
+              {es ? 'Probar Demo' : 'Try Demo'}
             </Button>
           </div>
         </div>
