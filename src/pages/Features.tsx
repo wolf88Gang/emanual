@@ -229,7 +229,7 @@ export default function Features() {
           <Button
             size="lg"
             onClick={() => navigate('/auth')}
-            className="bg-white text-foreground hover:bg-white/90 font-medium tracking-wide px-8"
+            className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-8"
           >
             {es ? 'Probar Demo' : 'Try Demo'}
             <ArrowRight className="ml-2 h-4 w-4" />
