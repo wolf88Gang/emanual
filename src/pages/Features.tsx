@@ -109,7 +109,7 @@ export default function Features() {
           <div className="flex items-center gap-2">
             <LanguagePicker />
             <Link to="/auth">
-              <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase">
+              <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase border-foreground/30 text-foreground">
                 {es ? 'Probar Demo' : language === 'de' ? 'Demo testen' : 'Try Demo'}
               </Button>
             </Link>
@@ -143,7 +143,7 @@ export default function Features() {
             <Button
               size="lg"
               onClick={() => navigate('/auth')}
-              className="bg-white text-foreground hover:bg-white/90 font-medium tracking-wide px-6"
+              className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-6"
             >
               {es ? 'Probar Demo' : 'Try Demo'}
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -229,7 +229,7 @@ export default function Features() {
           <Button
             size="lg"
             onClick={() => navigate('/auth')}
-            className="bg-white text-foreground hover:bg-white/90 font-medium tracking-wide px-8"
+            className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-8"
           >
             {es ? 'Probar Demo' : 'Try Demo'}
             <ArrowRight className="ml-2 h-4 w-4" />
