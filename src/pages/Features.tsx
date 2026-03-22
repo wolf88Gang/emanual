@@ -109,7 +109,7 @@ export default function Features() {
           <div className="flex items-center gap-2">
             <LanguagePicker />
             <Link to="/auth">
-              <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase">
+              <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase border-foreground/30 text-foreground">
                 {es ? 'Probar Demo' : language === 'de' ? 'Demo testen' : 'Try Demo'}
               </Button>
             </Link>
