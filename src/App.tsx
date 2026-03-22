@@ -135,7 +135,7 @@ function AppRoutes() {
       <Route path="/platform/system" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
 
       {/* Public landing for unauthenticated, dashboard for authenticated */}
-      <Route path="/" element={user ? <EstateRoute><WorkView /></EstateRoute> : <Navigate to="/auth" replace />} />
+      <Route path="/" element={user ? <EstateRoute><WorkView /></EstateRoute> : <Features />} />
 
       <Route path="/map" element={<EstateRoute><MapView /></EstateRoute>} />
       <Route path="/tasks" element={<EstateRoute><Tasks /></EstateRoute>} />
