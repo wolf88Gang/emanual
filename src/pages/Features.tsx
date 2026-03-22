@@ -234,7 +234,7 @@ export default function Features() {
             onClick={() => navigate('/auth')}
             className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-8"
           >
-            {es ? 'Probar Demo' : 'Try Demo'}
+            {es ? 'Comenzar Ahora' : 'Get Started Now'}
             <ArrowRight className="ml-2 h-4 w-4" />
           </Button>
         </div>
