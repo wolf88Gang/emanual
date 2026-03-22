@@ -106,11 +106,14 @@ export default function Features() {
             <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain" />
             <span className="text-base font-serif font-semibold text-foreground tracking-tight">Home Guide</span>
           </Link>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
+            <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+              {es ? 'Inicio' : language === 'de' ? 'Start' : 'Home'}
+            </Link>
             <LanguagePicker />
             <Link to="/auth">
-              <Button size="sm" variant="outline" className="text-xs font-medium tracking-wide uppercase border-foreground/30 text-foreground">
-                {es ? 'Probar Demo' : language === 'de' ? 'Demo testen' : 'Try Demo'}
+              <Button size="sm" className="text-xs font-medium tracking-wide uppercase bg-primary text-primary-foreground hover:bg-primary/90">
+                {es ? 'Iniciar Sesión' : language === 'de' ? 'Anmelden' : 'Sign In'}
               </Button>
             </Link>
           </div>
