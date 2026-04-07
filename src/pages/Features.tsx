@@ -5,7 +5,7 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 import {
   Leaf, Map, Box, ClipboardList, FolderOpen, Package, Mountain, BookOpen,
   DollarSign, Recycle, ShoppingBag, Users, Clock, Shield, Wrench, BarChart3,
-  Camera, QrCode, Bell, Zap, Globe, ArrowRight
+  Camera, QrCode, Bell, Zap, Globe, ArrowRight, Lock, Database, Eye, Calculator
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -64,11 +64,13 @@ const sections: FeatureSection[] = [
   },
   {
     key: 'business',
-    labelEn: 'Business & Reporting',
-    labelEs: 'Negocios y Reportes',
+    labelEn: 'Financials & Reporting',
+    labelEs: 'Finanzas y Reportes',
     image: '/images/estate_guide_4.jpg',
     features: [
-      { icon: ShoppingBag, title: 'CRM & Sales Suite', titleEs: 'CRM y Ventas', description: 'Client directory, product/service catalog, invoice generation, payment tracking, and revenue history.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos.' },
+      { icon: Calculator, title: 'Tax Tracker & Calculator', titleEs: 'Rastreador y Calculador Fiscal', description: 'Track income, expenses, and deductions by tax category. Estimated tax calculator for US federal and Costa Rica income tax brackets.', descriptionEs: 'Rastrea ingresos, gastos y deducciones por categoría fiscal. Calculador estimado para escalas de EE.UU. y Costa Rica.' },
+      { icon: DollarSign, title: 'Expense & Receipt Organizer', titleEs: 'Organizador de Gastos y Recibos', description: 'Upload receipts, tag expenses by deductible category, and generate year-end summaries for your accountant.', descriptionEs: 'Sube recibos, etiqueta gastos por categoría deducible y genera resúmenes anuales para tu contador.' },
+      { icon: ShoppingBag, title: 'CRM & Sales (Landscapers)', titleEs: 'CRM y Ventas (Jardineros)', description: 'Client directory, product/service catalog, invoice generation, payment tracking, and revenue history. Available for landscaping companies.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos. Disponible para empresas de jardinería.' },
       { icon: BookOpen, title: 'Estate Manual', titleEs: 'Manual de Propiedad', description: 'Generates a comprehensive property manual from verified data: zones, assets, history, and routines.', descriptionEs: 'Genera un manual integral desde datos verificados: zonas, activos, historial y rutinas.' },
       { icon: BarChart3, title: 'Duty of Care Reports', titleEs: 'Informes de Cumplimiento', description: 'Generate date-range PDF reports with completed tasks, field check-ins, and photo evidence.', descriptionEs: 'Genera informes PDF por rango de fechas con tareas, registros y evidencia fotográfica.' },
     ],
@@ -83,6 +85,7 @@ const sections: FeatureSection[] = [
       { icon: QrCode, title: 'QR Code System', titleEs: 'Sistema QR', description: 'Generate and print labels for any asset. Scan to view details, start shifts, or log check-ins.', descriptionEs: 'Genera e imprime etiquetas para activos. Escanea para detalles, turnos o registros.' },
       { icon: Globe, title: 'Bilingual Interface', titleEs: 'Interfaz Bilingüe', description: 'Full English and Spanish support across the entire platform. Switch languages instantly.', descriptionEs: 'Soporte completo en inglés y español en toda la plataforma. Cambia al instante.' },
       { icon: Zap, title: 'Smart Intelligence', titleEs: 'Inteligencia Integrada', description: 'Smart suggestions for tasks, auto-generated care protocols, shift validation, and property manual generation.', descriptionEs: 'Sugerencias inteligentes de tareas, protocolos de cuidado, validación de turnos y generación de manuales.' },
+      { icon: Lock, title: 'Enterprise-Grade Security', titleEs: 'Seguridad de Nivel Empresarial', description: 'End-to-end encryption, row-level security, and SOC 2 compliant infrastructure. Your tax IDs, contracts, and sensitive documents are protected by the same security banks use.', descriptionEs: 'Cifrado de extremo a extremo, seguridad a nivel de filas e infraestructura compatible con SOC 2. Tus números fiscales, contratos y documentos sensibles están protegidos con la misma seguridad que usan los bancos.' },
       { icon: Shield, title: 'Subscription Management', titleEs: 'Gestión de Suscripción', description: 'Monthly or annual plans via PayPal with secure processing and automatic subscription management.', descriptionEs: 'Planes mensuales o anuales por PayPal con procesamiento seguro y gestión automática.' },
     ],
   },
@@ -210,6 +213,69 @@ export default function Features() {
         </section>
       ))}
 
+      {/* Security & Trust Section */}
+      <section className="bg-card border-y border-border">
+        <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
+              <Lock className="h-4 w-4 text-primary" />
+              <span className="text-xs font-medium tracking-widest uppercase text-primary">
+                {es ? 'Seguridad y Confianza' : 'Security & Trust'}
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
+              {es ? 'Tu información está protegida' : 'Your information is protected'}
+            </h2>
+            <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
+              {es
+                ? 'Sabemos que tus documentos contienen números fiscales, contratos y datos sensibles. Los protegemos con la misma seguridad que usan los bancos.'
+                : 'We know your documents contain tax IDs, contracts, and sensitive data. We protect them with the same security banks use.'}
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center p-6 rounded-2xl border border-border bg-background">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">
+                {es ? 'Cifrado de Extremo a Extremo' : 'End-to-End Encryption'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {es
+                  ? 'Todos los datos se transmiten y almacenan con cifrado AES-256. Tus documentos nunca viajan sin protección.'
+                  : 'All data is transmitted and stored with AES-256 encryption. Your documents never travel unprotected.'}
+              </p>
+            </div>
+            <div className="text-center p-6 rounded-2xl border border-border bg-background">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Database className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">
+                {es ? 'Aislamiento de Datos por Fila' : 'Row-Level Data Isolation'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {es
+                  ? 'Cada usuario solo puede ver sus propios datos. Políticas de seguridad a nivel de base de datos garantizan que nadie más acceda a tu información.'
+                  : 'Each user can only see their own data. Database-level security policies ensure no one else can access your information.'}
+              </p>
+            </div>
+            <div className="text-center p-6 rounded-2xl border border-border bg-background">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Eye className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">
+                {es ? 'Infraestructura SOC 2' : 'SOC 2 Infrastructure'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {es
+                  ? 'Nuestra infraestructura cumple con los estándares SOC 2 Tipo II, con auditorías regulares, monitoreo continuo y controles de acceso estrictos.'
+                  : 'Our infrastructure meets SOC 2 Type II standards, with regular audits, continuous monitoring, and strict access controls.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
@@ -246,6 +312,17 @@ export default function Features() {
           <div className="flex items-center gap-2">
             <img src="/images/hg-logo.png" alt="HG" className="w-6 h-6 object-contain" />
             <span className="text-sm font-serif font-medium text-foreground">Home Guide</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              <span>{es ? 'Cifrado AES-256' : 'AES-256 Encrypted'}</span>
+            </div>
+            <span className="text-muted-foreground/30">|</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Shield className="h-3 w-3" />
+              <span>{es ? 'SOC 2 Certificado' : 'SOC 2 Compliant'}</span>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}

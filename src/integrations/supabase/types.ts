@@ -903,6 +903,81 @@ export type Database = {
           },
         ]
       }
+      financial_entries: {
+        Row: {
+          amount: number
+          category: string
+          created_at: string
+          currency: string
+          description: string | null
+          entry_date: string
+          entry_type: Database["public"]["Enums"]["financial_entry_type"]
+          estate_id: string | null
+          id: string
+          is_deductible: boolean
+          notes: string | null
+          org_id: string
+          receipt_url: string | null
+          tax_jurisdiction: Database["public"]["Enums"]["tax_jurisdiction"]
+          tax_year: number
+          updated_at: string
+          vendor_name: string | null
+        }
+        Insert: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          entry_date?: string
+          entry_type?: Database["public"]["Enums"]["financial_entry_type"]
+          estate_id?: string | null
+          id?: string
+          is_deductible?: boolean
+          notes?: string | null
+          org_id: string
+          receipt_url?: string | null
+          tax_jurisdiction?: Database["public"]["Enums"]["tax_jurisdiction"]
+          tax_year?: number
+          updated_at?: string
+          vendor_name?: string | null
+        }
+        Update: {
+          amount?: number
+          category?: string
+          created_at?: string
+          currency?: string
+          description?: string | null
+          entry_date?: string
+          entry_type?: Database["public"]["Enums"]["financial_entry_type"]
+          estate_id?: string | null
+          id?: string
+          is_deductible?: boolean
+          notes?: string | null
+          org_id?: string
+          receipt_url?: string | null
+          tax_jurisdiction?: Database["public"]["Enums"]["tax_jurisdiction"]
+          tax_year?: number
+          updated_at?: string
+          vendor_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "financial_entries_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "financial_entries_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       inventory_items: {
         Row: {
           category: Database["public"]["Enums"]["inventory_category"]
@@ -2773,6 +2848,7 @@ export type Database = {
         | "vendor_contract"
         | "insurance"
         | "other"
+      financial_entry_type: "income" | "expense"
       inventory_category: "hand_tool" | "equipment" | "supply" | "material"
       inventory_condition:
         | "new"
@@ -2796,6 +2872,7 @@ export type Database = {
         | "annual"
         | "seasonal"
       task_status: "pending" | "in_progress" | "completed" | "overdue"
+      tax_jurisdiction: "US" | "CR"
       weather_rule_type: "freeze" | "heavy_rain" | "high_wind" | "drought"
     }
     CompositeTypes: {
@@ -2962,6 +3039,7 @@ export const Constants = {
         "insurance",
         "other",
       ],
+      financial_entry_type: ["income", "expense"],
       inventory_category: ["hand_tool", "equipment", "supply", "material"],
       inventory_condition: [
         "new",
@@ -2988,6 +3066,7 @@ export const Constants = {
         "seasonal",
       ],
       task_status: ["pending", "in_progress", "completed", "overdue"],
+      tax_jurisdiction: ["US", "CR"],
       weather_rule_type: ["freeze", "heavy_rain", "high_wind", "drought"],
     },
   },

@@ -84,6 +84,11 @@ export function AppSidebar() {
     { path: '/my-jobs', icon: Megaphone, label: l('Jobs', 'Empleos', 'Jobs'), tooltip: l('Job postings & marketplace', 'Publicaciones de empleo', 'Stellenangebote & Marktplatz') },
   ];
 
+  // Homeowner financials
+  const homeownerNav: NavItem[] = [
+    { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
+  ];
+
   // Optional / advanced items
   const advancedNav: NavItem[] = [
     { path: '/inventory', icon: Package, label: l('Inventory', 'Inventario', 'Inventar'), tooltip: l('Tools & supplies', 'Herramientas y suministros', 'Werkzeuge & Materialien') },
@@ -100,7 +105,7 @@ export function AppSidebar() {
 
   const ownerNav: NavItem[] = [
     ...coreNav,
-    ...(isLandscaper ? landscaperNav : []),
+    ...(isLandscaper ? landscaperNav : homeownerNav),
     ...advancedNav,
     ...settingsNav,
   ];
