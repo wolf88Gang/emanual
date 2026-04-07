@@ -153,7 +153,7 @@ export default function Financials() {
   const estimatedTax = defaultJurisdiction === 'US'
     ? calculateProgressiveTax(taxableIncome, US_TAX_BRACKETS)
     : calculateProgressiveTax(taxableIncome, CR_TAX_BRACKETS);
-  const currency = defaultJurisdiction === 'CR' ? 'CRC' : 'USD';
+  
 
   const filteredEntries = useMemo(() => {
     if (!searchQuery) return yearEntries;
