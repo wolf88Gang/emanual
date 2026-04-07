@@ -4,6 +4,7 @@ import {
   Calculator, FileText, Filter, Trash2, Edit2, Upload, Building2, Globe2
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
