@@ -1,7 +1,7 @@
 import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { Sparkles } from 'lucide-react';
+import { Eye } from 'lucide-react';
 
 export function DemoBanner() {
   const { user } = useAuth();
@@ -20,7 +20,7 @@ export function DemoBanner() {
 
   return (
     <div className="px-4 py-2 text-sm flex items-center justify-center gap-2 bg-primary/5 text-primary border-b border-primary/10">
-      <Sparkles className="h-4 w-4 flex-shrink-0" />
+      <Eye className="h-4 w-4 flex-shrink-0" />
       <span className="font-medium">{text}</span>
     </div>
   );

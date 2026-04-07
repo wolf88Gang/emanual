@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import {
   CheckCircle2, Clock, AlertCircle, Camera, Calendar as CalendarIcon, Plus, ChevronRight, User,
-  Sparkles, RefreshCcw, Repeat
+  Lightbulb, RefreshCcw, Repeat
 } from 'lucide-react';
 import { TaskCalendar } from '@/components/tasks/TaskCalendar';
 import { cn } from '@/lib/utils';
@@ -257,8 +257,8 @@ export default function Tasks() {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button variant="outline" onClick={() => { setShowAISuggest(true); handleAISuggest(); }}>
-                    <Sparkles className="h-4 w-4 mr-1" />
-                    {es ? 'IA' : 'AI'}
+                    <Lightbulb className="h-4 w-4 mr-1" />
+                    {es ? 'Sugerencias' : de ? 'Vorschläge' : 'Suggestions'}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{es ? 'Sugerencias inteligentes basadas en tus activos' : 'Smart suggestions based on your assets'}</TooltipContent>
@@ -338,7 +338,7 @@ export default function Tasks() {
                       {es ? 'Nueva Tarea' : 'New Task'}
                     </Button>
                     <Button variant="outline" onClick={() => { setShowAISuggest(true); handleAISuggest(); }}>
-                      <Sparkles className="h-4 w-4 mr-2" />
+                      <Lightbulb className="h-4 w-4 mr-2" />
                       {es ? 'Sugerencias' : 'Suggestions'}
                     </Button>
                   </div>
@@ -440,7 +440,7 @@ export default function Tasks() {
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
-                <Sparkles className="h-5 w-5 text-primary" />
+                <Lightbulb className="h-5 w-5 text-primary" />
                 {es ? 'Sugerencias Inteligentes' : 'Smart Suggestions'}
               </DialogTitle>
             </DialogHeader>
@@ -488,7 +488,7 @@ export default function Tasks() {
             {templates.length === 0 ? (
               <div className="py-8 text-center text-muted-foreground">
                 <Repeat className="h-8 w-8 mx-auto mb-3 text-muted-foreground" />
-                <p>{es ? 'Sin plantillas. Usa IA para generar o crea manualmente.' : 'No templates. Use AI to generate or create manually.'}</p>
+                <p>{es ? 'Sin plantillas. Usa sugerencias para generar o crea manualmente.' : 'No templates. Use suggestions to generate or create manually.'}</p>
               </div>
             ) : (
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
@@ -499,7 +499,7 @@ export default function Tasks() {
                         <div>
                           <div className="flex items-center gap-2">
                             <h4 className="font-medium text-sm">{es && t.title_es ? t.title_es : t.title}</h4>
-                            {t.is_ai_generated && <Sparkles className="h-3 w-3 text-primary" />}
+                            {t.is_ai_generated && <Lightbulb className="h-3 w-3 text-primary" />}
                           </div>
                           <div className="flex gap-2 mt-1">
                             <Badge variant="outline" className="text-xs">{FREQUENCY_OPTIONS.find(f => f.value === t.frequency)?.[es ? 'labelEs' : 'label']}</Badge>
