@@ -194,6 +194,7 @@ export default function Onboarding() {
         const orgTypeMap: Record<string, string> = {
           property_owner: 'residential',
           landscaping_company: 'landscaping_company',
+          property_management: 'property_management',
           hybrid: 'hybrid',
           other: 'residential',
         };
