@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-type ClientType = 'property_owner' | 'landscaping_company' | 'hybrid' | 'worker' | 'other';
+type ClientType = 'property_owner' | 'landscaping_company' | 'property_management' | 'hybrid' | 'worker' | 'other';
 type Step = 'profile' | 'plan' | 'estate';
 
 const STEPS: Step[] = ['profile', 'plan', 'estate'];
@@ -53,6 +53,16 @@ const CLIENT_TYPE_OPTIONS: {
     descriptionEs: 'Gestiono propiedades de clientes',
     descriptionDe: 'Ich verwalte Kundenimmobilien',
     emoji: '🏢',
+  },
+  {
+    id: 'property_management',
+    label: 'Property Manager',
+    labelEs: 'Administrador de propiedades',
+    labelDe: 'Immobilienverwalter',
+    description: 'I manage villas or rentals for owners',
+    descriptionEs: 'Administro villas o alquileres para dueños',
+    descriptionDe: 'Ich verwalte Villen oder Mietobjekte für Eigentümer',
+    emoji: '🏘️',
   },
   {
     id: 'hybrid',
