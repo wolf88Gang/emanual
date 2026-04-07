@@ -107,6 +107,7 @@ interface FinancialEntry {
 
 export default function Financials() {
   const { language } = useLanguage();
+  const { currency } = useCurrency();
   const { currentEstate } = useEstate();
   const { profile } = useAuth();
   const [entries, setEntries] = useState<FinancialEntry[]>([]);
