@@ -210,8 +210,8 @@ export default function Reports() {
         if (data.error === 'payment_required') {
           toast.error(
             language === 'es'
-              ? 'Créditos de IA agotados. Por favor, agregue fondos.'
-              : 'AI credits exhausted. Please add funds.'
+              ? 'Créditos agotados. Por favor, agregue fondos.'
+              : 'Credits exhausted. Please add funds.'
           );
           return;
         }
@@ -405,8 +405,8 @@ export default function Reports() {
                   <AlertCircle className="h-5 w-5 text-warning shrink-0 mt-0.5" />
                   <p className="text-sm text-warning">
                     {language === 'es'
-                      ? 'Este proceso puede tardar 30-60 segundos. El manual se genera con IA a partir de los registros verificados del sistema.'
-                      : 'This process may take 30-60 seconds. The manual is AI-generated from verified system records.'}
+                      ? 'Este proceso puede tardar 30-60 segundos. El manual se genera a partir de los registros verificados del sistema.'
+                      : 'This process may take 30-60 seconds. The manual is generated from verified system records.'}
                   </p>
                 </div>
 

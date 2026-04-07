@@ -24,7 +24,7 @@ const features = [
   { en: 'QR check-in system', es: 'Sistema de check-in QR', de: 'QR-Check-in-System' },
   { en: 'Document storage', es: 'Almacenamiento de documentos', de: 'Dokumentenspeicher' },
   { en: 'Topography & risk analysis', es: 'Topografía y análisis de riesgos', de: 'Topografie & Risikoanalyse' },
-  { en: 'Plant care protocols (AI)', es: 'Protocolos de cuidado (IA)', de: 'Pflegeprotokolle (KI)' },
+  { en: 'Plant care protocols', es: 'Protocolos de cuidado', de: 'Pflegeprotokolle' },
   { en: 'Reports & PDF export', es: 'Reportes y exportar PDF', de: 'Berichte & PDF-Export' },
 ];
 

@@ -48,11 +48,11 @@ function LegacyCareDisplay({ protocol, language }: { protocol: any; language: st
     return (
       <div className="text-center py-8 text-muted-foreground">
         <ClipboardList className="h-10 w-10 mx-auto mb-2 opacity-50" />
-        <p>{language === 'es' ? 'No hay datos de protocolo disponibles' : 'No protocol data available'}</p>
+        <p>{language === 'es' ? 'No hay datos de protocolo disponibles' : language === 'de' ? 'Keine Protokolldaten verfügbar' : 'No protocol data available'}</p>
         <p className="text-sm mt-1">
           {language === 'es' 
-            ? 'Regenera el protocolo con IA para obtener información detallada' 
-            : 'Regenerate the protocol with AI to get detailed information'}
+            ? 'Regenera el protocolo para obtener información detallada' 
+            : language === 'de' ? 'Protokoll neu generieren für detaillierte Informationen' : 'Regenerate the protocol to get detailed information'}
         </p>
       </div>
     );
@@ -98,8 +98,8 @@ export function CareProtocolSheet({
       <SheetContent className="w-full sm:max-w-2xl overflow-hidden p-0">
         <SheetHeader className="p-6 pb-2 bg-primary/5">
           <SheetTitle className="flex items-center gap-2 text-lg">
-            <Leaf className="h-5 w-5 text-primary" />
-            {language === 'es' ? 'Protocolo de Cuidados IA' : 'AI Care Protocol'}
+            <img src="/images/hg-logo.png" alt="HG" className="w-5 h-5 object-contain" />
+            {language === 'es' ? 'Protocolo de Cuidados' : language === 'de' ? 'Pflegeprotokoll' : 'Care Protocol'}
           </SheetTitle>
           <p className="text-sm text-muted-foreground">
             {plantName}
@@ -108,7 +108,7 @@ export function CareProtocolSheet({
           <p className="text-xs text-muted-foreground mt-1">
             {language === 'es' 
               ? 'Protocolo especializado para Costa Rica' 
-              : 'Specialized protocol for Costa Rica'}
+              : language === 'de' ? 'Spezialisiertes Protokoll für Costa Rica' : 'Specialized protocol for Costa Rica'}
           </p>
         </SheetHeader>
 

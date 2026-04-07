@@ -34,8 +34,8 @@ const sections: FeatureSection[] = [
     features: [
       { icon: Map, title: 'Interactive Estate Map', titleEs: 'Mapa Interactivo', description: 'GIS-lite map with zones, asset pins, KML import, and zone drawing tools to visualize your entire property spatially.', descriptionEs: 'Mapa GIS con zonas, pins de activos, importación KML y herramientas de dibujo para visualizar tu propiedad.' },
       { icon: Box, title: 'Asset Registry', titleEs: 'Registro de Activos', description: 'Catalog every living asset, irrigation system, hardscape, and equipment. Track install dates, service history, and risk flags.', descriptionEs: 'Cataloga cada activo vivo, riego, hardscape y equipo. Rastrea instalación, historial y riesgos.' },
-      { icon: ClipboardList, title: 'Smart Tasks', titleEs: 'Tareas Inteligentes', description: 'Recurring tasks with AI-suggested maintenance templates based on your asset profiles and seasonal patterns.', descriptionEs: 'Tareas recurrentes con plantillas de mantenimiento sugeridas por IA basadas en tus activos y estaciones.' },
-      { icon: Leaf, title: 'Plant Registry & Protocols', titleEs: 'Registro de Plantas', description: 'Botanical library with scientific names, care templates, native status, and AI-generated care protocols per asset.', descriptionEs: 'Biblioteca botánica con nombres científicos, plantillas de cuidado y protocolos generados por IA.' },
+      { icon: ClipboardList, title: 'Smart Tasks', titleEs: 'Tareas Inteligentes', description: 'Recurring tasks with auto-suggested maintenance templates based on your asset profiles and seasonal patterns.', descriptionEs: 'Tareas recurrentes con plantillas de mantenimiento sugeridas basadas en tus activos y estaciones.' },
+      { icon: Leaf, title: 'Plant Registry & Protocols', titleEs: 'Registro de Plantas', description: 'Botanical library with scientific names, care templates, native status, and generated care protocols per asset.', descriptionEs: 'Biblioteca botánica con nombres científicos, plantillas de cuidado y protocolos generados por activo.' },
       { icon: FolderOpen, title: 'Document Vault', titleEs: 'Bóveda de Documentos', description: 'Digital binder for warranties, as-builts, contracts, and insurance. Track expiry dates and link to assets or zones.', descriptionEs: 'Carpeta digital para garantías, planos, contratos y seguros. Rastrea vencimientos y vincula a activos.' },
     ],
   },
@@ -69,7 +69,7 @@ const sections: FeatureSection[] = [
     image: '/images/estate_guide_4.jpg',
     features: [
       { icon: ShoppingBag, title: 'CRM & Sales Suite', titleEs: 'CRM y Ventas', description: 'Client directory, product/service catalog, invoice generation, payment tracking, and revenue history.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos.' },
-      { icon: BookOpen, title: 'AI Estate Manual', titleEs: 'Manual con IA', description: 'AI generates a comprehensive property manual from verified data: zones, assets, history, and routines.', descriptionEs: 'La IA genera un manual integral desde datos verificados: zonas, activos, historial y rutinas.' },
+      { icon: BookOpen, title: 'Estate Manual', titleEs: 'Manual de Propiedad', description: 'Generates a comprehensive property manual from verified data: zones, assets, history, and routines.', descriptionEs: 'Genera un manual integral desde datos verificados: zonas, activos, historial y rutinas.' },
       { icon: BarChart3, title: 'Duty of Care Reports', titleEs: 'Informes de Cumplimiento', description: 'Generate date-range PDF reports with completed tasks, field check-ins, and photo evidence.', descriptionEs: 'Genera informes PDF por rango de fechas con tareas, registros y evidencia fotográfica.' },
     ],
   },
@@ -82,7 +82,7 @@ const sections: FeatureSection[] = [
       { icon: Users, title: 'Role-based Access Control', titleEs: 'Control de Acceso por Roles', description: 'Owner, Manager, Crew, Vendor — each role sees precisely what they need, nothing more.', descriptionEs: 'Dueño, Gerente, Equipo, Proveedor — cada rol ve exactamente lo que necesita.' },
       { icon: QrCode, title: 'QR Code System', titleEs: 'Sistema QR', description: 'Generate and print labels for any asset. Scan to view details, start shifts, or log check-ins.', descriptionEs: 'Genera e imprime etiquetas para activos. Escanea para detalles, turnos o registros.' },
       { icon: Globe, title: 'Bilingual Interface', titleEs: 'Interfaz Bilingüe', description: 'Full English and Spanish support across the entire platform. Switch languages instantly.', descriptionEs: 'Soporte completo en inglés y español en toda la plataforma. Cambia al instante.' },
-      { icon: Zap, title: 'AI-Powered Intelligence', titleEs: 'Inteligencia Artificial', description: 'AI suggests tasks, generates care protocols, validates worker shifts, and produces property manuals.', descriptionEs: 'La IA sugiere tareas, genera protocolos, valida turnos y produce manuales de propiedad.' },
+      { icon: Zap, title: 'Smart Intelligence', titleEs: 'Inteligencia Integrada', description: 'Smart suggestions for tasks, auto-generated care protocols, shift validation, and property manual generation.', descriptionEs: 'Sugerencias inteligentes de tareas, protocolos de cuidado, validación de turnos y generación de manuales.' },
       { icon: Shield, title: 'Subscription Management', titleEs: 'Gestión de Suscripción', description: 'Monthly or annual plans via PayPal with secure processing and automatic subscription management.', descriptionEs: 'Planes mensuales o anuales por PayPal con procesamiento seguro y gestión automática.' },
     ],
   },
