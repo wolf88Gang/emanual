@@ -220,8 +220,8 @@ export default function CRM() {
           {[
             { label: es ? 'Clientes' : 'Clients', value: clients.length, icon: Users, color: 'text-primary' },
             { label: es ? 'Productos' : 'Products', value: products.length, icon: ShoppingBag, color: 'text-purple-600' },
-            { label: es ? 'Pendiente' : 'Pending', value: formatCurrency(pendingTotal, 'CRC'), icon: FileText, color: 'text-amber-600' },
-            { label: es ? 'Ingresos' : 'Revenue', value: formatCurrency(totalRevenue, 'CRC'), icon: DollarSign, color: 'text-green-600' },
+            { label: es ? 'Pendiente' : 'Pending', value: formatCurrency(pendingTotal, displayCurrency), icon: FileText, color: 'text-amber-600' },
+            { label: es ? 'Ingresos' : 'Revenue', value: formatCurrency(totalRevenue, displayCurrency), icon: DollarSign, color: 'text-green-600' },
           ].map(s => (
             <Card key={s.label} className="estate-card">
               <CardContent className="p-4 flex items-center gap-3">
