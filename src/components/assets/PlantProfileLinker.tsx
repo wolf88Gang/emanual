@@ -208,7 +208,7 @@ export function PlantProfileLinker({ assetId, assetType, assetName = '', onUpdat
       if (error) throw error;
       if (data.error) throw new Error(data.error);
       const localizedPayload = setCareProtocolForLanguage(profile.care_template_json, currentLanguage, data.careProtocol);
-      const { error: updateError } = await supabase.from('plant_profiles').update({ care_template_json: localizedPayload }).eq('id', profile.id);
+      const { error: updateError } = await supabase.from('plant_profiles').update({ care_template_json: localizedPayload as any }).eq('id', profile.id);
       if (updateError) throw updateError;
       if (!options?.silent) {
         toast.success(language === 'es' ? `✨ Protocolo actualizado para ${profile.common_name}` : language === 'de' ? `✨ Protokoll aktualisiert für ${profile.common_name}` : `✨ Protocol updated for ${profile.common_name}`);

@@ -78,7 +78,7 @@ export default function PlantRegistry() {
       if (data.error) throw new Error(data.error);
 
       const localizedProtocol = setCareProtocolForLanguage(null, currentLanguage, data.careProtocol);
-      const { data: profile, error: insertError } = await supabase.from('plant_profiles').insert([{ common_name: newPlant.common_name, scientific_name: newPlant.scientific_name || null, category: newPlant.category as any, native_status: newPlant.native_status as any, care_template_json: localizedProtocol }]).select().single();
+      const { data: profile, error: insertError } = await supabase.from('plant_profiles').insert([{ common_name: newPlant.common_name, scientific_name: newPlant.scientific_name || null, category: newPlant.category as any, native_status: newPlant.native_status as any, care_template_json: localizedProtocol as any }]).select().single();
       if (insertError) throw insertError;
 
       toast.success(language === 'es' ? `✨ Protocolo generado para ${newPlant.common_name}` : language === 'de' ? `✨ Protokoll erstellt für ${newPlant.common_name}` : `✨ Care protocol generated for ${newPlant.common_name}`);
