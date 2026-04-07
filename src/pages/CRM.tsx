@@ -556,7 +556,7 @@ export default function CRM() {
                       const items = [...invoiceForm.items]; items[idx] = { ...items[idx], unit_price: e.target.value };
                       setInvoiceForm(f => ({ ...f, items }));
                     }} />
-                    <p className="flex items-center text-sm font-medium">{formatCurrency(Number(item.quantity) * Number(item.unit_price) || 0, 'CRC')}</p>
+                    <p className="flex items-center text-sm font-medium">{formatCurrency(Number(item.quantity) * Number(item.unit_price) || 0, displayCurrency)}</p>
                   </div>
                 ))}
                 <Button variant="ghost" size="sm" onClick={() => setInvoiceForm(f => ({ ...f, items: [...f.items, { description: '', quantity: '1', unit_price: '' }] }))}>
@@ -564,7 +564,7 @@ export default function CRM() {
                 </Button>
               </div>
               <div className="text-right font-bold text-lg">
-                Total: {formatCurrency(invoiceForm.items.reduce((a, i) => a + (Number(i.quantity) * Number(i.unit_price) || 0), 0), 'CRC')}
+                Total: {formatCurrency(invoiceForm.items.reduce((a, i) => a + (Number(i.quantity) * Number(i.unit_price) || 0), 0), displayCurrency)}
               </div>
             </div>
             <DialogFooter>
