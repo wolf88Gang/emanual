@@ -258,7 +258,7 @@ export default function Tasks() {
                 <TooltipTrigger asChild>
                   <Button variant="outline" onClick={() => { setShowAISuggest(true); handleAISuggest(); }}>
                     <Lightbulb className="h-4 w-4 mr-1" />
-                    {es ? 'Sugerencias' : de ? 'Vorschläge' : 'Suggestions'}
+                    {es ? 'Sugerencias' : 'Suggestions'}
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>{es ? 'Sugerencias inteligentes basadas en tus activos' : 'Smart suggestions based on your assets'}</TooltipContent>
