@@ -53,6 +53,7 @@ export function AppSidebar() {
   }, [profile?.org_id]);
 
   const isLandscaper = orgType === 'landscaping_company' || orgType === 'hybrid';
+  const isPropManager = orgType === 'property_management';
 
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
@@ -84,6 +85,13 @@ export function AppSidebar() {
     { path: '/my-jobs', icon: Megaphone, label: l('Jobs', 'Empleos', 'Jobs'), tooltip: l('Job postings & marketplace', 'Publicaciones de empleo', 'Stellenangebote & Marktplatz') },
   ];
 
+  // Property manager items (invoicing + financials)
+  const propManagerNav: NavItem[] = [
+    { path: '/crm', icon: ShoppingBag, label: l('Invoicing', 'Facturación', 'Rechnungen'), tooltip: l('Clients, invoices & billing', 'Clientes, facturas y cobros', 'Kunden, Rechnungen & Abrechnung') },
+    { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
+    { path: '/labor', icon: Clock, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
+  ];
+
   // Homeowner financials
   const homeownerNav: NavItem[] = [
     { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
@@ -105,7 +113,7 @@ export function AppSidebar() {
 
   const ownerNav: NavItem[] = [
     ...coreNav,
-    ...(isLandscaper ? landscaperNav : homeownerNav),
+    ...(isLandscaper ? landscaperNav : isPropManager ? propManagerNav : homeownerNav),
     ...advancedNav,
     ...settingsNav,
   ];
