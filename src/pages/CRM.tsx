@@ -4,6 +4,7 @@ import { Plus, Users, ShoppingBag, FileText, DollarSign, Search, ChevronRight, A
 import { ClientAccessManager } from '@/components/crm/ClientAccessManager';
 import { format } from 'date-fns';
 import { formatCurrency, formatCurrencyDual } from '@/lib/currency';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -50,6 +51,7 @@ export default function CRM() {
   const { currentEstate } = useEstate();
   const { isOwnerOrManager, profile } = useAuth();
   const navigate = useNavigate();
+  const { currency: displayCurrency } = useCurrency();
   const es = language === 'es';
   const [orgType, setOrgType] = useState<string>('');
 
@@ -218,8 +220,8 @@ export default function CRM() {
           {[
             { label: es ? 'Clientes' : 'Clients', value: clients.length, icon: Users, color: 'text-primary' },
             { label: es ? 'Productos' : 'Products', value: products.length, icon: ShoppingBag, color: 'text-purple-600' },
-            { label: es ? 'Pendiente' : 'Pending', value: formatCurrency(pendingTotal, 'CRC'), icon: FileText, color: 'text-amber-600' },
-            { label: es ? 'Ingresos' : 'Revenue', value: formatCurrency(totalRevenue, 'CRC'), icon: DollarSign, color: 'text-green-600' },
+            { label: es ? 'Pendiente' : 'Pending', value: formatCurrency(pendingTotal, displayCurrency), icon: FileText, color: 'text-amber-600' },
+            { label: es ? 'Ingresos' : 'Revenue', value: formatCurrency(totalRevenue, displayCurrency), icon: DollarSign, color: 'text-green-600' },
           ].map(s => (
             <Card key={s.label} className="estate-card">
               <CardContent className="p-4 flex items-center gap-3">
@@ -554,7 +556,7 @@ export default function CRM() {
                       const items = [...invoiceForm.items]; items[idx] = { ...items[idx], unit_price: e.target.value };
                       setInvoiceForm(f => ({ ...f, items }));
                     }} />
-                    <p className="flex items-center text-sm font-medium">{formatCurrency(Number(item.quantity) * Number(item.unit_price) || 0, 'CRC')}</p>
+                    <p className="flex items-center text-sm font-medium">{formatCurrency(Number(item.quantity) * Number(item.unit_price) || 0, displayCurrency)}</p>
                   </div>
                 ))}
                 <Button variant="ghost" size="sm" onClick={() => setInvoiceForm(f => ({ ...f, items: [...f.items, { description: '', quantity: '1', unit_price: '' }] }))}>
@@ -562,7 +564,7 @@ export default function CRM() {
                 </Button>
               </div>
               <div className="text-right font-bold text-lg">
-                Total: {formatCurrency(invoiceForm.items.reduce((a, i) => a + (Number(i.quantity) * Number(i.unit_price) || 0), 0), 'CRC')}
+                Total: {formatCurrency(invoiceForm.items.reduce((a, i) => a + (Number(i.quantity) * Number(i.unit_price) || 0), 0), displayCurrency)}
               </div>
             </div>
             <DialogFooter>

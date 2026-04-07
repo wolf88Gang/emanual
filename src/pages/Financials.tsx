@@ -4,6 +4,7 @@ import {
   Calculator, FileText, Filter, Trash2, Edit2, Upload, Building2, Globe2
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -106,6 +107,7 @@ interface FinancialEntry {
 
 export default function Financials() {
   const { language } = useLanguage();
+  const { currency } = useCurrency();
   const { currentEstate } = useEstate();
   const { profile } = useAuth();
   const [entries, setEntries] = useState<FinancialEntry[]>([]);
@@ -151,7 +153,7 @@ export default function Financials() {
   const estimatedTax = defaultJurisdiction === 'US'
     ? calculateProgressiveTax(taxableIncome, US_TAX_BRACKETS)
     : calculateProgressiveTax(taxableIncome, CR_TAX_BRACKETS);
-  const currency = defaultJurisdiction === 'CR' ? 'CRC' : 'USD';
+  
 
   const filteredEntries = useMemo(() => {
     if (!searchQuery) return yearEntries;

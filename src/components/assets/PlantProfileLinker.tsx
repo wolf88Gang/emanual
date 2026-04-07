@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Leaf, Sparkles, Link2, Unlink, Loader2, RefreshCw, Plus, Search, Lightbulb } from 'lucide-react';
+import { Leaf, FileText, Link2, Unlink, Loader2, RefreshCw, Plus, Search, Lightbulb } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -246,7 +246,7 @@ export function PlantProfileLinker({ assetId, assetType, assetName = '', onUpdat
                   <p className="font-semibold truncate">{linkedProfile.common_name}</p>
                   {linkedProfile.scientific_name && <p className="text-xs text-muted-foreground italic">{linkedProfile.scientific_name}</p>}
                 </div>
-                {resolvedProtocol && <Badge variant="outline" className="gap-1"><Sparkles className="h-3 w-3" />{currentLanguage.toUpperCase()}</Badge>}
+                {resolvedProtocol && <Badge variant="outline" className="gap-1"><FileText className="h-3 w-3" />{currentLanguage.toUpperCase()}</Badge>}
               </div>
 
               {showUpdateRecommendation && (
@@ -259,7 +259,7 @@ export function PlantProfileLinker({ assetId, assetType, assetName = '', onUpdat
                 </div>
               )}
 
-              {careProtocol && <Button variant="outline" className="w-full" onClick={() => setShowCareSheet(true)}><Sparkles className="h-4 w-4 mr-2 text-primary" />{language === 'es' ? 'Ver Protocolo de Cuidados' : language === 'de' ? 'Pflegeprotokoll ansehen' : 'View Care Protocol'}</Button>}
+              {careProtocol && <Button variant="outline" className="w-full" onClick={() => setShowCareSheet(true)}><FileText className="h-4 w-4 mr-2 text-primary" />{language === 'es' ? 'Ver Protocolo de Cuidados' : language === 'de' ? 'Pflegeprotokoll ansehen' : 'View Care Protocol'}</Button>}
 
               <div className="flex gap-2">
                 <Button variant="ghost" size="sm" className="flex-1" onClick={() => regenerateProtocol()} disabled={regenerating}>{regenerating ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <RefreshCw className="h-4 w-4 mr-1" />}{language === 'es' ? 'Regenerar' : language === 'de' ? 'Neu generieren' : 'Regenerate'}</Button>
@@ -270,7 +270,7 @@ export function PlantProfileLinker({ assetId, assetType, assetName = '', onUpdat
             <div className="space-y-3">
               {suggestions.length > 0 && <div className="p-3 rounded-lg bg-accent/50 border border-accent"><div className="flex items-center gap-2 mb-2"><Lightbulb className="h-4 w-4 text-primary" /><span className="text-sm font-medium">{language === 'es' ? 'Sugerencias automáticas' : language === 'de' ? 'Automatische Vorschläge' : 'Auto-suggestions'}</span></div><div className="flex flex-wrap gap-2">{suggestions.slice(0, 4).map((suggestion) => { const exists = profiles.some((p) => p.common_name.toLowerCase() === suggestion.toLowerCase()); return <Button key={suggestion} variant="outline" size="sm" className="h-7 text-xs" onClick={() => createAndLinkSuggestion(suggestion)} disabled={creating || linking}>{exists ? <Link2 className="h-3 w-3 mr-1" /> : <Plus className="h-3 w-3 mr-1" />}{suggestion}</Button>; })}</div><p className="text-xs text-muted-foreground mt-2">{language === 'es' ? 'Click para crear y vincular automáticamente' : language === 'de' ? 'Klicken zum automatischen Erstellen und Verknüpfen' : 'Click to create and link automatically'}</p></div>}
               <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><Input placeholder={language === 'es' ? 'Buscar variedad...' : language === 'de' ? 'Sorte suchen...' : 'Search variety...'} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-9" /></div>
-              <Select value={selectedProfileId} onValueChange={setSelectedProfileId}><SelectTrigger><SelectValue placeholder={language === 'es' ? 'Seleccionar variedad...' : language === 'de' ? 'Sorte auswählen...' : 'Select variety...'} /></SelectTrigger><SelectContent>{filteredProfiles.length > 0 ? filteredProfiles.map((profile) => <SelectItem key={profile.id} value={profile.id}><div className="flex items-center gap-2"><Leaf className="h-4 w-4 text-primary" /><span>{profile.common_name}</span>{profile.care_template_json && <Sparkles className="h-3 w-3 text-primary ml-1" />}</div></SelectItem>) : <div className="px-2 py-4 text-center text-sm text-muted-foreground">{language === 'es' ? 'No se encontraron variedades' : language === 'de' ? 'Keine Sorten gefunden' : 'No varieties found'}</div>}</SelectContent></Select>
+              <Select value={selectedProfileId} onValueChange={setSelectedProfileId}><SelectTrigger><SelectValue placeholder={language === 'es' ? 'Seleccionar variedad...' : language === 'de' ? 'Sorte auswählen...' : 'Select variety...'} /></SelectTrigger><SelectContent>{filteredProfiles.length > 0 ? filteredProfiles.map((profile) => <SelectItem key={profile.id} value={profile.id}><div className="flex items-center gap-2"><Leaf className="h-4 w-4 text-primary" /><span>{profile.common_name}</span>{profile.care_template_json && <FileText className="h-3 w-3 text-primary ml-1" />}</div></SelectItem>) : <div className="px-2 py-4 text-center text-sm text-muted-foreground">{language === 'es' ? 'No se encontraron variedades' : language === 'de' ? 'Keine Sorten gefunden' : 'No varieties found'}</div>}</SelectContent></Select>
               <div className="flex gap-2"><Button className="flex-1" onClick={linkProfile} disabled={!selectedProfileId || linking}>{linking ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Link2 className="h-4 w-4 mr-2" />}{language === 'es' ? 'Vincular' : language === 'de' ? 'Verknüpfen' : 'Link'}</Button><Button variant="outline" onClick={() => setShowCreateDialog(true)}><Plus className="h-4 w-4 mr-2" />{language === 'es' ? 'Nueva' : language === 'de' ? 'Neu' : 'New'}</Button></div>
               <p className="text-xs text-muted-foreground text-center">{profiles.length === 0 ? (language === 'es' ? 'No hay variedades registradas. Crea una nueva.' : language === 'de' ? 'Keine Sorten registriert. Erstelle eine neue.' : 'No varieties registered. Create a new one.') : (language === 'es' ? `${profiles.length} variedades disponibles` : language === 'de' ? `${profiles.length} Sorten verfügbar` : `${profiles.length} varieties available`)}</p>
             </div>

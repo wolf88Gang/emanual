@@ -3,6 +3,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { AppSidebar } from './AppSidebar';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguagePicker } from '@/components/LanguagePicker';
+import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { DemoBanner } from '@/components/DemoBanner';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
@@ -27,6 +28,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
             <div className="flex items-center gap-1">
               <NotificationBell />
               <ThemeToggle />
+              <CurrencyPicker />
               <LanguagePicker />
             </div>
           </header>
