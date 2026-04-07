@@ -4,6 +4,7 @@ import { Plus, Users, ShoppingBag, FileText, DollarSign, Search, ChevronRight, A
 import { ClientAccessManager } from '@/components/crm/ClientAccessManager';
 import { format } from 'date-fns';
 import { formatCurrency, formatCurrencyDual } from '@/lib/currency';
+import { useCurrency } from '@/contexts/CurrencyContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useAuth } from '@/contexts/AuthContext';
