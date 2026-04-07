@@ -113,7 +113,7 @@ export function AppSidebar() {
 
   const ownerNav: NavItem[] = [
     ...coreNav,
-    ...(isLandscaper ? landscaperNav : homeownerNav),
+    ...(isLandscaper ? landscaperNav : isPropManager ? propManagerNav : homeownerNav),
     ...advancedNav,
     ...settingsNav,
   ];
