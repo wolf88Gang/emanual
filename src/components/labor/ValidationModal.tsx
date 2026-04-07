@@ -6,7 +6,7 @@ import {
   Clock, 
   MapPin, 
   Camera,
-  Sparkles,
+  MessageSquare,
   Loader2
 } from 'lucide-react';
 import { format, parseISO, differenceInMinutes } from 'date-fns';
@@ -365,9 +365,9 @@ export function ValidationModal({
                 {generating ? (
                   <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                 ) : (
-                  <Sparkles className="h-4 w-4 mr-1" />
+                  <MessageSquare className="h-4 w-4 mr-1" />
                 )}
-                {language === 'es' ? 'Generar con IA' : 'Generate with AI'}
+                {language === 'es' ? 'Generar mensaje' : 'Generate message'}
               </Button>
             </div>
             <Textarea
