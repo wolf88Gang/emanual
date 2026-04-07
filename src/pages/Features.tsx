@@ -5,7 +5,7 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 import {
   Leaf, Map, Box, ClipboardList, FolderOpen, Package, Mountain, BookOpen,
   DollarSign, Recycle, ShoppingBag, Users, Clock, Shield, Wrench, BarChart3,
-  Camera, QrCode, Bell, Zap, Globe, ArrowRight
+  Camera, QrCode, Bell, Zap, Globe, ArrowRight, Lock, Database, Eye, Calculator
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
@@ -64,11 +64,13 @@ const sections: FeatureSection[] = [
   },
   {
     key: 'business',
-    labelEn: 'Business & Reporting',
-    labelEs: 'Negocios y Reportes',
+    labelEn: 'Financials & Reporting',
+    labelEs: 'Finanzas y Reportes',
     image: '/images/estate_guide_4.jpg',
     features: [
-      { icon: ShoppingBag, title: 'CRM & Sales Suite', titleEs: 'CRM y Ventas', description: 'Client directory, product/service catalog, invoice generation, payment tracking, and revenue history.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos.' },
+      { icon: Calculator, title: 'Tax Tracker & Calculator', titleEs: 'Rastreador y Calculador Fiscal', description: 'Track income, expenses, and deductions by tax category. Estimated tax calculator for US federal and Costa Rica income tax brackets.', descriptionEs: 'Rastrea ingresos, gastos y deducciones por categoría fiscal. Calculador estimado para escalas de EE.UU. y Costa Rica.' },
+      { icon: DollarSign, title: 'Expense & Receipt Organizer', titleEs: 'Organizador de Gastos y Recibos', description: 'Upload receipts, tag expenses by deductible category, and generate year-end summaries for your accountant.', descriptionEs: 'Sube recibos, etiqueta gastos por categoría deducible y genera resúmenes anuales para tu contador.' },
+      { icon: ShoppingBag, title: 'CRM & Sales (Landscapers)', titleEs: 'CRM y Ventas (Jardineros)', description: 'Client directory, product/service catalog, invoice generation, payment tracking, and revenue history. Available for landscaping companies.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos. Disponible para empresas de jardinería.' },
       { icon: BookOpen, title: 'Estate Manual', titleEs: 'Manual de Propiedad', description: 'Generates a comprehensive property manual from verified data: zones, assets, history, and routines.', descriptionEs: 'Genera un manual integral desde datos verificados: zonas, activos, historial y rutinas.' },
       { icon: BarChart3, title: 'Duty of Care Reports', titleEs: 'Informes de Cumplimiento', description: 'Generate date-range PDF reports with completed tasks, field check-ins, and photo evidence.', descriptionEs: 'Genera informes PDF por rango de fechas con tareas, registros y evidencia fotográfica.' },
     ],
@@ -83,6 +85,7 @@ const sections: FeatureSection[] = [
       { icon: QrCode, title: 'QR Code System', titleEs: 'Sistema QR', description: 'Generate and print labels for any asset. Scan to view details, start shifts, or log check-ins.', descriptionEs: 'Genera e imprime etiquetas para activos. Escanea para detalles, turnos o registros.' },
       { icon: Globe, title: 'Bilingual Interface', titleEs: 'Interfaz Bilingüe', description: 'Full English and Spanish support across the entire platform. Switch languages instantly.', descriptionEs: 'Soporte completo en inglés y español en toda la plataforma. Cambia al instante.' },
       { icon: Zap, title: 'Smart Intelligence', titleEs: 'Inteligencia Integrada', description: 'Smart suggestions for tasks, auto-generated care protocols, shift validation, and property manual generation.', descriptionEs: 'Sugerencias inteligentes de tareas, protocolos de cuidado, validación de turnos y generación de manuales.' },
+      { icon: Lock, title: 'Enterprise-Grade Security', titleEs: 'Seguridad de Nivel Empresarial', description: 'End-to-end encryption, row-level security, and SOC 2 compliant infrastructure. Your tax IDs, contracts, and sensitive documents are protected by the same security banks use.', descriptionEs: 'Cifrado de extremo a extremo, seguridad a nivel de filas e infraestructura compatible con SOC 2. Tus números fiscales, contratos y documentos sensibles están protegidos con la misma seguridad que usan los bancos.' },
       { icon: Shield, title: 'Subscription Management', titleEs: 'Gestión de Suscripción', description: 'Monthly or annual plans via PayPal with secure processing and automatic subscription management.', descriptionEs: 'Planes mensuales o anuales por PayPal con procesamiento seguro y gestión automática.' },
     ],
   },
