@@ -328,7 +328,7 @@ export default function Tasks() {
                 <h3 className="font-medium text-lg">{es ? '¡Todo al día!' : 'All caught up!'}</h3>
                 <p className="text-muted-foreground mt-1 max-w-sm mx-auto">
                   {tasks.length === 0
-                    ? (es ? 'Crea tu primera tarea manualmente o deja que la IA te sugiera tareas basadas en tus activos.' : 'Create your first task manually or let AI suggest tasks based on your assets.')
+                    ? (es ? 'Crea tu primera tarea manualmente o genera sugerencias basadas en tus activos.' : 'Create your first task manually or get smart suggestions based on your assets.')
                     : (es ? 'Sin tareas en esta categoría' : 'No tasks in this category')}
                 </p>
                 {tasks.length === 0 && isOwnerOrManager && (
@@ -339,7 +339,7 @@ export default function Tasks() {
                     </Button>
                     <Button variant="outline" onClick={() => { setShowAISuggest(true); handleAISuggest(); }}>
                       <Sparkles className="h-4 w-4 mr-2" />
-                      {es ? 'Sugerencias IA' : 'AI Suggestions'}
+                      {es ? 'Sugerencias' : 'Suggestions'}
                     </Button>
                   </div>
                 )}
@@ -435,13 +435,13 @@ export default function Tasks() {
           </DialogContent>
         </Dialog>
 
-        {/* AI Suggestions Dialog */}
+        {/* Smart Suggestions Dialog */}
         <Dialog open={showAISuggest} onOpenChange={setShowAISuggest}>
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Sparkles className="h-5 w-5 text-primary" />
-                {es ? 'Sugerencias de IA' : 'AI Suggestions'}
+                {es ? 'Sugerencias Inteligentes' : 'Smart Suggestions'}
               </DialogTitle>
             </DialogHeader>
             {aiLoading ? (
