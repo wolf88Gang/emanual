@@ -51,6 +51,7 @@ export default function CRM() {
   const { currentEstate } = useEstate();
   const { isOwnerOrManager, profile } = useAuth();
   const navigate = useNavigate();
+  const { currency: displayCurrency } = useCurrency();
   const es = language === 'es';
   const [orgType, setOrgType] = useState<string>('');
 
