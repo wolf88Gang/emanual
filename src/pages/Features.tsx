@@ -213,6 +213,69 @@ export default function Features() {
         </section>
       ))}
 
+      {/* Security & Trust Section */}
+      <section className="bg-card border-y border-border">
+        <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+          <div className="text-center mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
+              <Lock className="h-4 w-4 text-primary" />
+              <span className="text-xs font-medium tracking-widest uppercase text-primary">
+                {es ? 'Seguridad y Confianza' : 'Security & Trust'}
+              </span>
+            </div>
+            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
+              {es ? 'Tu información está protegida' : 'Your information is protected'}
+            </h2>
+            <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
+              {es
+                ? 'Sabemos que tus documentos contienen números fiscales, contratos y datos sensibles. Los protegemos con la misma seguridad que usan los bancos.'
+                : 'We know your documents contain tax IDs, contracts, and sensitive data. We protect them with the same security banks use.'}
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-6">
+            <div className="text-center p-6 rounded-2xl border border-border bg-background">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Lock className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">
+                {es ? 'Cifrado de Extremo a Extremo' : 'End-to-End Encryption'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {es
+                  ? 'Todos los datos se transmiten y almacenan con cifrado AES-256. Tus documentos nunca viajan sin protección.'
+                  : 'All data is transmitted and stored with AES-256 encryption. Your documents never travel unprotected.'}
+              </p>
+            </div>
+            <div className="text-center p-6 rounded-2xl border border-border bg-background">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Database className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">
+                {es ? 'Aislamiento de Datos por Fila' : 'Row-Level Data Isolation'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {es
+                  ? 'Cada usuario solo puede ver sus propios datos. Políticas de seguridad a nivel de base de datos garantizan que nadie más acceda a tu información.'
+                  : 'Each user can only see their own data. Database-level security policies ensure no one else can access your information.'}
+              </p>
+            </div>
+            <div className="text-center p-6 rounded-2xl border border-border bg-background">
+              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
+                <Eye className="h-6 w-6 text-primary" />
+              </div>
+              <h3 className="font-semibold text-foreground mb-2">
+                {es ? 'Infraestructura SOC 2' : 'SOC 2 Infrastructure'}
+              </h3>
+              <p className="text-sm text-muted-foreground">
+                {es
+                  ? 'Nuestra infraestructura cumple con los estándares SOC 2 Tipo II, con auditorías regulares, monitoreo continuo y controles de acceso estrictos.'
+                  : 'Our infrastructure meets SOC 2 Type II standards, with regular audits, continuous monitoring, and strict access controls.'}
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* CTA */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
@@ -249,6 +312,17 @@ export default function Features() {
           <div className="flex items-center gap-2">
             <img src="/images/hg-logo.png" alt="HG" className="w-6 h-6 object-contain" />
             <span className="text-sm font-serif font-medium text-foreground">Home Guide</span>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Lock className="h-3 w-3" />
+              <span>{es ? 'Cifrado AES-256' : 'AES-256 Encrypted'}</span>
+            </div>
+            <span className="text-muted-foreground/30">|</span>
+            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+              <Shield className="h-3 w-3" />
+              <span>{es ? 'SOC 2 Certificado' : 'SOC 2 Compliant'}</span>
+            </div>
           </div>
           <p className="text-xs text-muted-foreground">
             {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
