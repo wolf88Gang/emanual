@@ -84,7 +84,6 @@ Deno.serve(async (req) => {
         headers: {
           Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
-          Prefer: "return=minimal",
         },
       }
     );
@@ -104,7 +103,37 @@ Deno.serve(async (req) => {
     }
 
     const prices: Record<string, number> = { monthly: 19.99, annual: 199.99 };
-    const amount = prices[plan_type] || prices.monthly;
+    const expectedAmount = prices[plan_type] || prices.monthly;
+
+    // Verify the captured amount matches the expected plan price to prevent
+    // price-manipulation attacks where attackers submit a low-value order id.
+    const captured = captureData?.purchase_units?.[0]?.payments?.captures?.[0];
+    const capturedAmount = parseFloat(captured?.amount?.value ?? "0");
+    const capturedCurrency = captured?.amount?.currency_code;
+    const captureStatus = captured?.status;
+
+    if (
+      captureStatus !== "COMPLETED" ||
+      capturedCurrency !== "USD" ||
+      Math.abs(capturedAmount - expectedAmount) > 0.01
+    ) {
+      console.error("PayPal amount mismatch", {
+        capturedAmount,
+        capturedCurrency,
+        captureStatus,
+        expectedAmount,
+        plan_type,
+      });
+      return new Response(
+        JSON.stringify({ error: "Payment verification failed" }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const amount = expectedAmount;
 
     // Use service role to insert/update subscription
     const supabaseAdmin = createClient(
