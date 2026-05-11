@@ -97,7 +97,7 @@ const CLIENT_TYPE_OPTIONS: {
 ];
 
 export default function Onboarding() {
-  const { user, profile, signOut } = useAuth();
+  const { user, profile, signOut, refreshUserData } = useAuth();
   const { language } = useLanguage();
   const navigate = useNavigate();
 
@@ -235,7 +235,7 @@ export default function Onboarding() {
         const trialEnd = new Date();
         trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
 
-        await supabase.from('subscriptions').insert({
+        const { error: subscriptionError } = await supabase.from('subscriptions').insert({
           user_id: user.id,
           plan_type: 'trial',
           status: 'active',
@@ -245,7 +245,11 @@ export default function Onboarding() {
           current_period_start: trialStart.toISOString(),
           current_period_end: trialEnd.toISOString(),
         });
+
+        if (subscriptionError) throw subscriptionError;
       }
+
+      await refreshUserData();
 
       toast.success(l('Property created! Welcome to Home Guide', '¡Propiedad creada! Bienvenido a Home Guide', 'Immobilie erstellt! Willkommen bei Home Guide'));
       navigate('/', { replace: true });
