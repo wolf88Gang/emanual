@@ -3,7 +3,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Eye, EyeOff, Leaf, ArrowRight, Users, Shield, Wrench, Building } from 'lucide-react';
+import { Eye, EyeOff, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { useAuth } from '@/contexts/AuthContext';
@@ -122,133 +122,81 @@ export default function Auth() {
         </header>
 
         <main className="flex-1 flex items-center justify-center p-6">
-          <div className="w-full max-w-sm">
-            {showDemoAccess ? (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h1 className="text-2xl font-serif font-bold text-foreground">
-                    {es ? 'Acceso Demo' : 'Demo Access'}
-                  </h1>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {es ? 'Selecciona un perfil para explorar' : 'Select a profile to explore'}
-                  </p>
-                </div>
+          <div className="w-full max-w-sm space-y-6">
+            <div className="text-center">
+              <h1 className="text-2xl font-serif font-bold text-foreground">
+                {isSignUp ? t('auth.signUp') : t('auth.signIn')}
+              </h1>
+              <p className="text-sm text-muted-foreground mt-1">
+                {isSignUp
+                  ? (es ? 'Crea tu cuenta para gestionar tu propiedad' : 'Create your account to manage your estate')
+                  : (es ? 'Bienvenido de nuevo' : 'Welcome back')}
+              </p>
+            </div>
 
-                <div className="space-y-2">
-                  {demoAccounts.map((account) => (
-                    <button
-                      key={account.email}
-                      onClick={() => handleDemoLogin(account.email)}
-                      disabled={isLoading}
-                      className="w-full flex items-center gap-3 p-3 rounded-xl border border-border hover:border-primary/50 hover:bg-accent/50 transition-all text-left group"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                        <account.icon className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-sm text-foreground">{es ? account.roleEs : account.role}</div>
-                        <div className="text-xs text-muted-foreground">{es ? account.descriptionEs : account.description}</div>
-                      </div>
-                      <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0" />
-                    </button>
-                  ))}
+            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+              {isSignUp && (
+                <div className="space-y-1.5">
+                  <Label htmlFor="fullName">{es ? 'Nombre completo' : 'Full Name'}</Label>
+                  <Input id="fullName" placeholder={es ? 'Juan García' : 'John Smith'} {...register('fullName')} />
                 </div>
+              )}
 
-                <button
-                  onClick={() => setShowDemoAccess(false)}
-                  className="w-full text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  {es ? '← Volver' : '← Back to sign in'}
-                </button>
+              <div className="space-y-1.5">
+                <Label htmlFor="email">{t('auth.email')}</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="you@example.com"
+                  {...register('email')}
+                  className={errors.email ? 'border-destructive' : ''}
+                />
+                {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
-            ) : (
-              <div className="space-y-6">
-                <div className="text-center">
-                  <h1 className="text-2xl font-serif font-bold text-foreground">
-                    {isSignUp ? t('auth.signUp') : t('auth.signIn')}
-                  </h1>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {isSignUp
-                      ? (es ? 'Crea tu cuenta para gestionar tu propiedad' : 'Create your account to manage your estate')
-                      : (es ? 'Bienvenido de nuevo' : 'Welcome back')}
-                  </p>
-                </div>
 
-                <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-                  {isSignUp && (
-                    <div className="space-y-1.5">
-                      <Label htmlFor="fullName">{es ? 'Nombre completo' : 'Full Name'}</Label>
-                      <Input id="fullName" placeholder={es ? 'Juan García' : 'John Smith'} {...register('fullName')} />
-                    </div>
-                  )}
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email">{t('auth.email')}</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="you@example.com"
-                      {...register('email')}
-                      className={errors.email ? 'border-destructive' : ''}
-                    />
-                    {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
-                  </div>
-
-                  <div className="space-y-1.5">
-                    <Label htmlFor="password">{t('auth.password')}</Label>
-                    <div className="relative">
-                      <Input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="••••••••"
-                        {...register('password')}
-                        className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                    {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
-                  </div>
-
-                  <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
-                    {isLoading ? (
-                      <span className="animate-pulse">{es ? 'Cargando...' : 'Loading...'}</span>
-                    ) : (
-                      <>
-                        {isSignUp ? t('auth.signUp') : t('auth.signIn')}
-                        <ArrowRight className="ml-2 h-4 w-4" />
-                      </>
-                    )}
-                  </Button>
-                </form>
-
-                <p className="text-center text-sm text-muted-foreground">
-                  {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
+              <div className="space-y-1.5">
+                <Label htmlFor="password">{t('auth.password')}</Label>
+                <div className="relative">
+                  <Input
+                    id="password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="••••••••"
+                    {...register('password')}
+                    className={errors.password ? 'border-destructive pr-10' : 'pr-10'}
+                  />
                   <button
                     type="button"
-                    onClick={() => { setIsSignUp(!isSignUp); reset(); }}
-                    className="text-primary font-medium hover:underline"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                   >
-                    {isSignUp ? t('auth.signIn') : t('auth.signUp')}
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
-                </p>
-
-                <div className="relative">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                  <div className="relative flex justify-center text-xs"><span className="px-2 bg-background text-muted-foreground">{es ? 'o' : 'or'}</span></div>
                 </div>
-
-                <Button variant="secondary" className="w-full border-2 border-dashed border-primary/30 bg-primary/5 hover:bg-primary/10" onClick={() => setShowDemoAccess(true)}>
-                  <Users className="mr-2 h-4 w-4" />
-                  {es ? 'Probar Demo (sin registro)' : 'Try Demo (no signup)'}
-                </Button>
+                {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
               </div>
-            )}
+
+              <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
+                {isLoading ? (
+                  <span className="animate-pulse">{es ? 'Cargando...' : 'Loading...'}</span>
+                ) : (
+                  <>
+                    {isSignUp ? t('auth.signUp') : t('auth.signIn')}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </>
+                )}
+              </Button>
+            </form>
+
+            <p className="text-center text-sm text-muted-foreground">
+              {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
+              <button
+                type="button"
+                onClick={() => { setIsSignUp(!isSignUp); reset(); }}
+                className="text-primary font-medium hover:underline"
+              >
+                {isSignUp ? t('auth.signIn') : t('auth.signUp')}
+              </button>
+            </p>
 
             <p className="text-center text-[11px] text-muted-foreground mt-8">
               {es
