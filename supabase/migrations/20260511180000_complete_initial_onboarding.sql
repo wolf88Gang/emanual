@@ -1,7 +1,7 @@
 create or replace function public.complete_initial_onboarding(
   p_org_name text,
   p_org_type text,
-  p_client_type public.client_type,
+  p_client_type text,
   p_estate_name text,
   p_country text default null,
   p_address_text text default null
@@ -41,7 +41,10 @@ begin
   update public.profiles
   set
     org_id = v_org_id,
-    client_type = coalesce(p_client_type, client_type),
+    client_type = case
+      when p_client_type in ('property_owner', 'landscaping_company', 'hybrid', 'other') then p_client_type::public.client_type
+      else client_type
+    end,
     updated_at = now()
   where id = v_user_id;
 
@@ -57,4 +60,4 @@ begin
 end;
 $$;
 
-grant execute on function public.complete_initial_onboarding(text, text, public.client_type, text, text, text) to authenticated;
+grant execute on function public.complete_initial_onboarding(text, text, text, text, text, text) to authenticated;
