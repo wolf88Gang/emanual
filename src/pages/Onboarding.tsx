@@ -197,7 +197,7 @@ export default function Onboarding() {
       };
 
       if (!profile?.org_id) {
-        const { error: onboardingError } = await supabase.rpc('complete_initial_onboarding', {
+        const { error: onboardingError } = await (supabase as any).rpc('complete_initial_onboarding', {
           p_org_name: estateName,
           p_org_type: orgTypeMap[selectedClientType] || 'residential',
           p_client_type: selectedClientType || null,
