@@ -1,0 +1,1 @@
+REVOKE EXECUTE ON FUNCTION public.complete_initial_onboarding(text, text, text, text, text, text) FROM PUBLIC;
