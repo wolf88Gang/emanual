@@ -2794,6 +2794,17 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_initial_onboarding: {
+        Args: {
+          p_address_text?: string
+          p_client_type: string
+          p_country?: string
+          p_estate_name: string
+          p_org_name: string
+          p_org_type: string
+        }
+        Returns: string
+      }
       get_client_permissions: {
         Args: { _estate_id: string; _user_id: string }
         Returns: Json
@@ -2826,7 +2837,12 @@ export type Database = {
         | "hardscape"
         | "equipment"
         | "structure"
-      client_type: "property_owner" | "landscaping_company" | "hybrid" | "other"
+      client_type:
+        | "property_owner"
+        | "landscaping_company"
+        | "hybrid"
+        | "other"
+        | "property_management"
       compost_ingredient_type:
         | "green"
         | "brown"
@@ -3020,7 +3036,13 @@ export const Constants = {
         "equipment",
         "structure",
       ],
-      client_type: ["property_owner", "landscaping_company", "hybrid", "other"],
+      client_type: [
+        "property_owner",
+        "landscaping_company",
+        "hybrid",
+        "other",
+        "property_management",
+      ],
       compost_ingredient_type: [
         "green",
         "brown",

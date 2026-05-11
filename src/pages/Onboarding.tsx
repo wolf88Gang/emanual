@@ -188,50 +188,40 @@ export default function Onboarding() {
 
     setIsLoading(true);
     try {
-      let orgId = profile?.org_id;
+      const orgTypeMap: Record<string, string> = {
+        property_owner: 'residential',
+        landscaping_company: 'landscaping_company',
+        property_management: 'property_management',
+        hybrid: 'hybrid',
+        other: 'residential',
+      };
 
-      if (!orgId) {
-        const orgTypeMap: Record<string, string> = {
-          property_owner: 'residential',
-          landscaping_company: 'landscaping_company',
-          property_management: 'property_management',
-          hybrid: 'hybrid',
-          other: 'residential',
-        };
-        const { data: newOrg, error: orgError } = await supabase
-          .from('organizations')
-          .insert({ name: estateName, org_type: orgTypeMap[selectedClientType] || 'residential' } as any)
-          .select('id')
-          .single();
-        if (orgError) throw orgError;
-        orgId = newOrg.id;
+      if (!profile?.org_id) {
+        const { error: onboardingError } = await (supabase as any).rpc('complete_initial_onboarding', {
+          p_org_name: estateName,
+          p_org_type: orgTypeMap[selectedClientType] || 'residential',
+          p_client_type: selectedClientType || null,
+          p_estate_name: estateName,
+          p_country: estateCountry || null,
+          p_address_text: estateAddress || null,
+        });
+
+        if (onboardingError) throw onboardingError;
+      } else {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({ client_type: selectedClientType || null } as any)
+          .eq('id', user.id);
+        if (profileError) throw profileError;
+
+        const { error: estateError } = await supabase.from('estates').insert({
+          name: estateName,
+          org_id: profile.org_id,
+          country: estateCountry || null,
+          address_text: estateAddress || null,
+        });
+        if (estateError) throw estateError;
       }
-
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .update({ org_id: orgId, client_type: selectedClientType || null } as any)
-        .eq('id', user.id);
-      if (profileError) throw profileError;
-
-      const { data: existingRole } = await supabase
-        .from('user_roles')
-        .select('id')
-        .eq('user_id', user.id)
-        .eq('role', 'owner')
-        .maybeSingle();
-
-      if (!existingRole) {
-        const { error: roleError } = await supabase.from('user_roles').insert({ user_id: user.id, role: 'owner' });
-        if (roleError) throw roleError;
-      }
-
-      const { error: estateError } = await supabase.from('estates').insert({
-        name: estateName,
-        org_id: orgId,
-        country: estateCountry || null,
-        address_text: estateAddress || null,
-      });
-      if (estateError) throw estateError;
 
       // Create trial subscription (1 property, 15 days)
       const { data: existingSub } = await supabase
