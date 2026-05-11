@@ -20,31 +20,13 @@ const authSchema = z.object({
 
 type AuthFormData = z.infer<typeof authSchema>;
 
-interface DemoAccount {
-  email: string;
-  role: string;
-  roleEs: string;
-  roleDe: string;
-  icon: React.ComponentType<{ className?: string }>;
-  description: string;
-  descriptionEs: string;
-}
-
-const demoAccounts: DemoAccount[] = [
-  { email: 'owner@demo.com', role: 'Owner', roleEs: 'Propietario', roleDe: 'Eigentümer', icon: Building, description: 'Full access to all features', descriptionEs: 'Acceso completo a todas las funciones' },
-  { email: 'manager@demo.com', role: 'Manager', roleEs: 'Administrador', roleDe: 'Verwalter', icon: Shield, description: 'Manage assets, tasks & team', descriptionEs: 'Gestionar activos, tareas y equipo' },
-  { email: 'crew@demo.com', role: 'Crew', roleEs: 'Equipo', roleDe: 'Team', icon: Wrench, description: 'Complete tasks & check-ins', descriptionEs: 'Completar tareas y registros' },
-  { email: 'vendor@demo.com', role: 'Vendor', roleEs: 'Proveedor', roleDe: 'Lieferant', icon: Users, description: 'View assigned tasks only', descriptionEs: 'Ver solo tareas asignadas' },
-];
-
 export default function Auth() {
-  const { t, language, toggleLanguage } = useLanguage();
+  const { t, language } = useLanguage();
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [showDemoAccess, setShowDemoAccess] = useState(false);
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
@@ -74,21 +56,6 @@ export default function Auth() {
           toast.success('Welcome back!');
           navigate('/');
         }
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDemoLogin = async (email: string) => {
-    setIsLoading(true);
-    try {
-      const { error } = await signIn(email, 'Demo1234!');
-      if (error) {
-        toast.error('Demo account not set up. Please contact support.');
-      } else {
-        toast.success('Welcome to Home Guide!');
-        navigate('/');
       }
     } finally {
       setIsLoading(false);

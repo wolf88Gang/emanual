@@ -154,14 +154,6 @@ export default function Features() {
               {es ? 'Comenzar' : 'Get Started'}
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={() => navigate('/auth')}
-              className="border-white text-white hover:bg-white/20 font-medium"
-            >
-              {es ? 'Probar Demo' : 'Try Demo'}
-            </Button>
           </div>
         </div>
       </section>
