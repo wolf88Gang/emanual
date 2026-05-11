@@ -20,6 +20,7 @@ interface AuthContextType {
   roles: AppRole[];
   loading: boolean;
   isPlatformAdmin: boolean;
+  refreshUserData: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
   signOut: () => Promise<void>;
@@ -112,6 +113,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }
 
+  const refreshUserData = async () => {
+    if (!user) {
+      setProfile(null);
+      setRoles([]);
+      setIsPlatformAdmin(false);
+      return;
+    }
+
+    setLoading(true);
+    await fetchUserData(user.id);
+  };
+
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     return { error: error as Error | null };
@@ -154,6 +167,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         roles,
         loading,
         isPlatformAdmin,
+        refreshUserData,
         signIn,
         signUp,
         signOut,
