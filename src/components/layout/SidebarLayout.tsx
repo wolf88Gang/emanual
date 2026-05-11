@@ -32,7 +32,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <LanguagePicker />
             </div>
           </header>
-          <DemoBanner />
+          
           <TrialBanner />
           <main className="flex-1 overflow-auto safe-area-content">
             {children}
