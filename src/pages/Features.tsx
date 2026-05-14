@@ -288,6 +288,8 @@ export default function Features() {
           <img
             src="/images/estate_guide_2.jpg"
             alt="Estate at night"
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/70" />
