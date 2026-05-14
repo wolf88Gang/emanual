@@ -152,7 +152,7 @@ export default function Features() {
               ? 'Gestión de propiedades con precisión y propósito'
               : 'Property management with precision and purpose'}
           </h1>
-          <p className="mt-6 text-base md:text-lg text-white/60 max-w-2xl leading-relaxed">
+          <p className="mt-6 text-base md:text-lg text-white/90 max-w-2xl leading-relaxed">
             {es
               ? '19 módulos integrados para propiedades que exigen excelencia operativa y cuidado a largo plazo.'
               : '19 integrated modules for properties that demand operational excellence and long-term stewardship.'}
