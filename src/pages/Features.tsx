@@ -8,6 +8,7 @@ import {
   Camera, QrCode, Bell, Zap, Globe, ArrowRight, Lock, Database, Eye, Calculator
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Seo } from '@/components/Seo';
 
 interface FeatureItem {
   icon: React.ComponentType<{ className?: string }>;
@@ -98,6 +99,13 @@ export default function Features() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+      <Seo
+        title={es ? 'Home Guide — Gestión de Propiedades y Paisajes' : 'Home Guide — Property & Landscape Management'}
+        description={es
+          ? 'Plataforma todo-en-uno para fincas y paisajismo: mapa interactivo, activos, tareas, cuadrillas, compostaje y CRM.'
+          : 'All-in-one platform for estates and landscaping: interactive map, assets, tasks, crews, compost and CRM.'}
+        path="/"
+      />
       {/* Minimal header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50" style={{
         paddingTop: 'env(safe-area-inset-top)',

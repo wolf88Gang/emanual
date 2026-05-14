@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Search, MapPin, DollarSign, Clock, Briefcase, Send, Plus, ArrowLeft, Star, User, Calendar, TrendingUp, CheckCircle2 } from 'lucide-react';
+import { Seo } from '@/components/Seo';
 
 interface JobPosting {
   id: string;
@@ -275,6 +276,20 @@ export default function JobBoard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={es ? 'Bolsa de Trabajo — Home Guide' : 'Job Board — Landscaping & Estate Jobs | Home Guide'}
+        description={es
+          ? 'Encuentra trabajos de paisajismo, jardinería y mantenimiento de propiedades cerca de ti.'
+          : 'Find landscaping, gardening and estate maintenance jobs near you on the Home Guide marketplace.'}
+        path="/jobs"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'CollectionPage',
+          name: 'Home Guide Job Board',
+          description: 'Marketplace of landscaping and estate maintenance jobs.',
+          url: 'https://homeguide.casa/jobs',
+        }}
+      />
       {/* Hero header */}
       <div className="bg-gradient-to-br from-primary/15 via-background to-accent/10 border-b border-border">
         <div className="max-w-5xl mx-auto px-4 py-6 sm:py-10">

@@ -16,6 +16,7 @@ import {
   ArrowLeft, Star, MapPin, Clock, Briefcase, MessageSquare, Send,
   User, Award, CheckCircle2, Calendar
 } from 'lucide-react';
+import { Seo } from '@/components/Seo';
 
 interface WorkerProfile {
   id: string;
@@ -131,6 +132,24 @@ export default function WorkerProfilePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <Seo
+        title={`${name} — ${es ? 'Perfil de Trabajador' : 'Worker Profile'} | Home Guide`}
+        description={(es ? profile.bio_es : profile.bio) || `${name} — ${(profile.skills || []).slice(0, 4).join(', ')}`}
+        path={`/worker/${profile.id}`}
+        type="profile"
+        jsonLd={{
+          '@context': 'https://schema.org',
+          '@type': 'Person',
+          name,
+          description: (es ? profile.bio_es : profile.bio) || undefined,
+          knowsAbout: profile.skills,
+          aggregateRating: profile.rating_count > 0 ? {
+            '@type': 'AggregateRating',
+            ratingValue: profile.rating_avg,
+            ratingCount: profile.rating_count,
+          } : undefined,
+        }}
+      />
       {/* Header */}
       <div className="bg-gradient-to-br from-primary/10 via-background to-accent/5 border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-6">

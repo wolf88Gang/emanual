@@ -1,0 +1,15 @@
+# Home Guide
+
+> Digital property management for estates, landscapes, and living assets — tasks, maps, assets, compost tracking, CRM, and crew tools in a single app.
+
+Home Guide helps estate owners, property managers, and landscaping crews coordinate maintenance work with spatial context (GPS, zones, assets), evidence logs, and a worker marketplace.
+
+## Pages
+
+- [Home](/): Product overview and features for estate and landscape management.
+- [Job Board](/jobs): Public marketplace listing landscaping and estate jobs.
+- [Sign in](/auth): Account login and signup.
+
+## Optional
+
+- [Worker profile](/worker/:id): Public profile for individual workers in the marketplace.
