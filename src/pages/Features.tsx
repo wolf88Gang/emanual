@@ -98,7 +98,7 @@ export default function Features() {
   const es = language === 'es';
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground">
       <Seo
         title={es ? 'Home Guide — Gestión de Propiedades y Paisajes' : 'Home Guide — Property & Landscape Management'}
         description={es
@@ -144,7 +144,7 @@ export default function Features() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full">
-          <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/50 mb-4">
+          <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/80 mb-4">
             {es ? 'Plataforma' : 'Platform Overview'}
           </p>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-[1.05] max-w-4xl">
@@ -152,7 +152,7 @@ export default function Features() {
               ? 'Gestión de propiedades con precisión y propósito'
               : 'Property management with precision and purpose'}
           </h1>
-          <p className="mt-6 text-base md:text-lg text-white/60 max-w-2xl leading-relaxed">
+          <p className="mt-6 text-base md:text-lg text-white/90 max-w-2xl leading-relaxed">
             {es
               ? '19 módulos integrados para propiedades que exigen excelencia operativa y cuidado a largo plazo.'
               : '19 integrated modules for properties that demand operational excellence and long-term stewardship.'}
@@ -184,7 +184,7 @@ export default function Features() {
             />
             <div className="absolute inset-0 bg-black/55" />
             <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-10">
-              <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/40 mb-3">
+              <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/80 mb-3">
                 {String(sIdx + 1).padStart(2, '0')} / 05
               </span>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
@@ -326,7 +326,7 @@ export default function Features() {
               <Lock className="h-3 w-3" />
               <span>{es ? 'Cifrado AES-256' : 'AES-256 Encrypted'}</span>
             </div>
-            <span className="text-muted-foreground/30">|</span>
+            <span className="text-muted-foreground">|</span>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
               <span>{es ? 'SOC 2 Certificado' : 'SOC 2 Compliant'}</span>
@@ -337,6 +337,6 @@ export default function Features() {
           </p>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }

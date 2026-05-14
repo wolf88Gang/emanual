@@ -85,14 +85,14 @@ export default function Auth() {
             <img src="/images/hg-logo.png" alt="Home Guide" className="w-12 h-12 object-contain" />
             <span className="text-3xl font-serif font-semibold tracking-tight">Home Guide</span>
           </div>
-          <p className="text-xl font-light text-white/90 max-w-lg leading-relaxed">
+          <p className="text-xl font-light text-white max-w-lg leading-relaxed">
             {es
               ? 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.'
               : 'Manage properties, landscapes, and living assets — all in one place.'}
           </p>
           <Link
             to="/"
-            className="mt-6 text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4"
+            className="mt-6 text-sm text-white/90 hover:text-white transition-colors underline underline-offset-4"
           >
             {es ? 'Ver todas las funciones →' : 'See all features →'}
           </Link>
@@ -112,7 +112,7 @@ export default function Auth() {
             <img src="/images/hg-logo.png" alt="Home Guide" className="w-9 h-9 object-contain" />
             <span className="text-2xl font-serif font-semibold">Home Guide</span>
           </div>
-          <p className="text-sm text-white/80">
+          <p className="text-sm text-white/95">
             {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
           </p>
         </div>
