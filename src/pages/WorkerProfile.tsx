@@ -131,7 +131,7 @@ export default function WorkerProfilePage() {
   const name = (profile.profiles as any)?.full_name || (profile.profiles as any)?.email || 'Worker';
 
   return (
-    <div className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
       <Seo
         title={`${name} — ${es ? 'Perfil de Trabajador' : 'Worker Profile'} | Home Guide`}
         description={(es ? profile.bio_es : profile.bio) || `${name} — ${(profile.skills || []).slice(0, 4).join(', ')}`}
