@@ -337,6 +337,6 @@ export default function Features() {
           </p>
         </div>
       </footer>
-    </div>
+    </main>
   );
 }
