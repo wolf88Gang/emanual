@@ -2818,6 +2818,10 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      user_can_write_asset_photo: {
+        Args: { _path: string; _user_id: string }
+        Returns: boolean
+      }
     }
     Enums: {
       alert_status: "active" | "acknowledged" | "resolved"
