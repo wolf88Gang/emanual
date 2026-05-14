@@ -546,6 +546,6 @@ export default function JobBoard() {
           )}
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   );
 }
