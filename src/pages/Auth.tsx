@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
+import { Seo } from '@/components/Seo';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -66,6 +67,11 @@ export default function Auth() {
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
+      <Seo
+        title={isSignUp ? (es ? 'Crear cuenta — Home Guide' : 'Create account — Home Guide') : (es ? 'Iniciar sesión — Home Guide' : 'Sign in — Home Guide')}
+        description={es ? 'Accede a Home Guide para gestionar tu propiedad, paisajismo y cuadrillas.' : 'Sign in to Home Guide to manage your estate, landscape and crews.'}
+        path="/auth"
+      />
       {/* Left side — background image */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
         <img
