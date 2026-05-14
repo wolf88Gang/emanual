@@ -275,7 +275,7 @@ export default function JobBoard() {
   const isDemo = jobs.length > 0 && jobs[0].id.startsWith('demo-');
 
   return (
-    <div className="min-h-screen bg-background">
+    <main className="min-h-screen bg-background">
       <Seo
         title={es ? 'Bolsa de Trabajo — Home Guide' : 'Job Board — Landscaping & Estate Jobs | Home Guide'}
         description={es
