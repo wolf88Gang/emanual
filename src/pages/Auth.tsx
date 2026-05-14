@@ -112,7 +112,7 @@ export default function Auth() {
             <img src="/images/hg-logo.png" alt="Home Guide" className="w-9 h-9 object-contain" />
             <span className="text-2xl font-serif font-semibold">Home Guide</span>
           </div>
-          <p className="text-sm text-white/80">
+          <p className="text-sm text-white/95">
             {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
           </p>
         </div>
