@@ -327,6 +327,6 @@ export default function WorkerProfilePage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </main>
   );
 }
