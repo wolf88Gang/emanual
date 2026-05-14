@@ -49,6 +49,50 @@ export default function PlatformClients() {
     totalRevenue: 0,
     newThisMonth: 0
   });
+  const [editClient, setEditClient] = useState<ClientData | null>(null);
+  const [planStatus, setPlanStatus] = useState<string>('inactive');
+  const [planType, setPlanType] = useState<string>('monthly');
+  const [planAmount, setPlanAmount] = useState<string>('0');
+  const [savingPlan, setSavingPlan] = useState(false);
+
+  function openEditPlan(client: ClientData) {
+    setEditClient(client);
+    setPlanStatus(client.subscription?.status ?? 'inactive');
+    setPlanType(client.subscription?.plan_type ?? 'monthly');
+    setPlanAmount(String(client.subscription?.amount ?? 0));
+  }
+
+  async function savePlan() {
+    if (!editClient) return;
+    setSavingPlan(true);
+    try {
+      const amount = Number(planAmount) || 0;
+      const payload = {
+        user_id: editClient.id,
+        status: planStatus,
+        plan_type: planType,
+        amount,
+        currency: 'USD',
+      };
+      let error;
+      if (editClient.subscription) {
+        ({ error } = await supabase
+          .from('subscriptions')
+          .update(payload)
+          .eq('user_id', editClient.id));
+      } else {
+        ({ error } = await supabase.from('subscriptions').insert(payload));
+      }
+      if (error) throw error;
+      toast.success(es ? 'Plan actualizado' : 'Plan updated');
+      setEditClient(null);
+      await fetchClients();
+    } catch (err: any) {
+      toast.error(err.message ?? (es ? 'Error al guardar' : 'Failed to save'));
+    } finally {
+      setSavingPlan(false);
+    }
+  }
 
   useEffect(() => {
     fetchClients();
