@@ -184,7 +184,7 @@ export default function Features() {
             />
             <div className="absolute inset-0 bg-black/55" />
             <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-10">
-              <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/40 mb-3">
+              <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/80 mb-3">
                 {String(sIdx + 1).padStart(2, '0')} / 05
               </span>
               <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
