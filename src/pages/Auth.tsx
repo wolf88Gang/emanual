@@ -92,7 +92,7 @@ export default function Auth() {
           </p>
           <Link
             to="/"
-            className="mt-6 text-sm text-white/70 hover:text-white transition-colors underline underline-offset-4"
+            className="mt-6 text-sm text-white/90 hover:text-white transition-colors underline underline-offset-4"
           >
             {es ? 'Ver todas las funciones →' : 'See all features →'}
           </Link>
