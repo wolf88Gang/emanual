@@ -98,7 +98,7 @@ export default function Features() {
   const es = language === 'es';
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
+    <main className="min-h-screen bg-background text-foreground">
       <Seo
         title={es ? 'Home Guide — Gestión de Propiedades y Paisajes' : 'Home Guide — Property & Landscape Management'}
         description={es
