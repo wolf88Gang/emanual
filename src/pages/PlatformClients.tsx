@@ -6,8 +6,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Users, CreditCard, BarChart3, AlertTriangle, Search, Mail, Phone, Calendar, Building2, DollarSign } from 'lucide-react';
+import { Users, CreditCard, BarChart3, AlertTriangle, Search, Mail, Phone, Calendar, Building2, DollarSign, Pencil } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 interface ClientData {
@@ -45,6 +49,50 @@ export default function PlatformClients() {
     totalRevenue: 0,
     newThisMonth: 0
   });
+  const [editClient, setEditClient] = useState<ClientData | null>(null);
+  const [planStatus, setPlanStatus] = useState<string>('inactive');
+  const [planType, setPlanType] = useState<string>('monthly');
+  const [planAmount, setPlanAmount] = useState<string>('0');
+  const [savingPlan, setSavingPlan] = useState(false);
+
+  function openEditPlan(client: ClientData) {
+    setEditClient(client);
+    setPlanStatus(client.subscription?.status ?? 'inactive');
+    setPlanType(client.subscription?.plan_type ?? 'monthly');
+    setPlanAmount(String(client.subscription?.amount ?? 0));
+  }
+
+  async function savePlan() {
+    if (!editClient) return;
+    setSavingPlan(true);
+    try {
+      const amount = Number(planAmount) || 0;
+      const payload = {
+        user_id: editClient.id,
+        status: planStatus,
+        plan_type: planType,
+        amount,
+        currency: 'USD',
+      };
+      let error;
+      if (editClient.subscription) {
+        ({ error } = await supabase
+          .from('subscriptions')
+          .update(payload)
+          .eq('user_id', editClient.id));
+      } else {
+        ({ error } = await supabase.from('subscriptions').insert(payload));
+      }
+      if (error) throw error;
+      toast.success(es ? 'Plan actualizado' : 'Plan updated');
+      setEditClient(null);
+      await fetchClients();
+    } catch (err: any) {
+      toast.error(err.message ?? (es ? 'Error al guardar' : 'Failed to save'));
+    } finally {
+      setSavingPlan(false);
+    }
+  }
 
   useEffect(() => {
     fetchClients();
@@ -307,7 +355,18 @@ export default function PlatformClients() {
                                 {es ? 'Enviar email' : 'Send email'}
                               </TooltipContent>
                             </Tooltip>
-                            
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button size="sm" variant="outline" onClick={() => openEditPlan(client)}>
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {es ? 'Editar plan' : 'Edit plan'}
+                              </TooltipContent>
+                            </Tooltip>
+
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button size="sm" variant="outline">
@@ -329,6 +388,59 @@ export default function PlatformClients() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!editClient} onOpenChange={(o) => !o && setEditClient(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{es ? 'Editar plan' : 'Edit plan'}</DialogTitle>
+            <DialogDescription>
+              {editClient?.name} — {editClient?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>{es ? 'Estado' : 'Status'}</Label>
+              <Select value={planStatus} onValueChange={setPlanStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">{es ? 'Activo' : 'Active'}</SelectItem>
+                  <SelectItem value="trial">{es ? 'Prueba' : 'Trial'}</SelectItem>
+                  <SelectItem value="inactive">{es ? 'Inactivo' : 'Inactive'}</SelectItem>
+                  <SelectItem value="cancelled">{es ? 'Cancelado' : 'Cancelled'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{es ? 'Tipo de plan' : 'Plan type'}</Label>
+              <Select value={planType} onValueChange={setPlanType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">{es ? 'Mensual' : 'Monthly'}</SelectItem>
+                  <SelectItem value="yearly">{es ? 'Anual' : 'Yearly'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{es ? 'Monto (USD)' : 'Amount (USD)'}</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={planAmount}
+                onChange={(e) => setPlanAmount(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditClient(null)} disabled={savingPlan}>
+              {es ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button onClick={savePlan} disabled={savingPlan}>
+              {savingPlan ? (es ? 'Guardando…' : 'Saving…') : (es ? 'Guardar' : 'Save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarLayout>
   );
 }
