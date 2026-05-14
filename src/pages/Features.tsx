@@ -144,7 +144,7 @@ export default function Features() {
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full">
-          <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/50 mb-4">
+          <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/80 mb-4">
             {es ? 'Plataforma' : 'Platform Overview'}
           </p>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-[1.05] max-w-4xl">
