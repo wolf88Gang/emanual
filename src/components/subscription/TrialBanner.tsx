@@ -33,10 +33,10 @@ export function TrialBanner() {
   return (
     <div className={`px-4 py-2 text-sm flex items-center justify-between gap-2 ${
       isExpired 
-        ? 'bg-destructive/10 text-destructive border-b border-destructive/20' 
+        ? 'bg-destructive/15 text-destructive-foreground border-b border-destructive/30' 
         : trialDaysLeft <= 3 
-          ? 'bg-warning/10 text-warning border-b border-warning/20'
-          : 'bg-accent/10 text-accent-foreground border-b border-accent/20'
+          ? 'bg-warning/20 text-warning-foreground border-b border-warning/40'
+          : 'bg-accent/20 text-accent-foreground border-b border-accent/30'
     }`}>
       <div className="flex items-center gap-2">
         <Clock className="h-4 w-4 flex-shrink-0" />
