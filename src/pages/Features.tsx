@@ -136,6 +136,10 @@ export default function Features() {
         <img
           src="/images/estate_guide_4.jpg"
           alt="Estate landscape"
+          width={1920}
+          height={1080}
+          fetchPriority="high"
+          decoding="async"
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
@@ -174,6 +178,8 @@ export default function Features() {
             <img
               src={section.image}
               alt={es ? section.labelEs : section.labelEn}
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/55" />
@@ -282,6 +288,8 @@ export default function Features() {
           <img
             src="/images/estate_guide_2.jpg"
             alt="Estate at night"
+            loading="lazy"
+            decoding="async"
             className="w-full h-full object-cover"
           />
           <div className="absolute inset-0 bg-black/70" />

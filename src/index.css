@@ -3,7 +3,7 @@
 @tailwind components;
 @tailwind utilities;
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+/* Fonts preloaded in index.html for performance */
 
 /* Estate Manual Design System
    Inspired by luxury real estate and architectural visualization
