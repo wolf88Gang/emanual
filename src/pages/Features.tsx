@@ -178,6 +178,8 @@ export default function Features() {
             <img
               src={section.image}
               alt={es ? section.labelEs : section.labelEn}
+              loading="lazy"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-cover"
             />
             <div className="absolute inset-0 bg-black/55" />
