@@ -388,6 +388,59 @@ export default function PlatformClients() {
           </CardContent>
         </Card>
       </div>
+
+      <Dialog open={!!editClient} onOpenChange={(o) => !o && setEditClient(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{es ? 'Editar plan' : 'Edit plan'}</DialogTitle>
+            <DialogDescription>
+              {editClient?.name} — {editClient?.email}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label>{es ? 'Estado' : 'Status'}</Label>
+              <Select value={planStatus} onValueChange={setPlanStatus}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="active">{es ? 'Activo' : 'Active'}</SelectItem>
+                  <SelectItem value="trial">{es ? 'Prueba' : 'Trial'}</SelectItem>
+                  <SelectItem value="inactive">{es ? 'Inactivo' : 'Inactive'}</SelectItem>
+                  <SelectItem value="cancelled">{es ? 'Cancelado' : 'Cancelled'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{es ? 'Tipo de plan' : 'Plan type'}</Label>
+              <Select value={planType} onValueChange={setPlanType}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="monthly">{es ? 'Mensual' : 'Monthly'}</SelectItem>
+                  <SelectItem value="yearly">{es ? 'Anual' : 'Yearly'}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{es ? 'Monto (USD)' : 'Amount (USD)'}</Label>
+              <Input
+                type="number"
+                min="0"
+                step="0.01"
+                value={planAmount}
+                onChange={(e) => setPlanAmount(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditClient(null)} disabled={savingPlan}>
+              {es ? 'Cancelar' : 'Cancel'}
+            </Button>
+            <Button onClick={savePlan} disabled={savingPlan}>
+              {savingPlan ? (es ? 'Guardando…' : 'Saving…') : (es ? 'Guardar' : 'Save')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarLayout>
   );
 }
