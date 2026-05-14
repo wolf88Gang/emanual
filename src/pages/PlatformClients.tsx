@@ -355,7 +355,18 @@ export default function PlatformClients() {
                                 {es ? 'Enviar email' : 'Send email'}
                               </TooltipContent>
                             </Tooltip>
-                            
+
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Button size="sm" variant="outline" onClick={() => openEditPlan(client)}>
+                                  <Pencil className="h-3 w-3" />
+                                </Button>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                {es ? 'Editar plan' : 'Edit plan'}
+                              </TooltipContent>
+                            </Tooltip>
+
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <Button size="sm" variant="outline">
