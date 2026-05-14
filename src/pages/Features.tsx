@@ -326,7 +326,7 @@ export default function Features() {
               <Lock className="h-3 w-3" />
               <span>{es ? 'Cifrado AES-256' : 'AES-256 Encrypted'}</span>
             </div>
-            <span className="text-muted-foreground/30">|</span>
+            <span className="text-muted-foreground">|</span>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
               <span>{es ? 'SOC 2 Certificado' : 'SOC 2 Compliant'}</span>
