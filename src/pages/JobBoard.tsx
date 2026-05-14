@@ -274,6 +274,83 @@ export default function JobBoard() {
 
   const isDemo = jobs.length > 0 && jobs[0].id.startsWith('demo-');
 
+  const employmentTypeMap: Record<string, string> = {
+    one_time: 'TEMPORARY',
+    recurring: 'PART_TIME',
+    contract: 'CONTRACTOR',
+    full_time: 'FULL_TIME',
+    part_time: 'PART_TIME',
+  };
+  const payUnitMap: Record<string, string> = {
+    hourly: 'HOUR',
+    daily: 'DAY',
+    weekly: 'WEEK',
+    monthly: 'MONTH',
+    fixed: 'DAY',
+  };
+
+  const jobPostingLd = (job: JobPosting) => {
+    const title = es && job.title_es ? job.title_es : job.title;
+    const description = es && job.description_es ? job.description_es : job.description;
+    const ld: Record<string, unknown> = {
+      '@context': 'https://schema.org',
+      '@type': 'JobPosting',
+      title,
+      description,
+      datePosted: job.created_at,
+      employmentType: employmentTypeMap[job.job_type] ?? 'OTHER',
+      hiringOrganization: {
+        '@type': 'Organization',
+        name: 'Home Guide',
+        sameAs: 'https://homeguide.casa',
+        logo: 'https://homeguide.casa/images/hg-logo.png',
+      },
+      jobLocation: {
+        '@type': 'Place',
+        address: {
+          '@type': 'PostalAddress',
+          addressLocality: job.location_text ?? 'Costa Rica',
+          addressCountry: 'CR',
+        },
+      },
+      directApply: true,
+      url: `https://homeguide.casa/jobs#${job.id}`,
+    };
+    if (job.starts_at) {
+      const valid = new Date(job.starts_at);
+      valid.setDate(valid.getDate() + 30);
+      ld.validThrough = valid.toISOString();
+    }
+    if (job.pay_amount && job.pay_type) {
+      ld.baseSalary = {
+        '@type': 'MonetaryAmount',
+        currency: job.currency,
+        value: {
+          '@type': 'QuantitativeValue',
+          value: job.pay_amount,
+          unitText: payUnitMap[job.pay_type] ?? 'HOUR',
+        },
+      };
+    }
+    return ld;
+  };
+
+  const collectionLd = {
+    '@context': 'https://schema.org',
+    '@type': 'CollectionPage',
+    name: 'Home Guide Job Board',
+    description: 'Marketplace of landscaping and estate maintenance jobs.',
+    url: 'https://homeguide.casa/jobs',
+    mainEntity: {
+      '@type': 'ItemList',
+      itemListElement: jobs.map((job, idx) => ({
+        '@type': 'ListItem',
+        position: idx + 1,
+        item: jobPostingLd(job),
+      })),
+    },
+  };
+
   return (
     <main className="min-h-screen bg-background">
       <Seo
@@ -282,13 +359,7 @@ export default function JobBoard() {
           ? 'Encuentra trabajos de paisajismo, jardinería y mantenimiento de propiedades cerca de ti.'
           : 'Find landscaping, gardening and estate maintenance jobs near you on the Home Guide marketplace.'}
         path="/jobs"
-        jsonLd={{
-          '@context': 'https://schema.org',
-          '@type': 'CollectionPage',
-          name: 'Home Guide Job Board',
-          description: 'Marketplace of landscaping and estate maintenance jobs.',
-          url: 'https://homeguide.casa/jobs',
-        }}
+        jsonLd={collectionLd}
       />
       {/* Hero header */}
       <div className="bg-gradient-to-br from-primary/15 via-background to-accent/10 border-b border-border">
