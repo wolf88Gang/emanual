@@ -85,7 +85,7 @@ export default function Auth() {
             <img src="/images/hg-logo.png" alt="Home Guide" className="w-12 h-12 object-contain" />
             <span className="text-3xl font-serif font-semibold tracking-tight">Home Guide</span>
           </div>
-          <p className="text-xl font-light text-white/90 max-w-lg leading-relaxed">
+          <p className="text-xl font-light text-white max-w-lg leading-relaxed">
             {es
               ? 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.'
               : 'Manage properties, landscapes, and living assets — all in one place.'}
