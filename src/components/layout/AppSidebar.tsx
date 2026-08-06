@@ -54,6 +54,8 @@ export function AppSidebar() {
 
   const isLandscaper = orgType === 'landscaping_company' || orgType === 'hybrid';
   const isPropManager = orgType === 'property_management';
+  const isPlantRental = orgType === 'plant_rental';
+
 
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
