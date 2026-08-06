@@ -1,167 +1,131 @@
-# Home Guide PlantOps — Plan técnico (piloto Raíz y Forma)
+# Home Guide PlantOps — Plan revisado (delta mínimo, piloto Raíz y Forma)
 
-## A. Diagnóstico actual (verificado en código y base de datos)
+Cambio principal frente a la versión anterior: se eliminan `client_sites`, `service_visits`, `asset_reservations`, `asset_incidents`, `asset_movements` y `asset_lifecycle` como entidades nuevas. Quedan **2 tablas nuevas** y **1 valor de enum**. Todo lo demás se resuelve extendiendo lo que ya existe.
 
-Arquitectura encontrada:
-- React 18 + Vite + Tailwind, rutas lazy en `src/App.tsx`, layout con `SidebarLayout` / `ModernAppLayout` / `AppSidebar` / `BottomNav`.
-- Multi-tenant por `organizations.org_type` (valores reales hoy: `residential`, `landscaping_company`) y `profiles.org_id`. El menú ya se bifurca por tipo de organización (`isLandscaper`, `isPropManager`) en `AppSidebar.tsx`.
-- Roles en tabla aparte `user_roles` + enum `app_role` (owner, manager, crew, vendor, worker_marketplace, client) y funciones `has_role`, `get_user_org_id`, `get_client_permissions`.
-- Jerarquía espacial ya existente: `organizations → estates → zones → assets` con `asset_photos`, `tasks`, `task_completions`, `documents`, `qr_labels`, `inventory_items`, `tool_assignments`.
-- CRM ya existente: `clients`, `product_catalog`, `invoices`, `invoice_items`, `client_payments`; pantalla `/crm` con pestañas de clientes, productos, facturas y pagos.
-- Portal de cliente ya existente: `client_access` (8 flags de permisos por sede), `client_invites`, `useClientAccess`, `ClientAccessManager`.
-- Botánica ya existente: `plant_profiles` (care_template_json multilingüe) y `plant_instances` ligado a `assets`.
+## A. Estado real encontrado (verificado)
 
-Funciones reutilizables sin duplicar:
-- `clients` cubre el cliente comercial de PlantOps (ya tiene `estate_id` opcional).
-- `estates` puede representar la **sede** del cliente; `zones` el **edificio/área/piso**; `assets` el **punto + unidad instalada**.
-- `tasks` + `task_completions` + `asset_photos` cubren visita de mantenimiento con evidencia.
-- `qr_labels` cubre el código QR por planta.
-- `plant_profiles` cubre especie/variedad y guía de cuidado.
-- `product_catalog` + `invoices` cubren cotización/facturación de alquiler.
+Rutas actuales (`src/App.tsx`): `/`, `/map`, `/tasks`, `/assets`, `/assets/:id`, `/documents`, `/admin`, `/inventory`, `/plants`, `/checkin`, `/reports`, `/estates`, `/labor`, `/topography`, `/subscription`, `/compost`, `/crm`, `/financials`, `/setup-wizard`, `/requests`, `/my-jobs`, `/my-profile`, `/jobs`, `/worker/:id`, `/jobs/post`.
 
-Brechas reales:
-1. No existe estado de ciclo de vida de activo (disponible/reservado/instalado/en recuperación/baja). `assets` no tiene columna de estado ni condición.
-2. No existe contrato de alquiler ni reserva por fechas → sin esto no hay eventos ni control de doble reserva.
-3. No existe incidencia/reemplazo como entidad (hoy solo tareas).
-4. No existe historial de movimientos del activo (cliente A → bodega → cliente B).
-5. No existe ubicación interior descriptiva (piso, punto, foto de referencia, indicaciones de acceso); hoy solo `lat/lng`.
-6. `assets.asset_type` es un enum cerrado sin `pot` / `accessory` / `composition`.
-7. `enum org_type` es texto libre en `organizations.org_type`, pero `profiles.client_type` es enum sin valor para esta vertical.
+Tablas relevantes ya existentes: `organizations`, `profiles`, `user_roles`, `estates`, `zones`, `assets`, `asset_photos`, `plant_profiles`, `plant_instances`, `tasks`, `task_templates`, `task_completions`, `clients`, `client_access`, `client_invites`, `documents`, `inventory_items`, `tool_assignments`, `qr_labels`, `vendors`, `invoices`, `invoice_items`, `product_catalog`, `client_payments`, `checkins`.
 
-Riesgos técnicos:
-- `enum asset_type` requiere `ALTER TYPE ... ADD VALUE` (no reversible en la misma transacción; migración separada).
-- `EstateContext` asume "una propiedad propia"; en PlantOps hay muchas sedes de terceros → la selección de sede debe seguir funcionando pero etiquetada como cliente/sede.
-- `CRM.tsx` redirige fuera a `residential`; la nueva vertical debe entrar en la rama de acceso comercial explícitamente o quedará sin facturación.
-- RLS actual está scoped por `org_id` vía `estates`; toda tabla nueva debe seguir el mismo patrón + GRANTs.
+Componentes reutilizables: `ModernAppLayout`, `AppSidebar`, `BottomNav`, `EstateMap`, `LocationPickerDialog`, `AssetEditForm`, `AssetPhotoUpload`, `AssetQRCode`, `MaintenanceInfoCard`, `PlantProfileLinker`, `CareProtocolSheet`, `TaskCompletionDialog`, `TaskCalendar`, `ClientAccessManager`, `AssetTypeIcon`, `NoEstateGuide`, `CurrencyPicker`.
 
-## B. Alcance exacto del MVP
+Hooks reutilizables: `useAuth`, `useEstate`, `useClientAccess`, `useGeolocation`, `usePhotoCapture`, `useLanguage`, `useCurrency`.
 
-Obligatorio:
-- Tipo de organización `plant_rental` con navegación propia.
-- Estado + condición de activo; tipos `pot` y `accessory`.
-- Ubicación interior descriptiva por activo.
-- Contratos de alquiler (recurrente y evento) con fechas y cliente.
-- Reservas de activos por rango de fechas con validación anti doble reserva.
-- Visitas de mantenimiento (reutilizando `tasks`) con evidencia fotográfica.
-- Incidencias y reemplazos.
-- Historial de movimientos del activo.
-- Guía de cuidado combinada (especie + ubicación + reglas de contrato).
-- Portal de cliente reutilizando `client_access`.
+Roles y RLS (verificado): **las 51 tablas de `public` tienen RLS habilitada y al menos una política**. La organización activa **no** se deriva de `user.id`: viene de `profiles.org_id`, leído en `AuthContext` y usado por `EstateContext` (`estates` filtrados por `org_id`) y por las políticas mediante `get_user_org_id(auth.uid())`. Roles en `user_roles` con enum `app_role`: owner, manager, crew, vendor, worker_marketplace, client. Existe `get_client_permissions(user, estate)` con 8 flags y `has_role`.
 
-Conveniente (si el piloto lo pide):
-- Inventario por cantidad además de serializado.
-- Emparejamiento planta ↔ maceta con historial independiente.
-- Cotización previa a contrato.
+Funciones que ya resuelven parcialmente PlantOps: jerarquía `estates → zones → assets`; evidencia con `asset_photos` + `task_completions` (foto + GPS obligatorio); QR por activo (`qr_labels` + `QRScannerView`); guía de cuidado por especie (`plant_profiles.care_template_json` EN/ES/DE); mantenimiento recurrente (`tasks.frequency` + `task_templates` + cron `auto-maintenance-tasks`); portal de cliente (`client_access` + `useClientAccess`).
 
-Pospuesto: IA de diagnóstico, IoT, rutas optimizadas, contabilidad completa, e-commerce, reconocimiento de especies, modelos predictivos, editor gráfico de planos.
+## B. Cambios mínimos
 
-## C. Mapeo de reutilización
+| Necesidad | Reutilizar | Extender | Crear | Justificación |
+|---|---|---|---|---|
+| Cliente y contacto | `clients` (name, email, phone, address, notes, estate_id) | — | — | Ya cubre contacto principal; no se crea tabla `contacts` en el MVP. |
+| Sede | `estates` | `+ client_id` | — | `estates` ya es el nodo de jerarquía usado por zonas, activos, tareas, documentos, mapa y RLS. Crear `client_sites` duplicaría toda esa cadena. |
+| Piso / área / zona | `zones` | `+ floor_label` | — | `zones` ya agrupa activos y tiene color y geometría opcional. |
+| Planta serializada | `assets` (+`plant_instances` para especie) | `+ availability`, `+ condition_rating`, costo, valor de reposición, precio de alquiler, proveedor, fecha de adquisición | — | `assets` ya tiene fotos, QR, tareas, mapa y RLS. |
+| Maceta / accesorio serializado | `assets` | `asset_type += 'pot'` (accesorio usa `equipment`) | — | Maceta es un activo con historial propio; separada de la planta. |
+| Inventario por cantidad (platos, sustrato, macetas genéricas) | `inventory_items` (`quantity`, `unit`, `condition`) | — | — | Ya es exactamente inventario por cantidad. |
+| Instalación (planta en un punto de un cliente, con fechas) | — | — | **`plant_placements`** | Es la única relación que hoy no existe: activo × punto × contrato × rango de fechas. Resuelve a la vez instalación, ubicación actual, movimientos, historial y reserva por fechas. |
+| Punto de colocación | `zones` + campos descriptivos en `plant_placements` | — | — | El punto es propiedad de la instalación, no una tabla nueva. |
+| Contrato de alquiler y evento | — | — | **`rental_contracts`** | No existe; `invoices` es facturación, no vigencia ni reglas. |
+| Visita de mantenimiento | `tasks` + `task_completions` + `asset_photos` | `+ placement_id` | — | `tasks` ya tiene frecuencia, vencimiento, asignación, foto obligatoria y estados. Crear `service_visits` duplicaría tareas. |
+| Incidencia / reemplazo | `tasks` | `+ task_kind` ('maintenance' \| 'incident'), `+ replaced_asset_id` | — | Una incidencia es una tarea con origen distinto; evita duplicar órdenes de trabajo. |
+| Movimientos e historial | `plant_placements` (filas cerradas con `ended_at`) | — | — | El historial es la secuencia de placements; no hace falta `asset_movements`. |
+| Evidencia fotográfica | `asset_photos` + `task_completions.photo_url` | — | — | No se crea tabla de evidencias. |
+| Documentos y contrato PDF | `documents` (categoría `vendor_contract`) | — | — | Ya existe. |
+| Portal de cliente | `client_access`, `client_invites`, `useClientAccess`, `ClientAccessManager` | políticas de lectura para `client` en `plant_placements` y `rental_contracts` | — | Ya hay flags por sede y rol `client`. |
+| Precio y facturación | `rental_contracts` (precio, modalidad) | — | — | Sin facturación nueva; `invoices` existente queda opcional. |
 
-| Necesidad PlantOps | Tabla/componente actual | Acción |
-|---|---|---|
-| Cliente | `clients` | reutilizar (+ tipo de cliente, contacto principal) |
-| Sede | `estates` | reutilizar (+ `client_id`, `is_client_site`) |
-| Edificio / piso / zona | `zones` | reutilizar (+ `floor_label`) |
-| Punto de colocación + unidad instalada | `assets` | extender (estado, condición, ubicación interior, costo, precio alquiler) |
-| Planta (especie/guía) | `plant_profiles` + `plant_instances` | reutilizar |
-| Maceta / accesorio | `assets` con `asset_type` nuevo | extender enum |
-| Mantenimiento | `tasks` + `task_completions` | reutilizar (+ `visit_id`) |
-| Visita programada | — | crear `service_visits` |
-| Contrato | — | crear `rental_contracts` |
-| Reserva de evento | — | crear `asset_reservations` |
-| Incidencia / reemplazo | — | crear `asset_incidents` |
-| Historial de movimientos | — | crear `asset_movements` |
-| Evidencia fotográfica | `asset_photos` | reutilizar |
-| Documentos / contrato PDF | `documents` | reutilizar |
-| Facturación | `invoices`, `product_catalog` | reutilizar |
-| Portal cliente | `client_access`, `useClientAccess` | reutilizar |
-| QR | `qr_labels` | reutilizar |
+Los tres conceptos quedan separados así:
+- **Inventario propio** = `assets` de la sede-bodega de Raíz y Forma (`estates.client_id IS NULL`), o `inventory_items` si es por cantidad.
+- **Activo instalado temporalmente** = fila abierta en `plant_placements` (`ended_at IS NULL`).
+- **Punto de colocación** = `zone_id` + descripción/foto/indicaciones dentro de `plant_placements`.
 
-## D. Cambios de base de datos (sin ejecutar)
+## C. Migraciones exactas (sin SQL todavía)
 
-1. `assets`: `+ lifecycle_status` (enum nuevo `asset_lifecycle`: disponible, reservado, en_preparacion, instalado, requiere_atencion, en_recuperacion, muerto, dado_de_baja), `+ condition_rating` (1-5), `+ location_floor`, `+ location_spot_note`, `+ access_notes`, `+ acquisition_date`, `+ supplier_name`, `+ cost`, `+ replacement_value`, `+ rental_price`, `+ currency`, `+ parent_asset_id` (planta↔maceta), `+ quantity` (para no serializados), `+ current_client_id`, `+ contract_id`. Defaults no nulos donde aplique para no romper filas existentes.
-2. `ALTER TYPE asset_type ADD VALUE 'pot' | 'accessory' | 'composition'` (migración independiente).
-3. `estates`: `+ client_id uuid references clients(id)`, `+ site_type text`.
-4. `zones`: `+ floor_label text`.
-5. Nuevas tablas (todas con `org_id`/`estate_id`, `created_at`, `updated_at`, trigger de `updated_at`, GRANTs a `authenticated`/`service_role`, RLS por `get_user_org_id`):
-   - `rental_contracts` (client_id, estate_id, contract_type recurrente|evento, status, start/end, monthly_amount, currency, terms, included_replacements).
-   - `asset_reservations` (asset_id, contract_id, start_at, end_at, status) + índice `(asset_id, start_at, end_at)` y trigger de validación de solape (no CHECK).
-   - `service_visits` (estate_id, contract_id, scheduled_for, status, assigned_to, arrived_at, completed_at, notes).
-   - `asset_incidents` (asset_id, visit_id, status, cause, responsibility, replacement_asset_id, resolved_at).
-   - `asset_movements` (asset_id, from_estate_id, to_estate_id, moved_at, reason, moved_by) — inmutable (sin UPDATE/DELETE).
-6. `tasks`: `+ visit_id uuid`.
-7. RLS de portal cliente: extender `get_client_permissions` o añadir política de lectura para `client` sobre `service_visits`, `asset_incidents` y `rental_contracts` limitada a su `estate_id`.
-8. Estrategia: 3 migraciones (enum → columnas → tablas nuevas). Datos existentes intactos; `lifecycle_status` default `instalado` para activos ya creados.
+**M1 — enum de tipo de activo**
+- Tabla: tipo `asset_type`. Añade `'pot'`. Migración aislada (ADD VALUE no admite uso en la misma transacción).
+- Datos afectados: ninguno. Rollback: no se elimina el valor; queda inerte.
 
-## E. Cambios de frontend
+**M2 — extensiones de columnas**
+- `estates`: `+ client_id uuid null references clients(id) on delete set null`, índice `(client_id)`.
+- `zones`: `+ floor_label text null`.
+- `assets`: `+ availability text not null default 'instalado'` con CHECK en 5 valores, `+ condition_rating smallint null` (1–5), `+ acquisition_date date`, `+ supplier_name text`, `+ cost numeric`, `+ replacement_value numeric`, `+ rental_price numeric`, `+ currency text default 'CRC'`, `+ retired_reason text`. Índice `(estate_id, availability)`.
+- `tasks`: `+ task_kind text not null default 'maintenance'` con CHECK ('maintenance','incident'), `+ placement_id uuid null`, `+ replaced_asset_id uuid null references assets(id)`. Índice `(placement_id)`.
+- Datos afectados: filas existentes toman los defaults; ninguna vertical actual cambia de comportamiento. Rollback: `DROP COLUMN` de cada columna nueva.
 
-| Ruta | Objetivo | Reutiliza | Nuevo |
-|---|---|---|---|
-| `/plantops` | Panel de operación: activos por estado, visitas de hoy, incidencias abiertas | ModernAppLayout, Card, Badge | `PlantOpsDashboard` |
-| `/plantops/clients` | Clientes y sus sedes | `CRM.tsx` pestaña clientes, ClientAccessManager | `ClientSitesPanel` |
-| `/plantops/inventory` | Inventario de plantas/macetas por estado | Assets.tsx patrones de tarjeta | `PlantInventoryGrid`, `AssetStatusBadge` |
-| `/plantops/contracts` | Contratos y reservas de evento | Dialog, Table | `ContractList`, `ContractDialog`, `ReservationCalendar` |
-| `/plantops/visits` | Programar y ejecutar visitas | tasks, TaskCompletionDialog, AssetPhotoUpload | `VisitScheduler`, `VisitExecutionSheet` |
-| `/plantops/incidents` | Incidencias y reemplazos | asset_photos | `IncidentDialog`, `ReplacementFlow` |
-| `/assets/:id` | Añadir ficha PlantOps: estado, ubicación interior, historial, guía | AssetDetail, MaintenanceInfoCard, CareProtocolSheet | pestañas `Historial` y `Ubicación` |
-| Portal cliente | Vista restringida | `useClientAccess` | `ClientPlantPortal` + botón "Reportar problema" con foto |
+**M3 — `rental_contracts` (nueva)**
+- Columnas: `id`, `org_id` (not null), `client_id` (not null), `estate_id` (null = multi-sede), `contract_type` CHECK ('recurring','event'), `status` CHECK ('draft','active','ended'), `starts_on`, `ends_on`, `price_amount`, `currency`, `billing_period` CHECK ('monthly','event','other'), `maintenance_frequency` (reutiliza enum `task_frequency`), `replacement_rules text`, `client_dos_donts text`, `internal_notes text`, `created_at`, `updated_at` + trigger.
+- Índices: `(org_id, status)`, `(client_id)`.
+- RLS: lectura/escritura para `authenticated` cuando `org_id = get_user_org_id(auth.uid())`; lectura para rol `client` cuando existe `client_access` sobre `estate_id` (sin exponer `internal_notes`: el portal selecciona columnas explícitas y una política aparte por vista o selección controlada en frontend con columnas limitadas).
+- GRANTs: `authenticated` (CRUD) y `service_role` (ALL). Sin `anon`.
+- Rollback: `DROP TABLE`.
 
-Cada pantalla: query por `org_id`/`estate_id` con React Query, estado vacío con CTA, skeleton de carga, toast de error, y permisos: owner/manager escriben, crew ejecuta visitas, client solo lee.
+**M4 — `plant_placements` (nueva, corazón del módulo)**
+- Columnas: `id`, `org_id`, `asset_id` (not null → `assets`), `pot_asset_id` (null → `assets`), `estate_id` (not null), `zone_id` (null), `contract_id` (null → `rental_contracts`), `spot_label text`, `spot_notes text`, `access_notes text`, `reference_photo_url text`, `status` CHECK ('reserved','installed','collected'), `starts_on date not null`, `ends_on date null`, `installed_at`, `collected_at`, `created_at`, `updated_at` + trigger.
+- Constraints/índices: índice único parcial `(asset_id) where status='installed' and ends_on is null` (un activo no puede estar instalado en dos puntos); constraint de exclusión sobre `(asset_id, daterange(starts_on, coalesce(ends_on,'infinity')))` para bloquear doble reserva de eventos (requiere `btree_gist`); índices `(estate_id, status)`, `(contract_id)`.
+- Validaciones dependientes de fechas mediante **trigger**, no CHECK.
+- RLS: igual patrón `org_id = get_user_org_id(auth.uid())`; lectura para rol `client` limitada a `estate_id` con `client_access.can_view_assets`.
+- Datos afectados: ninguno (tabla nueva). Rollback: `DROP TABLE`.
 
-## F. Navegación propuesta (org_type = `plant_rental`)
+**M5 — políticas de portal** (puede ir junto a M3/M4): añadir SELECT para `client` en `plant_placements` y `rental_contracts`; no se toca ninguna política existente.
 
-Operación: Panel · Clientes y Sedes · Inventario · Contratos · Visitas · Incidencias
-Soporte: Plantas (especies) · Documentos · Facturación · Reportes · Admin
+## D. Archivos exactos
 
-Sin cambios para `residential`, `landscaping_company`, `property_management`. Móvil (BottomNav): Panel · Visitas · Inventario · Incidencias.
+Se modifican: `src/App.tsx` (4 rutas nuevas), `src/components/layout/AppSidebar.tsx` (rama `plant_rental`), `src/components/layout/BottomNav.tsx`, `src/pages/Onboarding.tsx` (tipo de organización), `src/pages/CRM.tsx` (permitir la vertical en el guard de `org_type`), `src/pages/Assets.tsx` (badge de disponibilidad y filtro), `src/pages/AssetDetail.tsx` (bloque de ubicación actual + historial), `src/pages/Tasks.tsx` (distinguir `task_kind`), `src/components/assets/AssetEditForm.tsx` (campos comerciales), `src/lib/i18n.ts`, `src/integrations/supabase/types.ts` (regenerado).
 
-## G. Orden de implementación
+Se crean: `src/pages/plantops/PlantOpsHome.tsx`, `src/pages/plantops/PlantInventory.tsx`, `src/pages/plantops/Contracts.tsx`, `src/pages/plantops/ClientSites.tsx`, `src/components/plantops/PlacementDialog.tsx`, `src/components/plantops/PlacementHistoryList.tsx`, `src/components/plantops/AvailabilityBadge.tsx`, `src/components/plantops/ContractDialog.tsx`, `src/components/plantops/EventReservationDialog.tsx`, `src/components/plantops/IncidentDialog.tsx`, `src/hooks/usePlacements.ts`, `src/hooks/useContracts.ts`.
 
-1. Migración enum + columnas en `assets`/`estates`/`zones`. Riesgo bajo. Aceptación: tipos regenerados, app sigue compilando. Rollback: drop de columnas.
-2. Migración tablas nuevas + RLS + GRANTs. Riesgo medio (RLS). Aceptación: consulta cruzada entre organizaciones devuelve 0 filas.
-3. Tipo de organización + navegación (`AppSidebar.tsx`, `Onboarding.tsx`, `CRM.tsx` guard). Riesgo bajo.
-4. Inventario de activos + estados (`/plantops/inventory`, ficha de activo). Riesgo bajo.
-5. Clientes y sedes. Riesgo bajo.
-6. Contratos y reservas + validación anti solape. Riesgo medio.
-7. Visitas y ejecución con evidencia. Riesgo medio.
-8. Incidencias y reemplazo (mueve estado + crea movimiento). Riesgo medio.
-9. Portal de cliente y guía de cuidado combinada. Riesgo bajo.
+## E. Flujo vertical completo
 
-## H. Plan de pruebas
-Crear cliente · crear sede · registrar planta y maceta · asignar a ubicación interior · crear contrato recurrente · crear reserva de evento · intentar doble reserva (debe fallar) · programar visita · ejecutar visita con foto · reportar incidencia · reemplazar planta (estado y movimiento correctos) · portal cliente ve solo sus sedes · usuario de otra organización no ve nada.
+Alquiler recurrente:
+1. Cliente → `clients` en `/plantops/clients`.
+2. Sede → `estates` con `client_id`; zona/piso → `zones` con `floor_label`.
+3. Planta → `assets` (`asset_type='plant'`, `availability='disponible'`, sede-bodega) + `plant_instances` para especie. Maceta → `assets` (`asset_type='pot'`).
+4. Instalación → `plant_placements` con `asset_id` = planta, `pot_asset_id` = maceta, `zone_id`, `spot_label`, `reference_photo_url`, `status='installed'`. Ambos activos conservan su ficha e historial propios.
+5. Contrato → `rental_contracts`; la instalación se vincula con `contract_id`.
+6. Visita → `tasks` (`task_kind='maintenance'`, `frequency` del contrato, `estate_id`, `placement_id`).
+7. Mantenimiento → `TaskCompletionDialog` genera `task_completions` con foto + GPS; fotos adicionales a `asset_photos`.
+8. Deterioro → `assets.condition_rating` bajo + `tasks` con `task_kind='incident'`.
+9. Retiro → placement se cierra (`status='collected'`, `ended_at`), el activo pasa a `en_recuperacion`; la fila queda como historial.
+10. Sustituta → nuevo `plant_placements` en el mismo `zone_id`/`spot_label`, con `replaced_asset_id` en la tarea de incidencia.
+11. Retirada → `availability='en_recuperacion'` o `'dado_de_baja'` con `retired_reason`.
+12. Cliente ve solo lo autorizado: `client_access` sobre su `estate_id`; el portal consulta columnas explícitas y nunca `cost`, `replacement_value`, `internal_notes` ni activos de otras sedes.
 
-## I. Plan de despliegue
-Migraciones en el orden 1→2 con aprobación; regeneración de tipos; sin nuevas variables de entorno ni secretos; build y typecheck; validación manual del checklist H en preview; publicación; rollback por migración inversa (drop de tablas/columnas nuevas) sin afectar datos existentes.
+Evento:
+Contrato `contract_type='event'` con fechas → un `plant_placements` por planta con `status='reserved'` y rango → la constraint de exclusión impide doble reserva → despacho: `status='installed'` + `installed_at` → recolección: `status='collected'` + `collected_at` → inspección: `condition_rating` → activo vuelve a `disponible`, `en_recuperacion` o `dado_de_baja`.
 
-## J. Decisiones que requieren aprobación
-1. **Sede = `estates`** (reutilizar) en lugar de tabla `client_sites` nueva. Recomendado: reutilizar.
-2. **Activos serializados como base** y cantidad solo para accesorios. Recomendado: serializado.
-3. **Maceta como activo separado** vinculado por `parent_asset_id`. Recomendado: sí.
-4. **Ubicación interior descriptiva** (piso + punto + foto) sin editor de planos en el MVP.
-5. Nombre de la vertical y del tipo de organización: `plant_rental`.
+Estados finales (mínimos y justificados):
+- `assets.availability`: `disponible` (se puede reservar), `reservado` (bloqueado por fechas), `instalado` (en cliente), `en_recuperacion` (no ofertable), `dado_de_baja` (fuera de inventario). Cada uno controla el filtro del selector de inventario y el tablero de PlantOps.
+- `plant_placements.status`: `reserved`, `installed`, `collected` — habilitan reserva → despacho → cierre e historial.
+- `rental_contracts.status`: `draft`, `active`, `ended` — controlan qué contratos generan visitas.
+- Sin enums nuevos de visita ni de incidencia: se usan `task_status` y `task_kind`.
 
----
+## F. Alcance por prioridad
 
-## Plan recomendado
-1. Migración A: enum `asset_type` (+pot/accessory/composition) y enum `asset_lifecycle`.
-2. Migración B: columnas nuevas en `assets`, `estates`, `zones`, `tasks`.
-3. Migración C: `rental_contracts`, `asset_reservations`, `service_visits`, `asset_incidents`, `asset_movements` con RLS y GRANTs.
-4. Tipo de organización `plant_rental` + navegación + onboarding.
-5. Inventario y ficha de activo PlantOps.
-6. Clientes y sedes.
-7. Contratos y reservas con anti solape.
-8. Visitas con evidencia.
-9. Incidencias y reemplazos.
-10. Portal de cliente + guía de cuidado combinada.
+MVP obligatorio: M1–M5; tipo de organización y navegación; clientes y sedes; inventario de plantas y macetas con disponibilidad; instalación y ubicación actual; contratos recurrentes y de evento con precio y fechas; visitas desde `tasks`; incidencias y reemplazo; historial y evidencia; portal de cliente restringido.
 
-## Archivos que probablemente cambiarán
-`src/App.tsx`, `src/components/layout/AppSidebar.tsx`, `src/components/layout/BottomNav.tsx`, `src/pages/Onboarding.tsx`, `src/pages/CRM.tsx`, `src/pages/Assets.tsx`, `src/pages/AssetDetail.tsx`, `src/contexts/EstateContext.tsx`, `src/lib/i18n.ts`, nuevas carpetas `src/pages/plantops/` y `src/components/plantops/`, `src/integrations/supabase/types.ts` (regenerado).
+Segunda fase: tabla de contactos múltiples por cliente; cotizaciones; facturación automática desde contrato; coordenadas sobre imagen de plano; reportes PDF de PlantOps; alertas de próxima visita.
 
-## Migraciones requeridas (sin ejecutar)
-A) enums · B) columnas en tablas existentes · C) 5 tablas nuevas con RLS/GRANTs/triggers · D) política de lectura para rol `client`.
+No construir: IA, IoT, rutas, marketplace, contabilidad completa, e-commerce, automatizaciones complejas, diseñador de planos, app móvil separada, analítica avanzada, rentabilidad por cliente o especie.
 
-## Alcance que se va a posponer
-IA de diagnóstico, IoT, marketplace, rutas optimizadas, contabilidad completa, e-commerce, reconocimiento de especies, predicción de mortalidad, apps separadas, automatizaciones no esenciales, editor gráfico de planos.
+## G. Costo técnico relativo
 
-## Prompt de implementación sugerido
-"Implementa Home Guide PlantOps según el plan aprobado, en este orden: (1) migraciones A, B y C exactamente como se describen, con RLS por `get_user_org_id` y GRANTs a authenticated/service_role; (2) tipo de organización `plant_rental` con navegación propia en AppSidebar/BottomNav/Onboarding y acceso a facturación; (3) rutas `/plantops`, `/plantops/inventory`, `/plantops/clients`, `/plantops/contracts`, `/plantops/visits`, `/plantops/incidents` reutilizando ModernAppLayout y los componentes existentes de assets/tasks/photos; (4) pestañas de Historial y Ubicación en AssetDetail; (5) validación por trigger de doble reserva; (6) portal de cliente con `client_access`. No toques las verticales residential, landscaping_company ni property_management. Todo el texto en EN/ES/DE vía i18n, sin iconos ni menciones de IA."
+- Bajo: M1, M2, navegación y tipo de organización, badges y filtros en `Assets.tsx`, clientes y sedes.
+- Medio: `rental_contracts` + pantalla de contratos; visitas sobre `tasks`; incidencias y reemplazo; portal de cliente.
+- Alto: `plant_placements` con constraint de exclusión y trigger anti solape, más el diálogo de instalación/reserva y el historial en `AssetDetail`. Es el bloque que más créditos y riesgo concentra; conviene ejecutarlo solo y validarlo antes de seguir.
+- Riesgo secundario: regeneración de `types.ts` tras cada migración obliga a re-tocar pantallas; por eso se agrupan M2–M5 en el menor número de pasos posible.
+
+## H. Prompt final de implementación
+
+"Implementa Home Guide PlantOps con alcance reducido, en este orden y sin tocar las verticales residential, landscaping_company ni property_management:
+1. Migración M1: añade `'pot'` al enum `asset_type`.
+2. Migración M2: columnas nuevas en `estates` (`client_id`), `zones` (`floor_label`), `assets` (`availability` con CHECK de 5 valores y default `instalado`, `condition_rating`, `acquisition_date`, `supplier_name`, `cost`, `replacement_value`, `rental_price`, `currency`, `retired_reason`) y `tasks` (`task_kind`, `placement_id`, `replaced_asset_id`), con sus índices.
+3. Migración M3/M4/M5: crea `rental_contracts` y `plant_placements` con GRANTs a authenticated/service_role, RLS por `get_user_org_id(auth.uid())`, lectura para rol `client` vía `client_access`, índice único parcial de activo instalado y exclusión por rango de fechas con btree_gist, más triggers de `updated_at` y de validación de fechas.
+4. Tipo de organización `plant_rental`: navegación en `AppSidebar.tsx` y `BottomNav.tsx`, opción en `Onboarding.tsx`, y acceso permitido en el guard de `CRM.tsx`.
+5. Rutas `/plantops`, `/plantops/inventory`, `/plantops/clients`, `/plantops/contracts` en `src/App.tsx`, reutilizando `ModernAppLayout` y los patrones de tarjeta de `Assets.tsx`.
+6. Instalaciones: `PlacementDialog`, `EventReservationDialog`, `PlacementHistoryList`, `usePlacements`, más bloque de ubicación actual e historial en `AssetDetail.tsx`.
+7. Visitas e incidencias sobre `tasks` reutilizando `TaskCompletionDialog` y `AssetPhotoUpload`; `IncidentDialog` cierra el placement, marca el activo y crea el placement sustituto.
+8. Portal de cliente con `useClientAccess`, seleccionando columnas explícitas y nunca `cost`, `replacement_value` ni `internal_notes`.
+No crees `client_sites`, `service_visits`, `asset_reservations`, `asset_incidents` ni `asset_movements`. Todo el texto en EN/ES/DE vía `src/lib/i18n.ts`, sin iconos ni menciones de IA."
