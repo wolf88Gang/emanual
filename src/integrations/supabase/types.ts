@@ -3107,9 +3107,48 @@ export type Database = {
         }
         Returns: string
       }
+      get_client_maintenance_history: {
+        Args: { p_estate_id: string }
+        Returns: {
+          completed_at: string
+          due_date: string
+          photo_url: string
+          plantops_kind: string
+          status: Database["public"]["Enums"]["task_status"]
+          task_id: string
+          title: string
+          title_es: string
+        }[]
+      }
       get_client_permissions: {
         Args: { _estate_id: string; _user_id: string }
         Returns: Json
+      }
+      get_client_plant_placements: {
+        Args: { p_estate_id: string }
+        Returns: {
+          asset_id: string
+          asset_name: string
+          floor_label: string
+          installed_at: string
+          placement_id: string
+          reference_photo_path: string
+          spot_label: string
+          zone_name: string
+        }[]
+      }
+      get_client_rental_contracts: {
+        Args: { p_estate_id: string }
+        Returns: {
+          client_dos_donts: string
+          contract_id: string
+          contract_type: string
+          ends_on: string
+          maintenance_frequency: Database["public"]["Enums"]["task_frequency"]
+          replacement_rules: string
+          starts_on: string
+          status: string
+        }[]
       }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
@@ -3120,6 +3159,87 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      plantops_cancel_reservation: {
+        Args: { p_placement_id: string; p_reason?: string }
+        Returns: undefined
+      }
+      plantops_check_availability: {
+        Args: {
+          p_asset_id: string
+          p_from: string
+          p_pot_asset_id: string
+          p_to: string
+        }
+        Returns: boolean
+      }
+      plantops_collect_asset: {
+        Args: {
+          p_condition_rating?: number
+          p_next_lifecycle?: string
+          p_placement_id: string
+          p_retired_reason?: string
+        }
+        Returns: undefined
+      }
+      plantops_get_current_location: {
+        Args: { p_asset_id: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          estate_id: string
+          estate_name: string
+          floor_label: string
+          installed_at: string
+          placement_id: string
+          placement_slot_id: string
+          spot_label: string
+          zone_id: string
+          zone_name: string
+        }[]
+      }
+      plantops_install_asset: {
+        Args: {
+          p_installed_at?: string
+          p_placement_id: string
+          p_reference_photo_path?: string
+        }
+        Returns: undefined
+      }
+      plantops_replace_plant: {
+        Args: {
+          p_cause?: string
+          p_condition_rating?: number
+          p_placement_id: string
+          p_replacement_asset_id: string
+          p_retired_lifecycle?: string
+        }
+        Returns: string
+      }
+      plantops_require_internal: { Args: never; Returns: string }
+      plantops_reserve_asset: {
+        Args: {
+          p_access_notes?: string
+          p_asset_id: string
+          p_contract_id: string
+          p_estate_id: string
+          p_placement_slot_id?: string
+          p_pot_asset_id: string
+          p_reserved_from: string
+          p_reserved_until: string
+          p_spot_label: string
+          p_spot_notes?: string
+          p_zone_id: string
+        }
+        Returns: string
+      }
+      plantops_validate_asset: {
+        Args: {
+          _asset_id: string
+          _expected_type: Database["public"]["Enums"]["asset_type"]
+          _org_id: string
+        }
+        Returns: undefined
+      }
       user_can_write_asset_photo: {
         Args: { _path: string; _user_id: string }
         Returns: boolean
