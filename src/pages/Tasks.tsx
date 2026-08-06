@@ -113,7 +113,7 @@ export default function Tasks() {
     try {
       const { data, error } = await supabase
         .from('tasks')
-        .select('*, assets:asset_id(id, name, asset_type), zones:zone_id(id, name, color), profiles:assigned_to_user_id(id, full_name)')
+        .select('*, assets:assets!tasks_asset_id_fkey(id, name, asset_type), zones:zone_id(id, name, color), profiles:assigned_to_user_id(id, full_name)')
         .eq('estate_id', currentEstate.id)
         .order('due_date', { ascending: true });
       if (error) throw error;
