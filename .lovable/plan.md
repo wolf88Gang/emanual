@@ -87,7 +87,7 @@ No se reutilizan `asset-photos` ni `photos` porque ambos son **públicos** y exp
 - Ruta: `{org_id}/{placement_id}/{uuid}.jpg`.
 - Subida: solo `authenticated` cuyo `get_user_org_id(auth.uid())` coincida con el primer segmento de la ruta (política en `storage.objects` con función auxiliar equivalente a la existente `user_can_write_asset_photo`).
 - Lectura interna: misma condición de organización.
-- Cliente: no lee el bucket; las RPC de portal devuelven **URL firmada** de corta duración solo para placements de sus sedes autorizadas.
+- Cliente: no lee el bucket. Las RPC de portal devuelven únicamente `reference_photo_path`; la generación de URLs firmadas (SDK del servidor) queda pospuesta a la segunda fase.
 - Al ser privado, ninguna URL pública puede filtrar fotos de otras sedes.
 
 ## 7. Ajustes al prompt de implementación
