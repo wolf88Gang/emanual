@@ -56,7 +56,7 @@ export default function Reports() {
           task:tasks(
             title,
             description,
-            asset:assets(name),
+            asset:assets!tasks_asset_id_fkey(name),
             zone:zones(name)
           )
         `)
