@@ -1,131 +1,113 @@
-# Home Guide PlantOps — Plan revisado (delta mínimo, piloto Raíz y Forma)
+# Home Guide PlantOps — Plan final corregido (delta de implementación)
 
-Cambio principal frente a la versión anterior: se eliminan `client_sites`, `service_visits`, `asset_reservations`, `asset_incidents`, `asset_movements` y `asset_lifecycle` como entidades nuevas. Quedan **2 tablas nuevas** y **1 valor de enum**. Todo lo demás se resuelve extendiendo lo que ya existe.
+Correcciones aplicadas: ubicación actual desacoplada de `assets.estate_id`; relación canónica única cliente→sede; datos comerciales aislados en `plantops_asset_details`; `reservado` deja de ser estado persistente; operaciones vía RPC transaccionales; anti doble reserva para planta y maceta; identidad estable del punto (`placement_slot_id`); portal solo por RPC; `tasks` sin reclasificar; migraciones completas y ordenadas; páginas nuevas reducidas a dos.
 
-## A. Estado real encontrado (verificado)
+Hallazgos verificados que cambian el plan anterior:
+- `organizations.org_type` es **TEXT** con default `'residential'` → **no hace falta migrar ningún enum de tipo de organización**. Solo `profiles.client_type` es enum (`property_owner`, `landscaping_company`, `hybrid`, `other`, `property_management`) y necesita el valor `plant_rental` si el onboarding lo escribe.
+- `tasks` **no tiene** ningún campo de tipo/categoría/template (columnas: estate_id, zone_id, asset_id, title(_es), description(_es), frequency, due_date, status, assigned_to_user_id, assigned_vendor_id, required_photo, priority) → no hay campo reutilizable; el nuevo será **nullable sin default**.
+- `clients.estate_id` existe y es nullable.
+- `btree_gist` **no está instalada** (consultado `pg_extension`) → hay que crearla.
+- Las 51 tablas de `public` tienen RLS habilitada con políticas; la organización activa proviene de `profiles.org_id` (`AuthContext` → `EstateContext`) y de `get_user_org_id(auth.uid())`, nunca de `user.id`.
 
-Rutas actuales (`src/App.tsx`): `/`, `/map`, `/tasks`, `/assets`, `/assets/:id`, `/documents`, `/admin`, `/inventory`, `/plants`, `/checkin`, `/reports`, `/estates`, `/labor`, `/topography`, `/subscription`, `/compost`, `/crm`, `/financials`, `/setup-wizard`, `/requests`, `/my-jobs`, `/my-profile`, `/jobs`, `/worker/:id`, `/jobs/post`.
+## A. Modelo canónico final
 
-Tablas relevantes ya existentes: `organizations`, `profiles`, `user_roles`, `estates`, `zones`, `assets`, `asset_photos`, `plant_profiles`, `plant_instances`, `tasks`, `task_templates`, `task_completions`, `clients`, `client_access`, `client_invites`, `documents`, `inventory_items`, `tool_assignments`, `qr_labels`, `vendors`, `invoices`, `invoice_items`, `product_catalog`, `client_payments`, `checkins`.
+| Concepto | Fuente de verdad |
+|---|---|
+| Propiedad del activo | `assets.estate_id` = sede base/bodega de Raíz y Forma. **Nunca se mueve.** |
+| Ubicación actual | `plant_placements` con `status='installed'` y `ended_on IS NULL`. Si no hay fila abierta, el activo está en bodega. |
+| Estado operativo persistente | `plantops_asset_details.operational_status` ∈ `available`, `installed`, `recovery`, `retired`. |
+| Disponibilidad por fecha | **Calculada**: no existe si hay solape en `plant_placements` (status `reserved` o `installed`) para el rango pedido. Nunca se persiste `reservado`. |
+| Contrato | `rental_contracts` (cliente + sede opcional + vigencia + precio + frecuencia + reglas de reemplazo). |
+| Punto de colocación | `plant_placements.placement_slot_id` (UUID estable) + `zone_id` + `spot_label`. |
+| Historial | Secuencia de filas de `plant_placements` por `asset_id` (historial del activo) y por `placement_slot_id` (historial del punto), más `tasks`/`task_completions`/`asset_photos`. |
+| Cliente ↔ sede | **Canónica: `estates.client_id`**. `clients.estate_id` queda **legacy** (sede principal de otras verticales): PlantOps **lee y escribe solo `estates.client_id`** y nunca `clients.estate_id`; las pantallas de otras verticales no cambian. Sin trigger de sincronización para evitar bucles. |
 
-Componentes reutilizables: `ModernAppLayout`, `AppSidebar`, `BottomNav`, `EstateMap`, `LocationPickerDialog`, `AssetEditForm`, `AssetPhotoUpload`, `AssetQRCode`, `MaintenanceInfoCard`, `PlantProfileLinker`, `CareProtocolSheet`, `TaskCompletionDialog`, `TaskCalendar`, `ClientAccessManager`, `AssetTypeIcon`, `NoEstateGuide`, `CurrencyPicker`.
+Efecto en queries/RLS/portal: como el activo sigue perteneciendo al estate bodega, un cliente **no** puede ver sus plantas por RLS de `assets` — su acceso se resuelve exclusivamente por RPC (sección E). Las pantallas de PlantOps hacen join `plant_placements → assets` filtrando por `plant_placements.org_id`; las pantallas de otras verticales siguen filtrando por `assets.estate_id` sin cambios de comportamiento.
 
-Hooks reutilizables: `useAuth`, `useEstate`, `useClientAccess`, `useGeolocation`, `usePhotoCapture`, `useLanguage`, `useCurrency`.
+## B. Tablas nuevas y extensiones
 
-Roles y RLS (verificado): **las 51 tablas de `public` tienen RLS habilitada y al menos una política**. La organización activa **no** se deriva de `user.id`: viene de `profiles.org_id`, leído en `AuthContext` y usado por `EstateContext` (`estates` filtrados por `org_id`) y por las políticas mediante `get_user_org_id(auth.uid())`. Roles en `user_roles` con enum `app_role`: owner, manager, crew, vendor, worker_marketplace, client. Existe `get_client_permissions(user, estate)` con 8 flags y `has_role`.
+**Nuevas (3):**
+1. `plantops_asset_details` — 1:1 con `assets` (`asset_id` PK/FK), `org_id`, `operational_status` (CHECK 4 valores, default `available`), `condition_rating` smallint, `acquisition_date`, `supplier_name`, `cost`, `replacement_value`, `rental_price`, `currency`, `retired_reason`, timestamps + trigger. RLS: **solo** `org_id = get_user_org_id(auth.uid())`; GRANT a `authenticated` y `service_role`; **ningún acceso para rol cliente**.
+2. `rental_contracts` — `org_id`, `client_id`, `estate_id` (nullable), `contract_type` CHECK (`recurring`,`event`), `status` CHECK (`draft`,`active`,`ended`), `starts_on`, `ends_on`, `price_amount`, `currency`, `billing_period`, `maintenance_frequency` (enum existente `task_frequency`), `replacement_rules`, `client_dos_donts`, `internal_notes`, timestamps + trigger. RLS solo interna.
+3. `plant_placements` — `org_id`, `placement_slot_id uuid not null`, `asset_id` (FK assets), `pot_asset_id` (FK assets, nullable), `estate_id` (FK estates, sede del cliente), `zone_id` (nullable), `contract_id` (nullable), `spot_label`, `spot_notes`, `access_notes`, `reference_photo_url`, `status` CHECK (`reserved`,`installed`,`collected`,`cancelled`), `starts_on date not null`, `ends_on date null` (**inclusivo**), `installed_at`, `collected_at`, `cancelled_at`, timestamps + trigger. RLS solo interna.
 
-Funciones que ya resuelven parcialmente PlantOps: jerarquía `estates → zones → assets`; evidencia con `asset_photos` + `task_completions` (foto + GPS obligatorio); QR por activo (`qr_labels` + `QRScannerView`); guía de cuidado por especie (`plant_profiles.care_template_json` EN/ES/DE); mantenimiento recurrente (`tasks.frequency` + `task_templates` + cron `auto-maintenance-tasks`); portal de cliente (`client_access` + `useClientAccess`).
-
-## B. Cambios mínimos
-
-| Necesidad | Reutilizar | Extender | Crear | Justificación |
-|---|---|---|---|---|
-| Cliente y contacto | `clients` (name, email, phone, address, notes, estate_id) | — | — | Ya cubre contacto principal; no se crea tabla `contacts` en el MVP. |
-| Sede | `estates` | `+ client_id` | — | `estates` ya es el nodo de jerarquía usado por zonas, activos, tareas, documentos, mapa y RLS. Crear `client_sites` duplicaría toda esa cadena. |
-| Piso / área / zona | `zones` | `+ floor_label` | — | `zones` ya agrupa activos y tiene color y geometría opcional. |
-| Planta serializada | `assets` (+`plant_instances` para especie) | `+ availability`, `+ condition_rating`, costo, valor de reposición, precio de alquiler, proveedor, fecha de adquisición | — | `assets` ya tiene fotos, QR, tareas, mapa y RLS. |
-| Maceta / accesorio serializado | `assets` | `asset_type += 'pot'` (accesorio usa `equipment`) | — | Maceta es un activo con historial propio; separada de la planta. |
-| Inventario por cantidad (platos, sustrato, macetas genéricas) | `inventory_items` (`quantity`, `unit`, `condition`) | — | — | Ya es exactamente inventario por cantidad. |
-| Instalación (planta en un punto de un cliente, con fechas) | — | — | **`plant_placements`** | Es la única relación que hoy no existe: activo × punto × contrato × rango de fechas. Resuelve a la vez instalación, ubicación actual, movimientos, historial y reserva por fechas. |
-| Punto de colocación | `zones` + campos descriptivos en `plant_placements` | — | — | El punto es propiedad de la instalación, no una tabla nueva. |
-| Contrato de alquiler y evento | — | — | **`rental_contracts`** | No existe; `invoices` es facturación, no vigencia ni reglas. |
-| Visita de mantenimiento | `tasks` + `task_completions` + `asset_photos` | `+ placement_id` | — | `tasks` ya tiene frecuencia, vencimiento, asignación, foto obligatoria y estados. Crear `service_visits` duplicaría tareas. |
-| Incidencia / reemplazo | `tasks` | `+ task_kind` ('maintenance' \| 'incident'), `+ replaced_asset_id` | — | Una incidencia es una tarea con origen distinto; evita duplicar órdenes de trabajo. |
-| Movimientos e historial | `plant_placements` (filas cerradas con `ended_at`) | — | — | El historial es la secuencia de placements; no hace falta `asset_movements`. |
-| Evidencia fotográfica | `asset_photos` + `task_completions.photo_url` | — | — | No se crea tabla de evidencias. |
-| Documentos y contrato PDF | `documents` (categoría `vendor_contract`) | — | — | Ya existe. |
-| Portal de cliente | `client_access`, `client_invites`, `useClientAccess`, `ClientAccessManager` | políticas de lectura para `client` en `plant_placements` y `rental_contracts` | — | Ya hay flags por sede y rol `client`. |
-| Precio y facturación | `rental_contracts` (precio, modalidad) | — | — | Sin facturación nueva; `invoices` existente queda opcional. |
-
-Los tres conceptos quedan separados así:
-- **Inventario propio** = `assets` de la sede-bodega de Raíz y Forma (`estates.client_id IS NULL`), o `inventory_items` si es por cantidad.
-- **Activo instalado temporalmente** = fila abierta en `plant_placements` (`ended_at IS NULL`).
-- **Punto de colocación** = `zone_id` + descripción/foto/indicaciones dentro de `plant_placements`.
-
-## C. Migraciones exactas (sin SQL todavía)
-
-**M1 — enum de tipo de activo**
-- Tabla: tipo `asset_type`. Añade `'pot'`. Migración aislada (ADD VALUE no admite uso en la misma transacción).
-- Datos afectados: ninguno. Rollback: no se elimina el valor; queda inerte.
-
-**M2 — extensiones de columnas**
-- `estates`: `+ client_id uuid null references clients(id) on delete set null`, índice `(client_id)`.
+**Extensiones mínimas:**
+- `estates`: `+ client_id uuid null → clients(id) on delete set null`, índice.
 - `zones`: `+ floor_label text null`.
-- `assets`: `+ availability text not null default 'instalado'` con CHECK en 5 valores, `+ condition_rating smallint null` (1–5), `+ acquisition_date date`, `+ supplier_name text`, `+ cost numeric`, `+ replacement_value numeric`, `+ rental_price numeric`, `+ currency text default 'CRC'`, `+ retired_reason text`. Índice `(estate_id, availability)`.
-- `tasks`: `+ task_kind text not null default 'maintenance'` con CHECK ('maintenance','incident'), `+ placement_id uuid null`, `+ replaced_asset_id uuid null references assets(id)`. Índice `(placement_id)`.
-- Datos afectados: filas existentes toman los defaults; ninguna vertical actual cambia de comportamiento. Rollback: `DROP COLUMN` de cada columna nueva.
+- `tasks`: `+ plantops_kind text null` CHECK (`maintenance`,`incident`) **sin default** (las tareas históricas quedan NULL y no se reclasifican); `+ placement_id uuid null → plant_placements(id)`; `+ replacement_asset_id uuid null → assets(id)` = **planta sustituta** (la planta afectada es `tasks.asset_id`).
+- `assets`: **sin columnas comerciales**. Solo `asset_type += 'pot'`.
+- `profiles.client_type`: `+ 'plant_rental'`.
 
-**M3 — `rental_contracts` (nueva)**
-- Columnas: `id`, `org_id` (not null), `client_id` (not null), `estate_id` (null = multi-sede), `contract_type` CHECK ('recurring','event'), `status` CHECK ('draft','active','ended'), `starts_on`, `ends_on`, `price_amount`, `currency`, `billing_period` CHECK ('monthly','event','other'), `maintenance_frequency` (reutiliza enum `task_frequency`), `replacement_rules text`, `client_dos_donts text`, `internal_notes text`, `created_at`, `updated_at` + trigger.
-- Índices: `(org_id, status)`, `(client_id)`.
-- RLS: lectura/escritura para `authenticated` cuando `org_id = get_user_org_id(auth.uid())`; lectura para rol `client` cuando existe `client_access` sobre `estate_id` (sin exponer `internal_notes`: el portal selecciona columnas explícitas y una política aparte por vista o selección controlada en frontend con columnas limitadas).
-- GRANTs: `authenticated` (CRUD) y `service_role` (ALL). Sin `anon`.
-- Rollback: `DROP TABLE`.
+## C. Migraciones en orden exacto
 
-**M4 — `plant_placements` (nueva, corazón del módulo)**
-- Columnas: `id`, `org_id`, `asset_id` (not null → `assets`), `pot_asset_id` (null → `assets`), `estate_id` (not null), `zone_id` (null), `contract_id` (null → `rental_contracts`), `spot_label text`, `spot_notes text`, `access_notes text`, `reference_photo_url text`, `status` CHECK ('reserved','installed','collected'), `starts_on date not null`, `ends_on date null`, `installed_at`, `collected_at`, `created_at`, `updated_at` + trigger.
-- Constraints/índices: índice único parcial `(asset_id) where status='installed' and ends_on is null` (un activo no puede estar instalado en dos puntos); constraint de exclusión sobre `(asset_id, daterange(starts_on, coalesce(ends_on,'infinity')))` para bloquear doble reserva de eventos (requiere `btree_gist`); índices `(estate_id, status)`, `(contract_id)`.
-- Validaciones dependientes de fechas mediante **trigger**, no CHECK.
-- RLS: igual patrón `org_id = get_user_org_id(auth.uid())`; lectura para rol `client` limitada a `estate_id` con `client_access.can_view_assets`.
-- Datos afectados: ninguno (tabla nueva). Rollback: `DROP TABLE`.
+1. **M1 – enums** (aislada, ADD VALUE no combinable): `asset_type += 'pot'`; `client_type += 'plant_rental'`. Datos: sin efecto. Rollback: valores quedan inertes.
+2. **M2 – extensión**: `CREATE EXTENSION IF NOT EXISTS btree_gist;` (idempotente; si ya existe no falla). Rollback: no se elimina.
+3. **M3 – columnas en tablas existentes sin FK nuevas hacia tablas por crear**: `estates.client_id` (+FK a `clients`, ya existe), `zones.floor_label`. Rollback: DROP COLUMN.
+4. **M4 – `plantops_asset_details`**: tabla + GRANTs + RLS + política interna + trigger `updated_at`. Índice `(org_id, operational_status)`.
+5. **M5 – `rental_contracts`**: tabla + GRANTs + RLS + trigger. Índices `(org_id,status)`, `(client_id)`.
+6. **M6 – `plant_placements`**: tabla + FKs a `assets`, `estates`, `zones`, `rental_contracts` (ya existen) + GRANTs + RLS + trigger `updated_at` + trigger de validación de fechas (`ends_on >= starts_on`, no CHECK por depender de datos) + índices:
+   - único parcial `(asset_id) WHERE status='installed' AND ends_on IS NULL`;
+   - exclusión `EXCLUDE USING gist (asset_id WITH =, daterange(starts_on, COALESCE(ends_on,'infinity'::date) + 1, '[)') WITH &&) WHERE (status IN ('reserved','installed'))` → rango semiabierto que hace válida una reserva de un solo día y excluye `cancelled`/`collected`;
+   - exclusión equivalente sobre `pot_asset_id` (con `WHERE pot_asset_id IS NOT NULL AND status IN ('reserved','installed')`);
+   - índices `(placement_slot_id)`, `(estate_id,status)`, `(contract_id)`.
+7. **M7 – columnas en `tasks`** (después de M6 para poder crear la FK `placement_id`): `plantops_kind`, `placement_id`, `replacement_asset_id` + índice `(placement_id)`.
+8. **M8 – RPC** (funciones transaccionales de D y RPC de portal de E), todas `SECURITY DEFINER SET search_path = public`.
 
-**M5 — políticas de portal** (puede ir junto a M3/M4): añadir SELECT para `client` en `plant_placements` y `rental_contracts`; no se toca ninguna política existente.
+Regeneración de tipos: **una sola vez al final**, tras M8. Rollback global: DROP de las funciones, DROP de las 3 tablas nuevas, DROP de las columnas añadidas; los enums y `btree_gist` quedan sin efecto adverso.
 
-## D. Archivos exactos
+## D. RPC transaccionales (internas)
 
-Se modifican: `src/App.tsx` (4 rutas nuevas), `src/components/layout/AppSidebar.tsx` (rama `plant_rental`), `src/components/layout/BottomNav.tsx`, `src/pages/Onboarding.tsx` (tipo de organización), `src/pages/CRM.tsx` (permitir la vertical en el guard de `org_type`), `src/pages/Assets.tsx` (badge de disponibilidad y filtro), `src/pages/AssetDetail.tsx` (bloque de ubicación actual + historial), `src/pages/Tasks.tsx` (distinguir `task_kind`), `src/components/assets/AssetEditForm.tsx` (campos comerciales), `src/lib/i18n.ts`, `src/integrations/supabase/types.ts` (regenerado).
+Todas validan: `auth.uid()` no nulo, `get_user_org_id(auth.uid()) = org_id` del activo/contrato, rol owner/manager/crew según corresponda, y fechas coherentes. Cualquier violación → `RAISE EXCEPTION` (transacción completa revertida).
 
-Se crean: `src/pages/plantops/PlantOpsHome.tsx`, `src/pages/plantops/PlantInventory.tsx`, `src/pages/plantops/Contracts.tsx`, `src/pages/plantops/ClientSites.tsx`, `src/components/plantops/PlacementDialog.tsx`, `src/components/plantops/PlacementHistoryList.tsx`, `src/components/plantops/AvailabilityBadge.tsx`, `src/components/plantops/ContractDialog.tsx`, `src/components/plantops/EventReservationDialog.tsx`, `src/components/plantops/IncidentDialog.tsx`, `src/hooks/usePlacements.ts`, `src/hooks/useContracts.ts`.
+1. `plantops_reserve_asset(asset_id, pot_asset_id, estate_id, zone_id, contract_id, spot_label, starts_on, ends_on)` → valida org, que el activo no esté `retired`/`recovery`, y deja que la constraint de exclusión rechace solapes; inserta placement `reserved` con `placement_slot_id` nuevo (o el recibido opcionalmente). Devuelve el placement.
+2. `plantops_install_asset(placement_id)` → placement `reserved`→`installed`, `installed_at=now()`, y `operational_status='installed'` para planta y maceta.
+3. `plantops_collect_asset(placement_id, condition_rating, next_status)` → placement→`collected`, `ends_on=current_date`, `collected_at`, y `operational_status` = `available` | `recovery` | `retired` según inspección.
+4. `plantops_replace_plant(placement_id, replacement_asset_id, cause, retired_status)` → en una sola transacción: cierra el placement actual (`collected`), marca la planta retirada (`recovery`/`retired` + `retired_reason`), crea el placement sustituto **con el mismo `placement_slot_id`, `zone_id`, `spot_label`, `contract_id` y maceta**, lo pone `installed`, y crea la tarea de incidencia (`plantops_kind='incident'`, `asset_id`=planta afectada, `replacement_asset_id`=sustituta).
+5. `plantops_cancel_reservation(placement_id, reason)` → `reserved`→`cancelled` + `cancelled_at`, conservando el historial y liberando disponibilidad.
+6. Auxiliar de lectura `plantops_check_availability(asset_id, starts_on, ends_on)` → boolean, para que la UI muestre "reservado" por fecha sin persistirlo.
 
-## E. Flujo vertical completo
+## E. RLS y seguridad del cliente
 
-Alquiler recurrente:
-1. Cliente → `clients` en `/plantops/clients`.
-2. Sede → `estates` con `client_id`; zona/piso → `zones` con `floor_label`.
-3. Planta → `assets` (`asset_type='plant'`, `availability='disponible'`, sede-bodega) + `plant_instances` para especie. Maceta → `assets` (`asset_type='pot'`).
-4. Instalación → `plant_placements` con `asset_id` = planta, `pot_asset_id` = maceta, `zone_id`, `spot_label`, `reference_photo_url`, `status='installed'`. Ambos activos conservan su ficha e historial propios.
-5. Contrato → `rental_contracts`; la instalación se vincula con `contract_id`.
-6. Visita → `tasks` (`task_kind='maintenance'`, `frequency` del contrato, `estate_id`, `placement_id`).
-7. Mantenimiento → `TaskCompletionDialog` genera `task_completions` con foto + GPS; fotos adicionales a `asset_photos`.
-8. Deterioro → `assets.condition_rating` bajo + `tasks` con `task_kind='incident'`.
-9. Retiro → placement se cierra (`status='collected'`, `ended_at`), el activo pasa a `en_recuperacion`; la fila queda como historial.
-10. Sustituta → nuevo `plant_placements` en el mismo `zone_id`/`spot_label`, con `replaced_asset_id` en la tarea de incidencia.
-11. Retirada → `availability='en_recuperacion'` o `'dado_de_baja'` con `retired_reason`.
-12. Cliente ve solo lo autorizado: `client_access` sobre su `estate_id`; el portal consulta columnas explícitas y nunca `cost`, `replacement_value`, `internal_notes` ni activos de otras sedes.
+Acceso directo por RLS (`org_id = get_user_org_id(auth.uid())`, roles internos owner/manager/crew): `plantops_asset_details`, `rental_contracts`, `plant_placements`, más las tablas existentes tal como están hoy.
 
-Evento:
-Contrato `contract_type='event'` con fechas → un `plant_placements` por planta con `status='reserved'` y rango → la constraint de exclusión impide doble reserva → despacho: `status='installed'` + `installed_at` → recolección: `status='collected'` + `collected_at` → inspección: `condition_rating` → activo vuelve a `disponible`, `en_recuperacion` o `dado_de_baja`.
+Rol `client`: **sin ninguna política nueva** sobre las 3 tablas nuevas (RLS limita filas, no columnas). Obtiene datos únicamente por RPC `SECURITY DEFINER SET search_path = public` que validan `auth.uid()` contra `client_access` de esa `estate_id` y el flag correspondiente, devolviendo solo columnas autorizadas:
+- `get_client_plant_placements(p_estate_id)` → especie, nombre comercial, foto, zona, `spot_label`, fecha de instalación. Sin `cost`, `replacement_value`, `rental_price`, `access_notes`, `spot_notes`, `internal_notes`.
+- `get_client_rental_contracts(p_estate_id)` → tipo, vigencia, frecuencia, reglas de reemplazo y do/don't. Sin `internal_notes` ni `price_amount` (queda para segunda fase si Natalia lo autoriza).
+- `get_client_maintenance_history(p_estate_id)` → visitas completadas, fecha, foto de evidencia, próxima visita, incidencias abiertas.
+Cero confianza en el filtrado del frontend.
 
-Estados finales (mínimos y justificados):
-- `assets.availability`: `disponible` (se puede reservar), `reservado` (bloqueado por fechas), `instalado` (en cliente), `en_recuperacion` (no ofertable), `dado_de_baja` (fuera de inventario). Cada uno controla el filtro del selector de inventario y el tablero de PlantOps.
-- `plant_placements.status`: `reserved`, `installed`, `collected` — habilitan reserva → despacho → cierre e historial.
-- `rental_contracts.status`: `draft`, `active`, `ended` — controlan qué contratos generan visitas.
-- Sin enums nuevos de visita ni de incidencia: se usan `task_status` y `task_kind`.
+## F. Rutas y archivos reducidos
 
-## F. Alcance por prioridad
+Nuevas rutas: **solo 2** → `/plantops` (dashboard y punto de entrada) y `/plantops/contracts` (dominio nuevo).
 
-MVP obligatorio: M1–M5; tipo de organización y navegación; clientes y sedes; inventario de plantas y macetas con disponibilidad; instalación y ubicación actual; contratos recurrentes y de evento con precio y fechas; visitas desde `tasks`; incidencias y reemplazo; historial y evidencia; portal de cliente restringido.
+Se extienden con comportamiento condicionado a `org_type='plant_rental'`: `/assets` (estado operativo, disponibilidad por fecha, ubicación actual desde placement), `/estates` (sede vinculada a cliente + `floor_label` en zonas), `/crm` (clientes y sus sedes; permitir la vertical en el guard de `org_type`), `/tasks` (visitas e incidencias), `AssetDetail` (ubicación actual, historial del activo y del punto, reemplazos).
 
-Segunda fase: tabla de contactos múltiples por cliente; cotizaciones; facturación automática desde contrato; coordenadas sobre imagen de plano; reportes PDF de PlantOps; alertas de próxima visita.
+Eliminados del plan anterior: `src/pages/plantops/PlantInventory.tsx`, `src/pages/plantops/ClientSites.tsx`, `src/pages/plantops/Contracts.tsx` (renombrada a la única página de contratos), `src/components/plantops/AvailabilityBadge.tsx` como página, `ClientPlantPortal`, `PlantOpsDashboard` genérico, y toda pantalla nueva de portal de cliente.
 
-No construir: IA, IoT, rutas, marketplace, contabilidad completa, e-commerce, automatizaciones complejas, diseñador de planos, app móvil separada, analítica avanzada, rentabilidad por cliente o especie.
+Archivos modificados: `src/App.tsx`, `src/components/layout/AppSidebar.tsx`, `src/components/layout/BottomNav.tsx`, `src/pages/Onboarding.tsx`, `src/pages/CRM.tsx`, `src/pages/Assets.tsx`, `src/pages/AssetDetail.tsx`, `src/pages/Tasks.tsx`, `src/pages/EstateManagement.tsx`, `src/components/assets/AssetEditForm.tsx`, `src/lib/i18n.ts`, `src/integrations/supabase/types.ts` (regenerado una vez).
 
-## G. Costo técnico relativo
+Archivos nuevos (7): `src/pages/plantops/PlantOpsHome.tsx`, `src/pages/plantops/PlantOpsContracts.tsx`, `src/components/plantops/PlacementDialog.tsx`, `src/components/plantops/PlacementHistoryList.tsx`, `src/components/plantops/ReplacementDialog.tsx`, `src/hooks/usePlacements.ts`, `src/hooks/usePlantOpsAsset.ts`.
 
-- Bajo: M1, M2, navegación y tipo de organización, badges y filtros en `Assets.tsx`, clientes y sedes.
-- Medio: `rental_contracts` + pantalla de contratos; visitas sobre `tasks`; incidencias y reemplazo; portal de cliente.
-- Alto: `plant_placements` con constraint de exclusión y trigger anti solape, más el diálogo de instalación/reserva y el historial en `AssetDetail`. Es el bloque que más créditos y riesgo concentra; conviene ejecutarlo solo y validarlo antes de seguir.
-- Riesgo secundario: regeneración de `types.ts` tras cada migración obliga a re-tocar pantallas; por eso se agrupan M2–M5 en el menor número de pasos posible.
+Inventario por cantidad — alcance explícito: las plantas y macetas reservables para eventos **serán activos serializados** en `assets`; `inventory_items` sigue cubriendo consumibles y genéricos por cantidad; **el MVP no reserva por fecha artículos controlados solo por cantidad** (no existe entidad de líneas y cantidades y no se creará ahora).
 
-## H. Prompt final de implementación
+## G. Casos de aceptación
 
-"Implementa Home Guide PlantOps con alcance reducido, en este orden y sin tocar las verticales residential, landscaping_company ni property_management:
-1. Migración M1: añade `'pot'` al enum `asset_type`.
-2. Migración M2: columnas nuevas en `estates` (`client_id`), `zones` (`floor_label`), `assets` (`availability` con CHECK de 5 valores y default `instalado`, `condition_rating`, `acquisition_date`, `supplier_name`, `cost`, `replacement_value`, `rental_price`, `currency`, `retired_reason`) y `tasks` (`task_kind`, `placement_id`, `replaced_asset_id`), con sus índices.
-3. Migración M3/M4/M5: crea `rental_contracts` y `plant_placements` con GRANTs a authenticated/service_role, RLS por `get_user_org_id(auth.uid())`, lectura para rol `client` vía `client_access`, índice único parcial de activo instalado y exclusión por rango de fechas con btree_gist, más triggers de `updated_at` y de validación de fechas.
-4. Tipo de organización `plant_rental`: navegación en `AppSidebar.tsx` y `BottomNav.tsx`, opción en `Onboarding.tsx`, y acceso permitido en el guard de `CRM.tsx`.
-5. Rutas `/plantops`, `/plantops/inventory`, `/plantops/clients`, `/plantops/contracts` en `src/App.tsx`, reutilizando `ModernAppLayout` y los patrones de tarjeta de `Assets.tsx`.
-6. Instalaciones: `PlacementDialog`, `EventReservationDialog`, `PlacementHistoryList`, `usePlacements`, más bloque de ubicación actual e historial en `AssetDetail.tsx`.
-7. Visitas e incidencias sobre `tasks` reutilizando `TaskCompletionDialog` y `AssetPhotoUpload`; `IncidentDialog` cierra el placement, marca el activo y crea el placement sustituto.
-8. Portal de cliente con `useClientAccess`, seleccionando columnas explícitas y nunca `cost`, `replacement_value` ni `internal_notes`.
-No crees `client_sites`, `service_visits`, `asset_reservations`, `asset_incidents` ni `asset_movements`. Todo el texto en EN/ES/DE vía `src/lib/i18n.ts`, sin iconos ni menciones de IA."
+1. Activo con `operational_status='available'` hoy y placement `reserved` el próximo mes: aparece disponible hoy y no disponible para ese rango vía `plantops_check_availability`.
+2. Segunda reserva solapada de la misma planta → rechazada por la exclusión gist.
+3. Segunda reserva solapada de la misma maceta (`pot_asset_id`) → rechazada.
+4. `plantops_cancel_reservation` → placement `cancelled` conservado en historial y el rango vuelve a estar disponible.
+5. `plantops_replace_plant` → el placement sustituto conserva `placement_slot_id`, `zone_id` y `spot_label`; el historial del punto muestra ambas plantas; la planta retirada conserva su historial.
+6. Usuario con rol `client` autenticado: `select` directo a `plantops_asset_details`, `rental_contracts` y `plant_placements` devuelve 0 filas; las RPC devuelven solo columnas seguras.
+7. Verticales `residential`, `landscaping_company`, `property_management`: rutas, tareas y activos se comportan igual; `tasks.plantops_kind` queda NULL en todo lo histórico.
+8. Usuario de otra organización: 0 filas en las 3 tablas nuevas y excepción en toda RPC interna.
+9. Una planta instalada nunca cambia `assets.estate_id`; su ubicación mostrada proviene del placement abierto.
+
+## H. Prompt de implementación actualizado
+
+"Implementa Home Guide PlantOps para la organización tipo `plant_rental` (campo TEXT `organizations.org_type`, no requiere enum) sin alterar las verticales residential, landscaping_company ni property_management.
+
+Migraciones, en este orden exacto y en llamadas separadas donde se indica: M1 (aislada) `asset_type += 'pot'` y `client_type += 'plant_rental'`; M2 `CREATE EXTENSION IF NOT EXISTS btree_gist`; M3 columnas `estates.client_id` (FK a clients, índice) y `zones.floor_label`; M4 tabla `plantops_asset_details` 1:1 con assets (`operational_status` CHECK available/installed/recovery/retired default available, condition_rating, acquisition_date, supplier_name, cost, replacement_value, rental_price, currency, retired_reason) con GRANTs a authenticated/service_role, RLS solo `org_id = get_user_org_id(auth.uid())` y trigger updated_at; M5 tabla `rental_contracts`; M6 tabla `plant_placements` con `placement_slot_id uuid not null`, status CHECK reserved/installed/collected/cancelled, `ends_on` inclusivo, índice único parcial de activo instalado y dos constraints EXCLUDE USING gist (una por `asset_id`, otra por `pot_asset_id`) sobre `daterange(starts_on, coalesce(ends_on,'infinity')+1,'[)')` con `WHERE status IN ('reserved','installed')`, más trigger de validación de fechas; M7 columnas en `tasks`: `plantops_kind text null` CHECK maintenance/incident **sin default**, `placement_id` FK a plant_placements, `replacement_asset_id` FK a assets (planta sustituta; la afectada es `tasks.asset_id`); M8 funciones SECURITY DEFINER SET search_path = public: `plantops_reserve_asset`, `plantops_install_asset`, `plantops_collect_asset`, `plantops_replace_plant`, `plantops_cancel_reservation`, `plantops_check_availability`, `get_client_plant_placements`, `get_client_rental_contracts`, `get_client_maintenance_history` (las tres últimas validan `client_access` y devuelven solo columnas seguras, sin costos, precios, notas internas ni `access_notes`). Regenera tipos una sola vez al final.
+
+Reglas de modelo: `assets.estate_id` es la bodega y nunca se mueve; la ubicación actual se calcula desde el placement abierto; `estates.client_id` es la relación canónica cliente→sede y PlantOps no lee ni escribe `clients.estate_id`; no se añaden columnas comerciales a `assets`; `reservado` no se persiste como estado.
+
+Frontend: crea solo `/plantops` (dashboard) y `/plantops/contracts`; extiende `/assets`, `/estates`, `/crm`, `/tasks` y `AssetDetail` condicionando por `org_type='plant_rental'`; archivos nuevos: `src/pages/plantops/PlantOpsHome.tsx`, `src/pages/plantops/PlantOpsContracts.tsx`, `src/components/plantops/PlacementDialog.tsx`, `src/components/plantops/PlacementHistoryList.tsx`, `src/components/plantops/ReplacementDialog.tsx`, `src/hooks/usePlacements.ts`, `src/hooks/usePlantOpsAsset.ts`. Toda mutación de reserva, instalación, recolección, reemplazo y cancelación se hace por RPC, nunca con updates sueltos desde el cliente. No construyas pantallas nuevas de portal de cliente. Textos EN/ES/DE en `src/lib/i18n.ts`, sin iconos ni menciones de IA."
