@@ -800,6 +800,7 @@ export type Database = {
         Row: {
           address_text: string | null
           boundary_geojson: Json | null
+          client_id: string | null
           country: string | null
           created_at: string
           id: string
@@ -813,6 +814,7 @@ export type Database = {
         Insert: {
           address_text?: string | null
           boundary_geojson?: Json | null
+          client_id?: string | null
           country?: string | null
           created_at?: string
           id?: string
@@ -826,6 +828,7 @@ export type Database = {
         Update: {
           address_text?: string | null
           boundary_geojson?: Json | null
+          client_id?: string | null
           country?: string | null
           created_at?: string
           id?: string
@@ -837,6 +840,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "estates_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "estates_org_id_fkey"
             columns: ["org_id"]
@@ -2750,6 +2760,7 @@ export type Database = {
           color: string | null
           created_at: string
           estate_id: string
+          floor_label: string | null
           geometry_geojson: Json | null
           id: string
           name: string
@@ -2761,6 +2772,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           estate_id: string
+          floor_label?: string | null
           geometry_geojson?: Json | null
           id?: string
           name: string
@@ -2772,6 +2784,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           estate_id?: string
+          floor_label?: string | null
           geometry_geojson?: Json | null
           id?: string
           name?: string
