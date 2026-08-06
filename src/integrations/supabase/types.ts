@@ -1535,6 +1535,69 @@ export type Database = {
         }
         Relationships: []
       }
+      plantops_asset_details: {
+        Row: {
+          acquisition_date: string | null
+          asset_id: string
+          condition_rating: number | null
+          cost: number | null
+          created_at: string
+          currency: string
+          lifecycle_status: string
+          org_id: string
+          rental_price: number | null
+          replacement_value: number | null
+          retired_reason: string | null
+          supplier_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          acquisition_date?: string | null
+          asset_id: string
+          condition_rating?: number | null
+          cost?: number | null
+          created_at?: string
+          currency?: string
+          lifecycle_status?: string
+          org_id: string
+          rental_price?: number | null
+          replacement_value?: number | null
+          retired_reason?: string | null
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acquisition_date?: string | null
+          asset_id?: string
+          condition_rating?: number | null
+          cost?: number | null
+          created_at?: string
+          currency?: string
+          lifecycle_status?: string
+          org_id?: string
+          rental_price?: number | null
+          replacement_value?: number | null
+          retired_reason?: string | null
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plantops_asset_details_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: true
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plantops_asset_details_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       platform_admins: {
         Row: {
           created_at: string
@@ -1688,6 +1751,94 @@ export type Database = {
             columns: ["estate_id"]
             isOneToOne: false
             referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rental_contracts: {
+        Row: {
+          billing_period: string | null
+          client_dos_donts: string | null
+          client_id: string
+          contract_type: string
+          created_at: string
+          currency: string
+          ends_on: string | null
+          estate_id: string | null
+          id: string
+          internal_notes: string | null
+          maintenance_frequency:
+            | Database["public"]["Enums"]["task_frequency"]
+            | null
+          org_id: string
+          price_amount: number | null
+          replacement_rules: string | null
+          starts_on: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          billing_period?: string | null
+          client_dos_donts?: string | null
+          client_id: string
+          contract_type: string
+          created_at?: string
+          currency?: string
+          ends_on?: string | null
+          estate_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          maintenance_frequency?:
+            | Database["public"]["Enums"]["task_frequency"]
+            | null
+          org_id: string
+          price_amount?: number | null
+          replacement_rules?: string | null
+          starts_on: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: string | null
+          client_dos_donts?: string | null
+          client_id?: string
+          contract_type?: string
+          created_at?: string
+          currency?: string
+          ends_on?: string | null
+          estate_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          maintenance_frequency?:
+            | Database["public"]["Enums"]["task_frequency"]
+            | null
+          org_id?: string
+          price_amount?: number | null
+          replacement_rules?: string | null
+          starts_on?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rental_contracts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_contracts_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_contracts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
