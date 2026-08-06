@@ -19,7 +19,7 @@ declare global {
   }
 }
 
-type ClientType = 'property_owner' | 'landscaping_company' | 'property_management' | 'hybrid' | 'worker' | 'other';
+type ClientType = 'property_owner' | 'landscaping_company' | 'property_management' | 'plant_rental' | 'hybrid' | 'worker' | 'other';
 type Step = 'profile' | 'plan' | 'estate';
 
 const STEPS: Step[] = ['profile', 'plan', 'estate'];
@@ -63,6 +63,16 @@ const CLIENT_TYPE_OPTIONS: {
     descriptionEs: 'Administro villas o alquileres para dueños',
     descriptionDe: 'Ich verwalte Villen oder Mietobjekte für Eigentümer',
     emoji: '🏘️',
+  },
+  {
+    id: 'plant_rental',
+    label: 'Plant Rental Company',
+    labelEs: 'Empresa de alquiler de plantas',
+    labelDe: 'Pflanzenverleih',
+    description: 'I rent plants to malls, offices and events',
+    descriptionEs: 'Alquilo plantas a centros comerciales, oficinas y eventos',
+    descriptionDe: 'Ich vermiete Pflanzen an Malls, Büros und Events',
+    emoji: '🪴',
   },
   {
     id: 'hybrid',
@@ -192,6 +202,7 @@ export default function Onboarding() {
         property_owner: 'residential',
         landscaping_company: 'landscaping_company',
         property_management: 'property_management',
+        plant_rental: 'plant_rental',
         hybrid: 'hybrid',
         other: 'residential',
       };
