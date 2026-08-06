@@ -2841,12 +2841,14 @@ export type Database = {
         | "hardscape"
         | "equipment"
         | "structure"
+        | "pot"
       client_type:
         | "property_owner"
         | "landscaping_company"
         | "hybrid"
         | "other"
         | "property_management"
+        | "plant_rental"
       compost_ingredient_type:
         | "green"
         | "brown"
@@ -3039,6 +3041,7 @@ export const Constants = {
         "hardscape",
         "equipment",
         "structure",
+        "pot",
       ],
       client_type: [
         "property_owner",
@@ -3046,6 +3049,7 @@ export const Constants = {
         "hybrid",
         "other",
         "property_management",
+        "plant_rental",
       ],
       compost_ingredient_type: [
         "green",
