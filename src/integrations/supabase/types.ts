@@ -3159,6 +3159,10 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      plantops_can_access_photo: {
+        Args: { _path: string; _user_id: string }
+        Returns: boolean
+      }
       plantops_cancel_reservation: {
         Args: { p_placement_id: string; p_reason?: string }
         Returns: undefined
@@ -3231,6 +3235,21 @@ export type Database = {
           p_zone_id: string
         }
         Returns: string
+      }
+      plantops_upsert_asset_details: {
+        Args: {
+          p_acquisition_date?: string
+          p_asset_id: string
+          p_condition_rating?: number
+          p_cost?: number
+          p_currency?: string
+          p_lifecycle_status?: string
+          p_rental_price?: number
+          p_replacement_value?: number
+          p_retired_reason?: string
+          p_supplier_name?: string
+        }
+        Returns: undefined
       }
       plantops_validate_asset: {
         Args: {
