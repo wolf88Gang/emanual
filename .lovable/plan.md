@@ -112,4 +112,16 @@ Añadir al prompt aprobado, reemplazando lo correspondiente:
 8. Usuario con rol `client` de la misma organización → 0 filas en las tres tablas; solo las RPC devuelven datos, sin costos ni notas internas, y falla si el flag de `client_access` está apagado.
 9. Usuario de otra organización → 0 filas y excepción en toda RPC interna.
 10. Verticales existentes sin cambios: `tasks.plantops_kind` NULL en histórico, `assets.estate_id` inalterado.
-11. Foto de placement no accesible por URL pública; solo por URL firmada de la sede autorizada.
+11. Foto de placement no accesible por URL pública; el bucket es privado y el rol `client` no puede leerlo.
+
+## 9. Correcciones obligatorias durante la implementación (aprobadas)
+
+1. `plant_placements`: SELECT directo solo para owner/manager/crew de la organización. **Sin INSERT/UPDATE/DELETE para `authenticated`** (tampoco owner/manager); todas las mutaciones pasan por las 5 RPC. `service_role` conserva acceso administrativo. `plantops_asset_details` y `rental_contracts`: CRUD directo para owner/manager, solo lectura para crew.
+2. Las RPC del portal devuelven `reference_photo_path`, nunca una URL pública ni firmada. La generación de URLs firmadas queda **pendiente explícito de segunda fase** (no se crea Edge Function nueva ahora).
+3. Políticas de `plantops-photos` (privado): exigen usuario autenticado, `get_user_org_id(auth.uid())` igual al primer segmento de la ruta y rol interno owner/manager/crew. El rol `client` no puede leer, subir, modificar ni borrar. Ruta `{org_id}/{placement_id}/{uuid}.jpg`.
+4. Constraints: `condition_rating` y `condition_at_collection` entre 1 y 5 o NULL; `cost`, `replacement_value`, `rental_price`, `price_amount` ≥ 0 o NULL; `ends_on >= starts_on` o NULL; `reserved_until > reserved_from` o NULL; `pot_asset_id <> asset_id`; coherencia estado/timestamps por trigger; rangos con `'infinity'::timestamptz` explícito.
+5. Todo activo `plant`/`pot` creado o editado en una organización `plant_rental` crea o actualiza su fila en `plantops_asset_details`; reservar sin esa fila falla. No se generan detalles para activos históricos de otras verticales.
+6. `plantops_replace_plant` cierra la instalación anterior, conserva `placement_slot_id` y la maceta, marca la planta retirada, instala la sustituta y crea la tarea de incidencia **ya completada** con su `task_completions` correspondiente.
+7. Orden de ejecución: M1–M8 → bucket y políticas → regeneración única de tipos → hooks y servicios → `/plantops` → `/plantops/contracts` → extensiones condicionadas de CRM/estates/assets/AssetDetail/tasks → flujos por RPC → textos EN/ES/DE → pruebas → build → deploy solo si todo pasa.
+8. Validaciones previas al deploy: crew no puede actualizar `plant_placements` directamente; owner tampoco; `client` no lee el bucket aunque comparta organización; no existe URL pública de fotos PlantOps; crear una planta PlantOps crea sus detalles; un activo sin detalles no se puede reservar; las RPC fallan con activos de otra organización; las verticales históricas no cambian.
+9. Reporte final con migraciones, funciones, políticas RLS y de Storage, archivos modificados y nuevos, pruebas, typecheck, lint, build, deploy, desviaciones y pendientes de segunda fase.
