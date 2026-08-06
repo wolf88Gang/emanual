@@ -94,10 +94,19 @@ export function AppSidebar() {
     { path: '/labor', icon: Clock, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
   ];
 
+  // Plant rental (PlantOps) items
+  const plantRentalNav: NavItem[] = [
+    { path: '/plantops', icon: Sprout, label: 'PlantOps', tooltip: l('Plant rental inventory & placements', 'Inventario de alquiler y ubicaciones', 'Mietbestand & Standorte') },
+    { path: '/plantops/contracts', icon: FileSignature, label: l('Contracts', 'Contratos', 'Verträge'), tooltip: l('Rental contracts & events', 'Contratos de alquiler y eventos', 'Mietverträge & Events') },
+    { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
+    { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
+  ];
+
   // Homeowner financials
   const homeownerNav: NavItem[] = [
     { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
   ];
+
 
   // Optional / advanced items
   const advancedNav: NavItem[] = [
