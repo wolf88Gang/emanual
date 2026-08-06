@@ -20,7 +20,7 @@ interface PlatformStats {
 
 export default function PlatformAdmin() {
   const { language } = useLanguage();
-  const es = language === 'es';
+  const l = (en: string, es: string, de: string) => (language === 'es' ? es : language === 'de' ? de : en);
   const [stats, setStats] = useState<PlatformStats>({
     totalOrgs: 0, totalUsers: 0, totalEstates: 0,
     activeSubscriptions: 0, totalRevenue: 0, totalTasks: 0,
@@ -62,45 +62,45 @@ export default function PlatformAdmin() {
 
   const statCards = [
     {
-      title: es ? 'Organizaciones' : 'Organizations',
+      title: l('Organizations', 'Organizaciones', 'Organisationen'),
       value: stats.totalOrgs,
       icon: Building2,
-      tooltip: es ? 'Total de organizaciones registradas' : 'Total registered organizations',
+      tooltip: l('Total registered organizations', 'Total de organizaciones registradas', 'Registrierte Organisationen insgesamt'),
       color: 'text-primary',
     },
     {
-      title: es ? 'Usuarios' : 'Users',
+      title: l('Users', 'Usuarios', 'Benutzer'),
       value: stats.totalUsers,
       icon: Users,
-      tooltip: es ? 'Total de usuarios en la plataforma' : 'Total platform users',
+      tooltip: l('Total platform users', 'Total de usuarios en la plataforma', 'Benutzer der Plattform insgesamt'),
       color: 'text-primary',
     },
     {
-      title: es ? 'Propiedades' : 'Estates',
+      title: l('Estates', 'Propiedades', 'Immobilien'),
       value: stats.totalEstates,
       icon: BarChart3,
-      tooltip: es ? 'Propiedades activas' : 'Active estates',
+      tooltip: l('Active estates', 'Propiedades activas', 'Aktive Immobilien'),
       color: 'text-primary',
     },
     {
-      title: es ? 'Suscripciones Activas' : 'Active Subscriptions',
+      title: l('Active Subscriptions', 'Suscripciones Activas', 'Aktive Abonnements'),
       value: stats.activeSubscriptions,
       icon: CreditCard,
-      tooltip: es ? 'Clientes con suscripción activa' : 'Clients with active subscription',
+      tooltip: l('Organizations with an active subscription', 'Organizaciones con suscripción activa', 'Organisationen mit aktivem Abonnement'),
       color: 'text-primary',
     },
     {
-      title: es ? 'Ingresos Totales' : 'Total Revenue',
+      title: l('Total Revenue', 'Ingresos Totales', 'Gesamtumsatz'),
       value: `$${stats.totalRevenue.toFixed(2)}`,
       icon: DollarSign,
-      tooltip: es ? 'Ingresos totales de suscripciones' : 'Total subscription revenue',
+      tooltip: l('Total subscription revenue', 'Ingresos totales de suscripciones', 'Gesamter Abonnementumsatz'),
       color: 'text-primary',
     },
     {
-      title: es ? 'Estado del Sistema' : 'System Status',
-      value: es ? 'Operativo' : 'Operational',
+      title: l('System Status', 'Estado del Sistema', 'Systemstatus'),
+      value: l('Operational', 'Operativo', 'Betriebsbereit'),
       icon: Activity,
-      tooltip: es ? 'Todos los servicios funcionando' : 'All services running',
+      tooltip: l('All services running', 'Todos los servicios funcionando', 'Alle Dienste laufen'),
       color: 'text-primary',
     },
   ];
@@ -111,10 +111,10 @@ export default function PlatformAdmin() {
         {/* Header */}
         <div>
           <h1 className="text-2xl font-serif font-bold text-foreground">
-            {es ? 'Panel de Administración' : 'Platform Administration'}
+            {l('Platform Administration', 'Panel de Administración', 'Plattformverwaltung')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            {es ? 'Gestiona clientes, suscripciones y la plataforma' : 'Manage clients, subscriptions and the platform'}
+            {l('Manage client organizations, subscriptions and the platform', 'Gestiona organizaciones cliente, suscripciones y la plataforma', 'Kundenorganisationen, Abonnements und Plattform verwalten')}
           </p>
         </div>
 
@@ -153,20 +153,20 @@ export default function PlatformAdmin() {
             <CardHeader>
               <CardTitle className="text-lg font-serif flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
-                {es ? 'Suscripciones Recientes' : 'Recent Subscriptions'}
+                {l('Recent Subscriptions', 'Suscripciones Recientes', 'Neueste Abonnements')}
               </CardTitle>
               <CardDescription>
-                {es ? 'Últimas suscripciones activas' : 'Latest active subscriptions'}
+                {l('Latest active subscriptions', 'Últimas suscripciones activas', 'Neueste aktive Abonnements')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               {loading ? (
-                <p className="text-sm text-muted-foreground">{es ? 'Cargando...' : 'Loading...'}</p>
+                <p className="text-sm text-muted-foreground">{l('Loading...', 'Cargando...', 'Wird geladen...')}</p>
               ) : stats.recentPayments.length === 0 ? (
                 <div className="text-center py-8">
                   <CreditCard className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
                   <p className="text-sm text-muted-foreground">
-                    {es ? 'Aún no hay suscripciones' : 'No subscriptions yet'}
+                    {l('No subscriptions yet', 'Aún no hay suscripciones', 'Noch keine Abonnements')}
                   </p>
                 </div>
               ) : (
@@ -175,7 +175,7 @@ export default function PlatformAdmin() {
                     <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
                       <div>
                         <p className="text-sm font-medium text-foreground">
-                          {sub.plan_type === 'monthly' ? (es ? 'Mensual' : 'Monthly') : (es ? 'Anual' : 'Annual')}
+                          {sub.plan_type === 'monthly' ? l('Monthly', 'Mensual', 'Monatlich') : l('Annual', 'Anual', 'Jährlich')}
                         </p>
                         <p className="text-xs text-muted-foreground">
                           {new Date(sub.created_at).toLocaleDateString()}
@@ -194,18 +194,18 @@ export default function PlatformAdmin() {
             <CardHeader>
               <CardTitle className="text-lg font-serif flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
-                {es ? 'Salud del Sistema' : 'System Health'}
+                {l('System Health', 'Salud del Sistema', 'Systemzustand')}
               </CardTitle>
               <CardDescription>
-                {es ? 'Estado de los servicios' : 'Service status'}
+                {l('Service status', 'Estado de los servicios', 'Dienststatus')}
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
                 {[
-                  { name: es ? 'Base de datos' : 'Database', status: 'operational' },
-                  { name: es ? 'Autenticación' : 'Authentication', status: 'operational' },
-                  { name: es ? 'Almacenamiento' : 'Storage', status: 'operational' },
+                  { name: l('Database', 'Base de datos', 'Datenbank'), status: 'operational' },
+                  { name: l('Authentication', 'Autenticación', 'Authentifizierung'), status: 'operational' },
+                  { name: l('Storage', 'Almacenamiento', 'Speicher'), status: 'operational' },
                   { name: 'Edge Functions', status: 'operational' },
                   { name: 'PayPal API', status: 'operational' },
                 ].map((service) => (
@@ -214,7 +214,7 @@ export default function PlatformAdmin() {
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
                       <span className="text-xs text-muted-foreground">
-                        {es ? 'Operativo' : 'Operational'}
+                        {l('Operational', 'Operativo', 'Betriebsbereit')}
                       </span>
                     </div>
                   </div>
@@ -228,16 +228,16 @@ export default function PlatformAdmin() {
         <Card>
           <CardHeader>
             <CardTitle className="text-lg font-serif">
-              {es ? 'Acciones Rápidas' : 'Quick Actions'}
+              {l('Quick Actions', 'Acciones Rápidas', 'Schnellaktionen')}
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                { icon: Users, label: es ? 'Ver Clientes' : 'View Clients', path: '/platform/clients' },
-                { icon: CreditCard, label: es ? 'Gestionar Planes' : 'Manage Plans', path: '/platform/subscriptions' },
-                { icon: BarChart3, label: es ? 'Ver Métricas' : 'View Metrics', path: '/platform/metrics' },
-                { icon: AlertTriangle, label: es ? 'Alertas' : 'Alerts', path: '/platform/system' },
+                { icon: Users, label: l('View Clients', 'Ver Clientes', 'Kunden ansehen'), path: '/platform/clients' },
+                { icon: CreditCard, label: l('Manage Plans', 'Gestionar Planes', 'Pläne verwalten'), path: '/platform/subscriptions' },
+                { icon: BarChart3, label: l('View Metrics', 'Ver Métricas', 'Metriken ansehen'), path: '/platform/metrics' },
+                { icon: AlertTriangle, label: l('Alerts', 'Alertas', 'Warnungen'), path: '/platform/system' },
               ].map((action) => (
                 <Tooltip key={action.label}>
                   <TooltipTrigger asChild>
