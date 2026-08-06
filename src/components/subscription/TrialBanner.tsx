@@ -17,8 +17,10 @@ export function TrialBanner() {
   // If no provider is available, don't render
   if (!sub) return null;
 
-  const { isTrial, isExpired, trialDaysLeft, isPaid, status } = sub;
+  const { isTrial, isExpired, trialDaysLeft, isPaid, status, enforceSubscription } = sub;
 
+  // Internal platform admins never see subscription alerts.
+  if (!enforceSubscription) return null;
   if (isPaid || status === 'loading') return null;
   if (!isTrial && !isExpired && status !== 'none') return null;
 

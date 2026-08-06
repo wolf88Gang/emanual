@@ -25,13 +25,14 @@ const FEATURE_NAMES: Record<string, { en: string; es: string; de: string }> = {
 };
 
 export function TrialGate({ feature, children, inline }: TrialGateProps) {
-  const { canAccessFeature, isTrial, isExpired, trialDaysLeft } = useSubscription();
+  const { canAccessFeature, isTrial, isExpired, trialDaysLeft, enforceSubscription } = useSubscription();
   const { language } = useLanguage();
   const navigate = useNavigate();
   const es = language === 'es';
   const de = language === 'de';
 
-  if (canAccessFeature(feature)) {
+  // Internal platform admins are not a billable tenant — never gate them.
+  if (!enforceSubscription || canAccessFeature(feature)) {
     return <>{children}</>;
   }
 

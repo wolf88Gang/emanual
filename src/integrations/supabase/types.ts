@@ -2090,6 +2090,7 @@ export type Database = {
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          org_id: string | null
           paypal_capture_id: string | null
           paypal_order_id: string | null
           plan_type: string
@@ -2106,6 +2107,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          org_id?: string | null
           paypal_capture_id?: string | null
           paypal_order_id?: string | null
           plan_type?: string
@@ -2122,6 +2124,7 @@ export type Database = {
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          org_id?: string | null
           paypal_capture_id?: string | null
           paypal_order_id?: string | null
           plan_type?: string
@@ -2132,6 +2135,13 @@ export type Database = {
           user_id?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "subscriptions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "subscriptions_user_id_fkey"
             columns: ["user_id"]
