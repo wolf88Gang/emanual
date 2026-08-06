@@ -36,6 +36,8 @@ const Subscription = lazy(() => import("./pages/Subscription"));
 const CompostManager = lazy(() => import("./pages/CompostManager"));
 const CRM = lazy(() => import("./pages/CRM"));
 const Financials = lazy(() => import("./pages/Financials"));
+const PlantOps = lazy(() => import("./pages/PlantOps"));
+const PlantOpsContracts = lazy(() => import("./pages/PlantOpsContracts"));
 const Features = lazy(() => import("./pages/Features"));
 const SetupWizard = lazy(() => import("./pages/SetupWizard"));
 const FeatureRequests = lazy(() => import("./pages/FeatureRequests"));
