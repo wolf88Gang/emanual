@@ -144,7 +144,7 @@ export default function Reports() {
               title,
               asset_id,
               zone_id,
-              asset:assets(name),
+              asset:assets!tasks_asset_id_fkey(name),
               zone:zones(name)
             )
           `)
