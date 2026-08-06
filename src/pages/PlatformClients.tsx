@@ -34,7 +34,7 @@ interface OrgClient {
   org_created_at: string;
   members_count: number;
   estates_count: number;
-  primary_contact: { name: string; email: string } | null;
+  primary_contact: { id: string; name: string; email: string } | null;
   subscription: SubscriptionRow | null;
 }
 
@@ -77,15 +77,24 @@ export default function PlatformClients() {
           .update({ status: planStatus, plan_type: planType, amount, currency: 'USD' })
           .eq('org_id', editOrg.org_id));
       } else {
+        if (!editOrg.primary_contact) {
+          throw new Error(
+            l(
+              'This organization has no members yet, so no plan can be created.',
+              'Esta organización aún no tiene miembros, no se puede crear un plan.',
+              'Diese Organisation hat noch keine Mitglieder, es kann kein Plan erstellt werden.'
+            )
+          );
+        }
         ({ error } = await supabase.from('subscriptions').insert({
           org_id: editOrg.org_id,
-          // user_id remains required (legacy column) — the admin contact of the org.
-          user_id: editOrg.primary_contact ? undefined : undefined,
+          // legacy NOT NULL column: kept pointing at the org admin contact
+          user_id: editOrg.primary_contact.id,
           status: planStatus,
           plan_type: planType,
           amount,
           currency: 'USD',
-        } as never));
+        }));
       }
       if (error) throw error;
       toast.success(l('Plan updated', 'Plan actualizado', 'Plan aktualisiert'));
@@ -131,7 +140,7 @@ export default function PlatformClients() {
             return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
           });
         const contact = members[0]
-          ? { name: members[0].full_name || members[0].email.split('@')[0], email: members[0].email }
+          ? { id: members[0].id, name: members[0].full_name || members[0].email.split('@')[0], email: members[0].email }
           : null;
 
         return {
