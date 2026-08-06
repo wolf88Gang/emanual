@@ -156,6 +156,8 @@ function AppRoutes() {
       <Route path="/compost" element={<EstateRoute><TrialGate feature="compost"><CompostManager /></TrialGate></EstateRoute>} />
       <Route path="/crm" element={<EstateRoute><TrialGate feature="crm"><CRM /></TrialGate></EstateRoute>} />
       <Route path="/financials" element={<EstateRoute><Financials /></EstateRoute>} />
+      <Route path="/plantops" element={<EstateRoute><PlantOps /></EstateRoute>} />
+      <Route path="/plantops/contracts" element={<EstateRoute><PlantOpsContracts /></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
       <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />
