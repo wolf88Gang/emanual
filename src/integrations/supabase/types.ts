@@ -1499,6 +1499,121 @@ export type Database = {
           },
         ]
       }
+      plant_placements: {
+        Row: {
+          access_notes: string | null
+          asset_id: string
+          cancelled_at: string | null
+          collected_at: string | null
+          condition_at_collection: number | null
+          contract_id: string | null
+          created_at: string
+          estate_id: string
+          id: string
+          installed_at: string | null
+          org_id: string
+          placement_slot_id: string
+          pot_asset_id: string | null
+          reference_photo_path: string | null
+          reserved_from: string
+          reserved_until: string | null
+          spot_label: string | null
+          spot_notes: string | null
+          status: string
+          updated_at: string
+          zone_id: string | null
+        }
+        Insert: {
+          access_notes?: string | null
+          asset_id: string
+          cancelled_at?: string | null
+          collected_at?: string | null
+          condition_at_collection?: number | null
+          contract_id?: string | null
+          created_at?: string
+          estate_id: string
+          id?: string
+          installed_at?: string | null
+          org_id: string
+          placement_slot_id?: string
+          pot_asset_id?: string | null
+          reference_photo_path?: string | null
+          reserved_from: string
+          reserved_until?: string | null
+          spot_label?: string | null
+          spot_notes?: string | null
+          status: string
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Update: {
+          access_notes?: string | null
+          asset_id?: string
+          cancelled_at?: string | null
+          collected_at?: string | null
+          condition_at_collection?: number | null
+          contract_id?: string | null
+          created_at?: string
+          estate_id?: string
+          id?: string
+          installed_at?: string | null
+          org_id?: string
+          placement_slot_id?: string
+          pot_asset_id?: string | null
+          reference_photo_path?: string | null
+          reserved_from?: string
+          reserved_until?: string | null
+          spot_label?: string | null
+          spot_notes?: string | null
+          status?: string
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_placements_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "rental_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_pot_asset_id_fkey"
+            columns: ["pot_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plant_profiles: {
         Row: {
           care_template_json: Json | null
@@ -2158,7 +2273,10 @@ export type Database = {
           estate_id: string
           frequency: Database["public"]["Enums"]["task_frequency"] | null
           id: string
+          placement_id: string | null
+          plantops_kind: string | null
           priority: number | null
+          replacement_asset_id: string | null
           required_photo: boolean | null
           status: Database["public"]["Enums"]["task_status"] | null
           title: string
@@ -2177,7 +2295,10 @@ export type Database = {
           estate_id: string
           frequency?: Database["public"]["Enums"]["task_frequency"] | null
           id?: string
+          placement_id?: string | null
+          plantops_kind?: string | null
           priority?: number | null
+          replacement_asset_id?: string | null
           required_photo?: boolean | null
           status?: Database["public"]["Enums"]["task_status"] | null
           title: string
@@ -2196,7 +2317,10 @@ export type Database = {
           estate_id?: string
           frequency?: Database["public"]["Enums"]["task_frequency"] | null
           id?: string
+          placement_id?: string | null
+          plantops_kind?: string | null
           priority?: number | null
+          replacement_asset_id?: string | null
           required_photo?: boolean | null
           status?: Database["public"]["Enums"]["task_status"] | null
           title?: string
@@ -2231,6 +2355,20 @@ export type Database = {
             columns: ["estate_id"]
             isOneToOne: false
             referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "plant_placements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_replacement_asset_id_fkey"
+            columns: ["replacement_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
             referencedColumns: ["id"]
           },
           {
