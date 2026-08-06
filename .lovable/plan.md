@@ -57,7 +57,7 @@ Para las tres tablas nuevas, `anon` sin GRANT; `authenticated` con CRUD; `servic
 
 - **SELECT interno**: `TO authenticated USING (org_id = public.get_user_org_id(auth.uid()) AND (public.has_role(auth.uid(),'owner') OR public.has_role(auth.uid(),'manager') OR public.has_role(auth.uid(),'crew')))` → un perfil con rol `client` en la misma organización obtiene **cero filas**.
 - **INSERT/UPDATE/DELETE en `plantops_asset_details` y `rental_contracts`**: solo `owner`/`manager`, con `USING` y `WITH CHECK` que exigen `org_id = get_user_org_id(auth.uid())`.
-- **`plant_placements`**: INSERT/DELETE solo `owner`/`manager` (con `WITH CHECK` de org); UPDATE para `owner`/`manager` y para `crew` limitado a las columnas operativas de ejecución (`installed_at`, `collected_at`, `condition_at_collection`, `spot_notes`, `reference_photo_path`) mediante política con `WITH CHECK` de org; el resto de mutaciones se hace por RPC.
+- **`plant_placements`**: sin políticas de INSERT/UPDATE/DELETE para `authenticated` (ni owner, ni manager, ni crew). Todas las mutaciones pasan exclusivamente por las 5 RPC; `service_role` conserva acceso administrativo. Crew tiene solo SELECT.
 - **`client`**: ninguna política de SELECT/INSERT/UPDATE/DELETE en las tres tablas. Su único acceso son las 3 RPC de portal.
 
 ## 4. Firmas y efectos de las RPC
