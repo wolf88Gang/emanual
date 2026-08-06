@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Briefcase, Map, Box, ClipboardList, FolderOpen, Settings, Package,
   Leaf, Clock, Users, BarChart3, CreditCard, Activity, Wrench,
-  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus, Megaphone
+  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus, Megaphone, Sprout, FileSignature
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -54,6 +54,8 @@ export function AppSidebar() {
 
   const isLandscaper = orgType === 'landscaping_company' || orgType === 'hybrid';
   const isPropManager = orgType === 'property_management';
+  const isPlantRental = orgType === 'plant_rental';
+
 
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
@@ -92,10 +94,19 @@ export function AppSidebar() {
     { path: '/labor', icon: Clock, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
   ];
 
+  // Plant rental (PlantOps) items
+  const plantRentalNav: NavItem[] = [
+    { path: '/plantops', icon: Sprout, label: 'PlantOps', tooltip: l('Plant rental inventory & placements', 'Inventario de alquiler y ubicaciones', 'Mietbestand & Standorte') },
+    { path: '/plantops/contracts', icon: FileSignature, label: l('Contracts', 'Contratos', 'Verträge'), tooltip: l('Rental contracts & events', 'Contratos de alquiler y eventos', 'Mietverträge & Events') },
+    { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
+    { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
+  ];
+
   // Homeowner financials
   const homeownerNav: NavItem[] = [
     { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
   ];
+
 
   // Optional / advanced items
   const advancedNav: NavItem[] = [
@@ -113,7 +124,7 @@ export function AppSidebar() {
 
   const ownerNav: NavItem[] = [
     ...coreNav,
-    ...(isLandscaper ? landscaperNav : isPropManager ? propManagerNav : homeownerNav),
+    ...(isPlantRental ? plantRentalNav : isLandscaper ? landscaperNav : isPropManager ? propManagerNav : homeownerNav),
     ...advancedNav,
     ...settingsNav,
   ];

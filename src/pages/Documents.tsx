@@ -173,7 +173,7 @@ export default function Documents() {
         supabase.from('tasks').select('*').eq('estate_id', currentEstate.id),
         supabase.from('task_completions').select(`
           *,
-          task:tasks (*, asset:assets (name), zone:zones (name)),
+          task:tasks (*, asset:assets!tasks_asset_id_fkey (name), zone:zones (name)),
           completed_by:profiles (full_name)
         `).order('completed_at', { ascending: false }),
         supabase.from('checkins').select(`

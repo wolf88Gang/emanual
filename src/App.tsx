@@ -36,6 +36,8 @@ const Subscription = lazy(() => import("./pages/Subscription"));
 const CompostManager = lazy(() => import("./pages/CompostManager"));
 const CRM = lazy(() => import("./pages/CRM"));
 const Financials = lazy(() => import("./pages/Financials"));
+const PlantOps = lazy(() => import("./pages/PlantOps"));
+const PlantOpsContracts = lazy(() => import("./pages/PlantOpsContracts"));
 const Features = lazy(() => import("./pages/Features"));
 const SetupWizard = lazy(() => import("./pages/SetupWizard"));
 const FeatureRequests = lazy(() => import("./pages/FeatureRequests"));
@@ -156,6 +158,8 @@ function AppRoutes() {
       <Route path="/compost" element={<EstateRoute><TrialGate feature="compost"><CompostManager /></TrialGate></EstateRoute>} />
       <Route path="/crm" element={<EstateRoute><TrialGate feature="crm"><CRM /></TrialGate></EstateRoute>} />
       <Route path="/financials" element={<EstateRoute><Financials /></EstateRoute>} />
+      <Route path="/plantops" element={<EstateRoute><PlantOps /></EstateRoute>} />
+      <Route path="/plantops/contracts" element={<EstateRoute><PlantOpsContracts /></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
       <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />

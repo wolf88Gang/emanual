@@ -800,6 +800,7 @@ export type Database = {
         Row: {
           address_text: string | null
           boundary_geojson: Json | null
+          client_id: string | null
           country: string | null
           created_at: string
           id: string
@@ -813,6 +814,7 @@ export type Database = {
         Insert: {
           address_text?: string | null
           boundary_geojson?: Json | null
+          client_id?: string | null
           country?: string | null
           created_at?: string
           id?: string
@@ -826,6 +828,7 @@ export type Database = {
         Update: {
           address_text?: string | null
           boundary_geojson?: Json | null
+          client_id?: string | null
           country?: string | null
           created_at?: string
           id?: string
@@ -837,6 +840,13 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "estates_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "estates_org_id_fkey"
             columns: ["org_id"]
@@ -1489,6 +1499,121 @@ export type Database = {
           },
         ]
       }
+      plant_placements: {
+        Row: {
+          access_notes: string | null
+          asset_id: string
+          cancelled_at: string | null
+          collected_at: string | null
+          condition_at_collection: number | null
+          contract_id: string | null
+          created_at: string
+          estate_id: string
+          id: string
+          installed_at: string | null
+          org_id: string
+          placement_slot_id: string
+          pot_asset_id: string | null
+          reference_photo_path: string | null
+          reserved_from: string
+          reserved_until: string | null
+          spot_label: string | null
+          spot_notes: string | null
+          status: string
+          updated_at: string
+          zone_id: string | null
+        }
+        Insert: {
+          access_notes?: string | null
+          asset_id: string
+          cancelled_at?: string | null
+          collected_at?: string | null
+          condition_at_collection?: number | null
+          contract_id?: string | null
+          created_at?: string
+          estate_id: string
+          id?: string
+          installed_at?: string | null
+          org_id: string
+          placement_slot_id?: string
+          pot_asset_id?: string | null
+          reference_photo_path?: string | null
+          reserved_from: string
+          reserved_until?: string | null
+          spot_label?: string | null
+          spot_notes?: string | null
+          status: string
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Update: {
+          access_notes?: string | null
+          asset_id?: string
+          cancelled_at?: string | null
+          collected_at?: string | null
+          condition_at_collection?: number | null
+          contract_id?: string | null
+          created_at?: string
+          estate_id?: string
+          id?: string
+          installed_at?: string | null
+          org_id?: string
+          placement_slot_id?: string
+          pot_asset_id?: string | null
+          reference_photo_path?: string | null
+          reserved_from?: string
+          reserved_until?: string | null
+          spot_label?: string | null
+          spot_notes?: string | null
+          status?: string
+          updated_at?: string
+          zone_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_placements_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_contract_id_fkey"
+            columns: ["contract_id"]
+            isOneToOne: false
+            referencedRelation: "rental_contracts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_pot_asset_id_fkey"
+            columns: ["pot_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_placements_zone_id_fkey"
+            columns: ["zone_id"]
+            isOneToOne: false
+            referencedRelation: "zones"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plant_profiles: {
         Row: {
           care_template_json: Json | null
@@ -1524,6 +1649,69 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      plantops_asset_details: {
+        Row: {
+          acquisition_date: string | null
+          asset_id: string
+          condition_rating: number | null
+          cost: number | null
+          created_at: string
+          currency: string
+          lifecycle_status: string
+          org_id: string
+          rental_price: number | null
+          replacement_value: number | null
+          retired_reason: string | null
+          supplier_name: string | null
+          updated_at: string
+        }
+        Insert: {
+          acquisition_date?: string | null
+          asset_id: string
+          condition_rating?: number | null
+          cost?: number | null
+          created_at?: string
+          currency?: string
+          lifecycle_status?: string
+          org_id: string
+          rental_price?: number | null
+          replacement_value?: number | null
+          retired_reason?: string | null
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Update: {
+          acquisition_date?: string | null
+          asset_id?: string
+          condition_rating?: number | null
+          cost?: number | null
+          created_at?: string
+          currency?: string
+          lifecycle_status?: string
+          org_id?: string
+          rental_price?: number | null
+          replacement_value?: number | null
+          retired_reason?: string | null
+          supplier_name?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plantops_asset_details_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: true
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plantops_asset_details_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       platform_admins: {
         Row: {
@@ -1678,6 +1866,94 @@ export type Database = {
             columns: ["estate_id"]
             isOneToOne: false
             referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      rental_contracts: {
+        Row: {
+          billing_period: string | null
+          client_dos_donts: string | null
+          client_id: string
+          contract_type: string
+          created_at: string
+          currency: string
+          ends_on: string | null
+          estate_id: string | null
+          id: string
+          internal_notes: string | null
+          maintenance_frequency:
+            | Database["public"]["Enums"]["task_frequency"]
+            | null
+          org_id: string
+          price_amount: number | null
+          replacement_rules: string | null
+          starts_on: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          billing_period?: string | null
+          client_dos_donts?: string | null
+          client_id: string
+          contract_type: string
+          created_at?: string
+          currency?: string
+          ends_on?: string | null
+          estate_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          maintenance_frequency?:
+            | Database["public"]["Enums"]["task_frequency"]
+            | null
+          org_id: string
+          price_amount?: number | null
+          replacement_rules?: string | null
+          starts_on: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          billing_period?: string | null
+          client_dos_donts?: string | null
+          client_id?: string
+          contract_type?: string
+          created_at?: string
+          currency?: string
+          ends_on?: string | null
+          estate_id?: string | null
+          id?: string
+          internal_notes?: string | null
+          maintenance_frequency?:
+            | Database["public"]["Enums"]["task_frequency"]
+            | null
+          org_id?: string
+          price_amount?: number | null
+          replacement_rules?: string | null
+          starts_on?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "rental_contracts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_contracts_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "rental_contracts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
             referencedColumns: ["id"]
           },
         ]
@@ -1997,7 +2273,10 @@ export type Database = {
           estate_id: string
           frequency: Database["public"]["Enums"]["task_frequency"] | null
           id: string
+          placement_id: string | null
+          plantops_kind: string | null
           priority: number | null
+          replacement_asset_id: string | null
           required_photo: boolean | null
           status: Database["public"]["Enums"]["task_status"] | null
           title: string
@@ -2016,7 +2295,10 @@ export type Database = {
           estate_id: string
           frequency?: Database["public"]["Enums"]["task_frequency"] | null
           id?: string
+          placement_id?: string | null
+          plantops_kind?: string | null
           priority?: number | null
+          replacement_asset_id?: string | null
           required_photo?: boolean | null
           status?: Database["public"]["Enums"]["task_status"] | null
           title: string
@@ -2035,7 +2317,10 @@ export type Database = {
           estate_id?: string
           frequency?: Database["public"]["Enums"]["task_frequency"] | null
           id?: string
+          placement_id?: string | null
+          plantops_kind?: string | null
           priority?: number | null
+          replacement_asset_id?: string | null
           required_photo?: boolean | null
           status?: Database["public"]["Enums"]["task_status"] | null
           title?: string
@@ -2070,6 +2355,20 @@ export type Database = {
             columns: ["estate_id"]
             isOneToOne: false
             referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "plant_placements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_replacement_asset_id_fkey"
+            columns: ["replacement_asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
             referencedColumns: ["id"]
           },
           {
@@ -2750,6 +3049,7 @@ export type Database = {
           color: string | null
           created_at: string
           estate_id: string
+          floor_label: string | null
           geometry_geojson: Json | null
           id: string
           name: string
@@ -2761,6 +3061,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           estate_id: string
+          floor_label?: string | null
           geometry_geojson?: Json | null
           id?: string
           name: string
@@ -2772,6 +3073,7 @@ export type Database = {
           color?: string | null
           created_at?: string
           estate_id?: string
+          floor_label?: string | null
           geometry_geojson?: Json | null
           id?: string
           name?: string
@@ -2805,9 +3107,48 @@ export type Database = {
         }
         Returns: string
       }
+      get_client_maintenance_history: {
+        Args: { p_estate_id: string }
+        Returns: {
+          completed_at: string
+          due_date: string
+          photo_url: string
+          plantops_kind: string
+          status: Database["public"]["Enums"]["task_status"]
+          task_id: string
+          title: string
+          title_es: string
+        }[]
+      }
       get_client_permissions: {
         Args: { _estate_id: string; _user_id: string }
         Returns: Json
+      }
+      get_client_plant_placements: {
+        Args: { p_estate_id: string }
+        Returns: {
+          asset_id: string
+          asset_name: string
+          floor_label: string
+          installed_at: string
+          placement_id: string
+          reference_photo_path: string
+          spot_label: string
+          zone_name: string
+        }[]
+      }
+      get_client_rental_contracts: {
+        Args: { p_estate_id: string }
+        Returns: {
+          client_dos_donts: string
+          contract_id: string
+          contract_type: string
+          ends_on: string
+          maintenance_frequency: Database["public"]["Enums"]["task_frequency"]
+          replacement_rules: string
+          starts_on: string
+          status: string
+        }[]
       }
       get_user_org_id: { Args: { _user_id: string }; Returns: string }
       has_role: {
@@ -2818,6 +3159,106 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      plantops_can_access_photo: {
+        Args: { _path: string; _user_id: string }
+        Returns: boolean
+      }
+      plantops_cancel_reservation: {
+        Args: { p_placement_id: string; p_reason?: string }
+        Returns: undefined
+      }
+      plantops_check_availability: {
+        Args: {
+          p_asset_id: string
+          p_from: string
+          p_pot_asset_id: string
+          p_to: string
+        }
+        Returns: boolean
+      }
+      plantops_collect_asset: {
+        Args: {
+          p_condition_rating?: number
+          p_next_lifecycle?: string
+          p_placement_id: string
+          p_retired_reason?: string
+        }
+        Returns: undefined
+      }
+      plantops_get_current_location: {
+        Args: { p_asset_id: string }
+        Returns: {
+          client_id: string
+          client_name: string
+          estate_id: string
+          estate_name: string
+          floor_label: string
+          installed_at: string
+          placement_id: string
+          placement_slot_id: string
+          spot_label: string
+          zone_id: string
+          zone_name: string
+        }[]
+      }
+      plantops_install_asset: {
+        Args: {
+          p_installed_at?: string
+          p_placement_id: string
+          p_reference_photo_path?: string
+        }
+        Returns: undefined
+      }
+      plantops_replace_plant: {
+        Args: {
+          p_cause?: string
+          p_condition_rating?: number
+          p_placement_id: string
+          p_replacement_asset_id: string
+          p_retired_lifecycle?: string
+        }
+        Returns: string
+      }
+      plantops_require_internal: { Args: never; Returns: string }
+      plantops_reserve_asset: {
+        Args: {
+          p_access_notes?: string
+          p_asset_id: string
+          p_contract_id: string
+          p_estate_id: string
+          p_placement_slot_id?: string
+          p_pot_asset_id: string
+          p_reserved_from: string
+          p_reserved_until: string
+          p_spot_label: string
+          p_spot_notes?: string
+          p_zone_id: string
+        }
+        Returns: string
+      }
+      plantops_upsert_asset_details: {
+        Args: {
+          p_acquisition_date?: string
+          p_asset_id: string
+          p_condition_rating?: number
+          p_cost?: number
+          p_currency?: string
+          p_lifecycle_status?: string
+          p_rental_price?: number
+          p_replacement_value?: number
+          p_retired_reason?: string
+          p_supplier_name?: string
+        }
+        Returns: undefined
+      }
+      plantops_validate_asset: {
+        Args: {
+          _asset_id: string
+          _expected_type: Database["public"]["Enums"]["asset_type"]
+          _org_id: string
+        }
+        Returns: undefined
+      }
       user_can_write_asset_photo: {
         Args: { _path: string; _user_id: string }
         Returns: boolean
@@ -2841,12 +3282,14 @@ export type Database = {
         | "hardscape"
         | "equipment"
         | "structure"
+        | "pot"
       client_type:
         | "property_owner"
         | "landscaping_company"
         | "hybrid"
         | "other"
         | "property_management"
+        | "plant_rental"
       compost_ingredient_type:
         | "green"
         | "brown"
@@ -3039,6 +3482,7 @@ export const Constants = {
         "hardscape",
         "equipment",
         "structure",
+        "pot",
       ],
       client_type: [
         "property_owner",
@@ -3046,6 +3490,7 @@ export const Constants = {
         "hybrid",
         "other",
         "property_management",
+        "plant_rental",
       ],
       compost_ingredient_type: [
         "green",
