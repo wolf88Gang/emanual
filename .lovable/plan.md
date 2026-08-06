@@ -57,7 +57,7 @@ Para las tres tablas nuevas, `anon` sin GRANT; `authenticated` con CRUD; `servic
 
 - **SELECT interno**: `TO authenticated USING (org_id = public.get_user_org_id(auth.uid()) AND (public.has_role(auth.uid(),'owner') OR public.has_role(auth.uid(),'manager') OR public.has_role(auth.uid(),'crew')))` → un perfil con rol `client` en la misma organización obtiene **cero filas**.
 - **INSERT/UPDATE/DELETE en `plantops_asset_details` y `rental_contracts`**: solo `owner`/`manager`, con `USING` y `WITH CHECK` que exigen `org_id = get_user_org_id(auth.uid())`.
-- **`plant_placements`**: INSERT/DELETE solo `owner`/`manager` (con `WITH CHECK` de org); UPDATE para `owner`/`manager` y para `crew` limitado a las columnas operativas de ejecución (`installed_at`, `collected_at`, `condition_at_collection`, `spot_notes`, `reference_photo_path`) mediante política con `WITH CHECK` de org; el resto de mutaciones se hace por RPC.
+- **`plant_placements`**: sin políticas de INSERT/UPDATE/DELETE para `authenticated` (ni owner, ni manager, ni crew). Todas las mutaciones pasan exclusivamente por las 5 RPC; `service_role` conserva acceso administrativo. Crew tiene solo SELECT.
 - **`client`**: ninguna política de SELECT/INSERT/UPDATE/DELETE en las tres tablas. Su único acceso son las 3 RPC de portal.
 
 ## 4. Firmas y efectos de las RPC
@@ -87,7 +87,7 @@ No se reutilizan `asset-photos` ni `photos` porque ambos son **públicos** y exp
 - Ruta: `{org_id}/{placement_id}/{uuid}.jpg`.
 - Subida: solo `authenticated` cuyo `get_user_org_id(auth.uid())` coincida con el primer segmento de la ruta (política en `storage.objects` con función auxiliar equivalente a la existente `user_can_write_asset_photo`).
 - Lectura interna: misma condición de organización.
-- Cliente: no lee el bucket; las RPC de portal devuelven **URL firmada** de corta duración solo para placements de sus sedes autorizadas.
+- Cliente: no lee el bucket. Las RPC de portal devuelven únicamente `reference_photo_path`; la generación de URLs firmadas (SDK del servidor) queda pospuesta a la segunda fase.
 - Al ser privado, ninguna URL pública puede filtrar fotos de otras sedes.
 
 ## 7. Ajustes al prompt de implementación
