@@ -3,7 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import {
   Briefcase, Map, Box, ClipboardList, FolderOpen, Settings, Package,
   Leaf, Clock, Users, BarChart3, CreditCard, Activity, Wrench,
-  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus, Megaphone
+  Mountain, DollarSign, BookOpen, LayoutDashboard, Recycle, ShoppingBag, Wand2, MessageSquarePlus, Megaphone, Sprout, FileSignature
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
