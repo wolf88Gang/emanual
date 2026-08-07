@@ -6,7 +6,9 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DevelopmentBanner } from '@/components/DevelopmentBanner';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+
 
 interface SidebarLayoutProps {
   children: ReactNode;
