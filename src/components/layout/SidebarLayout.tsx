@@ -6,7 +6,9 @@ import { LanguagePicker } from '@/components/LanguagePicker';
 import { CurrencyPicker } from '@/components/CurrencyPicker';
 import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { DemoBanner } from '@/components/DemoBanner';
+import { DevelopmentBanner } from '@/components/DevelopmentBanner';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+
 
 interface SidebarLayoutProps {
   children: ReactNode;
@@ -32,6 +34,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
               <LanguagePicker />
             </div>
           </header>
+          <DevelopmentBanner />
           <DemoBanner />
           <TrialBanner />
           <main className="flex-1 overflow-auto safe-area-content">
