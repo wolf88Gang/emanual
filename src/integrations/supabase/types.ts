@@ -2818,6 +2818,7 @@ export type Database = {
             | Database["public"]["Enums"]["inventory_condition"]
             | null
           returned_at: string | null
+          shift_id: string | null
         }
         Insert: {
           assigned_at?: string
@@ -2833,6 +2834,7 @@ export type Database = {
             | Database["public"]["Enums"]["inventory_condition"]
             | null
           returned_at?: string | null
+          shift_id?: string | null
         }
         Update: {
           assigned_at?: string
@@ -2848,6 +2850,7 @@ export type Database = {
             | Database["public"]["Enums"]["inventory_condition"]
             | null
           returned_at?: string | null
+          shift_id?: string | null
         }
         Relationships: [
           {
@@ -2869,6 +2872,13 @@ export type Database = {
             columns: ["inventory_item_id"]
             isOneToOne: false
             referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tool_assignments_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "worker_shifts"
             referencedColumns: ["id"]
           },
         ]
@@ -3483,9 +3493,25 @@ export type Database = {
         }
         Returns: string
       }
+      plantops_add_charge_for_estate: {
+        Args: {
+          p_currency?: string
+          p_description: string
+          p_estate_id: string
+          p_product_id?: string
+          p_quantity: number
+          p_shift_id?: string
+          p_unit_price: number
+        }
+        Returns: Json
+      }
       plantops_approve_manual: {
         Args: { p_link_id: string; p_snapshot: Json }
         Returns: undefined
+      }
+      plantops_assign_visit_tools: {
+        Args: { p_items: Json; p_shift_id: string }
+        Returns: number
       }
       plantops_can_access_photo: {
         Args: { _path: string; _user_id: string }
@@ -3539,6 +3565,7 @@ export type Database = {
         Args: { p_placement_id: string }
         Returns: Json
       }
+      plantops_generate_water_reminders: { Args: never; Returns: number }
       plantops_get_current_location: {
         Args: { p_asset_id: string }
         Returns: {
@@ -3576,6 +3603,17 @@ export type Database = {
         }
         Returns: Json
       }
+      plantops_register_payment: {
+        Args: {
+          p_amount: number
+          p_invoice_id: string
+          p_notes?: string
+          p_payment_date?: string
+          p_payment_method?: string
+          p_reference?: string
+        }
+        Returns: Json
+      }
       plantops_replace_plant: {
         Args: {
           p_cause?: string
@@ -3603,30 +3641,56 @@ export type Database = {
         }
         Returns: string
       }
+      plantops_return_visit_tools: {
+        Args: { p_items: Json; p_shift_id: string }
+        Returns: number
+      }
       plantops_revoke_share_link: {
         Args: { p_link_id: string }
         Returns: undefined
       }
-      plantops_set_care_plan: {
-        Args: {
-          p_care_notes?: string
-          p_care_responsibility?: string
-          p_client_instructions?: string
-          p_do_not_do?: string
-          p_light_actual?: string
-          p_light_required?: string
-          p_min_interval_days?: number
-          p_override_days?: number
-          p_override_reason?: string
-          p_placement_id: string
-          p_reminder_contact?: string
-          p_ventilation?: string
-          p_water_amount_note?: string
-          p_water_interval_days?: number
-          p_water_method?: string
-        }
-        Returns: Json
-      }
+      plantops_set_care_plan:
+        | {
+            Args: {
+              p_care_notes?: string
+              p_care_responsibility?: string
+              p_client_instructions?: string
+              p_do_not_do?: string
+              p_light_actual?: string
+              p_light_required?: string
+              p_min_interval_days?: number
+              p_override_days?: number
+              p_override_reason?: string
+              p_placement_id: string
+              p_reminder_contact?: string
+              p_ventilation?: string
+              p_water_amount_note?: string
+              p_water_interval_days?: number
+              p_water_method?: string
+            }
+            Returns: Json
+          }
+        | {
+            Args: {
+              p_care_notes?: string
+              p_care_responsibility?: string
+              p_client_instructions?: string
+              p_do_not_do?: string
+              p_explicit?: boolean
+              p_light_actual?: string
+              p_light_required?: string
+              p_min_interval_days?: number
+              p_override_days?: number
+              p_override_reason?: string
+              p_placement_id: string
+              p_reminder_contact?: string
+              p_ventilation?: string
+              p_water_amount_note?: string
+              p_water_interval_days?: number
+              p_water_method?: string
+            }
+            Returns: Json
+          }
       plantops_start_visit: {
         Args: { p_estate_id: string; p_notes?: string }
         Returns: string
