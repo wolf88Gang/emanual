@@ -58,7 +58,7 @@ Verificado: **no existe ningún campo jsonb/metadata libre** en `assets`, `plant
 
 Decisión: **no se crea tabla nueva**. Se añaden columnas a `plantops_asset_details` (que ya es 1:1 con `assets` y ya es la tabla de atributos PlantOps), nulas para plantas: `pot_material` (`ceramica|plastico|barro|fibra|metal|otro`), `pot_diameter_cm`, `pot_height_cm`, `pot_volume_liters`, `pot_has_drainage` (bool), `pot_drainage_holes` (int, opcional), `pot_has_saucer` (bool), `pot_reservoir` (bool), `pot_notes`.
 
-Estos atributos alimentan el factor "maceta" del plan efectivo (volumen alto o sin drenaje → intervalo mayor / advertencia de encharcamiento; maceta pequeña o barro poroso → intervalo menor). Los factores son parámetros editables en interfaz, no constantes en código (ver punto 21 / N).
+Estos atributos se **muestran siempre como contexto** en el Care Editor y en el manual, y solo afectan el intervalo si la organización configuró un factor para ese material/tamaño en `organizations.plantops_care_settings_json`. Sin configuración no hay ajuste automático: el valor lo fija Natalia.
 
 ## D. Wizard de cliente simplificado (6 pasos, con borrador)
 
