@@ -36,15 +36,16 @@ Plan efectivo por planta instalada, resuelto en capas:
 ```text
 baseline de especie (plant_profiles.care_template_json)
   + condiciones de maceta (plantops_asset_details del pot_asset_id)
-  + condiciones del punto (luz real, ventilación, calor/sequedad, interior/exterior)
-  + estación (seca / lluviosa, mes)
+  + condiciones del punto (luz real, ventilación, interior/exterior)
+  + estación (solo si la organización configuró factores)
   + override manual de Natalia   ← autoridad final
   = plan efectivo (intervalo, mínimo, cantidad, método, instrucciones, qué NO hacer)
 ```
 
 Reglas:
 - El override manual **siempre gana** y se guarda con motivo, autor y fecha.
-- Los ajustes por maceta/punto/estación son **factores derivados y explicables** (función `plantops_effective_care(placement_id)`), no valores duplicados en la fila: cada capa contribuye un delta con etiqueta legible ("maceta grande + baja evaporación: +2 días").
+- **No se hardcodea ninguna regla agronómica.** `plantops_effective_care(placement_id)` aplica únicamente los factores que la organización haya configurado en `organizations.plantops_care_settings_json` (maceta, ventilación, luz, estación/mes). Si no hay factores configurados, el sistema muestra baseline + condiciones y deja el valor en manos de Natalia.
+- La UI siempre muestra: Recomendación de especie · Condiciones (maceta, ventilación, interior, época) · Configuración de Raíz y Forma · Motivo. Se ejecuta el valor de Raíz y Forma.
 - El baseline de especie **nunca** se modifica al ajustar una planta concreta (punto F).
 - `next_water_due` sí se materializa en `plant_placements` para poder listar/indexar "REGAR HOY / NO REGAR".
 - Estado calculado: `REGAR` (hoy o vencido), `NO REGAR ANTES DE <fecha>`, `REVISAR` (incidencia abierta).
