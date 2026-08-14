@@ -163,11 +163,11 @@ Contactos de recordatorio son datos (`clients`, `reminder_contact` del placement
 1. **M1** `plant_placements`: columnas de cuidado del punto B + índices `(org_id, next_water_due)`, `(estate_id, status)`.
 2. **M2** `plantops_asset_details`: atributos de maceta del punto C + checks de valores positivos.
 3. **M3** `plant_care_logs` (org_id, estate_id, placement_id, asset_id, shift_id, action_type, performed_at, performed_by, amount_note, photo_path, notes, override_reason) + GRANTs + RLS + índices `(placement_id, performed_at desc)`, `(estate_id, performed_at desc)`.
-4. **M4** `estate_share_links` (org_id, client_id, estate_id, token_hash, flags de visibilidad, expires_at, revoked_at) + GRANTs + RLS solo org (sin `anon`).
-5. **M5** `organizations.modules_json`, `worker_shifts.visit_kind`, `rental_contracts.services_json`, `invoice_items.source_shift_id`, `estates.setup_status`.
-6. **M6** Parámetros de cuidado editables: `plantops_care_settings` (org_id, factores maceta/luz/ventilación/estación) — para que Natalia ajuste reglas sin cambios de código.
-7. **M7** RPCs: `plantops_set_care_plan`, `plantops_log_care` (recalcula próximo riego, cierra/crea recordatorio, idempotente), `plantops_effective_care`, `plantops_add_charge`, `plantops_create_share_link` / `revoke` / `regenerate`, `plantops_start_visit` / `close_visit`. Todas SECURITY DEFINER, `search_path=public`, sin `EXECUTE` para `anon`.
-8. **M8** Organización QA aislada `plant_rental` con datos demo internos (sin exponerla en el login público).
+4. **M4** `estate_share_links` (org_id, client_id, estate_id, token_hash, flags de visibilidad, `manual_snapshot_json`, `manual_approved_at`, `manual_approved_by`, expires_at, revoked_at) + GRANTs + RLS solo org (sin `anon`).
+5. **M5** `organizations.modules_json`, `organizations.plantops_care_settings_json`, `worker_shifts.visit_kind`, `rental_contracts.services_json`, `invoice_items.source_shift_id`, `estates.setup_status`.
+6. **M6** `plantops_effective_care(placement_id)`: resuelve el plan efectivo aplicando solo los factores presentes en `organizations.plantops_care_settings_json`. **No se crea la tabla `plantops_care_settings`** — únicamente esas dos tablas nuevas (`plant_care_logs`, `estate_share_links`).
+7. **M7** RPCs: `plantops_set_care_plan`, `plantops_log_care` (recalcula próximo riego, cierra recordatorio, exige motivo si se riega antes), `plantops_add_charge`, `plantops_create_share_link` / `revoke`, `plantops_approve_manual`, `plantops_start_visit` / `close_visit`. Todas SECURITY DEFINER, `search_path=public`, sin `EXECUTE` para `anon`.
+8. **QA fuera de migraciones**: la organización `Raíz y Forma QA` (`plant_rental`) y sus datos demo se crean por un mecanismo separado de desarrollo/testing. **Ninguna migración crea usuarios, correos ni contraseñas**, y `/auth` no muestra cuentas demo.
 
 ## Q. Archivos
 
