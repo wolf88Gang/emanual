@@ -75,15 +75,16 @@ Borrador: el wizard persiste incrementalmente en las entidades reales con la pro
 
 Acción **EDITAR CUIDADO** desde una planta instalada (y desde la visita). Campos: intervalo recomendado, intervalo mínimo, cantidad aproximada, método, luz requerida, luz actual, ventilación, notas específicas, instrucciones visibles al cliente, qué NO hacer.
 
-Muestra siempre la comparación:
+Muestra siempre:
 
 ```text
-Recomendación base:            7 días
-Configuración de esta planta:  10 días
-Motivo: maceta grande + interior con baja evaporación
+Recomendación de especie      7 días
+Condiciones                   Maceta cerámica 35 cm · Ventilación baja · Interior · Época lluviosa
+Configuración de Raíz y Forma  10 días
+Motivo                        Maceta grande y baja evaporación
 ```
 
-No requiere regenerar ningún protocolo para editar. Guarda vía RPC `plantops_set_care_plan` y recalcula `next_water_due` (respetando `min_interval_days`).
+Home Guide registra y ejecuta los 10 días. Sin llamadas a IA para editar. Guarda vía RPC `plantops_set_care_plan` y recalcula `next_water_due` (respetando `min_interval_days`).
 
 ## F. Separación especie vs planta instalada
 
