@@ -36,15 +36,16 @@ Plan efectivo por planta instalada, resuelto en capas:
 ```text
 baseline de especie (plant_profiles.care_template_json)
   + condiciones de maceta (plantops_asset_details del pot_asset_id)
-  + condiciones del punto (luz real, ventilación, calor/sequedad, interior/exterior)
-  + estación (seca / lluviosa, mes)
+  + condiciones del punto (luz real, ventilación, interior/exterior)
+  + estación (solo si la organización configuró factores)
   + override manual de Natalia   ← autoridad final
   = plan efectivo (intervalo, mínimo, cantidad, método, instrucciones, qué NO hacer)
 ```
 
 Reglas:
 - El override manual **siempre gana** y se guarda con motivo, autor y fecha.
-- Los ajustes por maceta/punto/estación son **factores derivados y explicables** (función `plantops_effective_care(placement_id)`), no valores duplicados en la fila: cada capa contribuye un delta con etiqueta legible ("maceta grande + baja evaporación: +2 días").
+- **No se hardcodea ninguna regla agronómica.** `plantops_effective_care(placement_id)` aplica únicamente los factores que la organización haya configurado en `organizations.plantops_care_settings_json` (maceta, ventilación, luz, estación/mes). Si no hay factores configurados, el sistema muestra baseline + condiciones y deja el valor en manos de Natalia.
+- La UI siempre muestra: Recomendación de especie · Condiciones (maceta, ventilación, interior, época) · Configuración de Raíz y Forma · Motivo. Se ejecuta el valor de Raíz y Forma.
 - El baseline de especie **nunca** se modifica al ajustar una planta concreta (punto F).
 - `next_water_due` sí se materializa en `plant_placements` para poder listar/indexar "REGAR HOY / NO REGAR".
 - Estado calculado: `REGAR` (hoy o vencido), `NO REGAR ANTES DE <fecha>`, `REVISAR` (incidencia abierta).
@@ -57,7 +58,7 @@ Verificado: **no existe ningún campo jsonb/metadata libre** en `assets`, `plant
 
 Decisión: **no se crea tabla nueva**. Se añaden columnas a `plantops_asset_details` (que ya es 1:1 con `assets` y ya es la tabla de atributos PlantOps), nulas para plantas: `pot_material` (`ceramica|plastico|barro|fibra|metal|otro`), `pot_diameter_cm`, `pot_height_cm`, `pot_volume_liters`, `pot_has_drainage` (bool), `pot_drainage_holes` (int, opcional), `pot_has_saucer` (bool), `pot_reservoir` (bool), `pot_notes`.
 
-Estos atributos alimentan el factor "maceta" del plan efectivo (volumen alto o sin drenaje → intervalo mayor / advertencia de encharcamiento; maceta pequeña o barro poroso → intervalo menor). Los factores son parámetros editables en interfaz, no constantes en código (ver punto 21 / N).
+Estos atributos se **muestran siempre como contexto** en el Care Editor y en el manual, y solo afectan el intervalo si la organización configuró un factor para ese material/tamaño en `organizations.plantops_care_settings_json`. Sin configuración no hay ajuste automático: el valor lo fija Natalia.
 
 ## D. Wizard de cliente simplificado (6 pasos, con borrador)
 
@@ -74,15 +75,16 @@ Borrador: el wizard persiste incrementalmente en las entidades reales con la pro
 
 Acción **EDITAR CUIDADO** desde una planta instalada (y desde la visita). Campos: intervalo recomendado, intervalo mínimo, cantidad aproximada, método, luz requerida, luz actual, ventilación, notas específicas, instrucciones visibles al cliente, qué NO hacer.
 
-Muestra siempre la comparación:
+Muestra siempre:
 
 ```text
-Recomendación base:            7 días
-Configuración de esta planta:  10 días
-Motivo: maceta grande + interior con baja evaporación
+Recomendación de especie      7 días
+Condiciones                   Maceta cerámica 35 cm · Ventilación baja · Interior · Época lluviosa
+Configuración de Raíz y Forma  10 días
+Motivo                        Maceta grande y baja evaporación
 ```
 
-No requiere regenerar ningún protocolo para editar. Guarda vía RPC `plantops_set_care_plan` y recalcula `next_water_due` (respetando `min_interval_days`).
+Home Guide registra y ejecuta los 10 días. Sin llamadas a IA para editar. Guarda vía RPC `plantops_set_care_plan` y recalcula `next_water_due` (respetando `min_interval_days`).
 
 ## F. Separación especie vs planta instalada
 
@@ -97,9 +99,13 @@ No requiere regenerar ningún protocolo para editar. Guarda vía RPC `plantops_s
 - Gestión desde la propiedad: crear, copiar, desactivar, regenerar.
 - Página agregada por cliente: fuera de MVP (el modelo lo permite después).
 
-## H. Manual personalizado
+## H. Manual personalizado (snapshot aprobado)
 
-El PDF se genera desde el **plan efectivo de esa propiedad** (riego, luz, ventilación, instrucciones, qué NO hacer por planta), no del protocolo genérico. Natalia lo previsualiza y aprueba antes de compartirlo; el enlace público sirve la última versión aprobada.
+El manual se construye desde el **plan efectivo de esa propiedad** (riego, luz, ventilación, instrucciones, qué NO hacer por planta), no del protocolo genérico.
+
+`estate_share_links` se extiende con `manual_snapshot_json`, `manual_approved_at`, `manual_approved_by`. Flujo: configurar cuidado → previsualizar → **aprobar** → se guarda el snapshot → la página pública y el PDF descargable se generan desde ese mismo snapshot (manual web = manual PDF).
+
+Si el plan cambia después de la última aprobación, la interfaz interna muestra "El plan de cuidado cambió después de la última versión compartida. [Revisar nuevo manual]"; el cliente sigue viendo la versión aprobada hasta que Natalia apruebe de nuevo (reemplaza snapshot, fecha y responsable). Sin tabla de versiones en MVP.
 
 ## I. Visitas y herramientas
 
@@ -157,11 +163,11 @@ Contactos de recordatorio son datos (`clients`, `reminder_contact` del placement
 1. **M1** `plant_placements`: columnas de cuidado del punto B + índices `(org_id, next_water_due)`, `(estate_id, status)`.
 2. **M2** `plantops_asset_details`: atributos de maceta del punto C + checks de valores positivos.
 3. **M3** `plant_care_logs` (org_id, estate_id, placement_id, asset_id, shift_id, action_type, performed_at, performed_by, amount_note, photo_path, notes, override_reason) + GRANTs + RLS + índices `(placement_id, performed_at desc)`, `(estate_id, performed_at desc)`.
-4. **M4** `estate_share_links` (org_id, client_id, estate_id, token_hash, flags de visibilidad, expires_at, revoked_at) + GRANTs + RLS solo org (sin `anon`).
-5. **M5** `organizations.modules_json`, `worker_shifts.visit_kind`, `rental_contracts.services_json`, `invoice_items.source_shift_id`, `estates.setup_status`.
-6. **M6** Parámetros de cuidado editables: `plantops_care_settings` (org_id, factores maceta/luz/ventilación/estación) — para que Natalia ajuste reglas sin cambios de código.
-7. **M7** RPCs: `plantops_set_care_plan`, `plantops_log_care` (recalcula próximo riego, cierra/crea recordatorio, idempotente), `plantops_effective_care`, `plantops_add_charge`, `plantops_create_share_link` / `revoke` / `regenerate`, `plantops_start_visit` / `close_visit`. Todas SECURITY DEFINER, `search_path=public`, sin `EXECUTE` para `anon`.
-8. **M8** Organización QA aislada `plant_rental` con datos demo internos (sin exponerla en el login público).
+4. **M4** `estate_share_links` (org_id, client_id, estate_id, token_hash, flags de visibilidad, `manual_snapshot_json`, `manual_approved_at`, `manual_approved_by`, expires_at, revoked_at) + GRANTs + RLS solo org (sin `anon`).
+5. **M5** `organizations.modules_json`, `organizations.plantops_care_settings_json`, `worker_shifts.visit_kind`, `rental_contracts.services_json`, `invoice_items.source_shift_id`, `estates.setup_status`.
+6. **M6** `plantops_effective_care(placement_id)`: resuelve el plan efectivo aplicando solo los factores presentes en `organizations.plantops_care_settings_json`. **No se crea la tabla `plantops_care_settings`** — únicamente esas dos tablas nuevas (`plant_care_logs`, `estate_share_links`).
+7. **M7** RPCs: `plantops_set_care_plan`, `plantops_log_care` (recalcula próximo riego, cierra recordatorio, exige motivo si se riega antes), `plantops_add_charge`, `plantops_create_share_link` / `revoke`, `plantops_approve_manual`, `plantops_start_visit` / `close_visit`. Todas SECURITY DEFINER, `search_path=public`, sin `EXECUTE` para `anon`.
+8. **QA fuera de migraciones**: la organización `Raíz y Forma QA` (`plant_rental`) y sus datos demo se crean por un mecanismo separado de desarrollo/testing. **Ninguna migración crea usuarios, correos ni contraseñas**, y `/auth` no muestra cuentas demo.
 
 ## Q. Archivos
 
