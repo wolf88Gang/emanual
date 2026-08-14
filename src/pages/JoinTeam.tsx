@@ -48,7 +48,7 @@ export default function JoinTeam() {
           <div className="mx-auto mb-4">
             <HGLogo size="lg" />
           </div>
-          <CardTitle className="text-2xl font-serif">
+          <CardTitle className="text-2xl font-display">
             {es ? 'Unirse a un Equipo' : 'Join a Team'}
           </CardTitle>
           <CardDescription>

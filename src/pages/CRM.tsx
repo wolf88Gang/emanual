@@ -206,7 +206,7 @@ export default function CRM() {
       <div className="container py-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">
+            <h1 className="text-2xl sm:text-3xl font-display font-semibold">
               {es ? 'Clientes y Ventas' : 'Clients & Sales'}
             </h1>
             <p className="text-muted-foreground mt-1">
@@ -268,7 +268,7 @@ export default function CRM() {
                       <Button variant="ghost" size="sm" className="mb-2 -ml-2" onClick={() => setSelectedClient(null)}>
                         <ArrowLeft className="h-4 w-4 mr-1" /> {es ? 'Volver' : 'Back'}
                       </Button>
-                      <h2 className="text-2xl font-serif font-bold">{selectedClient.name}</h2>
+                      <h2 className="text-2xl font-display font-bold">{selectedClient.name}</h2>
                       <div className="flex flex-wrap gap-4 mt-2 text-sm text-muted-foreground">
                         {selectedClient.email && <span className="flex items-center gap-1"><Mail className="h-3.5 w-3.5" />{selectedClient.email}</span>}
                         {selectedClient.phone && <span className="flex items-center gap-1"><Phone className="h-3.5 w-3.5" />{selectedClient.phone}</span>}

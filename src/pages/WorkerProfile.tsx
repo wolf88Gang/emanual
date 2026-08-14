@@ -163,7 +163,7 @@ export default function WorkerProfilePage() {
             </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-serif font-bold">{name}</h1>
+                <h1 className="text-2xl font-display font-bold">{name}</h1>
                 {profile.available && (
                   <Badge className="bg-success/20 text-success border-success/30 text-xs">
                     {es ? 'Disponible' : 'Available'}

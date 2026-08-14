@@ -468,7 +468,7 @@ export default function MapView() {
                       <AssetTypeIcon type={selectedAsset.asset_type as any} size="lg" />
                     </div>
                     <div>
-                      <SheetTitle className="font-serif text-xl">
+                      <SheetTitle className="font-display text-xl">
                         {selectedAsset.name}
                       </SheetTitle>
                       <p className="text-sm text-muted-foreground capitalize">

@@ -229,7 +229,7 @@ export default function WorkView() {
       <>
         <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
           <Building2 className="h-16 w-16 text-muted-foreground/40 mb-4" />
-          <h2 className="text-2xl font-serif font-semibold mb-2">
+          <h2 className="text-2xl font-display font-semibold mb-2">
             {language === 'es' ? 'Sin Propiedad Configurada' : language === 'de' ? 'Keine Immobilie konfiguriert' : 'No Property Set Up'}
           </h2>
           <p className="text-muted-foreground max-w-md mb-6">
@@ -262,7 +262,7 @@ export default function WorkView() {
             <p className="text-muted-foreground text-sm">
               {currentEstate.name}
             </p>
-            <h1 className="text-2xl sm:text-3xl font-serif font-semibold text-foreground mt-1">
+            <h1 className="text-2xl sm:text-3xl font-display font-semibold text-foreground mt-1">
               {language === 'es' ? 'Bienvenido' : 'Welcome'}, {profile?.full_name?.split(' ')[0] || ''}
             </h1>
           </div>
@@ -301,7 +301,7 @@ export default function WorkView() {
           {/* Upcoming Tasks */}
           <Card className="estate-card">
             <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-serif flex items-center gap-2">
+              <CardTitle className="text-lg font-display flex items-center gap-2">
                 <Clock className="h-5 w-5 text-primary" />
                 {language === 'es' ? 'Próximas Tareas' : 'Upcoming Tasks'}
               </CardTitle>

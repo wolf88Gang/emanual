@@ -164,7 +164,7 @@ export function TaskCompletionDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl">
+          <DialogTitle className="font-display text-xl">
             {language === 'es' ? 'Completar Tarea' : 'Complete Task'}
           </DialogTitle>
         </DialogHeader>

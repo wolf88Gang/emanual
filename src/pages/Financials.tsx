@@ -189,7 +189,7 @@ export default function Financials() {
         {/* Header */}
         <div className="flex items-center justify-between flex-wrap gap-3">
           <div>
-            <h1 className="text-2xl font-serif font-bold flex items-center gap-2">
+            <h1 className="text-2xl font-display font-bold flex items-center gap-2">
               <DollarSign className="h-6 w-6 text-primary" />
               {l('Financials', 'Finanzas', 'Finanzen')}
             </h1>

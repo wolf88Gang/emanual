@@ -115,7 +115,7 @@ export default function Features() {
         <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
           <Link to="/" className="flex items-center gap-2.5">
             <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain" />
-            <span className="text-base font-serif font-semibold text-foreground tracking-tight">Home Guide</span>
+            <span className="text-base font-display font-semibold text-foreground tracking-tight">Home Guide</span>
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
@@ -147,7 +147,7 @@ export default function Features() {
           <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/80 mb-4">
             {es ? 'Plataforma' : 'Platform Overview'}
           </p>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-serif font-bold text-white leading-[1.05] max-w-4xl">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-white leading-[1.05] max-w-4xl">
             {es
               ? 'Gestión de propiedades con precisión y propósito'
               : 'Property management with precision and purpose'}
@@ -187,7 +187,7 @@ export default function Features() {
               <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/80 mb-3">
                 {String(sIdx + 1).padStart(2, '0')} / 05
               </span>
-              <h2 className="text-3xl md:text-4xl font-serif font-bold text-white">
+              <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
                 {es ? section.labelEs : section.labelEn}
               </h2>
             </div>
@@ -229,7 +229,7 @@ export default function Features() {
                 {es ? 'Seguridad y Confianza' : 'Security & Trust'}
               </span>
             </div>
-            <h2 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
+            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
               {es ? 'Tu información está protegida' : 'Your information is protected'}
             </h2>
             <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
@@ -295,7 +295,7 @@ export default function Features() {
           <div className="absolute inset-0 bg-black/70" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
-          <h2 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">
             {es ? 'Tu propiedad merece más' : 'Your property deserves more'}
           </h2>
           <p className="text-base text-white/80 max-w-lg mx-auto mb-10">
@@ -319,7 +319,7 @@ export default function Features() {
         <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-2">
             <img src="/images/hg-logo.png" alt="HG" className="w-6 h-6 object-contain" />
-            <span className="text-sm font-serif font-medium text-foreground">Home Guide</span>
+            <span className="text-sm font-display font-medium text-foreground">Home Guide</span>
           </div>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">

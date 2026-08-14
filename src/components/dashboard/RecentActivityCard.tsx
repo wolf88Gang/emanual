@@ -53,7 +53,7 @@ export function RecentActivityCard({ activities, className }: RecentActivityCard
   return (
     <Card className={cn('estate-card', className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-serif">
+        <CardTitle className="text-lg font-display">
           {t('dashboard.recentActivity')}
         </CardTitle>
       </CardHeader>

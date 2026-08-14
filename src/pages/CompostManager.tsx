@@ -162,7 +162,7 @@ export default function CompostManager() {
       <div className="container py-6 space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">
+            <h1 className="text-2xl sm:text-3xl font-display font-semibold">
               {es ? 'Gestor de Compost' : 'Compost Manager'}
             </h1>
             <p className="text-muted-foreground mt-1">

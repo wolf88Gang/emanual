@@ -195,7 +195,7 @@ export default function PlatformClients() {
     <SidebarLayout>
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-foreground">
+          <h1 className="text-2xl font-display font-bold text-foreground">
             {l('Client Management', 'Gestión de Clientes', 'Kundenverwaltung')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -209,7 +209,7 @@ export default function PlatformClients() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-serif">{l('Quick Actions', 'Acciones Rápidas', 'Schnellaktionen')}</CardTitle>
+            <CardTitle className="text-lg font-display">{l('Quick Actions', 'Acciones Rápidas', 'Schnellaktionen')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -243,7 +243,7 @@ export default function PlatformClients() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-serif flex items-center gap-2">
+            <CardTitle className="text-lg font-display flex items-center gap-2">
               <Building2 className="h-5 w-5 text-primary" />
               {l('All Client Organizations', 'Todas las Organizaciones Cliente', 'Alle Kundenorganisationen')}
             </CardTitle>

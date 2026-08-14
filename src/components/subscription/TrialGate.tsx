@@ -60,7 +60,7 @@ export function TrialGate({ feature, children, inline }: TrialGateProps) {
           <div className="mx-auto w-16 h-16 rounded-2xl bg-accent/10 flex items-center justify-center">
             <Crown className="h-8 w-8 text-accent" />
           </div>
-          <h2 className="text-2xl font-serif font-semibold text-foreground">{name}</h2>
+          <h2 className="text-2xl font-display font-semibold text-foreground">{name}</h2>
           <p className="text-muted-foreground">
             {isExpired
               ? (de ? 'Ihre Testversion ist abgelaufen. Abonnieren Sie für $20/Monat pro Immobilie.' 

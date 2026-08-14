@@ -108,7 +108,7 @@ export default function PlantRegistry() {
       <div className="p-4 space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold">{language === 'es' ? 'Registro de Variedades' : language === 'de' ? 'Pflanzenregister' : 'Plant Registry'}</h1>
+            <h1 className="text-2xl font-display font-bold">{language === 'es' ? 'Registro de Variedades' : language === 'de' ? 'Pflanzenregister' : 'Plant Registry'}</h1>
             <p className="text-muted-foreground text-sm">{language === 'es' ? 'Registra nuevas variedades y genera protocolos de cuidado' : language === 'de' ? 'Neue Sorten registrieren und Pflegeprotokolle erstellen' : 'Register new varieties and generate care protocols'}</p>
           </div>
           <Sheet open={showAddSheet} onOpenChange={setShowAddSheet}>

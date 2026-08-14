@@ -711,7 +711,7 @@ export default function Documents() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('documents.digitalBinder')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-display font-semibold">{t('documents.digitalBinder')}</h1>
             <p className="text-muted-foreground mt-1">
               {documents.length} {language === 'es' ? 'documentos' : 'documents'}
               {expiringCount > 0 && (
@@ -738,7 +738,7 @@ export default function Documents() {
                   <BookOpen className="h-8 w-8 text-primary" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="text-lg font-serif font-semibold">
+                  <h3 className="text-lg font-display font-semibold">
                     {language === 'es' ? 'Manual de la Propiedad' : 'Property Manual'}
                   </h3>
                   <p className="text-sm text-muted-foreground mt-1">

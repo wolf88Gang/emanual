@@ -80,7 +80,7 @@ export function WorkAreasCard({ zones, loading }: WorkAreasCardProps) {
     <Card className="estate-card overflow-hidden">
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-serif flex items-center gap-2">
+          <CardTitle className="text-lg font-display flex items-center gap-2">
             <MapPin className="h-5 w-5 text-primary" />
             {language === 'es' ? '¿Dónde trabajar?' : 'Where to work?'}
           </CardTitle>

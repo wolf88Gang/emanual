@@ -137,7 +137,7 @@ export function NearbyWorkCard({
     <Card className="estate-card overflow-hidden">
       <CardHeader className="pb-3 bg-gradient-to-r from-info/5 to-transparent">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-serif flex items-center gap-2">
+          <CardTitle className="text-lg font-display flex items-center gap-2">
             <Navigation className="h-5 w-5 text-info" />
             {language === 'es' ? 'Cerca de ti' : 'Near you'}
           </CardTitle>

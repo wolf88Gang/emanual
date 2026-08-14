@@ -239,7 +239,7 @@ export function CheckinDialog({ open, onOpenChange, onSuccess }: CheckinDialogPr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl">
+          <DialogTitle className="font-display text-xl">
             {language === 'es' ? 'Nuevo Check-in' : 'New Check-in'}
           </DialogTitle>
         </DialogHeader>

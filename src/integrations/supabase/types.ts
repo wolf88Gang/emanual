@@ -796,6 +796,108 @@ export type Database = {
           },
         ]
       }
+      estate_share_links: {
+        Row: {
+          client_id: string
+          contact_note: string | null
+          created_at: string
+          created_by: string | null
+          estate_id: string
+          expires_at: string | null
+          id: string
+          manual_approved_at: string | null
+          manual_approved_by: string | null
+          manual_snapshot_json: Json | null
+          org_id: string
+          revoked_at: string | null
+          show_balance: boolean
+          show_history: boolean
+          show_last_visit: boolean
+          show_manual: boolean
+          show_plants: boolean
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          contact_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          estate_id: string
+          expires_at?: string | null
+          id?: string
+          manual_approved_at?: string | null
+          manual_approved_by?: string | null
+          manual_snapshot_json?: Json | null
+          org_id: string
+          revoked_at?: string | null
+          show_balance?: boolean
+          show_history?: boolean
+          show_last_visit?: boolean
+          show_manual?: boolean
+          show_plants?: boolean
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          contact_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          estate_id?: string
+          expires_at?: string | null
+          id?: string
+          manual_approved_at?: string | null
+          manual_approved_by?: string | null
+          manual_snapshot_json?: Json | null
+          org_id?: string
+          revoked_at?: string | null
+          show_balance?: boolean
+          show_history?: boolean
+          show_last_visit?: boolean
+          show_manual?: boolean
+          show_plants?: boolean
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "estate_share_links_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estate_share_links_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estate_share_links_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estate_share_links_manual_approved_by_fkey"
+            columns: ["manual_approved_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "estate_share_links_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       estates: {
         Row: {
           address_text: string | null
@@ -808,6 +910,7 @@ export type Database = {
           lng: number | null
           name: string
           org_id: string
+          setup_status: string
           timezone: string | null
           updated_at: string
         }
@@ -822,6 +925,7 @@ export type Database = {
           lng?: number | null
           name: string
           org_id: string
+          setup_status?: string
           timezone?: string | null
           updated_at?: string
         }
@@ -836,6 +940,7 @@ export type Database = {
           lng?: number | null
           name?: string
           org_id?: string
+          setup_status?: string
           timezone?: string | null
           updated_at?: string
         }
@@ -1057,6 +1162,7 @@ export type Database = {
           invoice_id: string
           product_id: string | null
           quantity: number
+          source_shift_id: string | null
           total: number
           unit_price: number
         }
@@ -1066,6 +1172,7 @@ export type Database = {
           invoice_id: string
           product_id?: string | null
           quantity?: number
+          source_shift_id?: string | null
           total?: number
           unit_price?: number
         }
@@ -1075,6 +1182,7 @@ export type Database = {
           invoice_id?: string
           product_id?: string | null
           quantity?: number
+          source_shift_id?: string | null
           total?: number
           unit_price?: number
         }
@@ -1091,6 +1199,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "product_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_source_shift_id_fkey"
+            columns: ["source_shift_id"]
+            isOneToOne: false
+            referencedRelation: "worker_shifts"
             referencedColumns: ["id"]
           },
         ]
@@ -1425,25 +1540,125 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          modules_json: Json
           name: string
           org_type: string
+          plantops_care_settings_json: Json
           updated_at: string
         }
         Insert: {
           created_at?: string
           id?: string
+          modules_json?: Json
           name: string
           org_type?: string
+          plantops_care_settings_json?: Json
           updated_at?: string
         }
         Update: {
           created_at?: string
           id?: string
+          modules_json?: Json
           name?: string
           org_type?: string
+          plantops_care_settings_json?: Json
           updated_at?: string
         }
         Relationships: []
+      }
+      plant_care_logs: {
+        Row: {
+          action_type: string
+          amount_note: string | null
+          asset_id: string | null
+          created_at: string
+          estate_id: string
+          id: string
+          notes: string | null
+          org_id: string
+          override_reason: string | null
+          performed_at: string
+          performed_by: string | null
+          photo_path: string | null
+          placement_id: string | null
+          shift_id: string | null
+        }
+        Insert: {
+          action_type: string
+          amount_note?: string | null
+          asset_id?: string | null
+          created_at?: string
+          estate_id: string
+          id?: string
+          notes?: string | null
+          org_id: string
+          override_reason?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          photo_path?: string | null
+          placement_id?: string | null
+          shift_id?: string | null
+        }
+        Update: {
+          action_type?: string
+          amount_note?: string | null
+          asset_id?: string | null
+          created_at?: string
+          estate_id?: string
+          id?: string
+          notes?: string | null
+          org_id?: string
+          override_reason?: string | null
+          performed_at?: string
+          performed_by?: string | null
+          photo_path?: string | null
+          placement_id?: string | null
+          shift_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plant_care_logs_asset_id_fkey"
+            columns: ["asset_id"]
+            isOneToOne: false
+            referencedRelation: "assets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_care_logs_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_care_logs_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_care_logs_performed_by_fkey"
+            columns: ["performed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_care_logs_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "plant_placements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plant_care_logs_shift_id_fkey"
+            columns: ["shift_id"]
+            isOneToOne: false
+            referencedRelation: "worker_shifts"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       plant_instances: {
         Row: {
@@ -1504,69 +1719,123 @@ export type Database = {
           access_notes: string | null
           asset_id: string
           cancelled_at: string | null
+          care_notes: string | null
+          care_override_reason: string | null
+          care_responsibility: string
+          care_updated_at: string | null
+          care_updated_by: string | null
+          client_instructions: string | null
           collected_at: string | null
           condition_at_collection: number | null
           contract_id: string | null
           created_at: string
+          do_not_do: string | null
           estate_id: string
           id: string
           installed_at: string | null
+          last_watered_at: string | null
+          light_actual: string | null
+          light_required: string | null
+          min_interval_days: number | null
+          next_water_due: string | null
           org_id: string
           placement_slot_id: string
           pot_asset_id: string | null
           reference_photo_path: string | null
+          reminder_contact: string | null
           reserved_from: string
           reserved_until: string | null
           spot_label: string | null
           spot_notes: string | null
           status: string
           updated_at: string
+          ventilation: string | null
+          water_amount_note: string | null
+          water_interval_days: number | null
+          water_interval_override_days: number | null
+          water_method: string | null
           zone_id: string | null
         }
         Insert: {
           access_notes?: string | null
           asset_id: string
           cancelled_at?: string | null
+          care_notes?: string | null
+          care_override_reason?: string | null
+          care_responsibility?: string
+          care_updated_at?: string | null
+          care_updated_by?: string | null
+          client_instructions?: string | null
           collected_at?: string | null
           condition_at_collection?: number | null
           contract_id?: string | null
           created_at?: string
+          do_not_do?: string | null
           estate_id: string
           id?: string
           installed_at?: string | null
+          last_watered_at?: string | null
+          light_actual?: string | null
+          light_required?: string | null
+          min_interval_days?: number | null
+          next_water_due?: string | null
           org_id: string
           placement_slot_id?: string
           pot_asset_id?: string | null
           reference_photo_path?: string | null
+          reminder_contact?: string | null
           reserved_from: string
           reserved_until?: string | null
           spot_label?: string | null
           spot_notes?: string | null
           status: string
           updated_at?: string
+          ventilation?: string | null
+          water_amount_note?: string | null
+          water_interval_days?: number | null
+          water_interval_override_days?: number | null
+          water_method?: string | null
           zone_id?: string | null
         }
         Update: {
           access_notes?: string | null
           asset_id?: string
           cancelled_at?: string | null
+          care_notes?: string | null
+          care_override_reason?: string | null
+          care_responsibility?: string
+          care_updated_at?: string | null
+          care_updated_by?: string | null
+          client_instructions?: string | null
           collected_at?: string | null
           condition_at_collection?: number | null
           contract_id?: string | null
           created_at?: string
+          do_not_do?: string | null
           estate_id?: string
           id?: string
           installed_at?: string | null
+          last_watered_at?: string | null
+          light_actual?: string | null
+          light_required?: string | null
+          min_interval_days?: number | null
+          next_water_due?: string | null
           org_id?: string
           placement_slot_id?: string
           pot_asset_id?: string | null
           reference_photo_path?: string | null
+          reminder_contact?: string | null
           reserved_from?: string
           reserved_until?: string | null
           spot_label?: string | null
           spot_notes?: string | null
           status?: string
           updated_at?: string
+          ventilation?: string | null
+          water_amount_note?: string | null
+          water_interval_days?: number | null
+          water_interval_override_days?: number | null
+          water_method?: string | null
           zone_id?: string | null
         }
         Relationships: [
@@ -1660,6 +1929,15 @@ export type Database = {
           currency: string
           lifecycle_status: string
           org_id: string
+          pot_diameter_cm: number | null
+          pot_drainage_holes: number | null
+          pot_has_drainage: boolean | null
+          pot_has_saucer: boolean | null
+          pot_height_cm: number | null
+          pot_material: string | null
+          pot_notes: string | null
+          pot_reservoir: boolean | null
+          pot_volume_liters: number | null
           rental_price: number | null
           replacement_value: number | null
           retired_reason: string | null
@@ -1675,6 +1953,15 @@ export type Database = {
           currency?: string
           lifecycle_status?: string
           org_id: string
+          pot_diameter_cm?: number | null
+          pot_drainage_holes?: number | null
+          pot_has_drainage?: boolean | null
+          pot_has_saucer?: boolean | null
+          pot_height_cm?: number | null
+          pot_material?: string | null
+          pot_notes?: string | null
+          pot_reservoir?: boolean | null
+          pot_volume_liters?: number | null
           rental_price?: number | null
           replacement_value?: number | null
           retired_reason?: string | null
@@ -1690,6 +1977,15 @@ export type Database = {
           currency?: string
           lifecycle_status?: string
           org_id?: string
+          pot_diameter_cm?: number | null
+          pot_drainage_holes?: number | null
+          pot_has_drainage?: boolean | null
+          pot_has_saucer?: boolean | null
+          pot_height_cm?: number | null
+          pot_material?: string | null
+          pot_notes?: string | null
+          pot_reservoir?: boolean | null
+          pot_volume_liters?: number | null
           rental_price?: number | null
           replacement_value?: number | null
           retired_reason?: string | null
@@ -1888,6 +2184,7 @@ export type Database = {
           org_id: string
           price_amount: number | null
           replacement_rules: string | null
+          services_json: Json
           starts_on: string
           status: string
           updated_at: string
@@ -1909,6 +2206,7 @@ export type Database = {
           org_id: string
           price_amount?: number | null
           replacement_rules?: string | null
+          services_json?: Json
           starts_on: string
           status?: string
           updated_at?: string
@@ -1930,6 +2228,7 @@ export type Database = {
           org_id?: string
           price_amount?: number | null
           replacement_rules?: string | null
+          services_json?: Json
           starts_on?: string
           status?: string
           updated_at?: string
@@ -2969,6 +3268,7 @@ export type Database = {
           tasks_completed: string[] | null
           updated_at: string
           user_id: string
+          visit_kind: string | null
           work_description: string | null
           work_description_raw: string[] | null
           zone_id: string | null
@@ -2994,6 +3294,7 @@ export type Database = {
           tasks_completed?: string[] | null
           updated_at?: string
           user_id: string
+          visit_kind?: string | null
           work_description?: string | null
           work_description_raw?: string[] | null
           zone_id?: string | null
@@ -3019,6 +3320,7 @@ export type Database = {
           tasks_completed?: string[] | null
           updated_at?: string
           user_id?: string
+          visit_kind?: string | null
           work_description?: string | null
           work_description_raw?: string[] | null
           zone_id?: string | null
@@ -3169,6 +3471,22 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
+      plantops_add_charge: {
+        Args: {
+          p_client_id: string
+          p_currency?: string
+          p_description: string
+          p_product_id?: string
+          p_quantity: number
+          p_shift_id?: string
+          p_unit_price: number
+        }
+        Returns: string
+      }
+      plantops_approve_manual: {
+        Args: { p_link_id: string; p_snapshot: Json }
+        Returns: undefined
+      }
       plantops_can_access_photo: {
         Args: { _path: string; _user_id: string }
         Returns: boolean
@@ -3186,6 +3504,14 @@ export type Database = {
         }
         Returns: boolean
       }
+      plantops_close_visit: {
+        Args: {
+          p_shift_id: string
+          p_tools_exception_reason?: string
+          p_work_description?: string
+        }
+        Returns: undefined
+      }
       plantops_collect_asset: {
         Args: {
           p_condition_rating?: number
@@ -3194,6 +3520,24 @@ export type Database = {
           p_retired_reason?: string
         }
         Returns: undefined
+      }
+      plantops_create_share_link: {
+        Args: {
+          p_contact_note?: string
+          p_estate_id: string
+          p_expires_at?: string
+          p_show_balance?: boolean
+          p_show_history?: boolean
+          p_show_last_visit?: boolean
+          p_show_manual?: boolean
+          p_show_plants?: boolean
+          p_token_hash: string
+        }
+        Returns: string
+      }
+      plantops_effective_care: {
+        Args: { p_placement_id: string }
+        Returns: Json
       }
       plantops_get_current_location: {
         Args: { p_asset_id: string }
@@ -3218,6 +3562,19 @@ export type Database = {
           p_reference_photo_path?: string
         }
         Returns: undefined
+      }
+      plantops_log_care: {
+        Args: {
+          p_action_type: string
+          p_amount_note?: string
+          p_notes?: string
+          p_override_reason?: string
+          p_performed_at?: string
+          p_photo_path?: string
+          p_placement_id: string
+          p_shift_id?: string
+        }
+        Returns: Json
       }
       plantops_replace_plant: {
         Args: {
@@ -3244,6 +3601,34 @@ export type Database = {
           p_spot_notes?: string
           p_zone_id: string
         }
+        Returns: string
+      }
+      plantops_revoke_share_link: {
+        Args: { p_link_id: string }
+        Returns: undefined
+      }
+      plantops_set_care_plan: {
+        Args: {
+          p_care_notes?: string
+          p_care_responsibility?: string
+          p_client_instructions?: string
+          p_do_not_do?: string
+          p_light_actual?: string
+          p_light_required?: string
+          p_min_interval_days?: number
+          p_override_days?: number
+          p_override_reason?: string
+          p_placement_id: string
+          p_reminder_contact?: string
+          p_ventilation?: string
+          p_water_amount_note?: string
+          p_water_interval_days?: number
+          p_water_method?: string
+        }
+        Returns: Json
+      }
+      plantops_start_visit: {
+        Args: { p_estate_id: string; p_notes?: string }
         Returns: string
       }
       plantops_upsert_asset_details: {

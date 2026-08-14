@@ -64,7 +64,7 @@ export function TaskCalendar({ tasks, language, onTaskClick }: TaskCalendarProps
         <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}>
           <ChevronLeft className="h-4 w-4" />
         </Button>
-        <h3 className="text-lg font-serif font-semibold capitalize">
+        <h3 className="text-lg font-display font-semibold capitalize">
           {format(currentMonth, 'MMMM yyyy', { locale: es ? esLocale : undefined })}
         </h3>
         <Button variant="ghost" size="icon" onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}>

@@ -167,7 +167,7 @@ export default function Admin() {
       <ModernAppLayout>
         <div className="container py-12 text-center">
           <Settings className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-serif font-semibold mb-2">
+          <h2 className="text-2xl font-display font-semibold mb-2">
             {language === 'es' ? 'Acceso Restringido' : 'Access Restricted'}
           </h2>
           <p className="text-muted-foreground">
@@ -186,7 +186,7 @@ export default function Admin() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-serif font-semibold">{t('admin.title')}</h1>
+            <h1 className="text-2xl sm:text-3xl font-display font-semibold">{t('admin.title')}</h1>
             <p className="text-muted-foreground mt-1">
               {language === 'es' ? 'Gestiona usuarios, proveedores y configuración' : 'Manage users, vendors, and estate settings'}
             </p>

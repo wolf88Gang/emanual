@@ -39,6 +39,9 @@ const CRM = lazy(() => import("./pages/CRM"));
 const Financials = lazy(() => import("./pages/Financials"));
 const PlantOps = lazy(() => import("./pages/PlantOps"));
 const PlantOpsContracts = lazy(() => import("./pages/PlantOpsContracts"));
+const PlantOpsVisit = lazy(() => import("./pages/PlantOpsVisit"));
+const PlantOpsCareEditor = lazy(() => import("./pages/PlantOpsCareEditor"));
+const PlantOpsPortal = lazy(() => import("./pages/PlantOpsPortal"));
 const Features = lazy(() => import("./pages/Features"));
 const SetupWizard = lazy(() => import("./pages/SetupWizard"));
 const FeatureRequests = lazy(() => import("./pages/FeatureRequests"));
@@ -161,6 +164,8 @@ function AppRoutes() {
       <Route path="/financials" element={<EstateRoute><Financials /></EstateRoute>} />
       <Route path="/plantops" element={<EstateRoute><PlantOps /></EstateRoute>} />
       <Route path="/plantops/contracts" element={<EstateRoute><PlantOpsContracts /></EstateRoute>} />
+      <Route path="/plantops/visita" element={<EstateRoute><PlantOpsVisit /></EstateRoute>} />
+      <Route path="/plantops/cuidados/:placementId" element={<EstateRoute><PlantOpsCareEditor /></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
       <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />
@@ -170,6 +175,9 @@ function AppRoutes() {
       <Route path="/jobs" element={<JobBoard />} />
       <Route path="/worker/:id" element={<WorkerProfilePage />} />
       <Route path="/jobs/post" element={user ? <EstateRoute><PostJob /></EstateRoute> : <Navigate to="/auth" replace />} />
+
+      {/* Public client portal (token link, no login) */}
+      <Route path="/c/:token" element={<PlantOpsPortal />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>

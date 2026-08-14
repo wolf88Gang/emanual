@@ -240,7 +240,7 @@ export default function AssetDetail() {
       <ModernAppLayout>
         <div className="container py-6 text-center">
           <XCircle className="h-16 w-16 mx-auto text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-serif">
+          <h2 className="text-2xl font-display">
             {language === 'es' ? 'Activo No Encontrado' : 'Asset Not Found'}
           </h2>
           <Button onClick={() => navigate('/assets')} className="mt-4">
@@ -290,7 +290,7 @@ export default function AssetDetail() {
           <div className="flex-1">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h1 className="text-3xl font-serif font-semibold">{asset.name}</h1>
+                <h1 className="text-3xl font-display font-semibold">{asset.name}</h1>
                 <div className="flex items-center gap-2 mt-2">
                   <Badge className={assetBadgeClass}>
                     <AssetTypeIcon type={assetType} size="sm" className="h-3 w-3" />

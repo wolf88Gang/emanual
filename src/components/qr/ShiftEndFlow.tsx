@@ -161,7 +161,7 @@ export function ShiftEndFlow({ open, onOpenChange, onComplete }: ShiftEndFlowPro
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl flex items-center gap-2">
+          <DialogTitle className="font-display text-xl flex items-center gap-2">
             <LogOut className="h-5 w-5 text-orange-500" />
             {language === 'es' ? 'Finalizar Jornada' : 'End Shift'}
           </DialogTitle>

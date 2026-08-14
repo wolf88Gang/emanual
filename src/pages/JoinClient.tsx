@@ -51,7 +51,7 @@ export default function JoinClient() {
           <div className="mx-auto mb-4">
             <HGLogo size="lg" />
           </div>
-          <CardTitle className="text-2xl font-serif">
+          <CardTitle className="text-2xl font-display">
             {de ? 'Kundenportal beitreten' : es ? 'Acceso de Cliente' : 'Client Portal Access'}
           </CardTitle>
           <CardDescription>

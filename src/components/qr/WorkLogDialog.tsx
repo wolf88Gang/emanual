@@ -260,7 +260,7 @@ export function WorkLogDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle className="font-serif text-xl flex items-center gap-2">
+          <DialogTitle className="font-display text-xl flex items-center gap-2">
             <MessageSquare className="h-5 w-5 text-primary" />
             {language === 'es' ? 'Registrar Trabajo' : 'Log Work'}
           </DialogTitle>
