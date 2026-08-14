@@ -105,7 +105,7 @@ export function WeatherAlertWidget({ alerts, onAlertUpdate, className }: Weather
     <Card className={cn('estate-card', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-serif flex items-center gap-2">
+          <CardTitle className="text-lg font-display flex items-center gap-2">
             <Bell className="h-5 w-5 text-warning" />
             {t('dashboard.weatherWatch')}
           </CardTitle>

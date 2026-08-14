@@ -173,7 +173,7 @@ export default function MyWorkerProfile() {
       {/* Header */}
       <div className="flex flex-col gap-3">
         <div>
-          <h1 className="text-2xl font-serif font-semibold">
+          <h1 className="text-2xl font-display font-semibold">
             {es ? 'Mi Perfil' : 'My Profile'}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">

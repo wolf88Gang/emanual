@@ -26,7 +26,7 @@ export function NoEstateGuide({ sectionHint }: NoEstateGuideProps) {
   return (
     <div className="flex flex-col items-center justify-center min-h-[60vh] text-center p-6">
       <Building2 className="h-16 w-16 text-muted-foreground/40 mb-4" />
-      <h2 className="text-2xl font-serif font-semibold mb-2">
+      <h2 className="text-2xl font-display font-semibold mb-2">
         {es ? 'Sin Propiedad Configurada' : de ? 'Keine Immobilie konfiguriert' : 'No Property Set Up'}
       </h2>
       <p className="text-muted-foreground max-w-md mb-6">{hint}</p>

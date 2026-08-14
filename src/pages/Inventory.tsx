@@ -218,7 +218,7 @@ export default function Inventory() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-serif font-bold">
+            <h1 className="text-2xl font-display font-bold">
               {language === 'es' ? 'Inventario' : 'Inventory'}
             </h1>
             <p className="text-muted-foreground text-sm">

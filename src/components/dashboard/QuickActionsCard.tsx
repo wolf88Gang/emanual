@@ -54,7 +54,7 @@ export function QuickActionsCard({
   return (
     <Card className={cn('estate-card', className)}>
       <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-serif">
+        <CardTitle className="text-lg font-display">
           {t('dashboard.quickActions')}
         </CardTitle>
       </CardHeader>

@@ -367,7 +367,7 @@ export default function JobBoard() {
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 sm:w-10 sm:h-10 object-contain" />
-              <span className="text-lg sm:text-xl font-serif font-semibold text-primary">Home Guide</span>
+              <span className="text-lg sm:text-xl font-display font-semibold text-primary">Home Guide</span>
             </div>
             <div className="flex items-center gap-2">
               {user && (
@@ -385,7 +385,7 @@ export default function JobBoard() {
             </div>
           </div>
 
-          <h1 className="text-2xl sm:text-4xl font-serif font-bold text-foreground mb-2">
+          <h1 className="text-2xl sm:text-4xl font-display font-bold text-foreground mb-2">
             {es ? '🌿 Bolsa de Trabajo' : '🌿 Job Board'}
           </h1>
           <p className="text-muted-foreground text-sm sm:text-lg max-w-2xl">

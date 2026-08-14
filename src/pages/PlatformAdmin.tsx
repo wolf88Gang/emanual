@@ -110,7 +110,7 @@ export default function PlatformAdmin() {
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
         {/* Header */}
         <div>
-          <h1 className="text-2xl font-serif font-bold text-foreground">
+          <h1 className="text-2xl font-display font-bold text-foreground">
             {l('Platform Administration', 'Panel de Administración', 'Plattformverwaltung')}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -151,7 +151,7 @@ export default function PlatformAdmin() {
           {/* Recent Subscriptions */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-serif flex items-center gap-2">
+              <CardTitle className="text-lg font-display flex items-center gap-2">
                 <CreditCard className="h-5 w-5 text-primary" />
                 {l('Recent Subscriptions', 'Suscripciones Recientes', 'Neueste Abonnements')}
               </CardTitle>
@@ -192,7 +192,7 @@ export default function PlatformAdmin() {
           {/* System Health */}
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg font-serif flex items-center gap-2">
+              <CardTitle className="text-lg font-display flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
                 {l('System Health', 'Salud del Sistema', 'Systemzustand')}
               </CardTitle>
@@ -227,7 +227,7 @@ export default function PlatformAdmin() {
         {/* Quick Actions */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-serif">
+            <CardTitle className="text-lg font-display">
               {l('Quick Actions', 'Acciones Rápidas', 'Schnellaktionen')}
             </CardTitle>
           </CardHeader>

@@ -106,7 +106,7 @@ export default function Subscription() {
           <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-xl font-serif font-semibold text-foreground">
+          <h1 className="text-xl font-display font-semibold text-foreground">
             {l('Subscription', 'Suscripción', 'Abonnement')}
           </h1>
         </div>
@@ -115,7 +115,7 @@ export default function Subscription() {
       <main className="max-w-4xl mx-auto p-4 space-y-6">
         {/* Pricing explanation */}
         <div className="text-center space-y-2">
-          <h2 className="text-3xl font-serif font-bold text-foreground">
+          <h2 className="text-3xl font-display font-bold text-foreground">
             ${PRICE_PER_PROPERTY}<span className="text-lg font-normal text-muted-foreground">
               {l('/mo per property', '/mes por propiedad', '/Monat pro Immobilie')}
             </span>

@@ -183,7 +183,7 @@ export function AssetWizard() {
     <div className="min-h-screen bg-background">
       <div className="max-w-2xl mx-auto px-4 py-8">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-serif font-semibold text-foreground">
+          <h1 className="text-3xl font-display font-semibold text-foreground">
             {tl({ en: 'Setup Wizard', es: 'Asistente de Configuración', de: 'Einrichtungsassistent' })}
           </h1>
           <p className="text-muted-foreground mt-2">
@@ -230,7 +230,7 @@ export function AssetWizard() {
                 <StepIcon className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-xl font-serif font-semibold text-foreground">{stepLabel}</h2>
+                <h2 className="text-xl font-display font-semibold text-foreground">{stepLabel}</h2>
                 <p className="text-sm text-muted-foreground">{tl(step.description)}</p>
               </div>
             </div>

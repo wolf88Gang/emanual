@@ -97,7 +97,7 @@ export default function MyJobPostings() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-serif font-bold text-foreground">
+          <h2 className="text-2xl font-display font-bold text-foreground">
             {es ? 'Mis publicaciones de trabajo' : 'My job postings'}
           </h2>
           <p className="text-sm text-muted-foreground">

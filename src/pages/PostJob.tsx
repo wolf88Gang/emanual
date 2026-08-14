@@ -83,7 +83,7 @@ export default function PostJob() {
 
         <Card>
           <CardHeader>
-            <CardTitle className="text-2xl font-serif">
+            <CardTitle className="text-2xl font-display">
               {es ? 'Publicar trabajo' : 'Post a job'}
             </CardTitle>
             <CardDescription>

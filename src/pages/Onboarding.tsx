@@ -276,7 +276,7 @@ export default function Onboarding() {
       <header className="p-4 flex items-center justify-between gap-2 border-b border-border">
         <div className="flex items-center gap-2">
           <img src="/images/hg-logo.png" alt="HG" className="w-10 h-10 object-contain" />
-          <span className="text-xl font-serif font-semibold text-primary">Home Guide</span>
+          <span className="text-xl font-display font-semibold text-primary">Home Guide</span>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="sm" onClick={resetWizard}>
@@ -301,7 +301,7 @@ export default function Onboarding() {
           {currentStep === 'profile' && (
             <Card className="border-0 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-2xl font-serif">
+                <CardTitle className="text-2xl font-display">
                   {l('What type of account do you want to create?', '¿Qué tipo de cuenta quieres crear?', 'Welche Art von Konto möchten Sie erstellen?')}
                 </CardTitle>
                 <CardDescription>
@@ -362,7 +362,7 @@ export default function Onboarding() {
           {currentStep === 'plan' && (
             <Card className="border-0 shadow-xl">
               <CardHeader>
-                <CardTitle className="text-2xl font-serif">
+                <CardTitle className="text-2xl font-display">
                   {l('How would you like to start?', '¿Cómo te gustaría empezar?', 'Wie möchten Sie beginnen?')}
                 </CardTitle>
                 <CardDescription>
@@ -450,7 +450,7 @@ export default function Onboarding() {
                 <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-2">
                   <Building2 className="h-7 w-7 text-primary" />
                 </div>
-                <CardTitle className="text-2xl font-serif text-center">
+                <CardTitle className="text-2xl font-display text-center">
                   {l('Create your first property', 'Crea tu primera propiedad', 'Erstellen Sie Ihre erste Immobilie')}
                 </CardTitle>
                 <CardDescription className="text-center">

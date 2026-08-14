@@ -69,7 +69,7 @@ export function WeatherAlertCard({ alerts, className }: WeatherAlertCardProps) {
     <Card className={cn('estate-card', className)}>
       <CardHeader className="pb-3">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg font-serif flex items-center gap-2">
+          <CardTitle className="text-lg font-display flex items-center gap-2">
             <AlertTriangle className="h-5 w-5 text-warning" />
             {t('dashboard.weatherAlerts')}
           </CardTitle>

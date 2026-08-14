@@ -83,7 +83,7 @@ export default function Auth() {
         <div className="relative z-10 flex flex-col justify-end p-12 pb-16 text-white">
           <div className="flex items-center gap-3 mb-6">
             <img src="/images/hg-logo.png" alt="Home Guide" className="w-12 h-12 object-contain" />
-            <span className="text-3xl font-serif font-semibold tracking-tight">Home Guide</span>
+            <span className="text-3xl font-display font-semibold tracking-tight">Home Guide</span>
           </div>
           <p className="text-xl font-light text-white max-w-lg leading-relaxed">
             {es
@@ -110,7 +110,7 @@ export default function Auth() {
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-6">
           <div className="flex items-center gap-2 mb-2">
             <img src="/images/hg-logo.png" alt="Home Guide" className="w-9 h-9 object-contain" />
-            <span className="text-2xl font-serif font-semibold">Home Guide</span>
+            <span className="text-2xl font-display font-semibold">Home Guide</span>
           </div>
           <p className="text-sm text-white/95">
             {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
@@ -130,7 +130,7 @@ export default function Auth() {
         <main className="flex-1 flex items-center justify-center p-6">
           <div className="w-full max-w-sm space-y-6">
             <div className="text-center">
-              <h1 className="text-2xl font-serif font-bold text-foreground">
+              <h1 className="text-2xl font-display font-bold text-foreground">
                 {isSignUp ? t('auth.signUp') : t('auth.signIn')}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">

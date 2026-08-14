@@ -97,7 +97,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               <SheetContent side="left" className="w-72 p-0">
                 <div className="flex flex-col h-full">
                   <div className="p-6 border-b border-border">
-                    <h2 className="text-xl font-serif font-semibold text-primary">
+                    <h2 className="text-xl font-display font-semibold text-primary">
                       Home Guide
                     </h2>
                   </div>
@@ -123,7 +123,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               </SheetContent>
             </Sheet>
 
-            <h1 className="text-xl font-serif font-semibold text-primary hidden sm:block">
+            <h1 className="text-xl font-display font-semibold text-primary hidden sm:block">
               Home Guide
             </h1>
           </div>
