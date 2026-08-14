@@ -19,7 +19,7 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { dueState, logCare, startVisit, closeVisit, addCharge, type CareActionType } from '@/lib/plantopsCare';
+import { dueState, logCare, startVisit, closeVisit, addChargeForEstate, type CareActionType } from '@/lib/plantopsCare';
 import { uploadPlacementPhoto } from '@/lib/plantops';
 
 interface QueueRow {
@@ -176,11 +176,11 @@ export default function PlantOpsVisit() {
   };
 
   const handleCharge = async () => {
-    if (!charge.clientId || !charge.description || !charge.unitPrice) return;
+    if (!currentEstate?.id || !charge.description || !charge.unitPrice) return;
     setBusy('charge');
     try {
-      await addCharge({
-        clientId: charge.clientId,
+      await addChargeForEstate({
+        estateId: currentEstate.id,
         description: charge.description,
         quantity: Number(charge.quantity) || 1,
         unitPrice: Number(charge.unitPrice),
@@ -271,7 +271,7 @@ export default function PlantOpsVisit() {
                     <Button size="sm" onClick={() => openDetail(r, 'water')}>
                       <Droplets className="h-4 w-4 mr-1" />{l('Watered', 'Regada')}
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => openDetail(r, 'skip')}>
+                    <Button size="sm" variant="outline" onClick={() => openDetail(r, 'skip_water')}>
                       <CheckCircle2 className="h-4 w-4 mr-1" />{l('No water', 'Sin agua')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => openDetail(r, 'clean')}>
@@ -302,7 +302,7 @@ export default function PlantOpsVisit() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="water">{l('Watered', 'Regada')}</SelectItem>
-                  <SelectItem value="skip">{l('No water needed', 'No necesitaba agua')}</SelectItem>
+                  <SelectItem value="skip_water">{l('No water needed', 'No necesitaba agua')}</SelectItem>
                   <SelectItem value="clean">{l('Cleaned', 'Limpieza')}</SelectItem>
                   <SelectItem value="prune">{l('Pruned', 'Poda')}</SelectItem>
                   <SelectItem value="fertilize">{l('Fertilized', 'Abonada')}</SelectItem>
@@ -354,12 +354,7 @@ export default function PlantOpsVisit() {
           <div className="space-y-3">
             <div>
               <Label>{l('Client', 'Cliente')}</Label>
-              <Select value={charge.clientId} onValueChange={(v) => setCharge({ ...charge, clientId: v })}>
-                <SelectTrigger><SelectValue placeholder={l('Select', 'Seleccionar')} /></SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
+              <Input readOnly value={estateClientName || l('No client assigned to this property', 'Esta propiedad no tiene cliente asignado')} />
             </div>
             <div>
               <Label>{l('Description', 'Descripción')}</Label>
