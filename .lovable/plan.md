@@ -1,116 +1,216 @@
-# PlantOps V2 — Raíz y Forma (plan de implementación reducido)
+# PlantOps V2 — Raíz y Forma (plan final corregido)
 
-Objetivo: convertir Home Guide, para organizaciones `plant_rental`, en un sistema de servicio y cuidado de plantas: clientes → plantas → cuidado/riego → visitas → herramientas → manual → cobros → pagos. Sin mapas, sin cuentas para clientes.
+Producto para organizaciones `plant_rental`: instalaciones residenciales de plantas de interior con cuidado supervisado. Alquiler, contratos y eventos quedan disponibles pero **opcionales**.
 
-## 0. Diagnóstico previo (obligatorio, antes de tocar features)
+Flujo prioritario: cliente → propiedad → plantas + macetas → configuración de cuidado → manual → recordatorios → visitas → historial → cargos/facturas/pagos.
 
-- Cuentas demo en el login: hoy `/auth` no muestra ninguna. Se añade un bloque "Cuentas de demostración" con acceso de 1 clic. Existen `owner@demo.com`, `manager@demo.com`, `crew@demo.com`, `vendor@demo.com` (Bahia Vista, landscaping). **No existe ninguna organización `plant_rental`**, por lo que hay que crear la demo `plantops@demo.com` + org "Raíz y Forma (Demo)" con 1 cliente, 1 sede, plantas, visita y manual.
-- "Secciones que no cargan": pendiente de reproducir. Primer paso del trabajo = abrir cada ruta del sidebar con las 4 cuentas demo, capturar el error real (chunk stale, RLS, o consulta rota) y corregir. No se asume la causa antes de verla.
+## A. Arquitectura MVP definitiva
 
-## A. Qué existe y se reutiliza
-
-| Necesidad | Sistema actual | Acción |
+| Concepto | Entidad existente | Acción |
 |---|---|---|
-| Empresa / usuarios | `organizations`, `profiles`, `user_roles` | Reutilizar |
-| Clientes y contactos | `clients` | Reutilizar + campos de contacto |
-| Sedes | `estates` (ya con `client_id`) | Reutilizar (sin mapa) |
-| Áreas / pisos | `zones` (`floor_label`) | Reutilizar, sin geometría |
-| Plantas y macetas | `assets` (`plant`, `pot`), `plant_instances` | Reutilizar |
-| Especie / cuidado | `plant_profiles.care_template_json` | Extender (`light_requirement`, riego base) |
-| Datos comerciales | `plantops_asset_details` | Reutilizar (nunca visible al cliente) |
-| Ubicación puntual e historial de puesto | `plant_placements` (RPC-only) | Extender (riego + luz + override) |
-| Contratos y frecuencia | `rental_contracts` | Reutilizar |
-| Visitas | `worker_shifts` + `task_completions` | Reutilizar como visita (check-in/out) |
-| Herramientas | `inventory_items`, `tool_assignments` | Reutilizar |
-| Catálogo servicios/extras | `product_catalog` | Reutilizar (no crear tabla) |
-| Facturas | `invoices`, `invoice_items` | Reutilizar |
-| Pagos | `client_payments` | Reutilizar |
-| Recordatorios | `notifications` | Reutilizar |
-| Manual PDF | `src/lib/pdfExport.ts` (jsPDF) + `generate-estate-manual` | Extender, no reescribir |
+| Empresa / equipo | `organizations`, `profiles`, `user_roles` | Reutilizar |
+| Cliente | `clients` (nombre, email, phone, address) | Reutilizar |
+| Propiedad / sede | `estates` (ya tiene `client_id`) | Reutilizar, sin coordenadas ni mapa |
+| Habitación / área | `zones` (`floor_label`, sin geometría) | Reutilizar |
+| Plantas y macetas | `assets` (`plant`, `pot`) | Reutilizar |
+| Planta instalada (punto) | `plant_placements` (RPC-only) | Extender con plan de cuidado |
+| Guía de especie | `plant_profiles.care_template_json` | Solo conocimiento general |
+| Datos comerciales / maceta | `plantops_asset_details` | Extender con atributos de maceta |
+| Servicios contratados | `rental_contracts` (opcional) | No obligatorio para crear cliente |
+| Visita | `worker_shifts` | Extender con `visit_kind` |
+| Herramientas | `inventory_items`, `tool_assignments` | Reutilizar tal cual |
+| Catálogo | `product_catalog` | Reutilizar |
+| Facturación | `invoices` (draft) + `invoice_items` | Reutilizar (ver I) |
+| Pagos | `client_payments` (tiene `invoice_id`) | Reutilizar |
+| Recordatorios | `notifications` | Reutilizar (internos) |
+| Manual PDF | `src/lib/pdfExport.ts` | Extender |
 
-Nuevo estrictamente necesario: **`plant_care_logs`** (historial de acciones de cuidado; el modelo actual no lo resuelve) y **`client_share_links`** (página pública por token).
+Nuevo estrictamente necesario: `plant_care_logs` (historial de acciones) y `estate_share_links` (página pública por propiedad). Nada más.
 
-## B. Fuera del alcance PlantOps
+Un cliente válido en MVP = `clients` + `estates` + `assets`/`plant_placements` + plan de cuidado + manual + recordatorios. **Sin `rental_contracts`.** El wizard solo crea contrato si se marcó "alquiler".
 
-Se ocultan solo cuando `org_type = 'plant_rental'` (nunca se borran ni afectan otras verticales): Mapa, Topografía, Compost, Empleos/Marketplace, portal de cliente con login obligatorio (`/join-client` sigue existiendo para otras verticales).
+## B. Modelo de cuidado definitivo
 
-## C. Navegación plant_rental
+Plan efectivo por planta instalada, resuelto en capas:
 
-- Desktop: Inicio · Clientes · Plantas · Visitas · Cuidados · Facturación · Más (Contratos, Herramientas, Catálogo, Configuración, Reportes).
-- Mobile (bottom nav): Inicio · Visitas · Cuidados · Clientes · Más.
+```text
+baseline de especie (plant_profiles.care_template_json)
+  + condiciones de maceta (plantops_asset_details del pot_asset_id)
+  + condiciones del punto (luz real, ventilación, calor/sequedad, interior/exterior)
+  + estación (seca / lluviosa, mes)
+  + override manual de Natalia   ← autoridad final
+  = plan efectivo (intervalo, mínimo, cantidad, método, instrucciones, qué NO hacer)
+```
 
-## D. Wizard de nuevo cliente (10 pasos → entidades)
+Reglas:
+- El override manual **siempre gana** y se guarda con motivo, autor y fecha.
+- Los ajustes por maceta/punto/estación son **factores derivados y explicables** (función `plantops_effective_care(placement_id)`), no valores duplicados en la fila: cada capa contribuye un delta con etiqueta legible ("maceta grande + baja evaporación: +2 días").
+- El baseline de especie **nunca** se modifica al ajustar una planta concreta (punto F).
+- `next_water_due` sí se materializa en `plant_placements` para poder listar/indexar "REGAR HOY / NO REGAR".
+- Estado calculado: `REGAR` (hoy o vencido), `NO REGAR ANTES DE <fecha>`, `REVISAR` (incidencia abierta).
 
-1 Cliente → `clients` · 2 Sede/áreas → `estates` + `zones` · 3 Servicios (checklist) → `rental_contracts.services_json` · 4 Frecuencia → `rental_contracts.maintenance_frequency` · 5 Plantas y macetas → `assets` + RPC `plantops_reserve/install` (`plant_placements`) · 6 Extras → `product_catalog` + cargos pendientes · 7 Cuidado (quién riega, luz, reglas) → campos de riego en `plant_placements` · 8 Página del cliente (qué mostrar) → `client_share_links` · 9 Cobro → `rental_contracts` (precio, moneda, día) · 10 Resumen → "Activar cliente".
+Campos nuevos en `plant_placements`: `last_watered_at`, `next_water_due`, `water_interval_days` (efectivo), `water_interval_override_days`, `min_interval_days`, `water_amount_note`, `water_method`, `light_required`, `light_actual`, `ventilation`, `care_responsibility` (`raiz_y_forma`|`cliente`|`compartido`), `reminder_contact` (texto/email/teléfono, sin usuario), `client_instructions`, `do_not_do`, `care_notes`, `care_override_reason`, `care_updated_by`, `care_updated_at`.
 
-## E. Wizard inicial de la organización
+## C. Modelo de maceta y variables
 
-Checklist "¿Qué quiere gestionar?" (clientes, plantas, macetas, recordatorios, visitas, herramientas, contratos, facturas, pagos, manuales, eventos) guardado en `organizations.modules_json`. La navegación se filtra por esa configuración; no se borran datos.
+Verificado: **no existe ningún campo jsonb/metadata libre** en `assets`, `plantops_asset_details`, `plant_placements` ni `plant_instances` (solo `plant_profiles.care_template_json`, `estates.boundary_geojson`, `zones.geometry_geojson`). Por tanto no hay dónde guardar atributos de maceta hoy.
 
-## F. Página personalizada del cliente
+Decisión: **no se crea tabla nueva**. Se añaden columnas a `plantops_asset_details` (que ya es 1:1 con `assets` y ya es la tabla de atributos PlantOps), nulas para plantas: `pot_material` (`ceramica|plastico|barro|fibra|metal|otro`), `pot_diameter_cm`, `pot_height_cm`, `pot_volume_liters`, `pot_has_drainage` (bool), `pot_drainage_holes` (int, opcional), `pot_has_saucer` (bool), `pot_reservoir` (bool), `pot_notes`.
 
-- URL: `/c/<token>` (token aleatorio de 32 bytes, no adivinable; se guarda solo el hash).
-- Acceso público **read-only** mediante Edge Function `client-share` con service role: la tabla no queda expuesta al rol `anon`; la función valida token, revocación y expiración, y devuelve únicamente los campos permitidos por los flags del enlace.
-- Muestra: encabezado (identidad Raíz y Forma, cliente, sede, contacto, próxima visita), plantas (foto, nombre, ubicación textual, riego: último / próximo / "NO REGAR ANTES DE…", luz), manual (ver + descargar PDF), historial y saldo solo si el flag está activo.
-- Nunca: costos, margen, valor de reposición, notas internas, herramientas ni otros clientes.
-- Gestión: crear, copiar, desactivar, regenerar enlace desde la ficha del cliente.
+Estos atributos alimentan el factor "maceta" del plan efectivo (volumen alto o sin drenaje → intervalo mayor / advertencia de encharcamiento; maceta pequeña o barro poroso → intervalo menor). Los factores son parámetros editables en interfaz, no constantes en código (ver punto 21 / N).
 
-## G. Motor de riego
+## D. Wizard de cliente simplificado (6 pasos, con borrador)
 
-Datos por planta instalada (en `plant_placements`): `last_watered_at`, `watering_interval_days`, `min_interval_days`, `next_water_due`, `care_responsibility` (raiz_y_forma | cliente | compartido), `reminder_contact_id`, `actual_light_condition`.
-Resolución: especie (`plant_profiles`) → override de ubicación → programa efectivo. Al registrar riego (`plant_care_logs` vía RPC): actualiza último riego, recalcula próximo, cierra recordatorio anterior y programa el siguiente. Si es demasiado pronto: advertencia con fecha recomendada y override permitido registrando quién/cuándo/motivo. Idempotencia: no duplicar recordatorios abiertos por planta.
+1. **Cliente y propiedad** — cliente, contacto, dirección, nombre de propiedad (`clients` + `estates`, sin coordenadas).
+2. **Servicios** — checklist: instalación, mantenimiento, recordatorios, manual, alquiler, reemplazo, otros. Sin exigir contrato; "alquiler" activa `rental_contracts`.
+3. **Plantas y macetas** — alta rápida repetible: planta, maceta, área (`zones`) y punto descriptivo; se puede seguir agregando después.
+4. **Cuidados y recordatorios** — quién riega, frecuencia, contacto de recordatorio, luz, ventilación, overrides.
+5. **Precio y extras** — servicio base, productos, macetas, instalación, extras, frecuencia de cobro (`product_catalog`, `rental_contracts` si aplica).
+6. **Compartir** — generar manual, elegir qué ve el cliente, generar página privada, revisar, activar.
 
-## H. Visitas y herramientas
+Borrador: el wizard persiste incrementalmente en las entidades reales con la propiedad en estado `setup` y se puede retomar.
 
-Visita = `worker_shifts` con `visit_kind='plantops'`: check-in (GPS/QR opcional) → herramientas llevadas (`tool_assignments`) → lista "REGAR HOY / NO REGAR / REVISAR / INCIDENCIAS" → acciones por planta (regar, limpiar, podar, fertilizar, plagas, luz, mover, reemplazar, foto, problema) en `plant_care_logs` → extras → confirmación de herramientas (bloquea checkout si faltan; cierre excepcional con motivo) → resumen → historial. Mobile-first.
+## E. Care Editor
 
-## I. Servicios, extras, facturas y pagos
+Acción **EDITAR CUIDADO** desde una planta instalada (y desde la visita). Campos: intervalo recomendado, intervalo mínimo, cantidad aproximada, método, luz requerida, luz actual, ventilación, notas específicas, instrucciones visibles al cliente, qué NO hacer.
 
-Catálogo en `product_catalog` (nombre, categoría, precio, moneda, unidad, activo). Extras registrados en visita quedan como cargos pendientes ligados a cliente + visita, y se convierten en `invoice_items` al facturar. Pagos en `client_payments`. Cuenta corriente del cliente = vista calculada (facturado / pagado / pendiente / vencido + línea de movimientos), sin doble contabilidad.
+Muestra siempre la comparación:
 
-## J. Historial por sede
+```text
+Recomendación base:            7 días
+Configuración de esta planta:  10 días
+Motivo: maceta grande + interior con baja evaporación
+```
 
-Timeline construido por consulta unificada sobre registros existentes (visitas, `plant_care_logs`, incidencias/tareas, extras, fotos) ordenada por fecha, con filtros por fecha, planta, tipo de acción y técnico. Sin tablas de resumen duplicadas.
+No requiere regenerar ningún protocolo para editar. Guarda vía RPC `plantops_set_care_plan` y recalcula `next_water_due` (respetando `min_interval_days`).
 
-## K. Tipografía y design system
+## F. Separación especie vs planta instalada
 
-Auditado: hoy conviven `Inter` (sans) y `Cormorant Garamond` (`font-serif`, usado en muchos títulos). Cambio centralizado: cargar **Montserrat** en `index.html`, definirla como `sans` y también como `serif` en `tailwind.config.ts` (así los `font-serif` existentes pasan a Montserrat sin tocar cada componente), y fijar la escala tipográfica en `src/index.css` (body 16px, secundario 14px, caption 12px mínimo, H1 30–36 / 26–30 móvil, H2 24–28, H3 18–22). Se corrigen solo los casos extremos (texto de 10–11px funcional, títulos de 48–60px dentro del dashboard).
+`plant_profiles.care_template_json` = conocimiento general de la especie (compartido). El plan operativo vive en `plant_placements`. Editar una Monstera concreta no toca ninguna otra Monstera; el editor lo indica explícitamente.
 
-## L. Base de datos (sin SQL todavía)
+## G. Página compartida por propiedad
 
-- Columnas nuevas: `organizations.modules_json`; `plant_profiles.light_requirement` + riego base; `plant_placements` (campos de riego y luz del punto G); `worker_shifts.visit_kind`; `rental_contracts.services_json`.
-- Tablas nuevas: `plant_care_logs`, `client_share_links` (+ tabla o campo para extras pendientes si `invoice_items` no lo cubre sin factura).
-- Índices: `(org_id, next_water_due)`, `(placement_id, performed_at)`, hash de token único.
-- Constraints: intervalos positivos, `min_interval_days <= watering_interval_days`, enums de acción y de luz.
-- RLS: todo scoped por `org_id`; escrituras de cuidado y de enlaces solo vía RPC/Edge Function; `anon` sin acceso directo. GRANTs explícitos en cada tabla nueva.
+- Clave: **org + client + estate** (`estate_share_links`). Se guarda solo el hash del token (32 bytes aleatorios); URL `/c/<token>`.
+- Servida por Edge Function `estate-share` con service role: la tabla no se expone a `anon`; la función valida token, revocación y expiración y devuelve solo los campos permitidos por los flags.
+- Contenido: encabezado (Raíz y Forma + nombre de la propiedad), **PRÓXIMO CUIDADO** ("No regar antes del 18 de agosto"), SUS PLANTAS (foto, nombre, ubicación textual, riego, luz), MANUAL (ver + descargar), ÚLTIMA VISITA, CONTACTAR A RAÍZ Y FORMA.
+- Nunca: costos, margen, valor de reposición, notas internas, herramientas, otros clientes, dashboards administrativos.
+- Gestión desde la propiedad: crear, copiar, desactivar, regenerar.
+- Página agregada por cliente: fuera de MVP (el modelo lo permite después).
 
-## M. Archivos
+## H. Manual personalizado
 
-Modificar: `index.html`, `tailwind.config.ts`, `src/index.css`, `src/pages/Auth.tsx` (demos), `src/components/layout/AppSidebar.tsx`, `BottomNav.tsx`, `src/App.tsx`, `src/pages/PlantOps.tsx`, `PlantOpsContracts.tsx`, `src/lib/plantops.ts`, `src/hooks/usePlantOps.ts`, `src/lib/pdfExport.ts`, `src/pages/CRM.tsx`.
-Nuevos: `src/pages/plantops/{Dashboard,Clients,ClientDetail,Visits,VisitRunner,Care,Catalog}.tsx`, `src/components/plantops/NewClientWizard.tsx`, `OrgSetupWizard.tsx`, `WateringBadge.tsx`, `ToolChecklist.tsx`, `src/pages/ClientShare.tsx`, `src/lib/watering.ts`, `src/lib/clientManual.ts`, `supabase/functions/client-share/index.ts`, `supabase/functions/care-reminders/index.ts`.
+El PDF se genera desde el **plan efectivo de esa propiedad** (riego, luz, ventilación, instrucciones, qué NO hacer por planta), no del protocolo genérico. Natalia lo previsualiza y aprueba antes de compartirlo; el enlace público sirve la última versión aprobada.
 
-## N. Coste relativo
+## I. Visitas y herramientas
 
-Bajo: tipografía, navegación, cuentas demo, catálogo. Medio: wizards, motor de riego, manual PDF, cuenta corriente. Alto (mayor consumo): visita completa mobile-first + care logs, y página pública con Edge Function y seguridad de token.
+Visita = `worker_shifts` con `visit_kind='plantops'`:
+check-in → herramientas llevadas (`tool_assignments`) → checklist "REGAR HOY / NO REGAR / REVISAR" → acciones por planta (regar, limpiar, podar, fertilizar, plagas, luz, mover, foto, incidencia) en `plant_care_logs` → extras → confirmación de herramientas (advierte si falta algo; cierre excepcional con motivo) → resumen. Mobile-first, sin logística avanzada.
 
-## O. Orden de implementación
+## J. Historial (central)
 
-1. Diagnóstico de secciones que no cargan + cuentas demo (incl. demo `plant_rental`).
-2. Tipografía/escala + navegación filtrada por `org_type` y módulos.
-3. Migraciones (columnas, `plant_care_logs`, `client_share_links`, RLS/RPC).
-4. Clientes/sedes + wizard de nuevo cliente.
-5. Motor de riego + vista Cuidados + recordatorios internos.
-6. Visitas con herramientas, care logs y extras.
-7. Página pública + manual PDF.
-8. Facturación, pagos y cuenta corriente.
-9. Dashboard "Hoy / Negocio / Próximamente" con métricas clickeables.
+Sección **HISTORIAL** en la propiedad, timeline por consulta unificada (visitas + `plant_care_logs` + incidencias + extras + fotos), con detalle expandible:
 
-## P. Alcance MVP
+```text
+14 agosto — Visita de Natalia
+  Riego: 7 plantas · Limpieza: 4 · Poda: 2
+  Luz insuficiente: 1 · Fotos: 5 · Extras: 1 maceta
+```
 
-- MVP: diagnóstico y demos, tipografía, navegación, wizard de cliente, riego + registro + advertencia de sobre-riego, visitas con herramientas y extras, historial por sede, página pública + manual, facturas/pagos/saldo, dashboard.
-- Segunda fase: wizard de organización avanzado, email al cliente, eventos con logística, reportes analíticos.
-- No construir: mapas/GIS en PlantOps, login obligatorio de cliente, WhatsApp/SMS, IoT, IA diagnóstica, marketplace, contabilidad completa, app nativa.
+Filtros: fecha, planta, tipo de acción, técnico. Sin tablas de resumen duplicadas.
 
-## Q. Prompt final de implementación (al aprobar)
+## K. Extras, facturación y pagos (arquitectura resuelta)
 
-"Implementar PlantOps V2 según el plan aprobado, en el orden O. Reutilizar organizations/clients/estates/zones/assets/plant_profiles/plant_placements/rental_contracts/inventory_items/tool_assignments/worker_shifts/product_catalog/invoices/invoice_items/client_payments/notifications y el generador PDF existente. Crear solo `plant_care_logs` y `client_share_links` más las columnas listadas en L, con GRANTs, RLS por org y escrituras vía RPC. Ocultar Mapa/Topografía/Compost/Empleos solo para `org_type='plant_rental'`. Montserrat como única familia tipográfica con la escala definida. Página pública read-only en `/c/<token>` mediante Edge Function con service role, revocable y regenerable, sin datos internos. No tocar otras verticales."
+Verificado: `invoices` tiene `status` con valor `draft`, `invoice_items` referencia `invoice_id` + `product_id`, `client_payments` referencia `invoice_id` y `client_id` sin restricción de unicidad. **El esquema existente lo permite sin tabla nueva.**
+
+- RPC `plantops_add_charge(client_id, product_id|descripción, cantidad, precio, visit_id?)`: obtiene o crea la factura `draft` del cliente en el periodo y agrega el `invoice_item`; recalcula `subtotal`/`total`.
+- Al emitir (`draft → sent`) ese conjunto se cierra; extras posteriores abren la siguiente draft.
+- Trazabilidad de la visita: columna `invoice_items.source_shift_id` (nullable) — evita una tabla de "extras pendientes" y no duplica contabilidad.
+- Pagos: `client_payments`, múltiples por factura. Saldo derivado (facturado / pagado / saldo / vencido) por consulta; sin ledger adicional.
+
+## L. Tipografía (auditada)
+
+Estado real: `index.html` carga Inter + Cormorant Garamond; `tailwind.config.ts` define `serif: 'Cormorant Garamond'`; `src/index.css:183` aplica esa familia; hay **75 usos de `font-serif`** en el código.
+
+Corrección explícita (sin trucos de alias):
+- Cargar Montserrat en `index.html` y retirar Cormorant e Inter.
+- `tailwind.config.ts`: `sans: Montserrat`; se elimina la familia `serif` decorativa y se introduce `display: Montserrat` para títulos.
+- Reemplazar los 75 `font-serif` por `font-display` (búsqueda y reemplazo mecánico), y actualizar `src/index.css` (headings y body en Montserrat).
+- Escala en `src/index.css`: body 16px · secundario 14px · caption mínimo 12px · label 14px · botón 14–16px · H1 30–36 (móvil 26–30) · H2 24–28 · H3 18–22. Se corrigen los casos fuera de rango (texto funcional de 10–11px, títulos de 48–60px en el dashboard).
+
+## M. Navegación plant_rental (sin mapas)
+
+- Desktop: Inicio · Clientes · Plantas · Visitas · Cuidados · Facturación · Más (Contratos, Herramientas, Catálogo, Reportes, Configuración).
+- Mobile: Inicio · Visitas · Cuidados · Clientes · Más.
+- Ocultos para `plant_rental`: Mapa, Topografía, Compost, Empleos. No se borran datos ni se afectan otras verticales.
+- Ubicación textual: Cliente → Propiedad → Habitación/Área → Punto.
+
+## N. Wizard inicial de la organización
+
+Checklist "¿Qué quiere gestionar con Home Guide?" (Clientes, Plantas y macetas, Cuidados, Recordatorios, Visitas, Herramientas, Manuales, Facturas y pagos, Alquileres, Eventos) guardado en `organizations.modules_json`; la navegación se filtra por esa configuración. Editable después.
+
+## O. Recordatorios sin cuenta
+
+Contactos de recordatorio son datos (`clients`, `reminder_contact` del placement): **nunca** `profiles`, `user_roles` ni miembros de la organización. MVP: recordatorio interno en `notifications` + destinatario preparado; email solo si la infraestructura existente lo hace trivial. WhatsApp = segunda fase, sin integrar ningún proveedor en esta iteración.
+
+## P. Migraciones necesarias
+
+1. **M1** `plant_placements`: columnas de cuidado del punto B + índices `(org_id, next_water_due)`, `(estate_id, status)`.
+2. **M2** `plantops_asset_details`: atributos de maceta del punto C + checks de valores positivos.
+3. **M3** `plant_care_logs` (org_id, estate_id, placement_id, asset_id, shift_id, action_type, performed_at, performed_by, amount_note, photo_path, notes, override_reason) + GRANTs + RLS + índices `(placement_id, performed_at desc)`, `(estate_id, performed_at desc)`.
+4. **M4** `estate_share_links` (org_id, client_id, estate_id, token_hash, flags de visibilidad, expires_at, revoked_at) + GRANTs + RLS solo org (sin `anon`).
+5. **M5** `organizations.modules_json`, `worker_shifts.visit_kind`, `rental_contracts.services_json`, `invoice_items.source_shift_id`, `estates.setup_status`.
+6. **M6** Parámetros de cuidado editables: `plantops_care_settings` (org_id, factores maceta/luz/ventilación/estación) — para que Natalia ajuste reglas sin cambios de código.
+7. **M7** RPCs: `plantops_set_care_plan`, `plantops_log_care` (recalcula próximo riego, cierra/crea recordatorio, idempotente), `plantops_effective_care`, `plantops_add_charge`, `plantops_create_share_link` / `revoke` / `regenerate`, `plantops_start_visit` / `close_visit`. Todas SECURITY DEFINER, `search_path=public`, sin `EXECUTE` para `anon`.
+8. **M8** Organización QA aislada `plant_rental` con datos demo internos (sin exponerla en el login público).
+
+## Q. Archivos
+
+- Nuevos: `src/pages/PlantOpsClients.tsx`, `src/pages/PlantOpsClientWizard.tsx`, `src/pages/PlantOpsEstate.tsx` (plantas + historial + manual + compartir), `src/pages/PlantOpsCare.tsx` (REGAR/NO REGAR), `src/pages/PlantOpsVisit.tsx`, `src/pages/PublicEstatePage.tsx` (`/c/:token`), `src/components/plantops/CareEditorDialog.tsx`, `src/components/plantops/PotAttributesForm.tsx`, `src/components/plantops/CareHistoryTimeline.tsx`, `src/components/plantops/ToolCheckPanel.tsx`, `src/components/plantops/ShareLinkPanel.tsx`, `src/lib/plantopsCare.ts`, `src/lib/plantopsManual.ts`, `supabase/functions/estate-share/index.ts`.
+- Modificados: `src/lib/plantops.ts`, `src/hooks/usePlantOps.ts`, `src/pages/PlantOps.tsx`, `src/components/layout/AppSidebar.tsx`, `src/components/layout/BottomNav.tsx`, `src/App.tsx`, `src/lib/pdfExport.ts`, `tailwind.config.ts`, `src/index.css`, `index.html`, y los archivos con `font-serif`.
+- **No** se toca `src/pages/Auth.tsx` para añadir credenciales demo.
+
+## R. RLS y seguridad
+
+- Todo nuevo dato es org-scoped mediante el patrón existente (`profiles.org_id` / `has_role`); escritura de placements y cargos solo por RPC.
+- `plant_care_logs`: inserción solo por RPC, sin UPDATE/DELETE (historial inmutable).
+- `estate_share_links`: sin acceso `anon`; la Edge Function valida token, expiración y revocación, y devuelve un payload filtrado (nunca costos, márgenes, notas internas ni herramientas).
+- Rol `client` sigue sin ver `plantops_asset_details` comercial.
+- Login público sin cuentas demo visibles; el acceso QA es una organización aislada con usuario controlado, no un botón en producción.
+
+## S. Orden exacto de implementación
+
+**Piloto core**
+1. Tipografía y escala (auditoría + Montserrat).
+2. Navegación `plant_rental` sin mapas + wizard inicial (`modules_json`).
+3. M1–M6 (esquema) y M7 (RPCs).
+4. Cliente + propiedad (wizard 6 pasos, con borrador).
+5. Plantas + macetas (incluye atributos de maceta).
+6. Care Editor + motor de cuidado efectivo.
+7. Estado REGAR / NO REGAR + recordatorios internos.
+8. Historial de cuidados por propiedad.
+9. Manual personalizado desde el plan efectivo.
+10. Página privada por propiedad (`/c/:token` + Edge Function).
+11. Visita simple + checklist + herramientas check-in/out.
+
+**Operación comercial**
+12. Catálogo → extras → factura draft → emisión → pagos → saldo.
+
+**Después**
+13. Email automático · WhatsApp · eventos/logística avanzada · analítica.
+
+## T. Criterios de aceptación
+
+1. Se crea `Casa Natalia Test` + propiedad `Casa Escazú` **sin contrato de alquiler** y el cliente queda activo.
+2. Se agrega Monstera + maceta cerámica 35 cm (material, diámetro, drenaje) en Sala / "junto a ventana".
+3. Se configura luz requerida indirecta brillante, luz actual media, ventilación baja, intervalo base 7 días, override 10 días con motivo; la Monstera de otro cliente no cambia.
+4. Se registra riego hoy → cliente ve "Planta regada hoy. No volver a regar antes del 24 de agosto"; Natalia ve próximo riego, historial y motivo del override.
+5. Se genera el manual con el plan efectivo, se revisa y se comparte; el enlace abre sin login y permite descargar el PDF.
+6. Se realiza una visita: herramientas llevadas, cuidados registrados, herramientas confirmadas al cierre.
+7. Se agrega una maceta extra (₡18.000) → aparece en la factura draft del cliente; se emite la factura y se registra un pago parcial y otro posterior; el saldo cuadra.
+8. Natalia carga sus propios checklists, cuidados, macetas, plantas y clientes, y ajusta los parámetros de cuidado **desde la interfaz, sin cambios de código**.
+9. `/auth` en producción no muestra credenciales ni acceso demo de un clic.
+10. Ninguna pantalla `plant_rental` pide coordenadas ni muestra Mapa; las demás verticales conservan sus mapas.
+
+## U. Prompt final de implementación
+
+> Implemente PlantOps V2 para `plant_rental` en este orden: tipografía Montserrat con escala auditada; navegación sin mapas y wizard inicial de módulos; migraciones M1–M7 (cuidado en `plant_placements`, atributos de maceta en `plantops_asset_details`, `plant_care_logs`, `estate_share_links`, `modules_json`/`visit_kind`/`services_json`/`source_shift_id`, `plantops_care_settings`, RPCs SECURITY DEFINER sin `anon`); wizard de cliente en 6 pasos con borrador y sin contrato obligatorio; Care Editor con comparación base/personalizado y override con motivo; motor de cuidado en capas (especie + maceta + punto + estación + override); estado REGAR/NO REGAR y recordatorios internos sin cuentas de cliente; historial por propiedad; manual PDF desde el plan efectivo con revisión previa; página privada por propiedad vía Edge Function con payload filtrado; visita con checklist y herramientas check-in/out; y finalmente catálogo/extras a factura draft, emisión y pagos con saldo derivado. No agregue cuentas demo al login público, no cree tablas de extras ni de macetas, y no integre WhatsApp en esta iteración.
