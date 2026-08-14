@@ -40,6 +40,7 @@ export function AppSidebar() {
   const { hasRole, isOwnerOrManager, isPlatformAdmin, signOut, profile } = useAuth();
   const { language, tl } = useLanguage();
   const [orgType, setOrgType] = useState<string>('residential');
+  const [modules, setModules] = useState<Record<string, boolean> | null>(null);
 
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
@@ -47,8 +48,14 @@ export function AppSidebar() {
 
   useEffect(() => {
     if (profile?.org_id) {
-      supabase.from('organizations').select('org_type').eq('id', profile.org_id).single()
-        .then(({ data }) => { if (data) setOrgType((data as any).org_type || 'residential'); });
+      supabase.from('organizations').select('org_type, modules_json').eq('id', profile.org_id).single()
+        .then(({ data }) => {
+          if (data) {
+            setOrgType((data as any).org_type || 'residential');
+            const m = (data as any).modules_json;
+            setModules(m && typeof m === 'object' && Object.keys(m).length > 0 ? m : null);
+          }
+        });
     }
   }, [profile?.org_id]);
 
@@ -97,6 +104,7 @@ export function AppSidebar() {
   // Plant rental (PlantOps) items
   const plantRentalNav: NavItem[] = [
     { path: '/plantops', icon: Sprout, label: 'PlantOps', tooltip: l('Plant rental inventory & placements', 'Inventario de alquiler y ubicaciones', 'Mietbestand & Standorte') },
+    { path: '/plantops/visita', icon: ClipboardList, label: l('Visit', 'Visita', 'Besuch'), tooltip: l('Run a maintenance visit', 'Ejecutar una visita de mantenimiento', 'Wartungsbesuch durchführen') },
     { path: '/plantops/contracts', icon: FileSignature, label: l('Contracts', 'Contratos', 'Verträge'), tooltip: l('Rental contracts & events', 'Contratos de alquiler y eventos', 'Mietverträge & Events') },
     { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
     { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
@@ -122,12 +130,21 @@ export function AppSidebar() {
     { path: '/requests', icon: MessageSquarePlus, label: l('Requests', 'Solicitudes', 'Anfragen'), tooltip: l('Feature requests & feedback', 'Solicitudes y comentarios', 'Anfragen & Feedback') },
   ];
 
+  // Optional module gating: organizations.modules_json = { "/topography": false, ... }
+  // Absent or empty object = everything visible (no silent hiding).
+  const moduleEnabled = (path: string) => {
+    if (!modules) return true;
+    const key = path.replace(/^\//, '');
+    const v = modules[path] ?? modules[key];
+    return v === undefined ? true : Boolean(v);
+  };
+
   const ownerNav: NavItem[] = [
     ...coreNav,
     ...(isPlantRental ? plantRentalNav : isLandscaper ? landscaperNav : isPropManager ? propManagerNav : homeownerNav),
     ...advancedNav,
     ...settingsNav,
-  ];
+  ].filter((item) => moduleEnabled(item.path));
 
   // Crew nav
   const crewNav: NavItem[] = [
