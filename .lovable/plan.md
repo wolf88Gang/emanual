@@ -99,9 +99,13 @@ Home Guide registra y ejecuta los 10 días. Sin llamadas a IA para editar. Guard
 - Gestión desde la propiedad: crear, copiar, desactivar, regenerar.
 - Página agregada por cliente: fuera de MVP (el modelo lo permite después).
 
-## H. Manual personalizado
+## H. Manual personalizado (snapshot aprobado)
 
-El PDF se genera desde el **plan efectivo de esa propiedad** (riego, luz, ventilación, instrucciones, qué NO hacer por planta), no del protocolo genérico. Natalia lo previsualiza y aprueba antes de compartirlo; el enlace público sirve la última versión aprobada.
+El manual se construye desde el **plan efectivo de esa propiedad** (riego, luz, ventilación, instrucciones, qué NO hacer por planta), no del protocolo genérico.
+
+`estate_share_links` se extiende con `manual_snapshot_json`, `manual_approved_at`, `manual_approved_by`. Flujo: configurar cuidado → previsualizar → **aprobar** → se guarda el snapshot → la página pública y el PDF descargable se generan desde ese mismo snapshot (manual web = manual PDF).
+
+Si el plan cambia después de la última aprobación, la interfaz interna muestra "El plan de cuidado cambió después de la última versión compartida. [Revisar nuevo manual]"; el cliente sigue viendo la versión aprobada hasta que Natalia apruebe de nuevo (reemplaza snapshot, fecha y responsable). Sin tabla de versiones en MVP.
 
 ## I. Visitas y herramientas
 
