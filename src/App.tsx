@@ -164,6 +164,8 @@ function AppRoutes() {
       <Route path="/financials" element={<EstateRoute><Financials /></EstateRoute>} />
       <Route path="/plantops" element={<EstateRoute><PlantOps /></EstateRoute>} />
       <Route path="/plantops/contracts" element={<EstateRoute><PlantOpsContracts /></EstateRoute>} />
+      <Route path="/plantops/visita" element={<EstateRoute><PlantOpsVisit /></EstateRoute>} />
+      <Route path="/plantops/cuidados/:placementId" element={<EstateRoute><PlantOpsCareEditor /></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
       <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />
@@ -173,6 +175,9 @@ function AppRoutes() {
       <Route path="/jobs" element={<JobBoard />} />
       <Route path="/worker/:id" element={<WorkerProfilePage />} />
       <Route path="/jobs/post" element={user ? <EstateRoute><PostJob /></EstateRoute> : <Navigate to="/auth" replace />} />
+
+      {/* Public client portal (token link, no login) */}
+      <Route path="/c/:token" element={<PlantOpsPortal />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
