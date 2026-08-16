@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Droplets, Loader2, CheckCircle2, AlertTriangle, Brush, Receipt, Play, Square, Camera, Settings2,
+  Wrench, PackageCheck,
 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
@@ -19,7 +20,11 @@ import {
 } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import { dueState, logCare, startVisit, closeVisit, addChargeForEstate, type CareActionType } from '@/lib/plantopsCare';
+import {
+  dueState, careState, formatDateEs, logCare, startVisit, closeVisit, addChargeForEstate,
+  assignVisitTools, returnVisitTools, fetchVisitTools, CARE_ISSUE_ACTIONS,
+  type CareActionType, type VisitToolRow, type CareState,
+} from '@/lib/plantopsCare';
 import { uploadPlacementPhoto } from '@/lib/plantops';
 
 interface QueueRow {
@@ -32,13 +37,16 @@ interface QueueRow {
   last_watered_at: string | null;
   water_amount_note: string | null;
   water_method: string | null;
+  water_interval_days: number | null;
+  water_interval_override_days: number | null;
   do_not_do: string | null;
   care_responsibility: string | null;
   plant_name: string;
   zone_name: string | null;
+  state: CareState;
 }
 
-const ORDER: Record<string, number> = { overdue: 0, today: 1, soon: 2, unknown: 3, ok: 4 };
+const ORDER: Record<CareState, number> = { regar: 0, revisar: 1, no_regar: 2 };
 
 export default function PlantOpsVisit() {
   const { profile } = useAuth();
@@ -58,28 +66,55 @@ export default function PlantOpsVisit() {
   const [overrideReason, setOverrideReason] = useState('');
   const [photo, setPhoto] = useState<File | null>(null);
   const [chargeOpen, setChargeOpen] = useState(false);
-  const [clients, setClients] = useState<{ id: string; name: string }[]>([]);
-  const [charge, setCharge] = useState({ clientId: '', description: '', quantity: '1', unitPrice: '', currency: 'CRC' });
+  const [estateClient, setEstateClient] = useState<{ id: string; name: string } | null>(null);
+  const [charge, setCharge] = useState({ description: '', quantity: '1', unitPrice: '', currency: 'CRC' });
   const [closeOpen, setCloseOpen] = useState(false);
   const [closeNotes, setCloseNotes] = useState('');
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [inventory, setInventory] = useState<{ id: string; name: string; quantity: number }[]>([]);
+  const [pick, setPick] = useState<Record<string, number>>({});
+  const [visitTools, setVisitTools] = useState<VisitToolRow[]>([]);
+  const [returnCond, setReturnCond] = useState<Record<string, string>>({});
+  const [toolsException, setToolsException] = useState('');
+
+  const estateClientName = estateClient?.name ?? null;
 
   const load = useCallback(async () => {
     if (!currentEstate?.id) { setLoading(false); return; }
     setLoading(true);
-    const { data, error } = await supabase
-      .from('plant_placements')
-      .select('id, asset_id, spot_label, spot_notes, access_notes, next_water_due, last_watered_at, water_amount_note, water_method, do_not_do, care_responsibility, asset:assets!plant_placements_asset_id_fkey(name), zone:zones(name)')
-      .eq('estate_id', currentEstate.id)
-      .eq('status', 'installed');
+    const [{ data, error }, { data: logs }] = await Promise.all([
+      supabase
+        .from('plant_placements')
+        .select('id, asset_id, spot_label, spot_notes, access_notes, next_water_due, last_watered_at, water_amount_note, water_method, water_interval_days, water_interval_override_days, do_not_do, care_responsibility, asset:assets!plant_placements_asset_id_fkey(name), zone:zones(name)')
+        .eq('estate_id', currentEstate.id)
+        .eq('status', 'installed'),
+      supabase
+        .from('plant_care_logs')
+        .select('placement_id, action_type, performed_at')
+        .eq('estate_id', currentEstate.id)
+        .order('performed_at', { ascending: false })
+        .limit(400),
+    ]);
     if (error) {
       toast({ title: l('Could not load plants', 'No se pudieron cargar las plantas'), description: error.message, variant: 'destructive' });
     } else {
-      const mapped = (data || []).map((r: any) => ({
-        ...r,
-        plant_name: r.asset?.name ?? '—',
-        zone_name: r.zone?.name ?? null,
-      })) as QueueRow[];
-      mapped.sort((a, b) => ORDER[dueState(a.next_water_due)] - ORDER[dueState(b.next_water_due)]);
+      // Latest log per placement decides whether the plant has an open problem.
+      const latest = new Map<string, string>();
+      ((logs || []) as any[]).forEach((r) => {
+        if (r.placement_id && !latest.has(r.placement_id)) latest.set(r.placement_id, r.action_type);
+      });
+      const mapped = (data || []).map((r: any) => {
+        const effective = r.water_interval_override_days ?? r.water_interval_days ?? null;
+        const openIssue = CARE_ISSUE_ACTIONS.includes(latest.get(r.id) as CareActionType);
+        return {
+          ...r,
+          plant_name: r.asset?.name ?? '—',
+          zone_name: r.zone?.name ?? null,
+          state: openIssue ? ('revisar' as CareState) : careState(r.next_water_due, effective),
+        } as QueueRow;
+      });
+      mapped.sort((a, b) => ORDER[a.state] - ORDER[b.state]);
       setRows(mapped);
     }
     setLoading(false);
@@ -87,11 +122,24 @@ export default function PlantOpsVisit() {
 
   useEffect(() => { load(); }, [load]);
 
+  // The extra charge is locked to the client of the visited property.
   useEffect(() => {
-    if (!profile?.org_id) return;
-    supabase.from('clients').select('id, name').eq('org_id', profile.org_id).order('name')
-      .then(({ data }) => setClients(((data || []) as any[]).map((c) => ({ id: c.id, name: c.name }))));
-  }, [profile?.org_id]);
+    if (!currentEstate?.id) { setEstateClient(null); return; }
+    supabase.from('estates').select('client_id, client:clients(id, name)').eq('id', currentEstate.id).maybeSingle()
+      .then(({ data }) => {
+        const c = (data as any)?.client;
+        setEstateClient(c ? { id: c.id, name: c.name } : null);
+      });
+  }, [currentEstate?.id]);
+
+  // Inventory available for tool check-in (per property).
+  useEffect(() => {
+    if (!currentEstate?.id) return;
+    supabase.from('inventory_items').select('id, name, name_es, quantity').eq('estate_id', currentEstate.id).order('name')
+      .then(({ data }) => setInventory(((data || []) as any[]).map((i) => ({
+        id: i.id, name: i.name_es || i.name, quantity: i.quantity ?? 1,
+      }))));
+  }, [currentEstate?.id]);
 
   // Resume an open visit for this estate
   useEffect(() => {
@@ -102,25 +150,27 @@ export default function PlantOpsVisit() {
       .then(({ data }) => { if (data && data[0]) setShiftId((data[0] as any).id); });
   }, [currentEstate?.id, profile?.id]);
 
+  const refreshTools = useCallback(async (id: string) => {
+    try { setVisitTools(await fetchVisitTools(id)); } catch { /* tools are optional */ }
+  }, []);
+
+  useEffect(() => { if (shiftId) refreshTools(shiftId); }, [shiftId, refreshTools]);
+
+  const pendingTools = visitTools.filter((t) => !t.returned_at);
+
   const counts = useMemo(() => {
-    const c = { overdue: 0, today: 0, other: 0 };
-    rows.forEach((r) => {
-      const s = dueState(r.next_water_due);
-      if (s === 'overdue') c.overdue++;
-      else if (s === 'today') c.today++;
-      else c.other++;
-    });
+    const c = { regar: 0, no_regar: 0, revisar: 0 };
+    rows.forEach((r) => { c[r.state]++; });
     return c;
   }, [rows]);
 
   const badgeFor = (r: QueueRow) => {
-    const s = dueState(r.next_water_due);
-    if (s === 'overdue') return <Badge variant="destructive">{l('Overdue', 'Atrasada')}</Badge>;
-    if (s === 'today') return <Badge className="bg-primary text-primary-foreground">{l('Today', 'Hoy')}</Badge>;
-    if (s === 'soon') return <Badge variant="secondary">{l('Soon', 'Pronto')}</Badge>;
-    if (s === 'unknown') return <Badge variant="outline">{l('No plan', 'Sin plan')}</Badge>;
-    return <Badge variant="outline">{l('OK', 'Al día')}</Badge>;
+    if (r.state === 'regar') return <Badge className="bg-primary text-primary-foreground">{l('WATER', 'REGAR')}</Badge>;
+    if (r.state === 'revisar') return <Badge variant="destructive">{l('REVIEW', 'REVISAR')}</Badge>;
+    return <Badge variant="outline">{l('DO NOT WATER', 'NO REGAR')}</Badge>;
   };
+
+  const isFutureDue = (r: QueueRow | null) => !!r && dueState(r.next_water_due) !== 'overdue' && dueState(r.next_water_due) !== 'today' && !!r.next_water_due;
 
   const openDetail = (r: QueueRow, a: CareActionType) => {
     setDetail(r); setAction(a); setNote(''); setAmountNote(r.water_amount_note || '');
@@ -133,7 +183,39 @@ export default function PlantOpsVisit() {
     try {
       const id = await startVisit(currentEstate.id);
       setShiftId(id);
+      setPick({});
+      setToolsOpen(true);
       toast({ title: l('Visit started', 'Visita iniciada') });
+    } catch (e: any) {
+      toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
+    } finally { setBusy(null); }
+  };
+
+  const handleAssignTools = async () => {
+    if (!shiftId) return;
+    const items = Object.entries(pick).filter(([, q]) => q > 0).map(([inventory_item_id, quantity]) => ({ inventory_item_id, quantity }));
+    setBusy('tools');
+    try {
+      if (items.length) await assignVisitTools(shiftId, items);
+      await refreshTools(shiftId);
+      setToolsOpen(false);
+      toast({ title: l('Tools registered', 'Herramientas registradas') });
+    } catch (e: any) {
+      toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
+    } finally { setBusy(null); }
+  };
+
+  const handleReturnTools = async () => {
+    if (!shiftId) return;
+    const items = pendingTools
+      .filter((t) => returnCond[t.id] !== undefined)
+      .map((t) => ({ assignment_id: t.id, condition: returnCond[t.id] || 'good' }));
+    if (!items.length) { setCheckoutOpen(false); return; }
+    setBusy('return');
+    try {
+      await returnVisitTools(shiftId, items);
+      await refreshTools(shiftId);
+      toast({ title: l('Tools returned', 'Herramientas devueltas') });
     } catch (e: any) {
       toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
@@ -141,6 +223,14 @@ export default function PlantOpsVisit() {
 
   const handleLog = async () => {
     if (!detail) return;
+    if (action === 'water' && isFutureDue(detail) && !overrideReason.trim()) {
+      toast({
+        title: l('Too early to water', 'Aún es pronto para regar'),
+        description: `${l('Do not water before', 'No regar antes del')} ${formatDateEs(detail.next_water_due)}. ${l('A reason is required.', 'Se requiere un motivo.')}`,
+        variant: 'destructive',
+      });
+      return;
+    }
     setBusy('log');
     try {
       let photoPath: string | null = null;
@@ -162,7 +252,15 @@ export default function PlantOpsVisit() {
         });
         return;
       }
-      toast({ title: l('Registered', 'Registrado') });
+      const nextDue = (res as any)?.care?.next_water_due ?? null;
+      if (action === 'water' && nextDue) {
+        toast({
+          title: l('Plant watered', 'Planta regada'),
+          description: `${l('Do not water again before', 'No volver a regar antes del')} ${formatDateEs(nextDue)}.`,
+        });
+      } else {
+        toast({ title: l('Registered', 'Registrado') });
+      }
       setDetail(null);
       load();
     } catch (e: any) {
@@ -189,7 +287,7 @@ export default function PlantOpsVisit() {
       });
       toast({ title: l('Charge added to draft invoice', 'Cargo agregado a la factura borrador') });
       setChargeOpen(false);
-      setCharge({ clientId: charge.clientId, description: '', quantity: '1', unitPrice: '', currency: charge.currency });
+      setCharge({ description: '', quantity: '1', unitPrice: '', currency: charge.currency });
     } catch (e: any) {
       toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
@@ -197,11 +295,24 @@ export default function PlantOpsVisit() {
 
   const handleClose = async () => {
     if (!shiftId) return;
+    if (pendingTools.length > 0 && !toolsException.trim()) {
+      toast({
+        title: l('Tools pending', 'Herramientas pendientes'),
+        description: l('Return the tools of this visit or record an exception reason.', 'Devuelva las herramientas de esta visita o registre un motivo de excepción.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     setBusy('close');
     try {
-      await closeVisit({ shiftId, workDescription: closeNotes || null });
+      await closeVisit({
+        shiftId,
+        workDescription: closeNotes || null,
+        toolsExceptionReason: pendingTools.length > 0 ? toolsException : null,
+      });
       toast({ title: l('Visit closed', 'Visita cerrada') });
-      setShiftId(null); setCloseOpen(false); setCloseNotes('');
+      setShiftId(null); setCloseOpen(false); setCloseNotes(''); setToolsException('');
+      setVisitTools([]);
     } catch (e: any) {
       toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
@@ -213,18 +324,26 @@ export default function PlantOpsVisit() {
         <header className="space-y-1">
           <h1 className="text-2xl font-semibold">{l('Visit', 'Visita')}</h1>
           <p className="text-sm text-muted-foreground">
-            {currentEstate?.name} · {l('Overdue', 'Atrasadas')}: {counts.overdue} · {l('Today', 'Hoy')}: {counts.today}
+            {currentEstate?.name} · {l('WATER', 'REGAR')}: {counts.regar} · {l('REVIEW', 'REVISAR')}: {counts.revisar} · {l('DO NOT WATER', 'NO REGAR')}: {counts.no_regar}
           </p>
         </header>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           {shiftId ? (
             <>
-              <Button variant="outline" className="flex-1" onClick={() => setCloseOpen(true)}>
-                <Square className="h-4 w-4 mr-2" />{l('Close visit', 'Cerrar visita')}
+              <Button variant="outline" onClick={() => setToolsOpen(true)}>
+                <Wrench className="h-4 w-4 mr-2" />{l('Tools', 'Herramientas')}
+              </Button>
+              <Button variant="outline" onClick={() => { setReturnCond({}); setCheckoutOpen(true); }}>
+                <PackageCheck className="h-4 w-4 mr-2" />
+                {l('Check out tools', 'Devolver herramientas')}
+                {pendingTools.length > 0 && <Badge variant="destructive" className="ml-2">{pendingTools.length}</Badge>}
               </Button>
               <Button variant="secondary" onClick={() => setChargeOpen(true)}>
                 <Receipt className="h-4 w-4 mr-2" />{l('Charge', 'Cargo')}
+              </Button>
+              <Button onClick={() => setCloseOpen(true)}>
+                <Square className="h-4 w-4 mr-2" />{l('Close visit', 'Cerrar visita')}
               </Button>
             </>
           ) : (
@@ -252,6 +371,11 @@ export default function PlantOpsVisit() {
                       <p className="text-sm text-muted-foreground truncate">
                         {[r.zone_name, r.spot_label].filter(Boolean).join(' · ') || l('No spot', 'Sin punto')}
                       </p>
+                      {r.state === 'no_regar' && (
+                        <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mt-1">
+                          {l('DO NOT WATER BEFORE', 'NO REGAR ANTES DEL')} {formatDateEs(r.next_water_due)}
+                        </p>
+                      )}
                       {r.water_amount_note && (
                         <p className="text-sm text-muted-foreground mt-1">💧 {r.water_amount_note}</p>
                       )}
@@ -290,11 +414,21 @@ export default function PlantOpsVisit() {
 
       {/* Log dialog */}
       <Dialog open={!!detail} onOpenChange={(o) => !o && setDetail(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{detail?.plant_name}</DialogTitle>
             <DialogDescription>{l('Register the action performed.', 'Registre la acción realizada.')}</DialogDescription>
           </DialogHeader>
+          {action === 'water' && isFutureDue(detail) && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
+              <p className="font-semibold text-destructive">
+                {l('DO NOT WATER BEFORE', 'NO REGAR ANTES DEL')} {formatDateEs(detail?.next_water_due)}
+              </p>
+              <p className="text-muted-foreground">
+                {l('Watering earlier requires a reason, saved in the care log.', 'Regar antes requiere un motivo, que queda guardado en el historial.')}
+              </p>
+            </div>
+          )}
           <div className="space-y-3">
             <div>
               <Label>{l('Action', 'Acción')}</Label>
@@ -342,6 +476,78 @@ export default function PlantOpsVisit() {
         </DialogContent>
       </Dialog>
 
+      {/* Tool check-in */}
+      <Dialog open={toolsOpen} onOpenChange={setToolsOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{l('What tools are you bringing?', '¿Qué herramientas lleva?')}</DialogTitle>
+            <DialogDescription>
+              {l('They stay linked to this visit until you check them out.', 'Quedan ligadas a esta visita hasta que las devuelva.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            {inventory.length === 0 && (
+              <p className="text-sm text-muted-foreground">{l('No inventory registered for this property.', 'No hay inventario registrado en esta propiedad.')}</p>
+            )}
+            {inventory.map((i) => (
+              <div key={i.id} className="flex items-center justify-between gap-3 border-b border-border/50 pb-2">
+                <span className="text-sm">{i.name}</span>
+                <Input type="number" min="0" max={i.quantity} className="w-20"
+                  value={pick[i.id] ?? ''}
+                  onChange={(e) => setPick({ ...pick, [i.id]: Number(e.target.value) || 0 })} />
+              </div>
+            ))}
+            {visitTools.length > 0 && (
+              <div className="pt-2 text-sm text-muted-foreground">
+                {l('Already on this visit', 'Ya en esta visita')}: {visitTools.map((t) => `${t.name}×${t.quantity_assigned}`).join(', ')}
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setToolsOpen(false)}>{l('Skip', 'Omitir')}</Button>
+            <Button onClick={handleAssignTools} disabled={busy === 'tools'}>
+              {busy === 'tools' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Confirm', 'Confirmar')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Tool checkout */}
+      <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+        <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{l('Check out tools', 'Devolver herramientas')}</DialogTitle>
+            <DialogDescription>
+              {l('Only the tools taken out on this visit.', 'Solo las herramientas sacadas en esta visita.')}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-3">
+            {pendingTools.length === 0 && (
+              <p className="text-sm text-muted-foreground">{l('Nothing pending.', 'Nada pendiente.')}</p>
+            )}
+            {pendingTools.map((t) => (
+              <div key={t.id} className="space-y-1 border-b border-border/50 pb-2">
+                <p className="text-sm font-medium">{t.name} × {t.quantity_assigned}</p>
+                <Select value={returnCond[t.id] ?? ''} onValueChange={(v) => setReturnCond({ ...returnCond, [t.id]: v })}>
+                  <SelectTrigger><SelectValue placeholder={l('Condition on return', 'Condición al devolver')} /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="good">{l('Good', 'Buena')}</SelectItem>
+                    <SelectItem value="fair">{l('Fair', 'Regular')}</SelectItem>
+                    <SelectItem value="needs_repair">{l('Needs repair', 'Requiere reparación')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            ))}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCheckoutOpen(false)}>{l('Close', 'Cerrar')}</Button>
+            <Button onClick={handleReturnTools} disabled={busy === 'return' || pendingTools.length === 0}>
+              {busy === 'return' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Confirm return', 'Confirmar devolución')}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Charge dialog */}
       <Dialog open={chargeOpen} onOpenChange={setChargeOpen}>
         <DialogContent className="max-w-md">
@@ -383,7 +589,7 @@ export default function PlantOpsVisit() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setChargeOpen(false)}>{l('Cancel', 'Cancelar')}</Button>
-            <Button onClick={handleCharge} disabled={busy === 'charge'}>
+            <Button onClick={handleCharge} disabled={busy === 'charge' || !estateClient}>
               {busy === 'charge' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Add', 'Agregar')}
             </Button>
           </DialogFooter>
@@ -397,6 +603,15 @@ export default function PlantOpsVisit() {
             <DialogTitle>{l('Close visit', 'Cerrar visita')}</DialogTitle>
             <DialogDescription>{l('Summary of the work done.', 'Resumen del trabajo realizado.')}</DialogDescription>
           </DialogHeader>
+          {pendingTools.length > 0 && (
+            <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 space-y-2">
+              <p className="text-sm font-semibold text-destructive">
+                {l('Tools not returned', 'Herramientas sin devolver')}: {pendingTools.map((t) => t.name).join(', ')}
+              </p>
+              <Label className="text-sm">{l('Exception reason (required to close anyway)', 'Motivo de excepción (requerido para cerrar así)')}</Label>
+              <Input value={toolsException} onChange={(e) => setToolsException(e.target.value)} />
+            </div>
+          )}
           <Textarea value={closeNotes} onChange={(e) => setCloseNotes(e.target.value)} rows={4} />
           <DialogFooter>
             <Button variant="outline" onClick={() => setCloseOpen(false)}>{l('Cancel', 'Cancelar')}</Button>
