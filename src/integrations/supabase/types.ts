@@ -3691,6 +3691,21 @@ export type Database = {
             }
             Returns: Json
           }
+      plantops_set_pot_details: {
+        Args: {
+          p_asset_id: string
+          p_diameter_cm?: number
+          p_drainage_holes?: number
+          p_has_drainage?: boolean
+          p_has_saucer?: boolean
+          p_height_cm?: number
+          p_material?: string
+          p_notes?: string
+          p_reservoir?: boolean
+          p_volume_liters?: number
+        }
+        Returns: undefined
+      }
       plantops_start_visit: {
         Args: { p_estate_id: string; p_notes?: string }
         Returns: string
