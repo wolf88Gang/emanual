@@ -14,11 +14,13 @@ import {
   saveCareSettings,
   fetchModules,
   saveModules,
+  POT_MATERIALS,
+  POT_MATERIAL_LABELS,
+  type PotMaterial,
   type CareSettings,
 } from '@/lib/plantopsCare';
 
 const MODULE_KEYS = ['visits', 'care', 'billing', 'contracts', 'inventory', 'portal'] as const;
-const POT_MATERIALS = ['plastico', 'ceramica', 'barro', 'metal', 'fibra', 'concreto'];
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
@@ -153,7 +155,9 @@ export default function PlantOpsSettings() {
                  'Valores positivos alargan el intervalo, negativos lo acortan (días).')}
             </p>
 
-            {factorGroup('pot_material', l('Pot material', 'Material de maceta'), POT_MATERIALS)}
+            {factorGroup('pot_material', l('Pot material', 'Material de maceta'), [...POT_MATERIALS], (k) =>
+              language === 'es' ? POT_MATERIAL_LABELS[k as PotMaterial].es : POT_MATERIAL_LABELS[k as PotMaterial].en,
+            )}
             {factorGroup('ventilation', l('Ventilation', 'Ventilación'), VENTILATION)}
             {factorGroup('light_actual', l('Actual light', 'Luz real'), LIGHT)}
             {factorGroup('season', l('Month', 'Mes'), MONTHS, (k) =>

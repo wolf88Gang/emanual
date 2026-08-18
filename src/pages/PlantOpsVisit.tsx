@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Droplets, Loader2, CheckCircle2, AlertTriangle, Brush, Receipt, Play, Square, Camera, Settings2,
   Wrench, PackageCheck,
@@ -50,7 +50,8 @@ const ORDER: Record<CareState, number> = { regar: 0, revisar: 1, no_regar: 2 };
 
 export default function PlantOpsVisit() {
   const { profile } = useAuth();
-  const { currentEstate } = useEstate();
+  const { currentEstate, estates, setCurrentEstate } = useEstate();
+  const [searchParams] = useSearchParams();
   const { tl } = useLanguage();
   const navigate = useNavigate();
   const l = (en: string, es: string) => tl({ en, es, de: en });
@@ -77,6 +78,14 @@ export default function PlantOpsVisit() {
   const [visitTools, setVisitTools] = useState<VisitToolRow[]>([]);
   const [returnCond, setReturnCond] = useState<Record<string, string>>({});
   const [toolsException, setToolsException] = useState('');
+
+  // A visit is always tied to one property: `?estate=<uuid>` selects it explicitly.
+  const requestedEstateId = searchParams.get('estate');
+  useEffect(() => {
+    if (!requestedEstateId || requestedEstateId === currentEstate?.id) return;
+    const match = estates.find((e) => e.id === requestedEstateId);
+    if (match) setCurrentEstate(match);
+  }, [requestedEstateId, estates, currentEstate?.id]);
 
   const estateClientName = estateClient?.name ?? null;
 

@@ -133,7 +133,11 @@ export default function PlantOpsProperty() {
         showBalance: activeLink?.show_balance ?? false,
         contactNote: activeLink?.contact_note ?? null,
       });
-      if (detail) await approveManual(created.id, buildManualSnapshot(detail, activeLink?.contact_note ?? null));
+      // Rotating the token is a security action, not an editorial one: the manual
+      // that was already approved is carried over verbatim, never rebuilt.
+      if (activeLink?.manual_snapshot_json) {
+        await approveManual(created.id, activeLink.manual_snapshot_json);
+      }
       await navigator.clipboard.writeText(created.url).catch(() => {});
       await load();
       toast({ title: l('New link generated and copied', 'Nuevo enlace generado y copiado'), description: created.url });

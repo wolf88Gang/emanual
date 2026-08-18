@@ -22,27 +22,29 @@ export function BottomNav() {
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
   const es = language === 'es';
+  const de = language === 'de';
+  const t = (en: string, esL: string, deL: string) => (es ? esL : de ? deL : en);
 
   // Plant rental operations never use the estate map; the flow is visits and care.
   // Crew only sees field work — clients and settings are admin modules.
   const plantOpsItems: NavItem[] = [
-    { path: '/plantops', icon: Home, label: es ? 'Inicio' : 'Home' },
-    { path: '/plantops/visita', icon: Droplets, label: es ? 'Visitas' : 'Visits' },
-    { path: '/plantops/care', icon: Leaf, label: es ? 'Cuidados' : 'Care' },
+    { path: '/plantops', icon: Home, label: t('Home', 'Inicio', 'Start') },
+    { path: '/plantops/visita', icon: Droplets, label: t('Visits', 'Visitas', 'Besuche') },
+    { path: '/plantops/care', icon: Leaf, label: t('Care', 'Cuidados', 'Pflege') },
     ...(isCrew
       ? []
       : [
-          { path: '/crm', icon: Users, label: es ? 'Clientes' : 'Clients' },
-          { path: '/plantops/settings', icon: MoreHorizontal, label: es ? 'Más' : 'More' },
+          { path: '/crm', icon: Users, label: t('Clients', 'Clientes', 'Kunden') },
+          { path: '/plantops/settings', icon: MoreHorizontal, label: t('More', 'Más', 'Mehr') },
         ]),
   ];
 
   // Priority items on top: Map, Assets, Tasks, Shift/Work
   const estateItems: NavItem[] = [
-    { path: '/map', icon: Map, label: es ? 'Mapa' : 'Map', hideForVendor: true },
-    { path: '/assets', icon: Box, label: es ? 'Activos' : 'Assets', hideForVendor: true },
-    { path: '/tasks', icon: ClipboardList, label: es ? 'Tareas' : 'Tasks' },
-    { path: isCrew ? '/checkin' : '/', icon: isCrew ? Clock : Briefcase, label: isCrew ? (es ? 'Turno' : 'Shift') : (es ? 'Trabajo' : 'Work') },
+    { path: '/map', icon: Map, label: t('Map', 'Mapa', 'Karte'), hideForVendor: true },
+    { path: '/assets', icon: Box, label: t('Assets', 'Activos', 'Anlagen'), hideForVendor: true },
+    { path: '/tasks', icon: ClipboardList, label: t('Tasks', 'Tareas', 'Aufgaben') },
+    { path: isCrew ? '/checkin' : '/', icon: isCrew ? Clock : Briefcase, label: isCrew ? t('Shift', 'Turno', 'Schicht') : t('Work', 'Trabajo', 'Arbeit') },
   ];
 
   const navItems = (isPlantRental ? plantOpsItems : estateItems).filter(
@@ -68,7 +70,7 @@ export function BottomNav() {
               )}
             >
               <item.icon className={cn('h-5 w-5', isActive && 'scale-110')} />
-              <span className="text-[10px] font-medium truncate">{item.label}</span>
+              <span className="text-[11px] font-medium truncate max-w-[64px] text-center">{item.label}</span>
             </NavLink>
           );
         })}
