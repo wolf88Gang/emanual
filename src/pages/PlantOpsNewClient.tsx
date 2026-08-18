@@ -18,7 +18,7 @@ import { useOrgType } from '@/hooks/usePlantOps';
 import { reserveAsset, installAsset, upsertAssetDetails } from '@/lib/plantops';
 import {
   setCarePlan,
-  setPotDetails,
+  fetchCareQueue,
   addChargeForEstate,
   createShareLink,
   approveManual,
