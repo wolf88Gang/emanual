@@ -41,6 +41,7 @@ const PlantOps = lazy(() => import("./pages/PlantOps"));
 const PlantOpsContracts = lazy(() => import("./pages/PlantOpsContracts"));
 const PlantOpsVisit = lazy(() => import("./pages/PlantOpsVisit"));
 const PlantOpsCareEditor = lazy(() => import("./pages/PlantOpsCareEditor"));
+const PlantOpsCare = lazy(() => import("./pages/PlantOpsCare"));
 const PlantOpsPortal = lazy(() => import("./pages/PlantOpsPortal"));
 const Features = lazy(() => import("./pages/Features"));
 const SetupWizard = lazy(() => import("./pages/SetupWizard"));
@@ -165,6 +166,8 @@ function AppRoutes() {
       <Route path="/plantops" element={<EstateRoute><PlantOps /></EstateRoute>} />
       <Route path="/plantops/contracts" element={<EstateRoute><PlantOpsContracts /></EstateRoute>} />
       <Route path="/plantops/visita" element={<EstateRoute><PlantOpsVisit /></EstateRoute>} />
+      <Route path="/plantops/care" element={<EstateRoute><PlantOpsCare /></EstateRoute>} />
+      <Route path="/plantops/cuidados" element={<EstateRoute><PlantOpsCare /></EstateRoute>} />
       <Route path="/plantops/cuidados/:placementId" element={<EstateRoute><PlantOpsCareEditor /></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
