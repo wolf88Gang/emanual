@@ -13,6 +13,7 @@ import { SubscriptionProvider } from "./contexts/SubscriptionContext";
 import { SidebarLayout } from "./components/layout/SidebarLayout";
 import { TrialGate } from "./components/subscription/TrialGate";
 import { HGLogo } from "./components/HGLogo";
+import { getPostAuthRoute } from "./lib/authRouting";
 
 // Lazy-loaded pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
@@ -79,7 +80,7 @@ const queryClient = new QueryClient({
 });
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, profile, roles, loading } = useAuth();
+  const { user, profile, roles, loading, isPlatformAdmin } = useAuth();
   
   if (loading) {
     return <PageLoader />;
@@ -87,6 +88,11 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Platform admins never enter tenant context (no org, estate or subscription).
+  if (isPlatformAdmin) {
+    return <Navigate to="/platform" replace />;
   }
 
   // Workers go to the job board, not estate management
@@ -139,19 +145,39 @@ function PlatformRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+/** Landing route: public site, platform console, or the tenant home screen. */
+function RootRoute() {
+  const { user, profile, roles, isPlatformAdmin, orgType, loading } = useAuth();
+
+  if (loading) return <PageLoader />;
+  if (!user) return <Features />;
+
+  const target = getPostAuthRoute({ isPlatformAdmin, orgId: profile?.org_id, orgType, roles });
+  if (target !== "/") return <Navigate to={target} replace />;
+
+  return <EstateRoute><WorkView /></EstateRoute>;
+}
+
 function AppRoutes() {
-  const { user, isPlatformAdmin, loading } = useAuth();
+  const { user, profile, roles, isPlatformAdmin, orgType, loading } = useAuth();
 
   if (loading) {
     return <PageLoader />;
   }
 
+  const postAuthRoute = getPostAuthRoute({
+    isPlatformAdmin,
+    orgId: profile?.org_id,
+    orgType,
+    roles,
+  });
+
   return (
     <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/features" element={<Navigate to="/" replace />} />
-      <Route path="/auth" element={user ? <Navigate to={isPlatformAdmin ? "/platform" : "/map"} replace /> : <Auth />} />
-      <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
+      <Route path="/auth" element={user ? <Navigate to={postAuthRoute} replace /> : <Auth />} />
+      <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
       <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
       <Route path="/join-client" element={user ? <JoinClient /> : <Navigate to="/auth" replace />} />
       
@@ -164,7 +190,7 @@ function AppRoutes() {
       <Route path="/platform/system" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
 
       {/* Public landing for unauthenticated, dashboard for authenticated */}
-      <Route path="/" element={user ? <EstateRoute><WorkView /></EstateRoute> : <Features />} />
+      <Route path="/" element={<RootRoute />} />
 
       <Route path="/map" element={<EstateRoute><MapView /></EstateRoute>} />
       <Route path="/tasks" element={<EstateRoute><Tasks /></EstateRoute>} />
