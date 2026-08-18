@@ -136,18 +136,30 @@ export default function PlantOpsContracts() {
     }
   };
 
+  const statusLabel = (s: string) =>
+    ({
+      draft: l('Draft', 'Borrador', 'Entwurf'),
+      active: l('Active', 'Activo', 'Aktiv'),
+      ended: l('Ended', 'Finalizado', 'Beendet'),
+      cancelled: l('Cancelled', 'Cancelado', 'Storniert'),
+    } as Record<string, string>)[s] ?? s;
+
+  const billingLabel = (b: string) =>
+    ({
+      monthly: l('Monthly', 'Mensual', 'Monatlich'),
+      quarterly: l('Quarterly', 'Trimestral', 'Vierteljährlich'),
+      event: l('Per event', 'Por evento', 'Pro Event'),
+      other: l('Other', 'Otro', 'Andere'),
+    } as Record<string, string>)[b] ?? b;
+
   const statusBadge = (s: string) => {
     const cls: Record<string, string> = {
       draft: 'bg-muted text-muted-foreground border-border',
       active: 'bg-primary/15 text-primary border-primary/30',
       ended: 'bg-destructive/10 text-destructive border-destructive/30',
+      cancelled: 'bg-destructive/10 text-destructive border-destructive/30',
     };
-    const label: Record<string, string> = {
-      draft: l('Draft', 'Borrador', 'Entwurf'),
-      active: l('Active', 'Activo', 'Aktiv'),
-      ended: l('Ended', 'Finalizado', 'Beendet'),
-    };
-    return <Badge variant="outline" className={cls[s]}>{label[s] ?? s}</Badge>;
+    return <Badge variant="outline" className={cls[s]}>{statusLabel(s)}</Badge>;
   };
 
   const grouped = useMemo(() => ({
