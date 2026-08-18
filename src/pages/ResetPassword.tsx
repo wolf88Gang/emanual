@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,46 +11,65 @@ import { toast } from 'sonner';
 import { Seo } from '@/components/Seo';
 
 /**
- * Landing page for the Supabase recovery link. The recovery session is
- * established by the SDK from the URL fragment, so we only need to wait for it
- * and then let the user set a new password.
+ * Landing page for the Supabase recovery link.
+ *
+ * A plain authenticated session is NOT sufficient: the password form only
+ * unlocks when this navigation carries a real recovery signal — the
+ * PASSWORD_RECOVERY auth event, or a recovery type in the URL
+ * (hash fragment `type=recovery` / `?code=` PKCE recovery link).
  */
 export default function ResetPassword() {
   const { language } = useLanguage();
-  const es = language === 'es';
   const navigate = useNavigate();
 
+  const tr = (en: string, es: string, de: string) =>
+    language === 'es' ? es : language === 'de' ? de : en;
+
   const [ready, setReady] = useState(false);
-  const [hasSession, setHasSession] = useState(false);
+  const [isRecovery, setIsRecovery] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
   const [show, setShow] = useState(false);
   const [saving, setSaving] = useState(false);
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session) {
-        setHasSession(true);
+    const hash = window.location.hash ?? '';
+    const search = window.location.search ?? '';
+    const urlLooksLikeRecovery =
+      hash.includes('type=recovery') ||
+      new URLSearchParams(search).get('type') === 'recovery' ||
+      new URLSearchParams(search).has('code');
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY' || (urlLooksLikeRecovery && session)) {
+        setIsRecovery(true);
         setReady(true);
+        if (timer.current) clearTimeout(timer.current);
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setHasSession(!!session);
+    // Give the SDK a moment to process the recovery link before deciding.
+    timer.current = setTimeout(async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      setIsRecovery(urlLooksLikeRecovery && !!session);
       setReady(true);
-    });
+    }, urlLooksLikeRecovery ? 1200 : 0);
 
-    return () => subscription.unsubscribe();
+    return () => {
+      subscription.unsubscribe();
+      if (timer.current) clearTimeout(timer.current);
+    };
   }, []);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password.length < 8) {
-      toast.error(es ? 'Use al menos 8 caracteres.' : 'Use at least 8 characters.');
+      toast.error(tr('Use at least 8 characters.', 'Use al menos 8 caracteres.', 'Verwenden Sie mindestens 8 Zeichen.'));
       return;
     }
     if (password !== confirm) {
-      toast.error(es ? 'Las contraseñas no coinciden.' : 'Passwords do not match.');
+      toast.error(tr('Passwords do not match.', 'Las contraseñas no coinciden.', 'Die Passwörter stimmen nicht überein.'));
       return;
     }
     setSaving(true);
@@ -60,8 +79,10 @@ export default function ResetPassword() {
         toast.error(error.message);
         return;
       }
-      toast.success(es ? 'Contraseña actualizada.' : 'Password updated.');
-      navigate('/', { replace: true });
+      toast.success(tr('Password updated.', 'Contraseña actualizada.', 'Passwort aktualisiert.'));
+      // Never keep the recovery session authenticated.
+      await supabase.auth.signOut();
+      navigate('/auth?password_reset=success', { replace: true });
     } finally {
       setSaving(false);
     }
@@ -70,30 +91,38 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <Seo
-        title={es ? 'Nueva contraseña — Home Guide' : 'New password — Home Guide'}
-        description={es ? 'Defina una nueva contraseña para su cuenta de Home Guide.' : 'Set a new password for your Home Guide account.'}
+        title={tr('New password — Home Guide', 'Nueva contraseña — Home Guide', 'Neues Passwort — Home Guide')}
+        description={tr(
+          'Set a new password for your Home Guide account.',
+          'Defina una nueva contraseña para su cuenta de Home Guide.',
+          'Legen Sie ein neues Passwort für Ihr Home Guide-Konto fest.',
+        )}
         path="/auth/reset-password"
       />
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle>{es ? 'Nueva contraseña' : 'New password'}</CardTitle>
+          <CardTitle>{tr('New password', 'Nueva contraseña', 'Neues Passwort')}</CardTitle>
         </CardHeader>
         <CardContent>
           {!ready ? (
             <div className="flex justify-center py-8"><Loader2 className="h-5 w-5 animate-spin" /></div>
-          ) : !hasSession ? (
+          ) : !isRecovery ? (
             <div className="space-y-4 text-sm text-muted-foreground">
               <p>
-                {es
-                  ? 'El enlace de recuperación no es válido o ya expiró. Solicite uno nuevo desde el inicio de sesión.'
-                  : 'This recovery link is invalid or has expired. Request a new one from the sign-in page.'}
+                {tr(
+                  'This recovery link is invalid or has expired. Request a new one from the sign-in page.',
+                  'El enlace de recuperación no es válido o ya expiró. Solicite uno nuevo desde el inicio de sesión.',
+                  'Dieser Wiederherstellungslink ist ungültig oder abgelaufen. Fordern Sie über die Anmeldeseite einen neuen an.',
+                )}
               </p>
-              <Button asChild className="w-full"><Link to="/auth">{es ? 'Ir a iniciar sesión' : 'Go to sign in'}</Link></Button>
+              <Button asChild className="w-full">
+                <Link to="/auth">{tr('Go to sign in', 'Ir a iniciar sesión', 'Zur Anmeldung')}</Link>
+              </Button>
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4">
               <div className="space-y-1.5">
-                <Label htmlFor="new-password">{es ? 'Nueva contraseña' : 'New password'}</Label>
+                <Label htmlFor="new-password">{tr('New password', 'Nueva contraseña', 'Neues Passwort')}</Label>
                 <div className="relative">
                   <Input
                     id="new-password"
@@ -107,14 +136,16 @@ export default function ResetPassword() {
                     type="button"
                     onClick={() => setShow(!show)}
                     className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                    aria-label={es ? 'Mostrar contraseña' : 'Show password'}
+                    aria-label={tr('Show password', 'Mostrar contraseña', 'Passwort anzeigen')}
                   >
                     {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                   </button>
                 </div>
               </div>
               <div className="space-y-1.5">
-                <Label htmlFor="confirm-password">{es ? 'Confirmar contraseña' : 'Confirm password'}</Label>
+                <Label htmlFor="confirm-password">
+                  {tr('Confirm password', 'Confirmar contraseña', 'Passwort bestätigen')}
+                </Label>
                 <Input
                   id="confirm-password"
                   type={show ? 'text' : 'password'}
@@ -124,7 +155,7 @@ export default function ResetPassword() {
                 />
               </div>
               <Button type="submit" className="w-full" disabled={saving}>
-                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : (es ? 'Guardar contraseña' : 'Save password')}
+                {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : tr('Save password', 'Guardar contraseña', 'Passwort speichern')}
               </Button>
             </form>
           )}
