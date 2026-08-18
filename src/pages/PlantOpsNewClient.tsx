@@ -73,11 +73,15 @@ interface PlantDraft {
   zoneName: string;
   spotLabel: string;
   accessNotes: string;
+  withPot: boolean;
   potMaterial: string;
   potDiameter: string;
   potHeight: string;
+  potVolume: string;
   potDrainage: boolean;
+  potHoles: string;
   potSaucer: boolean;
+  potReservoir: boolean;
   potNotes: string;
   // care
   intervalDays: string;
@@ -94,7 +98,9 @@ interface PlantDraft {
   clientInstructions: string;
   doNotDo: string;
   placementId?: string;
+  plantAssetId?: string | null;
   potAssetId?: string | null;
+  zoneId?: string | null;
 }
 
 const emptyPlant = (): PlantDraft => ({
