@@ -202,7 +202,7 @@ export default function PlantOpsContracts() {
             </TableCell>
             <TableCell className="text-sm">
               {c.price_amount != null ? formatCurrency(c.price_amount, c.currency as any) : '—'}
-              {c.billing_period ? ` / ${c.billing_period}` : ''}
+              {c.billing_period ? ` / ${billingLabel(c.billing_period)}` : ''}
             </TableCell>
             <TableCell>{statusBadge(c.status)}</TableCell>
           </TableRow>
