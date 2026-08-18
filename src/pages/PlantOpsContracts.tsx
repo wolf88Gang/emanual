@@ -57,6 +57,8 @@ export default function PlantOpsContracts() {
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  /** Status the row had when opened — drives the allowed transitions. */
+  const [originalStatus, setOriginalStatus] = useState<ContractStatus>('draft');
 
   const load = async () => {
     if (!orgId) { setLoading(false); return; }
