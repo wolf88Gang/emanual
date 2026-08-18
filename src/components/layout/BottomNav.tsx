@@ -24,12 +24,17 @@ export function BottomNav() {
   const es = language === 'es';
 
   // Plant rental operations never use the estate map; the flow is visits and care.
+  // Crew only sees field work — clients and settings are admin modules.
   const plantOpsItems: NavItem[] = [
     { path: '/plantops', icon: Home, label: es ? 'Inicio' : 'Home' },
     { path: '/plantops/visita', icon: Droplets, label: es ? 'Visitas' : 'Visits' },
     { path: '/plantops/care', icon: Leaf, label: es ? 'Cuidados' : 'Care' },
-    { path: '/crm', icon: Users, label: es ? 'Clientes' : 'Clients' },
-    { path: '/plantops/settings', icon: MoreHorizontal, label: es ? 'Más' : 'More' },
+    ...(isCrew
+      ? []
+      : [
+          { path: '/crm', icon: Users, label: es ? 'Clientes' : 'Clients' },
+          { path: '/plantops/settings', icon: MoreHorizontal, label: es ? 'Más' : 'More' },
+        ]),
   ];
 
   // Priority items on top: Map, Assets, Tasks, Shift/Work

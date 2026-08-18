@@ -388,6 +388,12 @@ export interface ManualSnapshot {
 export function buildManualSnapshot(
   detail: PropertyDetail,
   contactNote: string | null,
+  /**
+   * Canonical effective days per placement (base + configured factors + minimum,
+   * with a valid manual override winning). Required for a truthful manual: the
+   * snapshot must never recompute watering as `override ?? base`.
+   */
+  effectiveDaysByPlacement: Record<string, number | null> = {},
 ): ManualSnapshot {
   const services = Object.entries((detail.contract?.services_json as Record<string, unknown>) || {})
     .filter(([, v]) => Boolean(v))
@@ -402,7 +408,9 @@ export function buildManualSnapshot(
     plants: detail.placements
       .filter((p) => p.status === 'installed')
       .map((p) => {
-        const days = p.water_interval_override_days ?? p.water_interval_days;
+        const days = Object.prototype.hasOwnProperty.call(effectiveDaysByPlacement, p.id)
+          ? effectiveDaysByPlacement[p.id]
+          : null;
         return {
           name: p.asset_name,
           location: [p.floor_label, p.zone_name, p.spot_label].filter(Boolean).join(' · ') || '—',

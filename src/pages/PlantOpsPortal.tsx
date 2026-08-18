@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import { buildManualDocument } from '@/lib/manualRender';
 
 interface PortalPlant {
   id: string;
@@ -100,18 +101,17 @@ export default function PlantOpsPortal() {
         y += size + 4;
       }
     };
-    line(data.estate?.name || 'Manual de cuidado', 18, true);
+    const rendered = buildManualDocument(data.manual, { approvedAt: data.manual_approved_at ?? null });
+    line(rendered.brand, 12, true);
+    line(rendered.title, 18, true);
     if (data.company) line(data.company, 11);
-    if (data.manual_approved_at) {
-      line(`Versión aprobada el ${new Date(data.manual_approved_at).toLocaleDateString('es-CR')}`, 9);
-    }
+    if (rendered.approvedLabel) line(rendered.approvedLabel, 9);
     y += 10;
-    const sections = Array.isArray(data.manual)
-      ? data.manual.map((s: any) => [s?.title ?? '', s?.body ?? String(s)] as [string, string])
-      : Object.entries(data.manual as Record<string, unknown>).map(([k, v]) => [k, String(v)] as [string, string]);
-    for (const [title, bodyText] of sections) {
-      if (title) line(title, 13, true);
-      if (bodyText) line(bodyText, 11);
+    for (const section of rendered.sections) {
+      line(section.title, 13, true);
+      for (const item of section.lines) {
+        line(item.label ? `${item.label}: ${item.value}` : `• ${item.value}`, 11);
+      }
       y += 8;
     }
     doc.save(`manual-${(data.estate?.name || 'propiedad').toLowerCase().replace(/\s+/g, '-')}.pdf`);
@@ -201,20 +201,17 @@ export default function PlantOpsPortal() {
                 <Download className="h-4 w-4 mr-1" /> PDF
               </Button>
             </CardHeader>
-            <CardContent className="space-y-2 text-sm">
-              {Array.isArray(data.manual)
-                ? data.manual.map((section: any, i: number) => (
-                    <div key={i}>
-                      {section?.title && <p className="font-medium">{section.title}</p>}
-                      <p className="text-muted-foreground whitespace-pre-wrap">{section?.body ?? String(section)}</p>
-                    </div>
-                  ))
-                : Object.entries(data.manual as Record<string, unknown>).map(([k, v]) => (
-                    <div key={k}>
-                      <p className="font-medium">{k}</p>
-                      <p className="text-muted-foreground whitespace-pre-wrap">{String(v)}</p>
-                    </div>
+            <CardContent className="space-y-3 text-sm">
+              {buildManualDocument(data.manual, { approvedAt: data.manual_approved_at ?? null }).sections.map((section, i) => (
+                <div key={i} className="space-y-1">
+                  <p className="font-medium">{section.title}</p>
+                  {section.lines.map((item, j) => (
+                    <p key={j} className="text-muted-foreground whitespace-pre-wrap">
+                      {item.label ? `${item.label}: ${item.value}` : item.value}
+                    </p>
                   ))}
+                </div>
+              ))}
               {data.manual_approved_at && (
                 <p className="text-xs text-muted-foreground pt-2">
                   Versión aprobada el {new Date(data.manual_approved_at).toLocaleDateString('es-CR')}

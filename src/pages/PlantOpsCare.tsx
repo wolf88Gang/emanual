@@ -7,8 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { usePlantOpsData } from '@/hooks/usePlantOps';
-import { careState, formatDateEs, CARE_RESPONSIBILITY_LABELS, type CareResponsibility } from '@/lib/plantopsCare';
+import { formatDateEs, fetchCareQueue, CARE_RESPONSIBILITY_LABELS, type CareQueueRow, type CareResponsibility } from '@/lib/plantopsCare';
 
 type Filter = 'all' | 'review' | 'water';
 
@@ -19,7 +18,8 @@ type Filter = 'all' | 'review' | 'water';
 export default function PlantOpsCare() {
   const navigate = useNavigate();
   const { language, tl } = useLanguage();
-  const { placements, loading } = usePlantOpsData();
+  const [queue, setQueue] = useState<CareQueueRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [q, setQ] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
 
@@ -30,13 +30,30 @@ export default function PlantOpsCare() {
     document.title = l('Care plans | PlantOps', 'Planes de cuidado | PlantOps');
   }, [language]);
 
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      setLoading(true);
+      try {
+        const rows = await fetchCareQueue();
+        if (!cancelled) setQueue(rows);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, []);
+
   const rows = useMemo(() => {
-    const installed = placements.filter((p: any) => p.status === 'installed');
-    const enriched = installed.map((p: any) => {
-      const hasBase = p.water_interval_days != null;
-      const state = hasBase ? careState(p.next_water_due, p.water_interval_days) : 'revisar';
-      return { ...p, hasBase, state };
-    });
+    const enriched = queue.map((p) => ({
+      ...p,
+      hasBase: p.effective_days != null,
+      state: p.care_state,
+      water_interval_days: p.effective_days,
+      asset: { name: p.plant_name },
+      estate: { name: p.estate_name },
+      zone: { name: p.zone_name },
+    }));
     const needle = q.trim().toLowerCase();
     return enriched
       .filter((p) => {
@@ -51,7 +68,7 @@ export default function PlantOpsCare() {
         const rank = (r: any) => (!r.hasBase ? 0 : r.state === 'regar' ? 1 : 2);
         return rank(a) - rank(b) || (a.next_water_due ?? '9999').localeCompare(b.next_water_due ?? '9999');
       });
-  }, [placements, q, filter]);
+  }, [queue, q, filter]);
 
   const pendingReview = rows.filter((r) => !r.hasBase).length;
 
@@ -113,9 +130,9 @@ export default function PlantOpsCare() {
           <div className="space-y-2">
             {rows.map((p: any) => (
               <Card
-                key={p.id}
+                key={p.placement_id}
                 className="cursor-pointer hover:border-primary/50 transition-colors"
-                onClick={() => navigate(`/plantops/cuidados/${p.id}`)}
+                onClick={() => navigate(`/plantops/cuidados/${p.placement_id}`)}
               >
                 <CardContent className="p-4 flex items-center gap-3">
                   <div className="min-w-0 flex-1 space-y-1">
