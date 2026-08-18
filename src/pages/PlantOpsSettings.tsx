@@ -14,6 +14,9 @@ import {
   saveCareSettings,
   fetchModules,
   saveModules,
+  POT_MATERIALS,
+  POT_MATERIAL_LABELS,
+  type PotMaterial,
   type CareSettings,
 } from '@/lib/plantopsCare';
 
@@ -152,7 +155,9 @@ export default function PlantOpsSettings() {
                  'Valores positivos alargan el intervalo, negativos lo acortan (días).')}
             </p>
 
-            {factorGroup('pot_material', l('Pot material', 'Material de maceta'), POT_MATERIALS)}
+            {factorGroup('pot_material', l('Pot material', 'Material de maceta'), [...POT_MATERIALS], (k) =>
+              language === 'es' ? POT_MATERIAL_LABELS[k as PotMaterial].es : POT_MATERIAL_LABELS[k as PotMaterial].en,
+            )}
             {factorGroup('ventilation', l('Ventilation', 'Ventilación'), VENTILATION)}
             {factorGroup('light_actual', l('Actual light', 'Luz real'), LIGHT)}
             {factorGroup('season', l('Month', 'Mes'), MONTHS, (k) =>
