@@ -21,6 +21,13 @@ export type BillingPeriod = 'monthly' | 'quarterly' | 'event' | 'other';
 
 export const BILLING_PERIODS: BillingPeriod[] = ['monthly', 'quarterly', 'event', 'other'];
 
+export const BILLING_PERIOD_LABELS: Record<BillingPeriod, { en: string; es: string; de: string }> = {
+  monthly: { en: 'Monthly', es: 'Mensual', de: 'Monatlich' },
+  quarterly: { en: 'Quarterly', es: 'Trimestral', de: 'Vierteljährlich' },
+  event: { en: 'Per event', es: 'Por evento', de: 'Pro Event' },
+  other: { en: 'Other', es: 'Otro', de: 'Andere' },
+};
+
 export const PLANTOPS_PHOTO_BUCKET = 'plantops-photos';
 
 export interface PlantOpsAssetRow {
