@@ -18,7 +18,6 @@ import {
 } from '@/lib/plantopsCare';
 
 const MODULE_KEYS = ['visits', 'care', 'billing', 'contracts', 'inventory', 'portal'] as const;
-const POT_MATERIALS = ['plastico', 'ceramica', 'barro', 'metal', 'fibra', 'concreto'];
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
