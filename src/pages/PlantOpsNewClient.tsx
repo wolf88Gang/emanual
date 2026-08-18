@@ -322,6 +322,21 @@ export default function PlantOpsNewClient() {
     await saveServicePlan(eid, { ...current, ...patch });
   };
 
+  /**
+   * Advances the wizard and persists the reached step so `?estate=` resumption
+   * lands the operator exactly where they stopped.
+   */
+  const goStep = async (n: number, eid?: string | null) => {
+    setStep(n);
+    const target = eid ?? estateId;
+    if (!target) return;
+    try {
+      await persistServicePlan(target, { setup_step: n });
+    } catch {
+      /* the step marker is a convenience; never block the flow on it */
+    }
+  };
+
   /* ---------- step actions ---------- */
 
   const saveStep1 = async () => {
