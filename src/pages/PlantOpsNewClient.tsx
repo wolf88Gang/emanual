@@ -228,9 +228,13 @@ export default function PlantOpsNewClient() {
         if (plan.currency) setCurrency(plan.currency);
         if (plan.billing_period) setBillingPeriod(plan.billing_period);
         if (plan.base_price != null) setPriceAmount(String(plan.base_price));
-        // Resume exactly where the operator left off.
-        const savedStep = Number((plan as any).setup_step);
-        if (Number.isFinite(savedStep) && savedStep >= 1 && savedStep <= 6) setStep(savedStep);
+        // Resume exactly where the operator left off; a completed setup opens the last step.
+        const rawStep = (plan as any).setup_step;
+        if (rawStep === 'completed') setStep(6);
+        else {
+          const savedStep = Number(rawStep);
+          if (Number.isFinite(savedStep) && savedStep >= 1 && savedStep <= 6) setStep(savedStep);
+        }
 
         if (detail.contract) {
           setContractId(detail.contract.id);
