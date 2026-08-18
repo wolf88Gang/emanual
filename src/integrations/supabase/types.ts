@@ -910,6 +910,7 @@ export type Database = {
           lng: number | null
           name: string
           org_id: string
+          plantops_service_plan_json: Json
           setup_status: string
           timezone: string | null
           updated_at: string
@@ -925,6 +926,7 @@ export type Database = {
           lng?: number | null
           name: string
           org_id: string
+          plantops_service_plan_json?: Json
           setup_status?: string
           timezone?: string | null
           updated_at?: string
@@ -940,6 +942,7 @@ export type Database = {
           lng?: number | null
           name?: string
           org_id?: string
+          plantops_service_plan_json?: Json
           setup_status?: string
           timezone?: string | null
           updated_at?: string
