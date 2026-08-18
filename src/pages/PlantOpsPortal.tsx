@@ -83,6 +83,40 @@ export default function PlantOpsPortal() {
     return () => { cancelled = true; };
   }, [token]);
 
+  /** Exports the approved manual snapshot exactly as received — no live data. */
+  const downloadManual = async () => {
+    if (!data?.manual) return;
+    const { default: jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+    const margin = 48;
+    const width = doc.internal.pageSize.getWidth() - margin * 2;
+    let y = margin;
+    const line = (text: string, size = 11, bold = false) => {
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.setFontSize(size);
+      for (const chunk of doc.splitTextToSize(text, width)) {
+        if (y > doc.internal.pageSize.getHeight() - margin) { doc.addPage(); y = margin; }
+        doc.text(chunk, margin, y);
+        y += size + 4;
+      }
+    };
+    line(data.estate?.name || 'Manual de cuidado', 18, true);
+    if (data.company) line(data.company, 11);
+    if (data.manual_approved_at) {
+      line(`Versión aprobada el ${new Date(data.manual_approved_at).toLocaleDateString('es-CR')}`, 9);
+    }
+    y += 10;
+    const sections = Array.isArray(data.manual)
+      ? data.manual.map((s: any) => [s?.title ?? '', s?.body ?? String(s)] as [string, string])
+      : Object.entries(data.manual as Record<string, unknown>).map(([k, v]) => [k, String(v)] as [string, string]);
+    for (const [title, bodyText] of sections) {
+      if (title) line(title, 13, true);
+      if (bodyText) line(bodyText, 11);
+      y += 8;
+    }
+    doc.save(`manual-${(data.estate?.name || 'propiedad').toLowerCase().replace(/\s+/g, '-')}.pdf`);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
