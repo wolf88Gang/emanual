@@ -30,6 +30,10 @@ import {
   type CurrencyBalance,
 } from '@/lib/plantopsClients';
 import { fetchServicePlan } from '@/lib/plantopsProperty';
+import { ClientContactsPanel } from '@/components/plantops/ClientContactsPanel';
+import { ClientOutboxPanel } from '@/components/plantops/ClientOutboxPanel';
+import { ClientPortalPanel } from '@/components/plantops/ClientPortalPanel';
+import { ClientRemindersPanel } from '@/components/plantops/ClientRemindersPanel';
 
 const fmt = (n: number, currency: string) =>
   `${currency} ${n.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
@@ -280,27 +284,28 @@ export default function PlantOpsClientDetail() {
           </TabsContent>
 
           {/* ---------- Contacts ---------- */}
-          <TabsContent value="contactos" className="pt-3">
+          <TabsContent value="contactos" className="pt-3 space-y-3">
             <Card><CardContent className="p-4 space-y-2 text-sm">
-              <div className="flex justify-between"><span>{l('Name', 'Nombre')}</span><strong>{data.client.name}</strong></div>
-              <div className="flex justify-between"><span>{l('Email', 'Correo')}</span><span>{data.client.email ?? '—'}</span></div>
-              <div className="flex justify-between"><span>{l('Phone', 'Teléfono')}</span><span>{data.client.phone ?? '—'}</span></div>
+              <div className="flex justify-between"><span>{l('Client', 'Cliente')}</span><strong>{data.client.name}</strong></div>
               <div className="flex justify-between"><span>{l('Address', 'Dirección')}</span><span>{data.client.address ?? '—'}</span></div>
-              <Button className="mt-2" size="sm" onClick={() => setContactOpen(true)}>{l('Edit contact', 'Editar contacto')}</Button>
-              <p className="text-xs text-muted-foreground pt-2">
-                {l(
-                  'Clients never need an account: they see their project through the portal link.',
-                  'El cliente no necesita cuenta: ve su proyecto mediante el enlace del portal.',
-                )}
-              </p>
+              <Button className="mt-2" size="sm" variant="outline" onClick={() => setContactOpen(true)}>
+                {l('Edit client record', 'Editar ficha del cliente')}
+              </Button>
             </CardContent></Card>
+            {orgId && <ClientContactsPanel orgId={orgId} clientId={data.client.id} />}
           </TabsContent>
 
           {/* ---------- Communications ---------- */}
-          <TabsContent value="comunicaciones" className="pt-3">
+          <TabsContent value="comunicaciones" className="pt-3 space-y-4">
+            <ClientOutboxPanel
+              clientId={data.client.id}
+              projects={data.projects.map((p) => ({ id: p.id, name: p.name }))}
+            />
+            <ClientRemindersPanel projects={data.projects.map((p) => ({ id: p.id, name: p.name }))} />
             <Card><CardContent className="p-4 space-y-2">
+              <div className="text-sm font-medium">{l('Portal & manual history', 'Historial de portal y manual')}</div>
               {data.communications.length === 0 && (
-                <p className="text-sm text-muted-foreground">{l('No communications yet', 'Aún no hay comunicaciones')}</p>
+                <p className="text-sm text-muted-foreground">{l('No events yet', 'Aún no hay eventos')}</p>
               )}
               {data.communications.map((c) => (
                 <div key={c.id} className="flex justify-between text-sm border-b border-border py-1.5 last:border-0">
@@ -319,6 +324,8 @@ export default function PlantOpsClientDetail() {
 
           {/* ---------- Portal ---------- */}
           <TabsContent value="portal" className="pt-3 space-y-3">
+            <ClientPortalPanel clientId={data.client.id} />
+            <div className="text-sm font-medium pt-2">{l('Per-project links', 'Enlaces por proyecto')}</div>
             {data.portals.length === 0 && (
               <Card><CardContent className="p-8 text-center text-muted-foreground">
                 {l('No portal links yet', 'Aún no hay enlaces de portal')}
