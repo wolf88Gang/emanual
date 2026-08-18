@@ -34,7 +34,9 @@ export interface PropertyPlacement {
   installed_at: string | null;
   water_interval_days: number | null;
   water_interval_override_days: number | null;
+  care_override_reason: string | null;
   min_interval_days: number | null;
+
   next_water_due: string | null;
   last_watered_at: string | null;
   care_responsibility: string | null;
