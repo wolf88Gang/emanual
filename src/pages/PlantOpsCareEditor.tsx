@@ -18,7 +18,8 @@ import {
   type EffectiveCare, type CareResponsibility,
 } from '@/lib/plantopsCare';
 
-const NONE = '__none__';
+/** care_responsibility is NOT NULL in the database: there is no "not defined" option. */
+const DEFAULT_RESPONSIBILITY: CareResponsibility = 'raiz_y_forma';
 
 export default function PlantOpsCareEditor() {
   const { placementId } = useParams<{ placementId: string }>();
@@ -42,7 +43,7 @@ export default function PlantOpsCareEditor() {
     light_required: '',
     light_actual: '',
     ventilation: '',
-    care_responsibility: NONE,
+    care_responsibility: DEFAULT_RESPONSIBILITY as string,
     reminder_contact: '',
     client_instructions: '',
     do_not_do: '',
@@ -55,7 +56,7 @@ export default function PlantOpsCareEditor() {
     setForm({
       // Only the explicit placement base is editable here; a structured species
       // number may prefill it but is never silently persisted as the base.
-      base_days: c.base_source === 'placement' && c.base_days != null ? String(c.base_days) : '',
+      base_days: c.base_days != null ? String(c.base_days) : '',
       override_days: c.override_days != null ? String(c.override_days) : '',
       min_interval_days: c.min_interval_days != null ? String(c.min_interval_days) : '',
       water_amount_note: c.water_amount_note || '',
@@ -63,7 +64,9 @@ export default function PlantOpsCareEditor() {
       light_required: c.light_required || '',
       light_actual: c.light_actual || '',
       ventilation: c.ventilation || '',
-      care_responsibility: c.care_responsibility || NONE,
+      care_responsibility: (CARE_RESPONSIBILITIES as readonly string[]).includes(c.care_responsibility || '')
+        ? (c.care_responsibility as string)
+        : DEFAULT_RESPONSIBILITY,
       reminder_contact: c.reminder_contact || '',
       client_instructions: c.client_instructions || '',
       do_not_do: c.do_not_do || '',
