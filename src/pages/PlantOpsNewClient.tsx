@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Check, ChevronLeft, ChevronRight, Copy, Loader2, Plus, Trash2, UserPlus } from 'lucide-react';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useEstate } from '@/contexts/EstateContext';
 import { useOrgType } from '@/hooks/usePlantOps';
 import { reserveAsset, installAsset, upsertAssetDetails } from '@/lib/plantops';
 import {
@@ -21,16 +22,45 @@ import {
   addChargeForEstate,
   createShareLink,
   approveManual,
+  fetchShareLinks,
   CARE_RESPONSIBILITIES,
   CARE_RESPONSIBILITY_LABELS,
   type CareResponsibility,
 } from '@/lib/plantopsCare';
-import { fetchPropertyDetail, buildManualSnapshot } from '@/lib/plantopsProperty';
+import {
+  fetchPropertyDetail,
+  buildManualSnapshot,
+  fetchServicePlan,
+  saveServicePlan,
+} from '@/lib/plantopsProperty';
 
-const SERVICE_KEYS = ['riego', 'limpieza', 'poda', 'abono', 'reemplazos', 'rotacion'] as const;
+/** Commercial services. Watering, pruning etc. are maintenance ACTIONS, not services. */
+const SERVICE_KEYS = [
+  'instalacion',
+  'mantenimiento',
+  'recordatorios',
+  'manual',
+  'alquiler',
+  'reemplazos',
+  'eventos',
+  'otro',
+] as const;
+
+const SERVICE_LABELS: Record<string, { en: string; es: string }> = {
+  instalacion: { en: 'Installation', es: 'Instalación' },
+  mantenimiento: { en: 'Maintenance', es: 'Mantenimiento' },
+  recordatorios: { en: 'Reminders', es: 'Recordatorios' },
+  manual: { en: 'Custom manual', es: 'Manual personalizado' },
+  alquiler: { en: 'Plant rental', es: 'Alquiler de plantas' },
+  reemplazos: { en: 'Replacements', es: 'Reemplazos' },
+  eventos: { en: 'Plants for events', es: 'Plantas para eventos' },
+  otro: { en: 'Other', es: 'Otro' },
+};
+
 const POT_MATERIALS = ['plastico', 'ceramica', 'barro', 'metal', 'fibra', 'concreto'];
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
+const WATER_METHODS = ['manual', 'regadera', 'goteo', 'inmersion', 'reservorio'];
 
 interface PlantDraft {
   key: string;
@@ -48,8 +78,11 @@ interface PlantDraft {
   potNotes: string;
   // care
   intervalDays: string;
+  overrideDays: string;
+  overrideReason: string;
   minIntervalDays: string;
   amountNote: string;
+  waterMethod: string;
   lightRequired: string;
   lightActual: string;
   ventilation: string;
@@ -58,6 +91,7 @@ interface PlantDraft {
   clientInstructions: string;
   doNotDo: string;
   placementId?: string;
+  potAssetId?: string | null;
 }
 
 const emptyPlant = (): PlantDraft => ({
@@ -75,8 +109,11 @@ const emptyPlant = (): PlantDraft => ({
   potSaucer: false,
   potNotes: '',
   intervalDays: '',
+  overrideDays: '',
+  overrideReason: '',
   minIntervalDays: '',
   amountNote: '',
+  waterMethod: '',
   lightRequired: '',
   lightActual: '',
   ventilation: '',
@@ -86,16 +123,23 @@ const emptyPlant = (): PlantDraft => ({
   doNotDo: '',
 });
 
-/** 6-step onboarding of a new PlantOps client: client, services, plants, care, price, share. */
+/**
+ * 6-step onboarding of a PlantOps client: client, services, plants, care, price, share.
+ * Resumable: `/plantops/nuevo-cliente?estate=<uuid>` hydrates everything already saved
+ * so re-entering never duplicates clients, assets, pots, placements, contracts or charges.
+ */
 export default function PlantOpsNewClient() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { toast } = useToast();
   const { language } = useLanguage();
   const { orgId } = useOrgType();
+  const { refetch: refetchEstates } = useEstate();
   const l = (en: string, es: string) => (language === 'es' ? es : en);
 
   const [step, setStep] = useState(1);
   const [busy, setBusy] = useState(false);
+  const [hydrating, setHydrating] = useState(false);
 
   // Step 1
   const [clientName, setClientName] = useState('');
@@ -107,7 +151,12 @@ export default function PlantOpsNewClient() {
   const [estateId, setEstateId] = useState<string | null>(null);
 
   // Step 2
-  const [services, setServices] = useState<Record<string, boolean>>({ riego: true, limpieza: true });
+  const [services, setServices] = useState<Record<string, boolean>>({
+    instalacion: true,
+    mantenimiento: true,
+    recordatorios: true,
+    manual: true,
+  });
   const [frequency, setFrequency] = useState('weekly');
   const [startsOn, setStartsOn] = useState(new Date().toISOString().slice(0, 10));
   const [contractId, setContractId] = useState<string | null>(null);
@@ -127,10 +176,109 @@ export default function PlantOpsNewClient() {
     showPlants: true, showManual: true, showLastVisit: true, showHistory: false, showBalance: false,
   });
   const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [existingLinkId, setExistingLinkId] = useState<string | null>(null);
+
+  const hasRental = !!services.alquiler || !!services.eventos;
 
   useEffect(() => {
     document.title = l('New client | PlantOps', 'Nuevo cliente | PlantOps');
   }, [language]);
+
+  /* ---------- resume: hydrate everything already persisted ---------- */
+
+  const resumeEstateId = searchParams.get('estate');
+
+  useEffect(() => {
+    if (!resumeEstateId) return;
+    let cancelled = false;
+    (async () => {
+      setHydrating(true);
+      try {
+        const [detail, plan, links] = await Promise.all([
+          fetchPropertyDetail(resumeEstateId),
+          fetchServicePlan(resumeEstateId),
+          fetchShareLinks(resumeEstateId).catch(() => []),
+        ]);
+        if (cancelled) return;
+
+        setEstateId(detail.estate.id);
+        setPropertyName(detail.estate.name);
+        setPropertyAddress(detail.estate.address_text || '');
+        setClientId(detail.client?.id ?? null);
+        setClientName(detail.client?.name ?? '');
+        setClientEmail(detail.client?.email ?? '');
+        setClientPhone(detail.client?.phone ?? '');
+
+        if (plan.services) setServices(plan.services);
+        if (plan.visit_frequency) setFrequency(plan.visit_frequency);
+        if (plan.starts_on) setStartsOn(plan.starts_on);
+        if (plan.currency) setCurrency(plan.currency);
+        if (plan.billing_period) setBillingPeriod(plan.billing_period);
+        if (plan.base_price != null) setPriceAmount(String(plan.base_price));
+
+        if (detail.contract) {
+          setContractId(detail.contract.id);
+          if (detail.contract.price_amount != null) setPriceAmount(String(detail.contract.price_amount));
+          if (detail.contract.currency) setCurrency(detail.contract.currency);
+          if (detail.contract.billing_period) setBillingPeriod(detail.contract.billing_period);
+        }
+
+        if (detail.placements.length) {
+          setPlants(
+            detail.placements.map((p) => ({
+              ...emptyPlant(),
+              key: p.id,
+              placementId: p.id,
+              potAssetId: p.pot_asset_id,
+              plantName: p.asset_name,
+              rentalPrice: p.rental_price != null ? String(p.rental_price) : '',
+              floorLabel: p.floor_label || '',
+              zoneName: p.zone_name || '',
+              spotLabel: p.spot_label || '',
+              accessNotes: p.access_notes || '',
+              potMaterial: p.pot?.material || '',
+              potDiameter: p.pot?.diameter_cm != null ? String(p.pot.diameter_cm) : '',
+              potHeight: p.pot?.height_cm != null ? String(p.pot.height_cm) : '',
+              potDrainage: p.pot?.has_drainage ?? true,
+              potSaucer: p.pot?.has_saucer ?? false,
+              potNotes: p.pot?.notes || '',
+              intervalDays: p.water_interval_days != null ? String(p.water_interval_days) : '',
+              overrideDays: p.water_interval_override_days != null ? String(p.water_interval_override_days) : '',
+              overrideReason: p.care_override_reason || '',
+              minIntervalDays: p.min_interval_days != null ? String(p.min_interval_days) : '',
+              amountNote: p.water_amount_note || '',
+              waterMethod: p.water_method || '',
+              lightRequired: p.light_required || '',
+              lightActual: p.light_actual || '',
+              ventilation: p.ventilation || '',
+              responsibility: (p.care_responsibility as CareResponsibility) || 'raiz_y_forma',
+              reminderContact: p.reminder_contact || '',
+              clientInstructions: p.client_instructions || '',
+              doNotDo: p.do_not_do || '',
+            })),
+          );
+        }
+
+        const activeLink = (links as any[]).find((x) => !x.revoked_at);
+        if (activeLink) {
+          setExistingLinkId(activeLink.id);
+          setContactNote(activeLink.contact_note || '');
+          setShareToggles({
+            showPlants: activeLink.show_plants,
+            showManual: activeLink.show_manual,
+            showLastVisit: activeLink.show_last_visit,
+            showHistory: activeLink.show_history,
+            showBalance: activeLink.show_balance,
+          });
+        }
+      } catch (e: any) {
+        toast({ title: l('Could not load the setup', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
+      } finally {
+        if (!cancelled) setHydrating(false);
+      }
+    })();
+    return () => { cancelled = true; };
+  }, [resumeEstateId]);
 
   const updatePlant = (key: string, patch: Partial<PlantDraft>) =>
     setPlants((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
@@ -146,6 +294,11 @@ export default function PlantOpsNewClient() {
     ],
     [language],
   );
+
+  const persistServicePlan = async (eid: string, patch: Record<string, unknown>) => {
+    const current = await fetchServicePlan(eid);
+    await saveServicePlan(eid, { ...current, ...patch });
+  };
 
   /* ---------- step actions ---------- */
 
@@ -180,15 +333,20 @@ export default function PlantOpsNewClient() {
             client_id: cid,
             name: propertyName.trim(),
             address_text: propertyAddress.trim() || null,
-            setup_status: 'in_progress',
+            setup_status: 'setup',
           } as any)
           .select('id')
           .single();
         if (error) throw error;
         eid = (data as any).id;
         setEstateId(eid);
+        await refetchEstates();
       } else {
-        await supabase.from('estates').update({ name: propertyName.trim(), address_text: propertyAddress.trim() || null } as any).eq('id', eid);
+        await supabase
+          .from('estates')
+          .update({ name: propertyName.trim(), address_text: propertyAddress.trim() || null, client_id: cid } as any)
+          .eq('id', eid);
+        await refetchEstates();
       }
       setStep(2);
     } catch (e: any) {
@@ -202,30 +360,41 @@ export default function PlantOpsNewClient() {
     if (!orgId || !clientId || !estateId) return;
     setBusy(true);
     try {
-      if (contractId) {
-        const { error } = await supabase
-          .from('rental_contracts')
-          .update({ services_json: services, maintenance_frequency: frequency, starts_on: startsOn } as any)
-          .eq('id', contractId);
-        if (error) throw error;
-      } else {
-        const { data, error } = await supabase
-          .from('rental_contracts')
-          .insert({
-            org_id: orgId,
-            client_id: clientId,
-            estate_id: estateId,
-            contract_type: 'recurring',
-            status: 'draft',
-            starts_on: startsOn,
-            currency,
-            services_json: services,
-            maintenance_frequency: frequency,
-          } as any)
-          .select('id')
-          .single();
-        if (error) throw error;
-        setContractId((data as any).id);
+      await persistServicePlan(estateId, {
+        services,
+        visit_frequency: frequency,
+        starts_on: startsOn,
+        currency,
+      });
+
+      // A rental contract exists ONLY when the client actually rents plants or books events.
+      if (hasRental) {
+        const contractType = services.alquiler ? 'recurring' : 'event';
+        if (contractId) {
+          const { error } = await supabase
+            .from('rental_contracts')
+            .update({ contract_type: contractType, services_json: services, maintenance_frequency: frequency, starts_on: startsOn } as any)
+            .eq('id', contractId);
+          if (error) throw error;
+        } else {
+          const { data, error } = await supabase
+            .from('rental_contracts')
+            .insert({
+              org_id: orgId,
+              client_id: clientId,
+              estate_id: estateId,
+              contract_type: contractType,
+              status: 'draft',
+              starts_on: startsOn,
+              currency,
+              services_json: services,
+              maintenance_frequency: frequency,
+            } as any)
+            .select('id')
+            .single();
+          if (error) throw error;
+          setContractId((data as any).id);
+        }
       }
       setStep(3);
     } catch (e: any) {
@@ -245,7 +414,21 @@ export default function PlantOpsNewClient() {
     setBusy(true);
     try {
       for (const p of valid) {
-        if (p.placementId) continue;
+        // already persisted → only update the pot attributes, never re-create anything
+        if (p.placementId) {
+          if (p.potAssetId) {
+            await setPotDetails({
+              assetId: p.potAssetId,
+              material: p.potMaterial || null,
+              diameterCm: p.potDiameter ? Number(p.potDiameter) : null,
+              heightCm: p.potHeight ? Number(p.potHeight) : null,
+              hasDrainage: p.potDrainage,
+              hasSaucer: p.potSaucer,
+              notes: p.potNotes || null,
+            });
+          }
+          continue;
+        }
 
         // optional zone (floor / area) reused by name
         let zoneId: string | null = null;
@@ -279,7 +462,7 @@ export default function PlantOpsNewClient() {
         await upsertAssetDetails({
           assetId: plantAssetId,
           lifecycleStatus: 'active',
-          rentalPrice: p.rentalPrice ? Number(p.rentalPrice) : null,
+          rentalPrice: hasRental && p.rentalPrice ? Number(p.rentalPrice) : null,
           currency,
         });
 
@@ -310,13 +493,13 @@ export default function PlantOpsNewClient() {
           potAssetId,
           estateId,
           zoneId,
-          contractId,
+          contractId: hasRental ? contractId : null,
           spotLabel: p.spotLabel.trim() || null,
           reservedFrom: new Date().toISOString(),
           accessNotes: p.accessNotes.trim() || null,
         });
         await installAsset(placementId);
-        updatePlant(p.key, { placementId });
+        updatePlant(p.key, { placementId, potAssetId });
       }
       setStep(4);
     } catch (e: any) {
@@ -329,7 +512,16 @@ export default function PlantOpsNewClient() {
   const saveStep4 = async () => {
     const installed = plants.filter((p) => p.placementId);
     if (installed.some((p) => !p.intervalDays)) {
-      toast({ title: l('Every plant needs a watering interval', 'Cada planta necesita un intervalo de riego'), variant: 'destructive' });
+      toast({ title: l('Every plant needs a base watering interval', 'Cada planta necesita un intervalo base de riego'), variant: 'destructive' });
+      return;
+    }
+    const missingReason = installed.find((p) => p.overrideDays.trim() !== '' && !p.overrideReason.trim());
+    if (missingReason) {
+      toast({
+        title: l('An override needs a reason', 'El override necesita un motivo'),
+        description: missingReason.plantName,
+        variant: 'destructive',
+      });
       return;
     }
     setBusy(true);
@@ -338,8 +530,11 @@ export default function PlantOpsNewClient() {
         await setCarePlan({
           placementId: p.placementId!,
           waterIntervalDays: Number(p.intervalDays),
+          overrideDays: p.overrideDays.trim() !== '' ? Number(p.overrideDays) : null,
+          overrideReason: p.overrideDays.trim() !== '' ? p.overrideReason.trim() : null,
           minIntervalDays: p.minIntervalDays ? Number(p.minIntervalDays) : null,
           waterAmountNote: p.amountNote || null,
+          waterMethod: p.waterMethod || null,
           lightRequired: p.lightRequired || null,
           lightActual: p.lightActual || null,
           ventilation: p.ventilation || null,
@@ -361,7 +556,13 @@ export default function PlantOpsNewClient() {
     if (!estateId) return;
     setBusy(true);
     try {
-      if (contractId) {
+      await persistServicePlan(estateId, {
+        base_price: priceAmount ? Number(priceAmount) : null,
+        currency,
+        billing_period: billingPeriod,
+      });
+
+      if (hasRental && contractId) {
         const { error } = await supabase
           .from('rental_contracts')
           .update({
@@ -408,8 +609,10 @@ export default function PlantOpsNewClient() {
         contactNote: contactNote || null,
       });
       await approveManual(link.id, snapshot);
-      await supabase.from('estates').update({ setup_status: 'complete' } as any).eq('id', estateId);
+      await supabase.from('estates').update({ setup_status: 'active' } as any).eq('id', estateId);
+      await refetchEstates();
       setShareUrl(link.url);
+      setExistingLinkId(link.id);
       toast({ title: l('Client is ready', 'Cliente listo') });
     } catch (e: any) {
       toast({ title: l('Could not create the link', 'No se pudo crear el enlace'), description: e.message, variant: 'destructive' });
@@ -435,12 +638,19 @@ export default function PlantOpsNewClient() {
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <UserPlus className="h-6 w-6 text-primary" />
-            {l('New client', 'Nuevo cliente')}
+            {resumeEstateId ? l('Continue setup', 'Continuar configuración') : l('New client', 'Nuevo cliente')}
           </h1>
           <p className="text-sm text-muted-foreground">
             {l('Step', 'Paso')} {step}/6 — {stepTitles[step - 1]}
           </p>
         </div>
+
+        {hydrating && (
+          <p className="text-sm text-muted-foreground flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            {l('Loading saved setup…', 'Cargando configuración guardada…')}
+          </p>
+        )}
 
         <div className="flex gap-1">
           {[1, 2, 3, 4, 5, 6].map((s) => (
@@ -483,11 +693,17 @@ export default function PlantOpsNewClient() {
               <div className="space-y-2">
                 {SERVICE_KEYS.map((k) => (
                   <div key={k} className="flex items-center justify-between">
-                    <Label className="capitalize text-sm">{k}</Label>
+                    <Label className="text-sm">{l(SERVICE_LABELS[k].en, SERVICE_LABELS[k].es)}</Label>
                     <Switch checked={!!services[k]} onCheckedChange={(v) => setServices((prev) => ({ ...prev, [k]: v }))} />
                   </div>
                 ))}
               </div>
+              <p className="text-xs text-muted-foreground">
+                {l(
+                  'Watering, cleaning, pruning, fertilizing and rotation are maintenance actions logged on each visit, not commercial services.',
+                  'Riego, limpieza, poda, fertilización y rotación son acciones de mantenimiento que se registran en cada visita, no servicios comerciales.',
+                )}
+              </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label>{l('Visit frequency', 'Frecuencia de visitas')}</Label>
@@ -505,6 +721,14 @@ export default function PlantOpsNewClient() {
                   <Input type="date" value={startsOn} onChange={(e) => setStartsOn(e.target.value)} />
                 </div>
               </div>
+              {!hasRental && (
+                <p className="text-xs text-muted-foreground">
+                  {l(
+                    'No rental selected: no rental contract will be created. The property keeps plants, care, manual and reminders.',
+                    'Sin alquiler seleccionado: no se creará contrato de alquiler. La propiedad conserva plantas, cuidados, manual y recordatorios.',
+                  )}
+                </p>
+              )}
             </CardContent>
           </Card>
         )}
@@ -528,12 +752,14 @@ export default function PlantOpsNewClient() {
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1 col-span-2">
                       <Label>{l('Plant / species', 'Planta / especie')} *</Label>
-                      <Input value={p.plantName} onChange={(e) => updatePlant(p.key, { plantName: e.target.value })} />
+                      <Input value={p.plantName} disabled={!!p.placementId} onChange={(e) => updatePlant(p.key, { plantName: e.target.value })} />
                     </div>
-                    <div className="space-y-1">
-                      <Label>{l('Monthly rental', 'Alquiler mensual')}</Label>
-                      <Input type="number" value={p.rentalPrice} onChange={(e) => updatePlant(p.key, { rentalPrice: e.target.value })} />
-                    </div>
+                    {hasRental && (
+                      <div className="space-y-1">
+                        <Label>{l('Monthly rental', 'Alquiler mensual')}</Label>
+                        <Input type="number" value={p.rentalPrice} onChange={(e) => updatePlant(p.key, { rentalPrice: e.target.value })} />
+                      </div>
+                    )}
                     <div className="space-y-1">
                       <Label>{l('Floor', 'Piso')}</Label>
                       <Input value={p.floorLabel} onChange={(e) => updatePlant(p.key, { floorLabel: e.target.value })} />
@@ -602,12 +828,33 @@ export default function PlantOpsNewClient() {
                 <CardHeader className="pb-2"><CardTitle className="text-base">{p.plantName}</CardTitle></CardHeader>
                 <CardContent className="grid grid-cols-2 gap-3">
                   <div className="space-y-1">
-                    <Label>{l('Water every (days)', 'Regar cada (días)')} *</Label>
+                    <Label>{l('Base interval (days)', 'Intervalo base (días)')} *</Label>
                     <Input type="number" value={p.intervalDays} onChange={(e) => updatePlant(p.key, { intervalDays: e.target.value })} />
                   </div>
                   <div className="space-y-1">
+                    <Label>{l('Manual override (days)', 'Override manual (días)')}</Label>
+                    <Input type="number" value={p.overrideDays} onChange={(e) => updatePlant(p.key, { overrideDays: e.target.value })} />
+                  </div>
+                  {p.overrideDays.trim() !== '' && (
+                    <div className="space-y-1 col-span-2">
+                      <Label>{l('Override reason', 'Motivo del override')} *</Label>
+                      <Input
+                        value={p.overrideReason}
+                        onChange={(e) => updatePlant(p.key, { overrideReason: e.target.value })}
+                        placeholder={l('e.g. large pot, low evaporation', 'ej. maceta grande y baja evaporación')}
+                      />
+                    </div>
+                  )}
+                  <div className="space-y-1">
                     <Label>{l('Minimum days', 'Días mínimos')}</Label>
                     <Input type="number" value={p.minIntervalDays} onChange={(e) => updatePlant(p.key, { minIntervalDays: e.target.value })} />
+                  </div>
+                  <div className="space-y-1">
+                    <Label>{l('Water method', 'Método de riego')}</Label>
+                    <Select value={p.waterMethod} onValueChange={(v) => updatePlant(p.key, { waterMethod: v })}>
+                      <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
+                      <SelectContent>{WATER_METHODS.map((x) => <SelectItem key={x} value={x}>{x}</SelectItem>)}</SelectContent>
+                    </Select>
                   </div>
                   <div className="space-y-1 col-span-2">
                     <Label>{l('Water amount', 'Cantidad de agua')}</Label>
@@ -668,7 +915,7 @@ export default function PlantOpsNewClient() {
             <CardContent className="p-4 space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
-                  <Label>{l('Contract price', 'Precio del contrato')}</Label>
+                  <Label>{hasRental ? l('Contract price', 'Precio del contrato') : l('Service price', 'Precio del servicio')}</Label>
                   <Input type="number" value={priceAmount} onChange={(e) => setPriceAmount(e.target.value)} />
                 </div>
                 <div className="space-y-1">
@@ -733,6 +980,15 @@ export default function PlantOpsNewClient() {
                 </div>
               ))}
 
+              {existingLinkId && !shareUrl && (
+                <p className="text-xs text-muted-foreground">
+                  {l(
+                    'This property already has an active client link. Finishing here approves the manual again and issues a new link; manage or revoke links from the property screen.',
+                    'Esta propiedad ya tiene un enlace activo. Al finalizar se aprueba el manual otra vez y se emite un enlace nuevo; gestione o revoque enlaces desde la pantalla de la propiedad.',
+                  )}
+                </p>
+              )}
+
               {shareUrl && (
                 <div className="rounded-lg border p-3 space-y-2">
                   <p className="text-sm font-medium flex items-center gap-2">
@@ -760,7 +1016,7 @@ export default function PlantOpsNewClient() {
             </Button>
           )}
           {!shareUrl && (
-            <Button className="flex-1" onClick={next} disabled={busy}>
+            <Button className="flex-1" onClick={next} disabled={busy || hydrating}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
               {step === 6 ? l('Approve manual & create link', 'Aprobar manual y crear enlace') : l('Continue', 'Continuar')}
               {step < 6 && <ChevronRight className="h-4 w-4 ml-1" />}
