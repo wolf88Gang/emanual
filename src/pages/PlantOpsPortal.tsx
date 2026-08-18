@@ -134,15 +134,21 @@ export default function PlantOpsPortal() {
                     </div>
                     {p.care_responsibility && (
                       <Badge variant="outline">
-                        {p.care_responsibility === 'client' ? 'A su cargo'
-                          : p.care_responsibility === 'shared' ? 'Compartido' : 'A cargo nuestro'}
+                        {RESPONSIBILITY_ES[p.care_responsibility] ?? 'A cargo nuestro'}
                       </Badge>
                     )}
                   </div>
-                  {p.next_water_due && (
-                    <p className="text-sm flex items-center gap-2">
-                      <Droplets className="h-4 w-4 text-primary" /> Próximo riego: {p.next_water_due}
-                      {p.water_amount_note ? ` · ${p.water_amount_note}` : ''}
+                  <p className="text-sm flex items-center gap-2 font-medium">
+                    <Droplets className={p.water_state === 'regar' ? 'h-4 w-4 text-primary' : 'h-4 w-4 text-muted-foreground'} />
+                    {p.water_message ?? 'Pendiente de revisión por nuestro equipo'}
+                  </p>
+                  {p.water_amount_note && (
+                    <p className="text-sm text-muted-foreground">Cantidad: {p.water_amount_note}</p>
+                  )}
+                  {(p.light_required || p.light_actual) && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Sun className="h-4 w-4" />
+                      Luz: {p.light_required ?? '—'}{p.light_actual ? ` · actual: ${p.light_actual}` : ''}
                     </p>
                   )}
                   {p.client_instructions && <p className="text-sm">{p.client_instructions}</p>}
