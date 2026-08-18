@@ -3689,6 +3689,20 @@ export type Database = {
         Args: { p_estate_id: string; p_notes?: string }
         Returns: string
       }
+      plantops_update_share_link: {
+        Args: {
+          p_clear_expiry?: boolean
+          p_contact_note?: string
+          p_expires_at?: string
+          p_link_id: string
+          p_show_balance?: boolean
+          p_show_history?: boolean
+          p_show_last_visit?: boolean
+          p_show_manual?: boolean
+          p_show_plants?: boolean
+        }
+        Returns: undefined
+      }
       plantops_upsert_asset_details: {
         Args: {
           p_acquisition_date?: string
