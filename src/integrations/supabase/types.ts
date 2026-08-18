@@ -267,6 +267,81 @@ export type Database = {
           },
         ]
       }
+      client_contacts: {
+        Row: {
+          cc_emails: string[]
+          client_id: string
+          created_at: string
+          email: string | null
+          id: string
+          is_active: boolean
+          is_primary: boolean
+          name: string
+          org_id: string
+          phone_e164: string | null
+          preferred_channels: string[]
+          preferred_language: string
+          receive_care_reminders: boolean
+          receive_invoices: boolean
+          receive_visit_summaries: boolean
+          role_label: string | null
+          updated_at: string
+        }
+        Insert: {
+          cc_emails?: string[]
+          client_id: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_primary?: boolean
+          name: string
+          org_id: string
+          phone_e164?: string | null
+          preferred_channels?: string[]
+          preferred_language?: string
+          receive_care_reminders?: boolean
+          receive_invoices?: boolean
+          receive_visit_summaries?: boolean
+          role_label?: string | null
+          updated_at?: string
+        }
+        Update: {
+          cc_emails?: string[]
+          client_id?: string
+          created_at?: string
+          email?: string | null
+          id?: string
+          is_active?: boolean
+          is_primary?: boolean
+          name?: string
+          org_id?: string
+          phone_e164?: string | null
+          preferred_channels?: string[]
+          preferred_language?: string
+          receive_care_reminders?: boolean
+          receive_invoices?: boolean
+          receive_visit_summaries?: boolean
+          role_label?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_contacts_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_invites: {
         Row: {
           active: boolean
@@ -348,6 +423,117 @@ export type Database = {
           },
         ]
       }
+      client_message_outbox: {
+        Row: {
+          body: string
+          cc_emails: string[]
+          channel: string
+          client_id: string
+          contact_id: string | null
+          created_at: string
+          created_by: string | null
+          estate_id: string | null
+          id: string
+          idempotency_key: string
+          last_error: string | null
+          message_type: string
+          org_id: string
+          placement_id: string | null
+          provider: string | null
+          provider_message_id: string | null
+          scheduled_at: string | null
+          send_mode: string
+          sent_at: string | null
+          status: string
+          subject: string | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          cc_emails?: string[]
+          channel: string
+          client_id: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          estate_id?: string | null
+          id?: string
+          idempotency_key: string
+          last_error?: string | null
+          message_type: string
+          org_id: string
+          placement_id?: string | null
+          provider?: string | null
+          provider_message_id?: string | null
+          scheduled_at?: string | null
+          send_mode?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          cc_emails?: string[]
+          channel?: string
+          client_id?: string
+          contact_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          estate_id?: string | null
+          id?: string
+          idempotency_key?: string
+          last_error?: string | null
+          message_type?: string
+          org_id?: string
+          placement_id?: string | null
+          provider?: string | null
+          provider_message_id?: string | null
+          scheduled_at?: string | null
+          send_mode?: string
+          sent_at?: string | null
+          status?: string
+          subject?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_message_outbox_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_message_outbox_contact_id_fkey"
+            columns: ["contact_id"]
+            isOneToOne: false
+            referencedRelation: "client_contacts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_message_outbox_estate_id_fkey"
+            columns: ["estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_message_outbox_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_message_outbox_placement_id_fkey"
+            columns: ["placement_id"]
+            isOneToOne: false
+            referencedRelation: "plant_placements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_payments: {
         Row: {
           amount: number
@@ -405,6 +591,81 @@ export type Database = {
           },
           {
             foreignKeyName: "client_payments_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_portal_links: {
+        Row: {
+          client_id: string
+          contact_note: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string | null
+          id: string
+          org_id: string
+          revoked_at: string | null
+          show_care: boolean
+          show_documents: boolean
+          show_invoices: boolean
+          show_manuals: boolean
+          show_plants: boolean
+          show_projects: boolean
+          show_visits: boolean
+          token_hash: string
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          contact_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          org_id: string
+          revoked_at?: string | null
+          show_care?: boolean
+          show_documents?: boolean
+          show_invoices?: boolean
+          show_manuals?: boolean
+          show_plants?: boolean
+          show_projects?: boolean
+          show_visits?: boolean
+          token_hash: string
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          contact_note?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string | null
+          id?: string
+          org_id?: string
+          revoked_at?: string | null
+          show_care?: boolean
+          show_documents?: boolean
+          show_invoices?: boolean
+          show_manuals?: boolean
+          show_plants?: boolean
+          show_projects?: boolean
+          show_visits?: boolean
+          token_hash?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_portal_links_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_portal_links_org_id_fkey"
             columns: ["org_id"]
             isOneToOne: false
             referencedRelation: "organizations"
@@ -3534,6 +3795,10 @@ export type Database = {
         Args: { _path: string; _user_id: string }
         Returns: boolean
       }
+      plantops_cancel_message: {
+        Args: { p_message_id: string }
+        Returns: undefined
+      }
       plantops_cancel_reservation: {
         Args: { p_placement_id: string; p_reason?: string }
         Returns: undefined
@@ -3565,6 +3830,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      plantops_create_client_portal_link: {
+        Args: {
+          p_client_id: string
+          p_contact_note?: string
+          p_expires_at?: string
+          p_show_care?: boolean
+          p_show_documents?: boolean
+          p_show_invoices?: boolean
+          p_show_manuals?: boolean
+          p_show_plants?: boolean
+          p_show_projects?: boolean
+          p_show_visits?: boolean
+          p_token_hash: string
+        }
+        Returns: string
+      }
       plantops_create_share_link: {
         Args: {
           p_contact_note?: string
@@ -3583,6 +3864,7 @@ export type Database = {
         Args: { p_placement_id: string }
         Returns: Json
       }
+      plantops_enqueue_due_client_reminders: { Args: never; Returns: number }
       plantops_generate_water_reminders: { Args: never; Returns: number }
       plantops_get_current_location: {
         Args: { p_asset_id: string }
@@ -3621,9 +3903,30 @@ export type Database = {
         }
         Returns: Json
       }
+      plantops_mark_message_sent: {
+        Args: { p_message_id: string }
+        Returns: undefined
+      }
       plantops_property_billing: {
         Args: { p_estate_id: string }
         Returns: Json
+      }
+      plantops_queue_message: {
+        Args: {
+          p_body: string
+          p_cc_emails?: string[]
+          p_channel: string
+          p_client_id: string
+          p_contact_id?: string
+          p_estate_id?: string
+          p_idempotency_key?: string
+          p_message_type: string
+          p_placement_id?: string
+          p_scheduled_at?: string
+          p_send_mode?: string
+          p_subject?: string
+        }
+        Returns: string
       }
       plantops_register_payment: {
         Args: {
@@ -3664,13 +3967,25 @@ export type Database = {
         }
         Returns: string
       }
+      plantops_retry_message: {
+        Args: { p_message_id: string }
+        Returns: undefined
+      }
       plantops_return_visit_tools: {
         Args: { p_items: Json; p_shift_id: string }
         Returns: number
       }
+      plantops_revoke_client_portal_link: {
+        Args: { p_link_id: string }
+        Returns: undefined
+      }
       plantops_revoke_share_link: {
         Args: { p_link_id: string }
         Returns: undefined
+      }
+      plantops_rotate_client_portal_link: {
+        Args: { p_link_id: string; p_token_hash: string }
+        Returns: string
       }
       plantops_rotate_share_link: {
         Args: { p_link_id: string; p_token_hash: string }
@@ -3748,6 +4063,21 @@ export type Database = {
       plantops_start_visit: {
         Args: { p_estate_id: string; p_notes?: string }
         Returns: string
+      }
+      plantops_update_client_portal_link: {
+        Args: {
+          p_contact_note?: string
+          p_expires_at?: string
+          p_link_id: string
+          p_show_care: boolean
+          p_show_documents: boolean
+          p_show_invoices: boolean
+          p_show_manuals: boolean
+          p_show_plants: boolean
+          p_show_projects: boolean
+          p_show_visits: boolean
+        }
+        Returns: undefined
       }
       plantops_update_share_link:
         | {

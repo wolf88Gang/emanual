@@ -12,10 +12,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { Seo } from '@/components/Seo';
+import { supabase } from '@/integrations/supabase/client';
 
 const authSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
-  password: z.string().min(6, 'Password must be at least 6 characters'),
+  password: z.string().optional(),
   fullName: z.string().optional(),
 });
 
@@ -26,6 +27,7 @@ export default function Auth() {
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   const [isSignUp, setIsSignUp] = useState(false);
+  const [isForgot, setIsForgot] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -37,9 +39,29 @@ export default function Auth() {
     if (user) navigate('/', { replace: true });
   }, [user, navigate]);
 
+  const es = language === 'es';
+
   const onSubmit = async (data: AuthFormData) => {
     setIsLoading(true);
     try {
+      if (isForgot) {
+        await supabase.auth.resetPasswordForEmail(data.email, {
+          redirectTo: `${window.location.origin}/auth/reset-password`,
+        });
+        // Neutral response: never reveal whether the email exists.
+        toast.success(
+          es
+            ? 'Si existe una cuenta con ese correo, le enviamos un enlace para restablecer la contraseña.'
+            : 'If an account exists for that email, we sent a password reset link.',
+        );
+        setIsForgot(false);
+        reset();
+        return;
+      }
+      if (!data.password || data.password.length < 6) {
+        toast.error(es ? 'La contraseña debe tener al menos 6 caracteres.' : 'Password must be at least 6 characters.');
+        return;
+      }
       if (isSignUp) {
         const { error } = await signUp(data.email, data.password, data.fullName);
         if (error) {
@@ -55,6 +77,8 @@ export default function Auth() {
           toast.error(error.message.includes('Invalid login') ? 'Invalid email or password.' : error.message);
         } else {
           toast.success('Welcome back!');
+          // Routing is centralized: RootRoute / AppRoutes decide the destination
+          // once profile, org type and roles have loaded.
           navigate('/');
         }
       }
@@ -63,7 +87,6 @@ export default function Auth() {
     }
   };
 
-  const es = language === 'es';
 
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
@@ -131,17 +154,21 @@ export default function Auth() {
           <div className="w-full max-w-sm space-y-6">
             <div className="text-center">
               <h1 className="text-2xl font-display font-bold text-foreground">
-                {isSignUp ? t('auth.signUp') : t('auth.signIn')}
+                {isForgot
+                  ? (es ? 'Restablecer contraseña' : 'Reset password')
+                  : isSignUp ? t('auth.signUp') : t('auth.signIn')}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
-                {isSignUp
+                {isForgot
+                  ? (es ? 'Le enviaremos un enlace a su correo' : "We'll email you a reset link")
+                  : isSignUp
                   ? (es ? 'Crea tu cuenta para gestionar tu propiedad' : 'Create your account to manage your estate')
                   : (es ? 'Bienvenido de nuevo' : 'Welcome back')}
               </p>
             </div>
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              {isSignUp && (
+              {isSignUp && !isForgot && (
                 <div className="space-y-1.5">
                   <Label htmlFor="fullName">{es ? 'Nombre completo' : 'Full Name'}</Label>
                   <Input id="fullName" placeholder={es ? 'Juan García' : 'John Smith'} {...register('fullName')} />
@@ -160,6 +187,7 @@ export default function Auth() {
                 {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
               </div>
 
+              {!isForgot && (
               <div className="space-y-1.5">
                 <Label htmlFor="password">{t('auth.password')}</Label>
                 <div className="relative">
@@ -180,19 +208,43 @@ export default function Auth() {
                 </div>
                 {errors.password && <p className="text-xs text-destructive">{errors.password.message}</p>}
               </div>
+              )}
+
+              {!isForgot && !isSignUp && (
+                <button
+                  type="button"
+                  onClick={() => { setIsForgot(true); reset(); }}
+                  className="text-xs text-primary hover:underline"
+                >
+                  {es ? '¿Olvidó su contraseña?' : 'Forgot your password?'}
+                </button>
+              )}
 
               <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                 {isLoading ? (
                   <span className="animate-pulse">{es ? 'Cargando...' : 'Loading...'}</span>
                 ) : (
                   <>
-                    {isSignUp ? t('auth.signUp') : t('auth.signIn')}
+                    {isForgot
+                      ? (es ? 'Enviar enlace' : 'Send reset link')
+                      : isSignUp ? t('auth.signUp') : t('auth.signIn')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
               </Button>
             </form>
 
+            {isForgot ? (
+              <p className="text-center text-sm text-muted-foreground">
+                <button
+                  type="button"
+                  onClick={() => { setIsForgot(false); reset(); }}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {es ? '← Volver a iniciar sesión' : '← Back to sign in'}
+                </button>
+              </p>
+            ) : (
             <p className="text-center text-sm text-muted-foreground">
               {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
               <button
@@ -203,6 +255,7 @@ export default function Auth() {
                 {isSignUp ? t('auth.signIn') : t('auth.signUp')}
               </button>
             </p>
+            )}
 
             <p className="text-center text-[11px] text-muted-foreground mt-8">
               {es
