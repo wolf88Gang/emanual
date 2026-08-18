@@ -127,8 +127,22 @@ export default function PlantOpsCare() {
             {l('No plants match this filter.', 'Ninguna planta coincide con este filtro.', 'Keine Treffer.')}
           </CardContent></Card>
         ) : (
-          <div className="space-y-2">
-            {rows.map((p: any) => (
+          <div className="space-y-6">
+            {([
+              { key: 'regar', title: l('Water today', 'Regar hoy', 'Heute gießen') },
+              { key: 'no_regar', title: l('Do not water', 'No regar', 'Nicht gießen') },
+              { key: 'revisar', title: l('Needs review', 'Revisar', 'Prüfen') },
+            ] as const).map((group) => {
+              const groupRows = rows.filter((r: any) =>
+                group.key === 'revisar' ? !r.hasBase || r.state === 'revisar' : r.hasBase && r.state === group.key,
+              );
+              if (!groupRows.length) return null;
+              return (
+                <section key={group.key} className="space-y-2">
+                  <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">
+                    {group.title} · {groupRows.length}
+                  </h2>
+                  {groupRows.map((p: any) => (
               <Card
                 key={p.placement_id}
                 className="cursor-pointer hover:border-primary/50 transition-colors"
@@ -170,7 +184,10 @@ export default function PlantOpsCare() {
                   <ChevronRight className="h-4 w-4 text-muted-foreground shrink-0" />
                 </CardContent>
               </Card>
-            ))}
+                  ))}
+                </section>
+              );
+            })}
           </div>
         )}
       </main>
