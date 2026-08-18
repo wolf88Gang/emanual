@@ -17,7 +17,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/currency';
-import { fetchContracts, type RentalContractRow } from '@/lib/plantops';
+import {
+  fetchContracts,
+  BILLING_PERIODS,
+  CONTRACT_STATUS_TRANSITIONS,
+  type ContractStatus,
+  type RentalContractRow,
+} from '@/lib/plantops';
 
 interface ClientRow { id: string; name: string }
 
@@ -51,6 +57,8 @@ export default function PlantOpsContracts() {
   const [busy, setBusy] = useState(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
+  /** Status the row had when opened — drives the allowed transitions. */
+  const [originalStatus, setOriginalStatus] = useState<ContractStatus>('draft');
 
   const load = async () => {
     if (!orgId) { setLoading(false); return; }
@@ -74,8 +82,13 @@ export default function PlantOpsContracts() {
   const clientName = (id: string) => clients.find((c) => c.id === id)?.name ?? '—';
   const estateName = (id?: string | null) => estates.find((e) => e.id === id)?.name ?? '—';
 
-  const openNew = () => { setForm({ ...emptyForm, client_id: clients[0]?.id ?? '' }); setOpen(true); };
+  const openNew = () => {
+    setForm({ ...emptyForm, client_id: clients[0]?.id ?? '' });
+    setOriginalStatus('draft');
+    setOpen(true);
+  };
   const openEdit = (c: RentalContractRow) => {
+    setOriginalStatus((c.status as ContractStatus) ?? 'draft');
     setForm({
       id: c.id,
       client_id: c.client_id,
@@ -136,18 +149,30 @@ export default function PlantOpsContracts() {
     }
   };
 
+  const statusLabel = (s: string) =>
+    ({
+      draft: l('Draft', 'Borrador', 'Entwurf'),
+      active: l('Active', 'Activo', 'Aktiv'),
+      ended: l('Ended', 'Finalizado', 'Beendet'),
+      cancelled: l('Cancelled', 'Cancelado', 'Storniert'),
+    } as Record<string, string>)[s] ?? s;
+
+  const billingLabel = (b: string) =>
+    ({
+      monthly: l('Monthly', 'Mensual', 'Monatlich'),
+      quarterly: l('Quarterly', 'Trimestral', 'Vierteljährlich'),
+      event: l('Per event', 'Por evento', 'Pro Event'),
+      other: l('Other', 'Otro', 'Andere'),
+    } as Record<string, string>)[b] ?? b;
+
   const statusBadge = (s: string) => {
     const cls: Record<string, string> = {
       draft: 'bg-muted text-muted-foreground border-border',
       active: 'bg-primary/15 text-primary border-primary/30',
       ended: 'bg-destructive/10 text-destructive border-destructive/30',
+      cancelled: 'bg-destructive/10 text-destructive border-destructive/30',
     };
-    const label: Record<string, string> = {
-      draft: l('Draft', 'Borrador', 'Entwurf'),
-      active: l('Active', 'Activo', 'Aktiv'),
-      ended: l('Ended', 'Finalizado', 'Beendet'),
-    };
-    return <Badge variant="outline" className={cls[s]}>{label[s] ?? s}</Badge>;
+    return <Badge variant="outline" className={cls[s]}>{statusLabel(s)}</Badge>;
   };
 
   const grouped = useMemo(() => ({
@@ -177,7 +202,7 @@ export default function PlantOpsContracts() {
             </TableCell>
             <TableCell className="text-sm">
               {c.price_amount != null ? formatCurrency(c.price_amount, c.currency as any) : '—'}
-              {c.billing_period ? ` / ${c.billing_period}` : ''}
+              {c.billing_period ? ` / ${billingLabel(c.billing_period)}` : ''}
             </TableCell>
             <TableCell>{statusBadge(c.status)}</TableCell>
           </TableRow>
@@ -272,9 +297,9 @@ export default function PlantOpsContracts() {
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">{l('Draft', 'Borrador', 'Entwurf')}</SelectItem>
-                    <SelectItem value="active">{l('Active', 'Activo', 'Aktiv')}</SelectItem>
-                    <SelectItem value="ended">{l('Ended', 'Finalizado', 'Beendet')}</SelectItem>
+                    {CONTRACT_STATUS_TRANSITIONS[originalStatus].map((s) => (
+                      <SelectItem key={s} value={s}>{statusLabel(s)}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
@@ -307,9 +332,9 @@ export default function PlantOpsContracts() {
                     <Select value={form.billing_period} onValueChange={(v) => setForm({ ...form, billing_period: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="monthly">{l('Monthly', 'Mensual', 'Monatlich')}</SelectItem>
-                        <SelectItem value="quarterly">{l('Quarterly', 'Trimestral', 'Vierteljährlich')}</SelectItem>
-                        <SelectItem value="annual">{l('Annual', 'Anual', 'Jährlich')}</SelectItem>
+                        {BILLING_PERIODS.map((b) => (
+                          <SelectItem key={b} value={b}>{billingLabel(b)}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>

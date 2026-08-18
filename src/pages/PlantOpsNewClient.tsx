@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useOrgType } from '@/hooks/usePlantOps';
-import { reserveAsset, installAsset, upsertAssetDetails } from '@/lib/plantops';
+import { reserveAsset, installAsset, upsertAssetDetails, BILLING_PERIODS, BILLING_PERIOD_LABELS } from '@/lib/plantops';
 import {
   setCarePlan,
   fetchCareQueue,
@@ -228,9 +228,13 @@ export default function PlantOpsNewClient() {
         if (plan.currency) setCurrency(plan.currency);
         if (plan.billing_period) setBillingPeriod(plan.billing_period);
         if (plan.base_price != null) setPriceAmount(String(plan.base_price));
-        // Resume exactly where the operator left off.
-        const savedStep = Number((plan as any).setup_step);
-        if (Number.isFinite(savedStep) && savedStep >= 1 && savedStep <= 6) setStep(savedStep);
+        // Resume exactly where the operator left off; a completed setup opens the last step.
+        const rawStep = (plan as any).setup_step;
+        if (rawStep === 'completed') setStep(6);
+        else {
+          const savedStep = Number(rawStep);
+          if (Number.isFinite(savedStep) && savedStep >= 1 && savedStep <= 6) setStep(savedStep);
+        }
 
         if (detail.contract) {
           setContractId(detail.contract.id);
@@ -327,14 +331,15 @@ export default function PlantOpsNewClient() {
    * lands the operator exactly where they stopped.
    */
   const goStep = async (n: number, eid?: string | null) => {
-    setStep(n);
     const target = eid ?? estateId;
-    if (!target) return;
-    try {
-      await persistServicePlan(target, { setup_step: n });
-    } catch {
-      /* the step marker is a convenience; never block the flow on it */
+    if (!target) {
+      setStep(n);
+      return;
     }
+    // The step is persisted BEFORE advancing: if it cannot be saved the operator
+    // stays where they are instead of losing the resume point.
+    await persistServicePlan(target, { setup_step: n });
+    setStep(n);
   };
 
   /* ---------- step actions ---------- */
@@ -627,7 +632,7 @@ export default function PlantOpsNewClient() {
       }
 
       await supabase.from('estates').update({ setup_status: 'active' } as any).eq('id', estateId);
-      await persistServicePlan(estateId, { setup_step: 6 });
+      await persistServicePlan(estateId, { setup_step: 'completed' });
       await refetchEstates();
       toast({ title: l('Client is ready', 'Cliente listo') });
     } catch (e: any) {
@@ -971,7 +976,9 @@ export default function PlantOpsNewClient() {
                   <Select value={billingPeriod} onValueChange={setBillingPeriod}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {['monthly', 'quarterly', 'event'].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      {BILLING_PERIODS.map((b) => (
+                        <SelectItem key={b} value={b}>{BILLING_PERIOD_LABELS[b][language === 'es' ? 'es' : 'en']}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
