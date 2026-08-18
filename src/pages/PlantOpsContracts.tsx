@@ -332,9 +332,9 @@ export default function PlantOpsContracts() {
                     <Select value={form.billing_period} onValueChange={(v) => setForm({ ...form, billing_period: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="monthly">{l('Monthly', 'Mensual', 'Monatlich')}</SelectItem>
-                        <SelectItem value="quarterly">{l('Quarterly', 'Trimestral', 'Vierteljährlich')}</SelectItem>
-                        <SelectItem value="annual">{l('Annual', 'Anual', 'Jährlich')}</SelectItem>
+                        {BILLING_PERIODS.map((b) => (
+                          <SelectItem key={b} value={b}>{billingLabel(b)}</SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
                   </div>
