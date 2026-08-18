@@ -3,7 +3,23 @@ import { supabase } from '@/integrations/supabase/client';
 export type LifecycleStatus = 'active' | 'recovery' | 'retired';
 export type PlacementStatus = 'reserved' | 'installed' | 'collected' | 'cancelled';
 export type ContractType = 'recurring' | 'event';
-export type ContractStatus = 'draft' | 'active' | 'ended';
+/** Canonical contract statuses — must match rental_contracts_status_chk. */
+export type ContractStatus = 'draft' | 'active' | 'ended' | 'cancelled';
+
+export const CONTRACT_STATUSES: ContractStatus[] = ['draft', 'active', 'ended', 'cancelled'];
+
+/** Allowed transitions; anything else is rejected by the UI. */
+export const CONTRACT_STATUS_TRANSITIONS: Record<ContractStatus, ContractStatus[]> = {
+  draft: ['draft', 'active', 'cancelled'],
+  active: ['active', 'ended', 'cancelled'],
+  ended: ['ended'],
+  cancelled: ['cancelled'],
+};
+
+/** Canonical billing periods — must match rental_contracts_billing_chk. */
+export type BillingPeriod = 'monthly' | 'quarterly' | 'event' | 'other';
+
+export const BILLING_PERIODS: BillingPeriod[] = ['monthly', 'quarterly', 'event', 'other'];
 
 export const PLANTOPS_PHOTO_BUCKET = 'plantops-photos';
 
