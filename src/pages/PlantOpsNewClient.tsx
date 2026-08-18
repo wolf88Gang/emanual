@@ -787,7 +787,14 @@ export default function PlantOpsNewClient() {
                   </div>
 
                   <div className="pt-2 border-t space-y-3">
-                    <p className="text-sm font-medium">{l('Pot', 'Maceta')}</p>
+                    <div className="flex items-center justify-between">
+                      <p className="text-sm font-medium">{l('Pot', 'Maceta')}</p>
+                      <div className="flex items-center gap-2">
+                        <Label className="text-xs text-muted-foreground">{l('Plant has a pot', 'La planta tiene maceta')}</Label>
+                        <Switch checked={p.withPot} onCheckedChange={(v) => updatePlant(p.key, { withPot: v })} />
+                      </div>
+                    </div>
+                    {p.withPot && (
                     <div className="grid grid-cols-2 gap-3">
                       <div className="space-y-1">
                         <Label>{l('Material', 'Material')}</Label>
@@ -806,19 +813,34 @@ export default function PlantOpsNewClient() {
                         <Label>{l('Height (cm)', 'Altura (cm)')}</Label>
                         <Input type="number" value={p.potHeight} onChange={(e) => updatePlant(p.key, { potHeight: e.target.value })} />
                       </div>
+                      <div className="space-y-1">
+                        <Label>{l('Volume (L)', 'Volumen (L)')}</Label>
+                        <Input type="number" value={p.potVolume} onChange={(e) => updatePlant(p.key, { potVolume: e.target.value })} />
+                      </div>
                       <div className="flex items-center justify-between col-span-2">
                         <Label className="text-sm">{l('Has drainage', 'Tiene drenaje')}</Label>
                         <Switch checked={p.potDrainage} onCheckedChange={(v) => updatePlant(p.key, { potDrainage: v })} />
                       </div>
+                      {p.potDrainage && (
+                        <div className="space-y-1 col-span-2">
+                          <Label>{l('Drainage holes', 'Cantidad de huecos')}</Label>
+                          <Input type="number" value={p.potHoles} onChange={(e) => updatePlant(p.key, { potHoles: e.target.value })} />
+                        </div>
+                      )}
                       <div className="flex items-center justify-between col-span-2">
                         <Label className="text-sm">{l('Has saucer', 'Tiene platón')}</Label>
                         <Switch checked={p.potSaucer} onCheckedChange={(v) => updatePlant(p.key, { potSaucer: v })} />
+                      </div>
+                      <div className="flex items-center justify-between col-span-2">
+                        <Label className="text-sm">{l('Self-watering reservoir', 'Reservorio de autorriego')}</Label>
+                        <Switch checked={p.potReservoir} onCheckedChange={(v) => updatePlant(p.key, { potReservoir: v })} />
                       </div>
                       <div className="space-y-1 col-span-2">
                         <Label>{l('Pot notes', 'Notas de maceta')}</Label>
                         <Input value={p.potNotes} onChange={(e) => updatePlant(p.key, { potNotes: e.target.value })} />
                       </div>
                     </div>
+                    )}
                   </div>
                 </CardContent>
               </Card>
