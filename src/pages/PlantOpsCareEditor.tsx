@@ -230,7 +230,7 @@ export default function PlantOpsCareEditor() {
                   {(care?.configured_factors || []).length > 0 && (
                     <ul className="text-muted-foreground pl-3">
                       {(care?.configured_factors || []).map((f, i) => (
-                        <li key={i}>{f.label}: {f.days > 0 ? `+${f.days}` : f.days}</li>
+                        <li key={i}>{f.label ?? `${f.key ?? ''}: ${f.value ?? ''}`}: {f.days > 0 ? `+${f.days}` : f.days}</li>
                       ))}
                     </ul>
                   )}
