@@ -172,6 +172,9 @@ function AppRoutes() {
       <Route path="/plantops/care" element={<EstateRoute><PlantOpsCare /></EstateRoute>} />
       <Route path="/plantops/cuidados" element={<EstateRoute><PlantOpsCare /></EstateRoute>} />
       <Route path="/plantops/cuidados/:placementId" element={<EstateRoute><PlantOpsCareEditor /></EstateRoute>} />
+      <Route path="/plantops/nuevo-cliente" element={<EstateRoute><PlantOpsNewClient /></EstateRoute>} />
+      <Route path="/plantops/propiedad/:estateId" element={<EstateRoute><PlantOpsProperty /></EstateRoute>} />
+      <Route path="/plantops/settings" element={<EstateRoute><PlantOpsSettings /></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
       <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />
