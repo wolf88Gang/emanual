@@ -13,6 +13,9 @@ interface Profile {
   org_id: string | null;
 }
 
+/** Explicit platform-admin lookup state — an error is never "not an admin". */
+export type PlatformAdminStatus = 'loading' | 'admin' | 'not_admin' | 'error';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -20,6 +23,7 @@ interface AuthContextType {
   roles: AppRole[];
   loading: boolean;
   isPlatformAdmin: boolean;
+  platformAdminStatus: PlatformAdminStatus;
   /** Tenant organization type (null for platform admins without a tenant org). */
   orgType: string | null;
   refreshUserData: () => Promise<void>;
@@ -37,9 +41,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [platformAdminStatus, setPlatformAdminStatus] = useState<PlatformAdminStatus>('loading');
   const [orgType, setOrgType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     // Set up auth state listener FIRST
