@@ -16,6 +16,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { formatCurrency } from '@/lib/currency';
+import { buildManualDocument } from '@/lib/manualRender';
 import {
   fetchPropertyDetail, fetchPropertyHistory, fetchPropertyBilling, buildManualSnapshot, manualIsStale,
   updateShareLink, type PropertyDetail, type PropertyHistoryItem, type PropertyBilling, type ManualSnapshot,
@@ -76,6 +77,22 @@ export default function PlantOpsProperty() {
 
   const activeLink = links.find((x) => !x.revoked_at) ?? null;
   const stale = detail ? manualIsStale(detail, activeLink?.manual_approved_at ?? null) : false;
+
+  /** Preview must use the same canonical effective care as the approved snapshot. */
+  const openPreview = async () => {
+    if (!detail || !estateId) return;
+    setBusy(true);
+    try {
+      const queue = await fetchCareQueue(estateId);
+      const effective: Record<string, number | null> = {};
+      for (const row of queue) effective[row.placement_id] = row.effective_days;
+      setPreview(buildManualSnapshot(detail, contactNote || activeLink?.contact_note || null, effective));
+    } catch (e: any) {
+      toast({ title: l('Could not build the preview', 'No se pudo generar la vista previa'), description: e.message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const doApprove = async () => {
     if (!detail || !estateId) return;
@@ -311,7 +328,7 @@ export default function PlantOpsProperty() {
                   <Textarea rows={2} value={contactNote || activeLink?.contact_note || ''} onChange={(e) => setContactNote(e.target.value)} />
                 </div>
                 <div className="flex flex-wrap gap-2">
-                  <Button size="sm" variant="outline" onClick={() => setPreview(buildManualSnapshot(detail, contactNote || activeLink?.contact_note || null))}>
+                  <Button size="sm" variant="outline" onClick={openPreview} disabled={busy}>
                     <FileText className="h-4 w-4 mr-2" />{l('Preview', 'Previsualizar')}
                   </Button>
                   <Button size="sm" onClick={doApprove} disabled={busy}>
@@ -407,18 +424,14 @@ export default function PlantOpsProperty() {
             <DialogHeader><DialogTitle>{l('Manual preview', 'Previsualización del manual')}</DialogTitle></DialogHeader>
             {preview && (
               <div className="space-y-3 text-sm">
-                <p className="font-medium">{preview.property.name}</p>
-                {preview.services.length > 0 && (
-                  <p className="text-muted-foreground capitalize">{preview.services.join(' · ')}</p>
-                )}
-                {preview.plants.map((p, i) => (
+                {buildManualDocument(preview).sections.map((section, i) => (
                   <div key={i} className="rounded-lg border p-3 space-y-1">
-                    <p className="font-medium">{p.name}</p>
-                    <p className="text-xs text-muted-foreground">{p.location}</p>
-                    <p className="text-xs">{p.water}</p>
-                    {p.pot && <p className="text-xs text-muted-foreground">{p.pot}</p>}
-                    {p.client_instructions && <p className="text-xs">{p.client_instructions}</p>}
-                    {p.do_not_do && <p className="text-xs text-destructive">{p.do_not_do}</p>}
+                    <p className="font-medium">{section.title}</p>
+                    {section.lines.map((item, j) => (
+                      <p key={j} className="text-xs text-muted-foreground">
+                        {item.label ? `${item.label}: ${item.value}` : item.value}
+                      </p>
+                    ))}
                   </div>
                 ))}
               </div>
