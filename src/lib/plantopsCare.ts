@@ -529,3 +529,131 @@ export function addDaysISO(from: string | Date, days: number): string {
   const d = new Date(base.getTime() + days * 86400000);
   return d.toISOString().slice(0, 10);
 }
+
+/* ---------- Canonical pot vocabulary (matches the DB validation) ---------- */
+
+export const POT_MATERIALS = ['ceramica', 'plastico', 'barro', 'fibra', 'metal', 'vidrio', 'otro'] as const;
+export type PotMaterial = (typeof POT_MATERIALS)[number];
+
+export const POT_MATERIAL_LABELS: Record<PotMaterial, { en: string; es: string; de: string }> = {
+  ceramica: { en: 'Ceramic', es: 'Cerámica', de: 'Keramik' },
+  plastico: { en: 'Plastic', es: 'Plástico', de: 'Plastik' },
+  barro: { en: 'Terracotta', es: 'Barro', de: 'Terrakotta' },
+  fibra: { en: 'Fiber', es: 'Fibra', de: 'Faser' },
+  metal: { en: 'Metal', es: 'Metal', de: 'Metall' },
+  vidrio: { en: 'Glass', es: 'Vidrio', de: 'Glas' },
+  otro: { en: 'Other', es: 'Otro', de: 'Andere' },
+};
+
+/* ---------- Transactional wizard plant line ---------- */
+
+export interface PlantLineInput {
+  estateId: string;
+  plantName: string;
+  placementId?: string | null;
+  plantAssetId?: string | null;
+  potAssetId?: string | null;
+  zoneId?: string | null;
+  zoneName?: string | null;
+  floorLabel?: string | null;
+  spotLabel?: string | null;
+  spotNotes?: string | null;
+  accessNotes?: string | null;
+  contractId?: string | null;
+  plantNotes?: string | null;
+  withPot?: boolean;
+  potMaterial?: string | null;
+  potDiameterCm?: number | null;
+  potHeightCm?: number | null;
+  potVolumeLiters?: number | null;
+  potHasDrainage?: boolean | null;
+  potDrainageHoles?: number | null;
+  potHasSaucer?: boolean | null;
+  potReservoir?: boolean | null;
+  potNotes?: string | null;
+}
+
+export interface PlantLineResult {
+  placement_id: string;
+  plant_asset_id: string;
+  pot_asset_id: string | null;
+  zone_id: string | null;
+  status: string;
+}
+
+/**
+ * One transaction for a whole wizard plant line: zone, plant asset, PlantOps details,
+ * pot asset with all pot attributes, placement and installation. Safe to call again
+ * with the returned IDs — nothing is duplicated and nothing is left orphaned.
+ */
+export async function savePlantLine(input: PlantLineInput): Promise<PlantLineResult> {
+  const { data, error } = await supabase.rpc('plantops_save_plant_line', {
+    p_estate_id: input.estateId,
+    p_plant_name: input.plantName,
+    p_placement_id: input.placementId ?? null,
+    p_plant_asset_id: input.plantAssetId ?? null,
+    p_pot_asset_id: input.potAssetId ?? null,
+    p_zone_id: input.zoneId ?? null,
+    p_zone_name: input.zoneName ?? null,
+    p_floor_label: input.floorLabel ?? null,
+    p_spot_label: input.spotLabel ?? null,
+    p_spot_notes: input.spotNotes ?? null,
+    p_access_notes: input.accessNotes ?? null,
+    p_contract_id: input.contractId ?? null,
+    p_plant_notes: input.plantNotes ?? null,
+    p_pot_material: input.potMaterial ?? null,
+    p_pot_diameter_cm: input.potDiameterCm ?? null,
+    p_pot_height_cm: input.potHeightCm ?? null,
+    p_pot_volume_liters: input.potVolumeLiters ?? null,
+    p_pot_has_drainage: input.potHasDrainage ?? null,
+    p_pot_drainage_holes: input.potDrainageHoles ?? null,
+    p_pot_has_saucer: input.potHasSaucer ?? null,
+    p_pot_reservoir: input.potReservoir ?? null,
+    p_pot_notes: input.potNotes ?? null,
+    p_with_pot: input.withPot ?? true,
+  } as never);
+  if (error) throw error;
+  return data as unknown as PlantLineResult;
+}
+
+/* ---------- Care queue (one org-scoped read, no N+1) ---------- */
+
+export interface CareQueueRow {
+  placement_id: string;
+  asset_id: string;
+  plant_name: string;
+  estate_id: string;
+  estate_name: string | null;
+  zone_id: string | null;
+  zone_name: string | null;
+  floor_label: string | null;
+  spot_label: string | null;
+  last_watered_at: string | null;
+  next_water_due: string | null;
+  base_days: number | null;
+  configured_factors: CareFactor[] | null;
+  factors_total_days: number | null;
+  min_interval_days: number | null;
+  override_days: number | null;
+  override_reason: string | null;
+  effective_days: number | null;
+  care_responsibility: CareResponsibility | null;
+  light_required: string | null;
+  light_actual: string | null;
+  water_amount_note: string | null;
+  water_method: string | null;
+  client_instructions: string | null;
+  do_not_do: string | null;
+  pot: PotInfo | null;
+  open_incident: boolean;
+  replacement_pending: boolean;
+  care_state: CareState;
+}
+
+export async function fetchCareQueue(estateId?: string | null): Promise<CareQueueRow[]> {
+  const { data, error } = await supabase.rpc('plantops_care_queue', {
+    p_estate_id: estateId ?? null,
+  } as never);
+  if (error) throw error;
+  return (data as unknown as CareQueueRow[]) || [];
+}

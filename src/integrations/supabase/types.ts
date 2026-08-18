@@ -1160,31 +1160,37 @@ export type Database = {
       }
       invoice_items: {
         Row: {
+          created_at: string
           description: string
           id: string
           invoice_id: string
           product_id: string | null
           quantity: number
+          source_estate_id: string | null
           source_shift_id: string | null
           total: number
           unit_price: number
         }
         Insert: {
+          created_at?: string
           description: string
           id?: string
           invoice_id: string
           product_id?: string | null
           quantity?: number
+          source_estate_id?: string | null
           source_shift_id?: string | null
           total?: number
           unit_price?: number
         }
         Update: {
+          created_at?: string
           description?: string
           id?: string
           invoice_id?: string
           product_id?: string | null
           quantity?: number
+          source_estate_id?: string | null
           source_shift_id?: string | null
           total?: number
           unit_price?: number
@@ -1202,6 +1208,13 @@ export type Database = {
             columns: ["product_id"]
             isOneToOne: false
             referencedRelation: "product_catalog"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "invoice_items_source_estate_id_fkey"
+            columns: ["source_estate_id"]
+            isOneToOne: false
+            referencedRelation: "estates"
             referencedColumns: ["id"]
           },
           {
@@ -3484,18 +3497,32 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
-      plantops_add_charge: {
-        Args: {
-          p_client_id: string
-          p_currency?: string
-          p_description: string
-          p_product_id?: string
-          p_quantity: number
-          p_shift_id?: string
-          p_unit_price: number
-        }
-        Returns: string
-      }
+      plantops_add_charge:
+        | {
+            Args: {
+              p_client_id: string
+              p_currency?: string
+              p_description: string
+              p_product_id?: string
+              p_quantity: number
+              p_shift_id?: string
+              p_unit_price: number
+            }
+            Returns: string
+          }
+        | {
+            Args: {
+              p_client_id: string
+              p_currency?: string
+              p_description: string
+              p_estate_id?: string
+              p_product_id?: string
+              p_quantity: number
+              p_shift_id?: string
+              p_unit_price: number
+            }
+            Returns: string
+          }
       plantops_add_charge_for_estate: {
         Args: {
           p_currency?: string
@@ -3524,6 +3551,7 @@ export type Database = {
         Args: { p_placement_id: string; p_reason?: string }
         Returns: undefined
       }
+      plantops_care_queue: { Args: { p_estate_id?: string }; Returns: Json }
       plantops_check_availability: {
         Args: {
           p_asset_id: string
@@ -3627,6 +3655,7 @@ export type Database = {
         }
         Returns: string
       }
+      plantops_require_admin: { Args: never; Returns: string }
       plantops_require_internal: { Args: never; Returns: string }
       plantops_reserve_asset: {
         Args: {
@@ -3651,6 +3680,34 @@ export type Database = {
       plantops_revoke_share_link: {
         Args: { p_link_id: string }
         Returns: undefined
+      }
+      plantops_save_plant_line: {
+        Args: {
+          p_access_notes?: string
+          p_contract_id?: string
+          p_estate_id: string
+          p_floor_label?: string
+          p_placement_id?: string
+          p_plant_asset_id?: string
+          p_plant_name: string
+          p_plant_notes?: string
+          p_pot_asset_id?: string
+          p_pot_diameter_cm?: number
+          p_pot_drainage_holes?: number
+          p_pot_has_drainage?: boolean
+          p_pot_has_saucer?: boolean
+          p_pot_height_cm?: number
+          p_pot_material?: string
+          p_pot_notes?: string
+          p_pot_reservoir?: boolean
+          p_pot_volume_liters?: number
+          p_spot_label?: string
+          p_spot_notes?: string
+          p_with_pot?: boolean
+          p_zone_id?: string
+          p_zone_name?: string
+        }
+        Returns: Json
       }
       plantops_set_care_plan: {
         Args: {

@@ -22,7 +22,7 @@ import {
 } from '@/lib/plantopsProperty';
 import {
   fetchShareLinks, createShareLink, revokeShareLink, approveManual, addChargeForEstate, registerPayment,
-  careState, formatDateEs, CARE_RESPONSIBILITY_LABELS, type ShareLinkRow, type CareResponsibility,
+  careState, formatDateEs, CARE_RESPONSIBILITY_LABELS, fetchCareQueue, type ShareLinkRow, type CareResponsibility,
 } from '@/lib/plantopsCare';
 
 /** Central operational screen for one property: plants, care, history, manual, billing. */
@@ -81,7 +81,10 @@ export default function PlantOpsProperty() {
     if (!detail || !estateId) return;
     setBusy(true);
     try {
-      const snapshot = buildManualSnapshot(detail, contactNote || activeLink?.contact_note || null);
+      const queue = await fetchCareQueue(estateId);
+      const effective: Record<string, number | null> = {};
+      for (const row of queue) effective[row.placement_id] = row.effective_days;
+      const snapshot = buildManualSnapshot(detail, contactNote || activeLink?.contact_note || null, effective);
       let linkId = activeLink?.id;
       if (!linkId) {
         const created = await createShareLink({ estateId, contactNote: contactNote || null });
