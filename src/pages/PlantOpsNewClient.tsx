@@ -24,6 +24,9 @@ import {
   approveManual,
   fetchShareLinks,
   CARE_RESPONSIBILITIES,
+  POT_MATERIALS,
+  POT_MATERIAL_LABELS,
+  savePlantLine,
   CARE_RESPONSIBILITY_LABELS,
   type CareResponsibility,
 } from '@/lib/plantopsCare';
