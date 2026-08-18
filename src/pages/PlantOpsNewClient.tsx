@@ -432,6 +432,14 @@ export default function PlantOpsNewClient() {
           if (error) throw error;
           setContractId((data as any).id);
         }
+      } else if (contractId) {
+        // Rental was deselected: the contract is cancelled, never silently left active.
+        const { error } = await supabase
+          .from('rental_contracts')
+          .update({ status: 'cancelled', services_json: services } as any)
+          .eq('id', contractId);
+        if (error) throw error;
+        setContractId(null);
       }
       await goStep(3);
     } catch (e: any) {
