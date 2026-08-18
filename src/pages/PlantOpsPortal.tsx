@@ -161,8 +161,11 @@ export default function PlantOpsPortal() {
 
         {data.manual && (
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
               <CardTitle className="text-base">Manual de cuidado</CardTitle>
+              <Button variant="outline" size="sm" onClick={downloadManual}>
+                <Download className="h-4 w-4 mr-1" /> PDF
+              </Button>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               {Array.isArray(data.manual)
