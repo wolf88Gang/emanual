@@ -297,9 +297,9 @@ export default function PlantOpsContracts() {
                 <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="draft">{l('Draft', 'Borrador', 'Entwurf')}</SelectItem>
-                    <SelectItem value="active">{l('Active', 'Activo', 'Aktiv')}</SelectItem>
-                    <SelectItem value="ended">{l('Ended', 'Finalizado', 'Beendet')}</SelectItem>
+                    {CONTRACT_STATUS_TRANSITIONS[originalStatus].map((s) => (
+                      <SelectItem key={s} value={s}>{statusLabel(s)}</SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>
