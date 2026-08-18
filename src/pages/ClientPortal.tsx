@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
-import { renderManualSnapshot } from '@/lib/manualRender';
+import { buildManualDocument, manualToPlainText } from '@/lib/manualRender';
 
 interface PortalPlant {
   id: string;
@@ -213,7 +213,7 @@ export default function ClientPortal() {
                   </CardHeader>
                   <CardContent>
                     <pre className="whitespace-pre-wrap text-sm font-sans leading-relaxed">
-                      {renderManualSnapshot(m.snapshot as any)}
+                      {manualToPlainText(buildManualDocument(m.snapshot, { approvedAt: m.approved_at })).join('\n')}
                     </pre>
                   </CardContent>
                 </Card>
