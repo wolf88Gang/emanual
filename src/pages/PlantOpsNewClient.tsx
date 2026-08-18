@@ -976,7 +976,9 @@ export default function PlantOpsNewClient() {
                   <Select value={billingPeriod} onValueChange={setBillingPeriod}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
-                      {['monthly', 'quarterly', 'event'].map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      {BILLING_PERIODS.map((b) => (
+                        <SelectItem key={b} value={b}>{BILLING_PERIOD_LABELS[b][language === 'es' ? 'es' : 'en']}</SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                 </div>
