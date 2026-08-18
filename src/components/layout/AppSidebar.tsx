@@ -104,6 +104,7 @@ export function AppSidebar() {
   // Plant rental (PlantOps) items
   const plantRentalNav: NavItem[] = [
     { path: '/plantops', icon: Sprout, label: 'PlantOps', tooltip: l('Plant rental inventory & placements', 'Inventario de alquiler y ubicaciones', 'Mietbestand & Standorte') },
+    { path: '/plantops/clientes', icon: Users, label: l('Clients', 'Clientes', 'Kunden'), tooltip: l('Clients and their projects', 'Clientes y sus proyectos', 'Kunden und ihre Projekte') },
     { path: '/plantops/nuevo-cliente', icon: ShoppingBag, label: l('New client', 'Nuevo cliente', 'Neuer Kunde'), tooltip: l('6-step client setup', 'Alta de cliente en 6 pasos', 'Kundenanlage in 6 Schritten') },
     { path: '/plantops/visita', icon: ClipboardList, label: l('Visit', 'Visita', 'Besuch'), tooltip: l('Run a maintenance visit', 'Ejecutar una visita de mantenimiento', 'Wartungsbesuch durchführen') },
     { path: '/plantops/care', icon: Sprout, label: l('Care', 'Cuidados', 'Pflege'), tooltip: l('Operational care plans', 'Planes de cuidado operativos', 'Betriebliche Pflegepläne') },

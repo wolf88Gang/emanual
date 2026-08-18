@@ -52,7 +52,7 @@ export default function PlantOpsSettings() {
     (async () => {
       try {
         const [m, s] = await Promise.all([fetchModules(orgId), fetchCareSettings(orgId)]);
-        setModules(m);
+        setModules(normalizeOrgModules(m));
         setSettings(s);
       } catch (e: any) {
         toast({ title: l('Could not load settings', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
@@ -143,7 +143,7 @@ export default function PlantOpsSettings() {
               <CardContent className="space-y-3">
                 {MODULE_KEYS.map((k) => (
                   <div key={k} className="flex items-center justify-between">
-                    <Label className="capitalize text-sm">{k}</Label>
+                    <Label className="text-sm">{language === 'es' ? CAPABILITY_LABELS[k].es : language === 'de' ? CAPABILITY_LABELS[k].de : CAPABILITY_LABELS[k].en}</Label>
                     <Switch
                       checked={modules[k] !== false}
                       onCheckedChange={(v) => setModules((prev) => ({ ...prev, [k]: v }))}
