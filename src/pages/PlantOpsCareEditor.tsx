@@ -136,7 +136,7 @@ export default function PlantOpsCareEditor() {
         lightRequired: form.light_required || null,
         lightActual: form.light_actual || null,
         ventilation: form.ventilation || null,
-        careResponsibility: form.care_responsibility === NONE ? null : (form.care_responsibility as CareResponsibility),
+        careResponsibility: form.care_responsibility as CareResponsibility,
         reminderContact: form.reminder_contact || null,
         clientInstructions: form.client_instructions || null,
         doNotDo: form.do_not_do || null,
@@ -220,8 +220,8 @@ export default function PlantOpsCareEditor() {
                 </CardHeader>
                 <CardContent className="space-y-1.5 text-sm">
                   <p>{l('Operational base', 'Base operativa', 'Betriebsbasis')}: <strong>{days(care?.base_days)}</strong>{' '}
-                    {care?.base_source === 'species_structured' && (
-                      <Badge variant="outline">{l('from species guide', 'de la guía de especie', 'aus Leitfaden')}</Badge>
+                    {care?.base_source === 'none' && (
+                      <Badge variant="outline">{l('not defined — review', 'sin definir — revisar', 'nicht definiert — prüfen')}</Badge>
                     )}
                   </p>
                   <p>{l('Configured factors', 'Factores configurados', 'Konfigurierte Faktoren')}:{' '}
@@ -313,7 +313,7 @@ export default function PlantOpsCareEditor() {
                       onValueChange={(v) => setForm({ ...form, care_responsibility: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={NONE}>{l('Not defined', 'Sin definir', 'Nicht definiert')}</SelectItem>
+                        
                         {CARE_RESPONSIBILITIES.map((r) => (
                           <SelectItem key={r} value={r}>{tl(CARE_RESPONSIBILITY_LABELS[r])}</SelectItem>
                         ))}

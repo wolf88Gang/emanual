@@ -63,7 +63,9 @@ export const CARE_RESPONSIBILITY_LABELS: Record<CareResponsibility, { en: string
 /* ---------- Types ---------- */
 
 export interface CareFactor {
-  label: string;
+  key?: string;
+  value?: string;
+  label?: string;
   days: number;
 }
 
