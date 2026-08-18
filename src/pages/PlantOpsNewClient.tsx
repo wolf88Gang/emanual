@@ -588,25 +588,42 @@ export default function PlantOpsNewClient() {
     if (!estateId) return;
     setBusy(true);
     try {
-      const detail = await fetchPropertyDetail(estateId);
-      const snapshot = buildManualSnapshot(detail, contactNote || null);
-      const link = await createShareLink({
-        estateId,
-        showPlants: shareToggles.showPlants,
-        showManual: shareToggles.showManual,
-        showLastVisit: shareToggles.showLastVisit,
-        showHistory: shareToggles.showHistory,
-        showBalance: shareToggles.showBalance,
-        contactNote: contactNote || null,
-      });
-      await approveManual(link.id, snapshot);
+      // Finishing twice must never rotate the client's link: an active link is reused.
+      let linkId = existingLinkId;
+      if (!linkId) {
+        const link = await createShareLink({
+          estateId,
+          showPlants: shareToggles.showPlants,
+          // The manual can only be shown when the manual service is contracted.
+          showManual: shareToggles.showManual && !!services.manual,
+          showLastVisit: shareToggles.showLastVisit,
+          showHistory: shareToggles.showHistory,
+          showBalance: shareToggles.showBalance,
+          contactNote: contactNote || null,
+        });
+        linkId = link.id;
+        setExistingLinkId(link.id);
+        setShareUrl(link.url);
+      }
+
+      // Approving the manual is an explicit editorial act, and the snapshot must
+      // carry the canonical effective days, never a recomputed guess.
+      if (services.manual && shareToggles.showManual) {
+        const [detail, queue] = await Promise.all([
+          fetchPropertyDetail(estateId),
+          fetchCareQueue(estateId),
+        ]);
+        const effectiveDays: Record<string, number | null> = {};
+        for (const row of queue) effectiveDays[row.placement_id] = row.effective_days;
+        await approveManual(linkId, buildManualSnapshot(detail, contactNote || null, effectiveDays));
+      }
+
       await supabase.from('estates').update({ setup_status: 'active' } as any).eq('id', estateId);
+      await persistServicePlan(estateId, { setup_step: 6 });
       await refetchEstates();
-      setShareUrl(link.url);
-      setExistingLinkId(link.id);
       toast({ title: l('Client is ready', 'Cliente listo') });
     } catch (e: any) {
-      toast({ title: l('Could not create the link', 'No se pudo crear el enlace'), description: e.message, variant: 'destructive' });
+      toast({ title: l('Could not finish the setup', 'No se pudo finalizar la configuración'), description: e.message, variant: 'destructive' });
     } finally {
       setBusy(false);
     }
