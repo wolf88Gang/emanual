@@ -3497,32 +3497,19 @@ export type Database = {
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
-      plantops_add_charge:
-        | {
-            Args: {
-              p_client_id: string
-              p_currency?: string
-              p_description: string
-              p_product_id?: string
-              p_quantity: number
-              p_shift_id?: string
-              p_unit_price: number
-            }
-            Returns: string
-          }
-        | {
-            Args: {
-              p_client_id: string
-              p_currency?: string
-              p_description: string
-              p_estate_id?: string
-              p_product_id?: string
-              p_quantity: number
-              p_shift_id?: string
-              p_unit_price: number
-            }
-            Returns: string
-          }
+      plantops_add_charge: {
+        Args: {
+          p_client_id: string
+          p_currency?: string
+          p_description: string
+          p_estate_id: string
+          p_product_id?: string
+          p_quantity: number
+          p_shift_id: string
+          p_unit_price: number
+        }
+        Returns: string
+      }
       plantops_add_charge_for_estate: {
         Args: {
           p_currency?: string
@@ -3634,6 +3621,10 @@ export type Database = {
         }
         Returns: Json
       }
+      plantops_property_billing: {
+        Args: { p_estate_id: string }
+        Returns: Json
+      }
       plantops_register_payment: {
         Args: {
           p_amount: number
@@ -3681,12 +3672,20 @@ export type Database = {
         Args: { p_link_id: string }
         Returns: undefined
       }
+      plantops_rotate_share_link: {
+        Args: { p_link_id: string; p_token_hash: string }
+        Returns: string
+      }
       plantops_save_plant_line: {
         Args: {
           p_access_notes?: string
+          p_clear_contract?: boolean
+          p_clear_zone?: boolean
           p_contract_id?: string
+          p_currency?: string
           p_estate_id: string
           p_floor_label?: string
+          p_lifecycle_status?: string
           p_placement_id?: string
           p_plant_asset_id?: string
           p_plant_name: string
@@ -3701,6 +3700,7 @@ export type Database = {
           p_pot_notes?: string
           p_pot_reservoir?: boolean
           p_pot_volume_liters?: number
+          p_rental_price?: number
           p_spot_label?: string
           p_spot_notes?: string
           p_with_pot?: boolean
@@ -3749,20 +3749,36 @@ export type Database = {
         Args: { p_estate_id: string; p_notes?: string }
         Returns: string
       }
-      plantops_update_share_link: {
-        Args: {
-          p_clear_expiry?: boolean
-          p_contact_note?: string
-          p_expires_at?: string
-          p_link_id: string
-          p_show_balance?: boolean
-          p_show_history?: boolean
-          p_show_last_visit?: boolean
-          p_show_manual?: boolean
-          p_show_plants?: boolean
-        }
-        Returns: undefined
-      }
+      plantops_update_share_link:
+        | {
+            Args: {
+              p_clear_expiry?: boolean
+              p_contact_note?: string
+              p_expires_at?: string
+              p_link_id: string
+              p_show_balance?: boolean
+              p_show_history?: boolean
+              p_show_last_visit?: boolean
+              p_show_manual?: boolean
+              p_show_plants?: boolean
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              p_clear_contact_note?: boolean
+              p_clear_expiry?: boolean
+              p_contact_note?: string
+              p_expires_at?: string
+              p_link_id: string
+              p_show_balance?: boolean
+              p_show_history?: boolean
+              p_show_last_visit?: boolean
+              p_show_manual?: boolean
+              p_show_plants?: boolean
+            }
+            Returns: undefined
+          }
       plantops_upsert_asset_details: {
         Args: {
           p_acquisition_date?: string

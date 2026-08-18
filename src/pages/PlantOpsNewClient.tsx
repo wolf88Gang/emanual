@@ -15,13 +15,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useOrgType } from '@/hooks/usePlantOps';
-import { reserveAsset, installAsset, upsertAssetDetails, BILLING_PERIODS, BILLING_PERIOD_LABELS } from '@/lib/plantops';
+import { reserveAsset, installAsset, BILLING_PERIODS, BILLING_PERIOD_LABELS } from '@/lib/plantops';
 import {
   setCarePlan,
   fetchCareQueue,
   addChargeForEstate,
   createShareLink,
   approveManual,
+  rotateShareLink,
   fetchShareLinks,
   CARE_RESPONSIBILITIES,
   POT_MATERIALS,
@@ -35,6 +36,7 @@ import {
   buildManualSnapshot,
   fetchServicePlan,
   saveServicePlan,
+  updateShareLink,
 } from '@/lib/plantopsProperty';
 
 /** Commercial services. Watering, pruning etc. are maintenance ACTIONS, not services. */
@@ -190,6 +192,9 @@ export default function PlantOpsNewClient() {
   });
   const [shareUrl, setShareUrl] = useState<string | null>(null);
   const [existingLinkId, setExistingLinkId] = useState<string | null>(null);
+  /** A manual version must be approved explicitly (preview -> approve -> finish). */
+  const [manualApprovedAt, setManualApprovedAt] = useState<string | null>(null);
+  const [manualPreview, setManualPreview] = useState<unknown | null>(null);
 
   const hasRental = !!services.alquiler || !!services.eventos;
 
@@ -200,6 +205,7 @@ export default function PlantOpsNewClient() {
   /* ---------- resume: hydrate everything already persisted ---------- */
 
   const resumeEstateId = searchParams.get('estate');
+  const allowEdit = searchParams.get('edit') === 'true';
 
   useEffect(() => {
     if (!resumeEstateId) return;
@@ -230,7 +236,13 @@ export default function PlantOpsNewClient() {
         if (plan.base_price != null) setPriceAmount(String(plan.base_price));
         // Resume exactly where the operator left off; a completed setup opens the last step.
         const rawStep = (plan as any).setup_step;
-        if (rawStep === 'completed') setStep(6);
+        if (rawStep === 'completed' && !allowEdit) {
+          // A finished setup is managed from the property screen; the wizard only
+          // reopens with an explicit ?edit=true.
+          navigate(`/plantops/propiedad/${resumeEstateId}`, { replace: true });
+          return;
+        }
+        if (rawStep === 'completed') setStep(1);
         else {
           const savedStep = Number(rawStep);
           if (Number.isFinite(savedStep) && savedStep >= 1 && savedStep <= 6) setStep(savedStep);
@@ -296,6 +308,7 @@ export default function PlantOpsNewClient() {
             showHistory: activeLink.show_history,
             showBalance: activeLink.show_balance,
           });
+          setManualApprovedAt(activeLink.manual_approved_at || null);
         }
       } catch (e: any) {
         toast({ title: l('Could not load the setup', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
@@ -304,7 +317,7 @@ export default function PlantOpsNewClient() {
       }
     })();
     return () => { cancelled = true; };
-  }, [resumeEstateId]);
+  }, [resumeEstateId, allowEdit]);
 
   const updatePlant = (key: string, patch: Partial<PlantDraft>) =>
     setPlants((prev) => prev.map((p) => (p.key === key ? { ...p, ...patch } : p)));
@@ -479,6 +492,11 @@ export default function PlantOpsNewClient() {
           spotLabel: p.spotLabel.trim() || null,
           accessNotes: p.accessNotes.trim() || null,
           contractId: hasRental ? contractId : null,
+          clearContract: !hasRental,
+          clearZone: !p.zoneId && !p.zoneName.trim(),
+          lifecycleStatus: 'active',
+          rentalPrice: hasRental && p.rentalPrice ? Number(p.rentalPrice) : null,
+          currency,
           withPot: p.withPot,
           potMaterial: p.withPot ? p.potMaterial || null : null,
           potDiameterCm: p.withPot && p.potDiameter ? Number(p.potDiameter) : null,
@@ -497,12 +515,11 @@ export default function PlantOpsNewClient() {
           plantAssetId: line.plant_asset_id,
           potAssetId: line.pot_asset_id,
           zoneId: line.zone_id,
-        });
-        await upsertAssetDetails({
-          assetId: line.plant_asset_id,
-          lifecycleStatus: 'active',
-          rentalPrice: hasRental && p.rentalPrice ? Number(p.rentalPrice) : null,
-          currency,
+          // with_pot=false detaches the pot from the placement; UI fields clear too.
+          withPot: !!line.pot_asset_id,
+          ...(line.pot_asset_id
+            ? {}
+            : { potMaterial: '', potDiameter: '', potHeight: '', potVolume: '', potHoles: '', potNotes: '' }),
         });
       }
       await goStep(4);
@@ -597,17 +614,33 @@ export default function PlantOpsNewClient() {
     }
   };
 
-  const finish = async () => {
+  /** Builds the manual version the client would see, without publishing it. */
+  const previewManual = async () => {
     if (!estateId) return;
     setBusy(true);
     try {
-      // Finishing twice must never rotate the client's link: an active link is reused.
+      const [detail, queue] = await Promise.all([fetchPropertyDetail(estateId), fetchCareQueue(estateId)]);
+      const effectiveDays: Record<string, number | null> = {};
+      for (const row of queue) effectiveDays[row.placement_id] = row.effective_days;
+      setManualPreview(buildManualSnapshot(detail, contactNote || null, effectiveDays));
+      toast({ title: l('Manual preview ready', 'Previsualización lista') });
+    } catch (e: any) {
+      toast({ title: l('Could not build the manual', 'No se pudo construir el manual'), description: e.message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  /** Publishing the manual is an explicit editorial act, never automatic. */
+  const approveManualVersion = async () => {
+    if (!estateId) return;
+    setBusy(true);
+    try {
       let linkId = existingLinkId;
       if (!linkId) {
         const link = await createShareLink({
           estateId,
           showPlants: shareToggles.showPlants,
-          // The manual can only be shown when the manual service is contracted.
           showManual: shareToggles.showManual && !!services.manual,
           showLastVisit: shareToggles.showLastVisit,
           showHistory: shareToggles.showHistory,
@@ -618,17 +651,61 @@ export default function PlantOpsNewClient() {
         setExistingLinkId(link.id);
         setShareUrl(link.url);
       }
+      const [detail, queue] = await Promise.all([fetchPropertyDetail(estateId), fetchCareQueue(estateId)]);
+      const effectiveDays: Record<string, number | null> = {};
+      for (const row of queue) effectiveDays[row.placement_id] = row.effective_days;
+      const snapshot = buildManualSnapshot(detail, contactNote || null, effectiveDays);
+      await approveManual(linkId, snapshot);
+      setManualPreview(snapshot);
+      setManualApprovedAt(new Date().toISOString());
+      toast({ title: l('Manual version approved', 'Versión del manual aprobada') });
+    } catch (e: any) {
+      toast({ title: l('Could not approve the manual', 'No se pudo aprobar el manual'), description: e.message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
 
-      // Approving the manual is an explicit editorial act, and the snapshot must
-      // carry the canonical effective days, never a recomputed guess.
-      if (services.manual && shareToggles.showManual) {
-        const [detail, queue] = await Promise.all([
-          fetchPropertyDetail(estateId),
-          fetchCareQueue(estateId),
-        ]);
-        const effectiveDays: Record<string, number | null> = {};
-        for (const row of queue) effectiveDays[row.placement_id] = row.effective_days;
-        await approveManual(linkId, buildManualSnapshot(detail, contactNote || null, effectiveDays));
+  const manualRequired = !!services.manual && shareToggles.showManual;
+  const finishBlocked = manualRequired && !manualApprovedAt;
+
+  const finish = async () => {
+    if (!estateId) return;
+    if (finishBlocked) {
+      toast({
+        title: l('Approve a manual version first', 'Primero apruebe una versión del manual'),
+        description: l('Preview and approve the manual before finishing.', 'Previsualice y apruebe el manual antes de finalizar.'),
+        variant: 'destructive',
+      });
+      return;
+    }
+    setBusy(true);
+    try {
+      // Finishing is idempotent: an active link keeps its token and is only updated.
+      const showManual = shareToggles.showManual && !!services.manual;
+      if (existingLinkId) {
+        await updateShareLink({
+          linkId: existingLinkId,
+          showPlants: shareToggles.showPlants,
+          showManual,
+          showLastVisit: shareToggles.showLastVisit,
+          showHistory: shareToggles.showHistory,
+          showBalance: shareToggles.showBalance,
+          contactNote: contactNote || null,
+          clearContactNote: !contactNote.trim(),
+        });
+      } else {
+        const link = await createShareLink({
+          estateId,
+          showPlants: shareToggles.showPlants,
+          showManual,
+          showLastVisit: shareToggles.showLastVisit,
+          showHistory: shareToggles.showHistory,
+          showBalance: shareToggles.showBalance,
+          contactNote: contactNote || null,
+        });
+        setExistingLinkId(link.id);
+        setShareUrl(link.url);
       }
 
       await supabase.from('estates').update({ setup_status: 'active' } as any).eq('id', estateId);
@@ -1028,10 +1105,34 @@ export default function PlantOpsNewClient() {
               {existingLinkId && !shareUrl && (
                 <p className="text-xs text-muted-foreground">
                   {l(
-                    'This property already has an active client link. Finishing here approves the manual again and issues a new link; manage or revoke links from the property screen.',
-                    'Esta propiedad ya tiene un enlace activo. Al finalizar se aprueba el manual otra vez y se emite un enlace nuevo; gestione o revoque enlaces desde la pantalla de la propiedad.',
+                    'This property already has an active client link. Finishing keeps the same token and only updates these options.',
+                    'Esta propiedad ya tiene un enlace activo. Al finalizar se conserva el mismo token y solo se actualizan estas opciones.',
                   )}
                 </p>
+              )}
+
+              {manualRequired && (
+                <div className="rounded-lg border p-3 space-y-2">
+                  <p className="text-sm font-medium">{l('Manual version', 'Versión del manual')}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {manualApprovedAt
+                      ? l('An approved version is published to the client.', 'Hay una versión aprobada publicada al cliente.')
+                      : l('Preview and approve a version before finishing.', 'Previsualice y apruebe una versión antes de finalizar.')}
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    <Button size="sm" variant="outline" onClick={previewManual} disabled={busy}>
+                      {l('Preview', 'Previsualizar')}
+                    </Button>
+                    <Button size="sm" onClick={approveManualVersion} disabled={busy}>
+                      {l('Approve version', 'Aprobar versión')}
+                    </Button>
+                  </div>
+                  {manualPreview && (
+                    <pre className="max-h-48 overflow-auto rounded bg-muted p-2 text-[10px] leading-tight">
+                      {JSON.stringify(manualPreview, null, 2)}
+                    </pre>
+                  )}
+                </div>
               )}
 
               {shareUrl && (
@@ -1061,9 +1162,9 @@ export default function PlantOpsNewClient() {
             </Button>
           )}
           {!shareUrl && (
-            <Button className="flex-1" onClick={next} disabled={busy || hydrating}>
+            <Button className="flex-1" onClick={next} disabled={busy || hydrating || (step === 6 && finishBlocked)}>
               {busy ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-              {step === 6 ? l('Approve manual & create link', 'Aprobar manual y crear enlace') : l('Continue', 'Continuar')}
+              {step === 6 ? l('Finish', 'Finalizar') : l('Continue', 'Continuar')}
               {step < 6 && <ChevronRight className="h-4 w-4 ml-1" />}
             </Button>
           )}
