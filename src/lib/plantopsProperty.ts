@@ -481,6 +481,14 @@ export interface ServicePlan {
   currency?: string;
   billing_period?: string;
   reminder_contact?: string | null;
+  /** Wizard resume point ("1".."6" or "completed"). */
+  setup_step?: number | string;
+  /** B2B2C project shape: type, status, per-project capabilities and portal visibility. */
+  project_type?: string;
+  project_status?: string;
+  capabilities?: Record<string, boolean>;
+  portal_visibility?: Record<string, boolean>;
+  reminder_settings?: Record<string, unknown>;
 }
 
 export async function fetchServicePlan(estateId: string): Promise<ServicePlan> {

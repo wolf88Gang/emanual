@@ -20,7 +20,10 @@ import {
   type CareSettings,
 } from '@/lib/plantopsCare';
 
-const MODULE_KEYS = ['visits', 'care', 'billing', 'contracts', 'inventory', 'portal'] as const;
+import { CAPABILITY_KEYS, CAPABILITY_LABELS, normalizeOrgModules } from '@/lib/plantopsClients';
+
+/** Canonical organization-level module keys (they gate nav, dashboard, routes and wizard). */
+const MODULE_KEYS = CAPABILITY_KEYS;
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
@@ -49,7 +52,7 @@ export default function PlantOpsSettings() {
     (async () => {
       try {
         const [m, s] = await Promise.all([fetchModules(orgId), fetchCareSettings(orgId)]);
-        setModules(m);
+        setModules(normalizeOrgModules(m));
         setSettings(s);
       } catch (e: any) {
         toast({ title: l('Could not load settings', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
@@ -140,7 +143,7 @@ export default function PlantOpsSettings() {
               <CardContent className="space-y-3">
                 {MODULE_KEYS.map((k) => (
                   <div key={k} className="flex items-center justify-between">
-                    <Label className="capitalize text-sm">{k}</Label>
+                    <Label className="text-sm">{language === 'es' ? CAPABILITY_LABELS[k].es : language === 'de' ? CAPABILITY_LABELS[k].de : CAPABILITY_LABELS[k].en}</Label>
                     <Switch
                       checked={modules[k] !== false}
                       onCheckedChange={(v) => setModules((prev) => ({ ...prev, [k]: v }))}
