@@ -38,6 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
   const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [orgType, setOrgType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           setProfile(null);
           setRoles([]);
           setIsPlatformAdmin(false);
+          setOrgType(null);
         }
       }
     );
@@ -85,6 +87,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (profileData) {
         setProfile(profileData as Profile);
+      }
+
+      // Tenant organization type (drives post-auth routing for owner/manager)
+      if (profileData?.org_id) {
+        const { data: orgData } = await supabase
+          .from('organizations')
+          .select('org_type')
+          .eq('id', profileData.org_id)
+          .maybeSingle();
+        setOrgType(((orgData as any)?.org_type as string) ?? null);
+      } else {
+        setOrgType(null);
       }
 
       // Fetch roles
@@ -120,6 +134,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setRoles([]);
       setIsPlatformAdmin(false);
+      setOrgType(null);
       return;
     }
 
@@ -155,6 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setProfile(null);
     setRoles([]);
     setIsPlatformAdmin(false);
+    setOrgType(null);
   };
 
   const hasRole = (role: AppRole) => roles.includes(role);
@@ -169,6 +185,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         roles,
         loading,
         isPlatformAdmin,
+        orgType,
         refreshUserData,
         signIn,
         signUp,
