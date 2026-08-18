@@ -191,7 +191,7 @@ export default function PlantOpsPortal() {
             <CardContent className="space-y-2 text-sm">
               {data.activity.map((a) => (
                 <div key={a.id} className="flex justify-between gap-3 border-b border-border/50 pb-2 last:border-0">
-                  <span>{ACTION_ES[a.action] || a.action}{a.notes ? ` — ${a.notes}` : ''}</span>
+                  <span>{ACTION_ES[a.action] || a.action}</span>
                   <span className="text-muted-foreground whitespace-nowrap">
                     {new Date(a.at).toLocaleDateString('es-CR')}
                   </span>
