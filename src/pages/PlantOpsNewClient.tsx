@@ -745,7 +745,7 @@ export default function PlantOpsNewClient() {
                         <Select value={p.potMaterial} onValueChange={(v) => updatePlant(p.key, { potMaterial: v })}>
                           <SelectTrigger><SelectValue placeholder="—" /></SelectTrigger>
                           <SelectContent>
-                            {POT_MATERIALS.map((m) => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+                            {POT_MATERIALS.map((m) => <SelectItem key={m} value={m}>{tl(POT_MATERIAL_LABELS[m])}</SelectItem>)}
                           </SelectContent>
                         </Select>
                       </div>
