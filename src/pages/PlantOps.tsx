@@ -27,6 +27,7 @@ import {
 
 export default function PlantOps() {
   const { tl } = useLanguage();
+  const navigate = useNavigate();
   const { estates } = useEstate();
   const { orgId, inventory, placements, contracts, loading, error, refetch } = usePlantOpsData();
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
