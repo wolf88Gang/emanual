@@ -24,6 +24,7 @@ import {
   upsertAssetDetails, reserveAsset, installAsset, collectAsset, cancelReservation, replacePlant,
   uploadPlacementPhoto, type PlantOpsAssetRow,
 } from '@/lib/plantops';
+import { fetchIncompleteSetups } from '@/lib/plantopsProperty';
 
 export default function PlantOps() {
   const { tl } = useLanguage();
@@ -33,6 +34,17 @@ export default function PlantOps() {
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
   const [search, setSearch] = useState('');
+  const [incomplete, setIncomplete] = useState<{ id: string; name: string; client_name: string | null }[]>([]);
+
+  React.useEffect(() => {
+    if (!orgId) return;
+    let cancelled = false;
+    fetchIncompleteSetups(orgId)
+      .then((rows) => { if (!cancelled) setIncomplete(rows); })
+      .catch(() => { if (!cancelled) setIncomplete([]); });
+    return () => { cancelled = true; };
+  }, [orgId, placements.length]);
+
   const [busy, setBusy] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [reserveOpen, setReserveOpen] = useState(false);
@@ -335,6 +347,28 @@ export default function PlantOps() {
             </Button>
           </CardHeader>
           <CardContent className="space-y-2">
+            {incomplete.length > 0 && (
+              <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 space-y-2">
+                <p className="text-sm font-medium">
+                  {l('Unfinished setups', 'Configuraciones incompletas', 'Unvollständige Einrichtungen')}
+                </p>
+                {incomplete.map((e) => (
+                  <div key={e.id} className="flex items-center justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-sm truncate">{e.name}</p>
+                      {e.client_name && <p className="text-xs text-muted-foreground truncate">{e.client_name}</p>}
+                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => navigate(`/plantops/nuevo-cliente?estate=${e.id}`)}
+                    >
+                      {l('Continue setup', 'Continuar configuración', 'Einrichtung fortsetzen')}
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
             {estates.length === 0 ? (
               <p className="text-sm text-muted-foreground">
                 {l('No properties yet.', 'Sin propiedades todavía.', 'Noch keine Objekte.')}
