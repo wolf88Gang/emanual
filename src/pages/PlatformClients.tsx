@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
-import { SidebarLayout } from '@/components/layout/SidebarLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -192,7 +191,7 @@ export default function PlatformClients() {
   ];
 
   return (
-    <SidebarLayout>
+    <>
       <div className="p-6 space-y-6 max-w-7xl mx-auto">
         <div>
           <h1 className="text-2xl font-display font-bold text-foreground">
@@ -441,6 +440,6 @@ export default function PlatformClients() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </SidebarLayout>
+    </>
   );
 }
