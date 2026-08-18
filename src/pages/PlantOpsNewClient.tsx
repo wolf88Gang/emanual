@@ -628,7 +628,7 @@ export default function PlantOpsNewClient() {
       }
 
       await supabase.from('estates').update({ setup_status: 'active' } as any).eq('id', estateId);
-      await persistServicePlan(estateId, { setup_step: 6 });
+      await persistServicePlan(estateId, { setup_step: 'completed' });
       await refetchEstates();
       toast({ title: l('Client is ready', 'Cliente listo') });
     } catch (e: any) {
