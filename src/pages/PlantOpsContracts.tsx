@@ -17,7 +17,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { formatCurrency } from '@/lib/currency';
-import { fetchContracts, type RentalContractRow } from '@/lib/plantops';
+import {
+  fetchContracts,
+  BILLING_PERIODS,
+  CONTRACT_STATUS_TRANSITIONS,
+  type ContractStatus,
+  type RentalContractRow,
+} from '@/lib/plantops';
 
 interface ClientRow { id: string; name: string }
 
