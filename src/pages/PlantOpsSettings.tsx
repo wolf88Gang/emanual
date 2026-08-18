@@ -20,7 +20,10 @@ import {
   type CareSettings,
 } from '@/lib/plantopsCare';
 
-const MODULE_KEYS = ['visits', 'care', 'billing', 'contracts', 'inventory', 'portal'] as const;
+import { CAPABILITY_KEYS, CAPABILITY_LABELS, normalizeOrgModules } from '@/lib/plantopsClients';
+
+/** Canonical organization-level module keys (they gate nav, dashboard, routes and wizard). */
+const MODULE_KEYS = CAPABILITY_KEYS;
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
