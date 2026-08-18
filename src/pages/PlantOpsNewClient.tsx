@@ -385,7 +385,7 @@ export default function PlantOpsNewClient() {
           .eq('id', eid);
         await refetchEstates();
       }
-      setStep(2);
+      await goStep(2, eid);
     } catch (e: any) {
       toast({ title: l('Could not save', 'No se pudo guardar'), description: e.message, variant: 'destructive' });
     } finally {
@@ -433,7 +433,7 @@ export default function PlantOpsNewClient() {
           setContractId((data as any).id);
         }
       }
-      setStep(3);
+      await goStep(3);
     } catch (e: any) {
       toast({ title: l('Could not save services', 'No se pudieron guardar los servicios'), description: e.message, variant: 'destructive' });
     } finally {
@@ -494,7 +494,7 @@ export default function PlantOpsNewClient() {
         });
         updatePlant(p.key, { placementId: line.placement_id, potAssetId: line.pot_asset_id });
       }
-      setStep(4);
+      await goStep(4);
     } catch (e: any) {
       toast({ title: l('Could not register plants', 'No se pudieron registrar las plantas'), description: e.message, variant: 'destructive' });
     } finally {
@@ -537,7 +537,7 @@ export default function PlantOpsNewClient() {
           doNotDo: p.doNotDo || null,
         });
       }
-      setStep(5);
+      await goStep(5);
     } catch (e: any) {
       toast({ title: l('Could not save care plans', 'No se pudieron guardar los cuidados'), description: e.message, variant: 'destructive' });
     } finally {
@@ -578,7 +578,7 @@ export default function PlantOpsNewClient() {
         });
       }
       setExtras([]);
-      setStep(6);
+      await goStep(6);
     } catch (e: any) {
       toast({ title: l('Could not save pricing', 'No se pudo guardar el precio'), description: e.message, variant: 'destructive' });
     } finally {
