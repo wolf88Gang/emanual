@@ -104,10 +104,13 @@ export function AppSidebar() {
   // Plant rental (PlantOps) items
   const plantRentalNav: NavItem[] = [
     { path: '/plantops', icon: Sprout, label: 'PlantOps', tooltip: l('Plant rental inventory & placements', 'Inventario de alquiler y ubicaciones', 'Mietbestand & Standorte') },
+    { path: '/plantops/nuevo-cliente', icon: ShoppingBag, label: l('New client', 'Nuevo cliente', 'Neuer Kunde'), tooltip: l('6-step client setup', 'Alta de cliente en 6 pasos', 'Kundenanlage in 6 Schritten') },
     { path: '/plantops/visita', icon: ClipboardList, label: l('Visit', 'Visita', 'Besuch'), tooltip: l('Run a maintenance visit', 'Ejecutar una visita de mantenimiento', 'Wartungsbesuch durchführen') },
+    { path: '/plantops/care', icon: Sprout, label: l('Care', 'Cuidados', 'Pflege'), tooltip: l('Operational care plans', 'Planes de cuidado operativos', 'Betriebliche Pflegepläne') },
     { path: '/plantops/contracts', icon: FileSignature, label: l('Contracts', 'Contratos', 'Verträge'), tooltip: l('Rental contracts & events', 'Contratos de alquiler y eventos', 'Mietverträge & Events') },
     { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
     { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
+    { path: '/plantops/settings', icon: Settings, label: l('PlantOps settings', 'Configuración PlantOps', 'PlantOps-Einstellungen'), tooltip: l('Modules & care factors', 'Módulos y factores de cuidado', 'Module & Pflegefaktoren') },
   ];
 
   // Homeowner financials
