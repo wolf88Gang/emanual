@@ -15,7 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useOrgType } from '@/hooks/usePlantOps';
-import { reserveAsset, installAsset, upsertAssetDetails } from '@/lib/plantops';
+import { reserveAsset, installAsset, upsertAssetDetails, BILLING_PERIODS, BILLING_PERIOD_LABELS } from '@/lib/plantops';
 import {
   setCarePlan,
   fetchCareQueue,
