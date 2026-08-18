@@ -182,14 +182,14 @@ function AppRoutes() {
       <Route path="/crm" element={<EstateRoute><TrialGate feature="crm"><CRM /></TrialGate></EstateRoute>} />
       <Route path="/financials" element={<EstateRoute><Financials /></EstateRoute>} />
       <Route path="/plantops" element={<EstateRoute><PlantOps /></EstateRoute>} />
-      <Route path="/plantops/contracts" element={<EstateRoute><PlantOpsContracts /></EstateRoute>} />
+      <Route path="/plantops/contracts" element={<EstateRoute><AdminRoute><PlantOpsContracts /></AdminRoute></EstateRoute>} />
       <Route path="/plantops/visita" element={<EstateRoute><PlantOpsVisit /></EstateRoute>} />
       <Route path="/plantops/care" element={<EstateRoute><PlantOpsCare /></EstateRoute>} />
       <Route path="/plantops/cuidados" element={<EstateRoute><PlantOpsCare /></EstateRoute>} />
       <Route path="/plantops/cuidados/:placementId" element={<EstateRoute><PlantOpsCareEditor /></EstateRoute>} />
-      <Route path="/plantops/nuevo-cliente" element={<EstateRoute><PlantOpsNewClient /></EstateRoute>} />
-      <Route path="/plantops/propiedad/:estateId" element={<EstateRoute><PlantOpsProperty /></EstateRoute>} />
-      <Route path="/plantops/settings" element={<EstateRoute><PlantOpsSettings /></EstateRoute>} />
+      <Route path="/plantops/nuevo-cliente" element={<EstateRoute><AdminRoute><PlantOpsNewClient /></AdminRoute></EstateRoute>} />
+      <Route path="/plantops/propiedad/:estateId" element={<EstateRoute><AdminRoute><PlantOpsProperty /></AdminRoute></EstateRoute>} />
+      <Route path="/plantops/settings" element={<EstateRoute><AdminRoute><PlantOpsSettings /></AdminRoute></EstateRoute>} />
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
       <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />
