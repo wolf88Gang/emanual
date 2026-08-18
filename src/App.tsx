@@ -44,6 +44,8 @@ const PlantOpsVisit = lazy(() => import("./pages/PlantOpsVisit"));
 const PlantOpsCareEditor = lazy(() => import("./pages/PlantOpsCareEditor"));
 const PlantOpsCare = lazy(() => import("./pages/PlantOpsCare"));
 const PlantOpsPortal = lazy(() => import("./pages/PlantOpsPortal"));
+const ClientPortal = lazy(() => import("./pages/ClientPortal"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 const PlantOpsNewClient = lazy(() => import("./pages/PlantOpsNewClient"));
 const PlantOpsProperty = lazy(() => import("./pages/PlantOpsProperty"));
 const PlantOpsSettings = lazy(() => import("./pages/PlantOpsSettings"));
@@ -177,6 +179,8 @@ function AppRoutes() {
     <Routes>
       <Route path="/features" element={<Navigate to="/" replace />} />
       <Route path="/auth" element={user ? <Navigate to={postAuthRoute} replace /> : <Auth />} />
+      {/* Recovery link target — must stay reachable even with a recovery session active. */}
+      <Route path="/auth/reset-password" element={<ResetPassword />} />
       <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
       <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
       <Route path="/join-client" element={user ? <JoinClient /> : <Navigate to="/auth" replace />} />
@@ -232,6 +236,7 @@ function AppRoutes() {
 
       {/* Public client portal (token link, no login) */}
       <Route path="/c/:token" element={<PlantOpsPortal />} />
+      <Route path="/cliente/:token" element={<ClientPortal />} />
 
       <Route path="*" element={<NotFound />} />
     </Routes>
