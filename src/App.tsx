@@ -14,6 +14,7 @@ import { SidebarLayout } from "./components/layout/SidebarLayout";
 import { TrialGate } from "./components/subscription/TrialGate";
 import { HGLogo } from "./components/HGLogo";
 import { getPostAuthRoute } from "./lib/authRouting";
+import { PlatformLayout } from "./components/layout/PlatformLayout";
 
 // Lazy-loaded pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
@@ -81,15 +82,26 @@ const queryClient = new QueryClient({
   },
 });
 
+/**
+ * Single tenant guard. Platform admins never mount EstateProvider,
+ * SubscriptionProvider, NoEstateGuide or TrialGate — there is no impersonation
+ * mode, so the only correct destination for them is the platform console.
+ */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { user, profile, roles, loading, isPlatformAdmin } = useAuth();
-  
+  const { user, profile, roles, loading, isPlatformAdmin, platformAdminStatus } = useAuth();
+
   if (loading) {
     return <PageLoader />;
   }
-  
+
   if (!user) {
     return <Navigate to="/auth" replace />;
+  }
+
+  // Admin status unknown (still loading or lookup failed): hold instead of
+  // routing the user into tenant onboarding / property setup.
+  if (platformAdminStatus === 'loading' || platformAdminStatus === 'error') {
+    return <PageLoader />;
   }
 
   // Platform admins never enter tenant context (no org, estate or subscription).
@@ -135,24 +147,25 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
 }
 
 function PlatformRoute({ children }: { children: React.ReactNode }) {
-  const { user, isPlatformAdmin, loading } = useAuth();
+  const { user, isPlatformAdmin, loading, platformAdminStatus } = useAuth();
 
-  if (loading) {
+  if (loading || platformAdminStatus === 'loading' || platformAdminStatus === 'error') {
     return <PageLoader />;
   }
 
   if (!user) return <Navigate to="/auth" replace />;
   if (!isPlatformAdmin) return <Navigate to="/" replace />;
 
-  return <>{children}</>;
+  return <PlatformLayout>{children}</PlatformLayout>;
 }
 
 /** Landing route: public site, platform console, or the tenant home screen. */
 function RootRoute() {
-  const { user, profile, roles, isPlatformAdmin, orgType, loading } = useAuth();
+  const { user, profile, roles, isPlatformAdmin, orgType, loading, platformAdminStatus } = useAuth();
 
   if (loading) return <PageLoader />;
   if (!user) return <Features />;
+  if (platformAdminStatus === 'loading' || platformAdminStatus === 'error') return <PageLoader />;
 
   const target = getPostAuthRoute({ isPlatformAdmin, orgId: profile?.org_id, orgType, roles });
   if (target !== "/") return <Navigate to={target} replace />;
@@ -161,7 +174,7 @@ function RootRoute() {
 }
 
 function AppRoutes() {
-  const { user, profile, roles, isPlatformAdmin, orgType, loading } = useAuth();
+  const { user, profile, roles, isPlatformAdmin, orgType, loading, platformAdminStatus } = useAuth();
 
   if (loading) {
     return <PageLoader />;
@@ -178,10 +191,10 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/features" element={<Navigate to="/" replace />} />
-      <Route path="/auth" element={user ? <Navigate to={postAuthRoute} replace /> : <Auth />} />
+      <Route path="/auth" element={user ? (platformAdminStatus === 'not_admin' || platformAdminStatus === 'admin' ? <Navigate to={postAuthRoute} replace /> : <PageLoader />) : <Auth />} />
       {/* Recovery link target — must stay reachable even with a recovery session active. */}
       <Route path="/auth/reset-password" element={<ResetPassword />} />
-      <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
+      <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : platformAdminStatus !== 'not_admin' ? <PageLoader /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
       <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
       <Route path="/join-client" element={user ? <JoinClient /> : <Navigate to="/auth" replace />} />
       

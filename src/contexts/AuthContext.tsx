@@ -13,6 +13,9 @@ interface Profile {
   org_id: string | null;
 }
 
+/** Explicit platform-admin lookup state — an error is never "not an admin". */
+export type PlatformAdminStatus = 'loading' | 'admin' | 'not_admin' | 'error';
+
 interface AuthContextType {
   user: User | null;
   session: Session | null;
@@ -20,6 +23,7 @@ interface AuthContextType {
   roles: AppRole[];
   loading: boolean;
   isPlatformAdmin: boolean;
+  platformAdminStatus: PlatformAdminStatus;
   /** Tenant organization type (null for platform admins without a tenant org). */
   orgType: string | null;
   refreshUserData: () => Promise<void>;
@@ -37,9 +41,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
-  const [isPlatformAdmin, setIsPlatformAdmin] = useState(false);
+  const [platformAdminStatus, setPlatformAdminStatus] = useState<PlatformAdminStatus>('loading');
   const [orgType, setOrgType] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     // Set up auth state listener FIRST
@@ -56,7 +61,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         } else {
           setProfile(null);
           setRoles([]);
-          setIsPlatformAdmin(false);
+          setPlatformAdminStatus('not_admin');
           setOrgType(null);
         }
       }
@@ -111,16 +116,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setRoles(rolesData.map(r => r.role as AppRole));
       }
 
-      // Check platform admin (graceful fallback if policy errors)
+      // Platform admin via security-definer RPC. An error is NEVER treated as
+      // "not an admin" — it is surfaced as an explicit error state so routing
+      // can hold instead of dropping the user into tenant onboarding.
       try {
-        const { data: adminData } = await supabase
-          .from('platform_admins')
-          .select('id')
-          .eq('user_id', userId)
-          .maybeSingle();
-        setIsPlatformAdmin(!!adminData);
-      } catch {
-        setIsPlatformAdmin(false);
+        const { data: adminFlag, error: adminError } = await supabase.rpc('is_platform_admin', {
+          _user_id: userId,
+        });
+        if (adminError) {
+          console.error('Platform admin lookup failed:', adminError.message);
+          setPlatformAdminStatus('error');
+        } else {
+          setPlatformAdminStatus(adminFlag === true ? 'admin' : 'not_admin');
+        }
+      } catch (adminException) {
+        console.error('Platform admin lookup threw:', (adminException as Error)?.message);
+        setPlatformAdminStatus('error');
       }
     } catch (error) {
       console.error('Error fetching user data:', error);
@@ -133,7 +144,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!user) {
       setProfile(null);
       setRoles([]);
-      setIsPlatformAdmin(false);
+      setPlatformAdminStatus('not_admin');
       setOrgType(null);
       return;
     }
@@ -169,7 +180,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setSession(null);
     setProfile(null);
     setRoles([]);
-    setIsPlatformAdmin(false);
+    setPlatformAdminStatus('not_admin');
     setOrgType(null);
   };
 
@@ -184,7 +195,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         profile,
         roles,
         loading,
-        isPlatformAdmin,
+        isPlatformAdmin: platformAdminStatus === 'admin',
+        platformAdminStatus,
         orgType,
         refreshUserData,
         signIn,

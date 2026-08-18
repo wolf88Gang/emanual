@@ -70,7 +70,7 @@ export function BottomNav() {
               )}
             >
               <item.icon className={cn('h-5 w-5', isActive && 'scale-110')} />
-              <span className="text-[11px] font-medium truncate max-w-[64px] text-center">{item.label}</span>
+              <span className="text-xs font-medium truncate max-w-[64px] text-center">{item.label}</span>
             </NavLink>
           );
         })}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -30,6 +30,8 @@ export default function Auth() {
   const [isForgot, setIsForgot] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordResetDone, setPasswordResetDone] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const { register, handleSubmit, formState: { errors }, reset } = useForm<AuthFormData>({
     resolver: zodResolver(authSchema),
@@ -39,7 +41,26 @@ export default function Auth() {
     if (user) navigate('/', { replace: true });
   }, [user, navigate]);
 
+  // One-time notice after a completed password reset (recovery session signed out).
+  useEffect(() => {
+    if (searchParams.get('password_reset') !== 'success') return;
+    toast.success(
+      language === 'es'
+        ? 'Contraseña actualizada. Inicie sesión de nuevo.'
+        : language === 'de'
+        ? 'Passwort aktualisiert. Bitte melden Sie sich erneut an.'
+        : 'Password updated. Please sign in again.',
+    );
+    setPasswordResetDone(true);
+    const next = new URLSearchParams(searchParams);
+    next.delete('password_reset');
+    setSearchParams(next, { replace: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const es = language === 'es';
+  const tr = (en: string, esText: string, de: string) =>
+    language === 'es' ? esText : language === 'de' ? de : en;
 
   const onSubmit = async (data: AuthFormData) => {
     setIsLoading(true);
@@ -50,16 +71,18 @@ export default function Auth() {
         });
         // Neutral response: never reveal whether the email exists.
         toast.success(
-          es
-            ? 'Si existe una cuenta con ese correo, le enviamos un enlace para restablecer la contraseña.'
-            : 'If an account exists for that email, we sent a password reset link.',
+          tr(
+            'If an account exists for that email, we sent a password reset link.',
+            'Si existe una cuenta con ese correo, le enviamos un enlace para restablecer la contraseña.',
+            'Falls ein Konto mit dieser E-Mail existiert, haben wir einen Link zum Zurücksetzen gesendet.',
+          ),
         );
         setIsForgot(false);
         reset();
         return;
       }
       if (!data.password || data.password.length < 6) {
-        toast.error(es ? 'La contraseña debe tener al menos 6 caracteres.' : 'Password must be at least 6 characters.');
+        toast.error(tr('Password must be at least 6 characters.', 'La contraseña debe tener al menos 6 caracteres.', 'Das Passwort muss mindestens 6 Zeichen haben.'));
         return;
       }
       if (isSignUp) {
@@ -155,22 +178,32 @@ export default function Auth() {
             <div className="text-center">
               <h1 className="text-2xl font-display font-bold text-foreground">
                 {isForgot
-                  ? (es ? 'Restablecer contraseña' : 'Reset password')
+                  ? tr('Reset password', 'Restablecer contraseña', 'Passwort zurücksetzen')
                   : isSignUp ? t('auth.signUp') : t('auth.signIn')}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {isForgot
-                  ? (es ? 'Le enviaremos un enlace a su correo' : "We'll email you a reset link")
+                  ? tr("We'll email you a reset link", 'Le enviaremos un enlace a su correo', 'Wir senden Ihnen einen Link per E-Mail')
                   : isSignUp
-                  ? (es ? 'Crea tu cuenta para gestionar tu propiedad' : 'Create your account to manage your estate')
-                  : (es ? 'Bienvenido de nuevo' : 'Welcome back')}
+                  ? tr('Create your account to manage your estate', 'Crea tu cuenta para gestionar tu propiedad', 'Erstellen Sie Ihr Konto zur Verwaltung Ihrer Immobilie')
+                  : tr('Welcome back', 'Bienvenido de nuevo', 'Willkommen zurück')}
               </p>
             </div>
+
+            {passwordResetDone && (
+              <div className="rounded-md border border-primary/30 bg-primary/10 p-3 text-sm text-foreground">
+                {tr(
+                  'Password updated. Please sign in again.',
+                  'Contraseña actualizada. Inicie sesión de nuevo.',
+                  'Passwort aktualisiert. Bitte melden Sie sich erneut an.',
+                )}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               {isSignUp && !isForgot && (
                 <div className="space-y-1.5">
-                  <Label htmlFor="fullName">{es ? 'Nombre completo' : 'Full Name'}</Label>
+                  <Label htmlFor="fullName">{tr('Full Name', 'Nombre completo', 'Vollständiger Name')}</Label>
                   <Input id="fullName" placeholder={es ? 'Juan García' : 'John Smith'} {...register('fullName')} />
                 </div>
               )}
@@ -216,17 +249,17 @@ export default function Auth() {
                   onClick={() => { setIsForgot(true); reset(); }}
                   className="text-xs text-primary hover:underline"
                 >
-                  {es ? '¿Olvidó su contraseña?' : 'Forgot your password?'}
+                  {tr('Forgot your password?', '¿Olvidó su contraseña?', 'Passwort vergessen?')}
                 </button>
               )}
 
               <Button type="submit" className="w-full" size="lg" disabled={isLoading}>
                 {isLoading ? (
-                  <span className="animate-pulse">{es ? 'Cargando...' : 'Loading...'}</span>
+                  <span className="animate-pulse">{tr('Loading...', 'Cargando...', 'Wird geladen...')}</span>
                 ) : (
                   <>
                     {isForgot
-                      ? (es ? 'Enviar enlace' : 'Send reset link')
+                      ? tr('Send reset link', 'Enviar enlace', 'Link senden')
                       : isSignUp ? t('auth.signUp') : t('auth.signIn')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
@@ -241,7 +274,7 @@ export default function Auth() {
                   onClick={() => { setIsForgot(false); reset(); }}
                   className="text-primary font-medium hover:underline"
                 >
-                  {es ? '← Volver a iniciar sesión' : '← Back to sign in'}
+                  {tr('← Back to sign in', '← Volver a iniciar sesión', '← Zurück zur Anmeldung')}
                 </button>
               </p>
             ) : (
@@ -257,10 +290,12 @@ export default function Auth() {
             </p>
             )}
 
-            <p className="text-center text-[11px] text-muted-foreground mt-8">
-              {es
-                ? 'Home Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo.'
-                : 'Home Guide manages living assets, design intent, and long-term risk.'}
+            <p className="text-center text-xs text-muted-foreground mt-8">
+              {tr(
+                'Home Guide manages living assets, design intent, and long-term risk.',
+                'Home Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo.',
+                'Home Guide verwaltet lebende Anlagen, Gestaltungsabsicht und langfristige Risiken.',
+              )}
             </p>
           </div>
         </main>
