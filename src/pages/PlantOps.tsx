@@ -342,9 +342,14 @@ export default function PlantOps() {
         <Card>
           <CardHeader className="pb-2 flex-row items-center justify-between">
             <CardTitle className="text-base">{l('Properties', 'Propiedades', 'Objekte')}</CardTitle>
-            <Button size="sm" onClick={() => navigate('/plantops/nuevo-cliente')}>
-              {l('New client', 'Nuevo cliente', 'Neuer Kunde')}
-            </Button>
+            <div className="flex gap-2">
+              <Button size="sm" variant="outline" onClick={() => navigate('/plantops/clientes')}>
+                {l('Clients', 'Clientes', 'Kunden')}
+              </Button>
+              <Button size="sm" onClick={() => navigate('/plantops/nuevo-cliente')}>
+                {l('New client', 'Nuevo cliente', 'Neuer Kunde')}
+              </Button>
+            </div>
           </CardHeader>
           <CardContent className="space-y-2">
             {incomplete.length > 0 && (
