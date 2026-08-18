@@ -82,8 +82,13 @@ export default function PlantOpsContracts() {
   const clientName = (id: string) => clients.find((c) => c.id === id)?.name ?? '—';
   const estateName = (id?: string | null) => estates.find((e) => e.id === id)?.name ?? '—';
 
-  const openNew = () => { setForm({ ...emptyForm, client_id: clients[0]?.id ?? '' }); setOpen(true); };
+  const openNew = () => {
+    setForm({ ...emptyForm, client_id: clients[0]?.id ?? '' });
+    setOriginalStatus('draft');
+    setOpen(true);
+  };
   const openEdit = (c: RentalContractRow) => {
+    setOriginalStatus((c.status as ContractStatus) ?? 'draft');
     setForm({
       id: c.id,
       client_id: c.client_id,
