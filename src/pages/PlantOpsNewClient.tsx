@@ -57,7 +57,7 @@ const SERVICE_LABELS: Record<string, { en: string; es: string }> = {
   otro: { en: 'Other', es: 'Otro' },
 };
 
-const POT_MATERIALS = ['plastico', 'ceramica', 'barro', 'metal', 'fibra', 'concreto'];
+
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
 const WATER_METHODS = ['manual', 'regadera', 'goteo', 'inmersion', 'reservorio'];
@@ -430,76 +430,32 @@ export default function PlantOpsNewClient() {
           continue;
         }
 
-        // optional zone (floor / area) reused by name
-        let zoneId: string | null = null;
-        if (p.zoneName.trim()) {
-          const { data: existing } = await supabase
-            .from('zones')
-            .select('id')
-            .eq('estate_id', estateId)
-            .eq('name', p.zoneName.trim())
-            .maybeSingle();
-          if (existing?.id) zoneId = (existing as any).id;
-          else {
-            const { data, error } = await supabase
-              .from('zones')
-              .insert({ estate_id: estateId, name: p.zoneName.trim(), floor_label: p.floorLabel.trim() || null } as any)
-              .select('id')
-              .single();
-            if (error) throw error;
-            zoneId = (data as any).id;
-          }
-        }
-
-        // plant asset
-        const { data: plantAsset, error: plantErr } = await supabase
-          .from('assets')
-          .insert({ estate_id: estateId, name: p.plantName.trim(), asset_type: 'plant' } as any)
-          .select('id')
-          .single();
-        if (plantErr) throw plantErr;
-        const plantAssetId = (plantAsset as any).id as string;
+        // One transaction per plant line: zone, plant asset, pot asset, pot
+        // attributes, placement and installation. Nothing can be left orphaned.
+        const withPot = Boolean(p.potMaterial || p.potDiameter || p.potHeight || p.potNotes);
+        const line = await savePlantLine({
+          estateId,
+          plantName: p.plantName.trim(),
+          zoneName: p.zoneName.trim() || null,
+          floorLabel: p.floorLabel.trim() || null,
+          spotLabel: p.spotLabel.trim() || null,
+          accessNotes: p.accessNotes.trim() || null,
+          contractId: hasRental ? contractId : null,
+          withPot,
+          potMaterial: p.potMaterial || null,
+          potDiameterCm: p.potDiameter ? Number(p.potDiameter) : null,
+          potHeightCm: p.potHeight ? Number(p.potHeight) : null,
+          potHasDrainage: p.potDrainage,
+          potHasSaucer: p.potSaucer,
+          potNotes: p.potNotes || null,
+        });
         await upsertAssetDetails({
-          assetId: plantAssetId,
+          assetId: line.plant_asset_id,
           lifecycleStatus: 'active',
           rentalPrice: hasRental && p.rentalPrice ? Number(p.rentalPrice) : null,
           currency,
         });
-
-        // pot asset (optional but tracked as its own asset)
-        let potAssetId: string | null = null;
-        if (p.potMaterial || p.potDiameter || p.potHeight || p.potNotes) {
-          const { data: potAsset, error: potErr } = await supabase
-            .from('assets')
-            .insert({ estate_id: estateId, name: `${l('Pot', 'Maceta')} — ${p.plantName.trim()}`, asset_type: 'pot' } as any)
-            .select('id')
-            .single();
-          if (potErr) throw potErr;
-          potAssetId = (potAsset as any).id;
-          await upsertAssetDetails({ assetId: potAssetId!, lifecycleStatus: 'active', currency });
-          await setPotDetails({
-            assetId: potAssetId!,
-            material: p.potMaterial || null,
-            diameterCm: p.potDiameter ? Number(p.potDiameter) : null,
-            heightCm: p.potHeight ? Number(p.potHeight) : null,
-            hasDrainage: p.potDrainage,
-            hasSaucer: p.potSaucer,
-            notes: p.potNotes || null,
-          });
-        }
-
-        const placementId = await reserveAsset({
-          assetId: plantAssetId,
-          potAssetId,
-          estateId,
-          zoneId,
-          contractId: hasRental ? contractId : null,
-          spotLabel: p.spotLabel.trim() || null,
-          reservedFrom: new Date().toISOString(),
-          accessNotes: p.accessNotes.trim() || null,
-        });
-        await installAsset(placementId);
-        updatePlant(p.key, { placementId, potAssetId });
+        updatePlant(p.key, { placementId: line.placement_id, potAssetId: line.pot_asset_id });
       }
       setStep(4);
     } catch (e: any) {
