@@ -29,7 +29,7 @@ export function BottomNav() {
     { path: '/plantops/visita', icon: Droplets, label: es ? 'Visitas' : 'Visits' },
     { path: '/plantops/care', icon: Leaf, label: es ? 'Cuidados' : 'Care' },
     { path: '/crm', icon: Users, label: es ? 'Clientes' : 'Clients' },
-    { path: '/plantops/contracts', icon: MoreHorizontal, label: es ? 'Más' : 'More' },
+    { path: '/plantops/settings', icon: MoreHorizontal, label: es ? 'Más' : 'More' },
   ];
 
   // Priority items on top: Map, Assets, Tasks, Shift/Work
