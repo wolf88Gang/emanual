@@ -194,7 +194,7 @@ function AppRoutes() {
       <Route path="/auth" element={user ? (platformAdminStatus === 'not_admin' || platformAdminStatus === 'admin' ? <Navigate to={postAuthRoute} replace /> : <PageLoader />) : <Auth />} />
       {/* Recovery link target — must stay reachable even with a recovery session active. */}
       <Route path="/auth/reset-password" element={<ResetPassword />} />
-      <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : platformAdminStatus !== 'not_admin' ? <PageLoader /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
+      <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : (platformAdminStatus === 'loading' || platformAdminStatus === 'error') ? <PageLoader /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
       <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
       <Route path="/join-client" element={user ? <JoinClient /> : <Navigate to="/auth" replace />} />
       
