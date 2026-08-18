@@ -23,7 +23,8 @@ import {
 } from '@/lib/plantopsProperty';
 import {
   fetchShareLinks, createShareLink, revokeShareLink, approveManual, addChargeForEstate, registerPayment,
-  careState, formatDateEs, CARE_RESPONSIBILITY_LABELS, fetchCareQueue, type ShareLinkRow, type CareResponsibility,
+  careState, formatDateEs, CARE_RESPONSIBILITY_LABELS, fetchCareQueue, rotateShareLink, fetchPropertyBilling as fetchBillingByCurrency,
+  type ShareLinkRow, type CareResponsibility, type CurrencyBilling,
 } from '@/lib/plantopsCare';
 
 /** Central operational screen for one property: plants, care, history, manual, billing. */
@@ -39,6 +40,8 @@ export default function PlantOpsProperty() {
   const [detail, setDetail] = useState<PropertyDetail | null>(null);
   const [history, setHistory] = useState<PropertyHistoryItem[]>([]);
   const [billing, setBilling] = useState<PropertyBilling | null>(null);
+  /** Totals are always kept separated per currency — CRC and USD are never summed. */
+  const [byCurrency, setByCurrency] = useState<CurrencyBilling[]>([]);
   const [links, setLinks] = useState<ShareLinkRow[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -55,14 +58,16 @@ export default function PlantOpsProperty() {
     try {
       const d = await fetchPropertyDetail(estateId);
       setDetail(d);
-      const [h, b, sl] = await Promise.all([
+      const [h, b, sl, bc] = await Promise.all([
         fetchPropertyHistory(estateId, d.client?.id ?? null, lang as any),
         fetchPropertyBilling(d.client?.id ?? null),
         fetchShareLinks(estateId),
+        fetchBillingByCurrency(estateId).catch(() => [] as CurrencyBilling[]),
       ]);
       setHistory(h);
       setBilling(b);
       setLinks(sl);
+      setByCurrency(bc);
     } catch (e: any) {
       toast({ title: l('Could not load the property', 'No se pudo cargar la propiedad'), description: e.message, variant: 'destructive' });
     } finally {
@@ -119,28 +124,18 @@ export default function PlantOpsProperty() {
     }
   };
 
+  /**
+   * Token rotation only: a single backend transaction copies the approved manual,
+   * toggles, note and expiry, then revokes the old token. It is NOT an approval.
+   */
   const regenerate = async () => {
-    if (!estateId) return;
+    if (!activeLink) return;
     setBusy(true);
     try {
-      if (activeLink) await revokeShareLink(activeLink.id);
-      const created = await createShareLink({
-        estateId,
-        showPlants: activeLink?.show_plants ?? true,
-        showManual: activeLink?.show_manual ?? true,
-        showLastVisit: activeLink?.show_last_visit ?? true,
-        showHistory: activeLink?.show_history ?? false,
-        showBalance: activeLink?.show_balance ?? false,
-        contactNote: activeLink?.contact_note ?? null,
-      });
-      // Rotating the token is a security action, not an editorial one: the manual
-      // that was already approved is carried over verbatim, never rebuilt.
-      if (activeLink?.manual_snapshot_json) {
-        await approveManual(created.id, activeLink.manual_snapshot_json);
-      }
-      await navigator.clipboard.writeText(created.url).catch(() => {});
+      const rotated = await rotateShareLink(activeLink.id);
+      await navigator.clipboard.writeText(rotated.url).catch(() => {});
       await load();
-      toast({ title: l('New link generated and copied', 'Nuevo enlace generado y copiado'), description: created.url });
+      toast({ title: l('New link generated and copied', 'Nuevo enlace generado y copiado'), description: rotated.url });
     } catch (e: any) {
       toast({ title: l('Could not regenerate', 'No se pudo regenerar'), description: e.message, variant: 'destructive' });
     } finally {
@@ -245,7 +240,10 @@ export default function PlantOpsProperty() {
                 <div><p className="text-muted-foreground text-xs">{l('Plants installed', 'Plantas instaladas')}</p><p>{detail.placements.filter((p) => p.status === 'installed').length}</p></div>
                 <div><p className="text-muted-foreground text-xs">{l('Contract', 'Contrato')}</p><p>{detail.contract ? `${detail.contract.status} · ${detail.contract.billing_period ?? '—'}` : '—'}</p></div>
                 <div><p className="text-muted-foreground text-xs">{l('Monthly price', 'Precio mensual')}</p><p>{detail.contract?.price_amount ? formatCurrency(Number(detail.contract.price_amount), detail.contract.currency) : '—'}</p></div>
-                <div><p className="text-muted-foreground text-xs">{l('Pending balance', 'Saldo pendiente')}</p><p>{money(billing?.pending ?? 0)}</p></div>
+                <div>
+                  <p className="text-muted-foreground text-xs">{l('Pending balance', 'Saldo pendiente')}</p>
+                  <p>{byCurrency.length ? byCurrency.map((c) => formatCurrency(c.pending, c.currency)).join(' · ') : '—'}</p>
+                </div>
               </CardContent>
             </Card>
             <div className="flex flex-wrap gap-2">
@@ -391,13 +389,21 @@ export default function PlantOpsProperty() {
 
           {/* Billing */}
           <TabsContent value="cobros" className="space-y-3 pt-3">
-            <Card>
-              <CardContent className="p-4 grid grid-cols-3 gap-3 text-sm">
-                <div><p className="text-xs text-muted-foreground">{l('Invoiced', 'Facturado')}</p><p>{money(billing?.invoiced ?? 0)}</p></div>
-                <div><p className="text-xs text-muted-foreground">{l('Paid', 'Pagado')}</p><p>{money(billing?.paid ?? 0)}</p></div>
-                <div><p className="text-xs text-muted-foreground">{l('Pending', 'Pendiente')}</p><p>{money(billing?.pending ?? 0)}</p></div>
-              </CardContent>
-            </Card>
+            {byCurrency.length === 0 && (
+              <Card><CardContent className="p-4 text-sm text-muted-foreground">{l('No billing yet.', 'Aún no hay cobros.')}</CardContent></Card>
+            )}
+            {byCurrency.map((c) => (
+              <Card key={c.currency}>
+                <CardHeader className="pb-2"><CardTitle className="text-sm">{c.currency}</CardTitle></CardHeader>
+                <CardContent className="p-4 pt-0 grid grid-cols-3 gap-3 text-sm">
+                  <div><p className="text-xs text-muted-foreground">{l('Invoiced', 'Facturado')}</p><p>{formatCurrency(c.invoiced, c.currency)}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{l('Paid', 'Pagado')}</p><p>{formatCurrency(c.paid, c.currency)}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{l('Pending', 'Pendiente')}</p><p>{formatCurrency(c.pending, c.currency)}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{l('Overdue', 'Vencido')}</p><p>{formatCurrency(c.overdue, c.currency)}</p></div>
+                  <div><p className="text-xs text-muted-foreground">{l('Draft', 'Borrador')}</p><p>{formatCurrency(c.draft, c.currency)}</p></div>
+                </CardContent>
+              </Card>
+            ))}
             <Button size="sm" variant="outline" onClick={() => setChargeOpen(true)}>
               <Plus className="h-4 w-4 mr-2" />{l('Extra charge', 'Cargo extra')}
             </Button>
