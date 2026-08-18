@@ -135,7 +135,7 @@ export default function PlantOpsNewClient() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { toast } = useToast();
-  const { language } = useLanguage();
+  const { language, tl } = useLanguage();
   const { orgId } = useOrgType();
   const { refetch: refetchEstates } = useEstate();
   const l = (en: string, es: string) => (language === 'es' ? es : en);
