@@ -454,6 +454,7 @@ export async function updateShareLink(params: {
   contactNote?: string | null;
   expiresAt?: string | null;
   clearExpiry?: boolean;
+  clearContactNote?: boolean;
 }) {
   const { error } = await supabase.rpc('plantops_update_share_link', {
     p_link_id: params.linkId,
@@ -465,6 +466,7 @@ export async function updateShareLink(params: {
     p_contact_note: params.contactNote ?? null,
     p_expires_at: params.expiresAt ?? null,
     p_clear_expiry: params.clearExpiry ?? false,
+    p_clear_contact_note: params.clearContactNote ?? false,
   } as never);
   if (error) throw error;
 }

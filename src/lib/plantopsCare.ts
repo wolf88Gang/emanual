@@ -342,6 +342,31 @@ export async function addChargeForEstate(params: {
   return data as unknown as { invoice_id: string; client_id: string };
 }
 
+/** Billing totals for a property, always separated per currency (never summed). */
+export interface CurrencyBilling {
+  currency: string;
+  invoiced: number;
+  draft: number;
+  paid: number;
+  pending: number;
+  overdue: number;
+}
+
+export async function fetchPropertyBilling(estateId: string): Promise<CurrencyBilling[]> {
+  const { data, error } = await supabase.rpc('plantops_property_billing', {
+    p_estate_id: estateId,
+  } as never);
+  if (error) throw error;
+  return ((data as unknown as CurrencyBilling[]) || []).map((r) => ({
+    currency: r.currency,
+    invoiced: Number(r.invoiced || 0),
+    draft: Number(r.draft || 0),
+    paid: Number(r.paid || 0),
+    pending: Number(r.pending || 0),
+    overdue: Number(r.overdue || 0),
+  }));
+}
+
 export async function registerPayment(params: {
   invoiceId: string;
   amount: number;
@@ -466,6 +491,22 @@ export async function createShareLink(params: {
   };
 }
 
+/**
+ * Rotates the token of an active link in a single backend transaction: the approved
+ * manual, toggles, note and expiry are copied verbatim and the old token is revoked
+ * only after the new one exists. Rotation is NOT an editorial approval.
+ */
+export async function rotateShareLink(linkId: string): Promise<{ id: string; token: string; url: string }> {
+  const token = generateShareToken();
+  const tokenHash = await hashToken(token);
+  const { data, error } = await supabase.rpc('plantops_rotate_share_link', {
+    p_link_id: linkId,
+    p_token_hash: tokenHash,
+  } as never);
+  if (error) throw error;
+  return { id: data as unknown as string, token, url: `${window.location.origin}/c/${token}` };
+}
+
 export async function revokeShareLink(linkId: string) {
   const { error } = await supabase.rpc('plantops_revoke_share_link', { p_link_id: linkId });
   if (error) throw error;
@@ -571,6 +612,12 @@ export interface PlantLineInput {
   potHasSaucer?: boolean | null;
   potReservoir?: boolean | null;
   potNotes?: string | null;
+  lifecycleStatus?: 'active' | 'recovery' | 'retired';
+  rentalPrice?: number | null;
+  currency?: string;
+  /** Explicit clears — a NULL id alone means "preserve", these flags mean "clear". */
+  clearZone?: boolean;
+  clearContract?: boolean;
 }
 
 export interface PlantLineResult {
@@ -611,6 +658,11 @@ export async function savePlantLine(input: PlantLineInput): Promise<PlantLineRes
     p_pot_reservoir: input.potReservoir ?? null,
     p_pot_notes: input.potNotes ?? null,
     p_with_pot: input.withPot ?? true,
+    p_lifecycle_status: input.lifecycleStatus ?? 'active',
+    p_rental_price: input.rentalPrice ?? null,
+    p_currency: input.currency ?? 'CRC',
+    p_clear_zone: input.clearZone ?? false,
+    p_clear_contract: input.clearContract ?? false,
   } as never);
   if (error) throw error;
   return data as unknown as PlantLineResult;
