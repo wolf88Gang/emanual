@@ -451,40 +451,39 @@ export default function PlantOpsNewClient() {
     setBusy(true);
     try {
       for (const p of valid) {
-        // already persisted → only update the pot attributes, never re-create anything
-        if (p.placementId) {
-          if (p.potAssetId) {
-            await setPotDetails({
-              assetId: p.potAssetId,
-              material: p.potMaterial || null,
-              diameterCm: p.potDiameter ? Number(p.potDiameter) : null,
-              heightCm: p.potHeight ? Number(p.potHeight) : null,
-              hasDrainage: p.potDrainage,
-              hasSaucer: p.potSaucer,
-              notes: p.potNotes || null,
-            });
-          }
-          continue;
-        }
-
-        // One transaction per plant line: zone, plant asset, pot asset, pot
-        // attributes, placement and installation. Nothing can be left orphaned.
-        const withPot = Boolean(p.potMaterial || p.potDiameter || p.potHeight || p.potNotes);
+        // One transaction per plant line for BOTH creation and edition: zone,
+        // plant asset, pot asset, pot attributes, placement and installation.
+        // Passing the known ids makes the call an update, never a duplicate.
         const line = await savePlantLine({
           estateId,
           plantName: p.plantName.trim(),
+          placementId: p.placementId ?? null,
+          plantAssetId: p.plantAssetId ?? null,
+          potAssetId: p.potAssetId ?? null,
+          zoneId: p.zoneId ?? null,
           zoneName: p.zoneName.trim() || null,
           floorLabel: p.floorLabel.trim() || null,
           spotLabel: p.spotLabel.trim() || null,
           accessNotes: p.accessNotes.trim() || null,
           contractId: hasRental ? contractId : null,
-          withPot,
-          potMaterial: p.potMaterial || null,
-          potDiameterCm: p.potDiameter ? Number(p.potDiameter) : null,
-          potHeightCm: p.potHeight ? Number(p.potHeight) : null,
-          potHasDrainage: p.potDrainage,
-          potHasSaucer: p.potSaucer,
-          potNotes: p.potNotes || null,
+          withPot: p.withPot,
+          potMaterial: p.withPot ? p.potMaterial || null : null,
+          potDiameterCm: p.withPot && p.potDiameter ? Number(p.potDiameter) : null,
+          potHeightCm: p.withPot && p.potHeight ? Number(p.potHeight) : null,
+          potVolumeLiters: p.withPot && p.potVolume ? Number(p.potVolume) : null,
+          potHasDrainage: p.withPot ? p.potDrainage : null,
+          potDrainageHoles: p.withPot && p.potHoles ? Number(p.potHoles) : null,
+          potHasSaucer: p.withPot ? p.potSaucer : null,
+          potReservoir: p.withPot ? p.potReservoir : null,
+          potNotes: p.withPot ? p.potNotes || null : null,
+        });
+        // Keep the ids in state immediately so a mid-flow failure on a later
+        // plant can never re-create the ones already persisted.
+        updatePlant(p.key, {
+          placementId: line.placement_id,
+          plantAssetId: line.plant_asset_id,
+          potAssetId: line.pot_asset_id,
+          zoneId: line.zone_id,
         });
         await upsertAssetDetails({
           assetId: line.plant_asset_id,
@@ -492,7 +491,6 @@ export default function PlantOpsNewClient() {
           rentalPrice: hasRental && p.rentalPrice ? Number(p.rentalPrice) : null,
           currency,
         });
-        updatePlant(p.key, { placementId: line.placement_id, potAssetId: line.pot_asset_id });
       }
       await goStep(4);
     } catch (e: any) {
