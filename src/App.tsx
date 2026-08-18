@@ -177,7 +177,7 @@ function AppRoutes() {
     <Routes>
       <Route path="/features" element={<Navigate to="/" replace />} />
       <Route path="/auth" element={user ? <Navigate to={postAuthRoute} replace /> : <Auth />} />
-      <Route path="/onboarding" element={user ? <Onboarding /> : <Navigate to="/auth" replace />} />
+      <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
       <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
       <Route path="/join-client" element={user ? <JoinClient /> : <Navigate to="/auth" replace />} />
       
