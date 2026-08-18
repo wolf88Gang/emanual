@@ -20,6 +20,8 @@ interface AuthContextType {
   roles: AppRole[];
   loading: boolean;
   isPlatformAdmin: boolean;
+  /** Tenant organization type (null for platform admins without a tenant org). */
+  orgType: string | null;
   refreshUserData: () => Promise<void>;
   signIn: (email: string, password: string) => Promise<{ error: Error | null }>;
   signUp: (email: string, password: string, fullName?: string) => Promise<{ error: Error | null }>;
