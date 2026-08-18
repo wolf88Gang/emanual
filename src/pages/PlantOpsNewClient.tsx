@@ -327,14 +327,15 @@ export default function PlantOpsNewClient() {
    * lands the operator exactly where they stopped.
    */
   const goStep = async (n: number, eid?: string | null) => {
-    setStep(n);
     const target = eid ?? estateId;
-    if (!target) return;
-    try {
-      await persistServicePlan(target, { setup_step: n });
-    } catch {
-      /* the step marker is a convenience; never block the flow on it */
+    if (!target) {
+      setStep(n);
+      return;
     }
+    // The step is persisted BEFORE advancing: if it cannot be saved the operator
+    // stays where they are instead of losing the resume point.
+    await persistServicePlan(target, { setup_step: n });
+    setStep(n);
   };
 
   /* ---------- step actions ---------- */
