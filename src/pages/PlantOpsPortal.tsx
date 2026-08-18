@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Leaf, Loader2, Droplets, ShieldAlert, CalendarDays, Phone } from 'lucide-react';
+import { Leaf, Loader2, Droplets, ShieldAlert, CalendarDays, Phone, Download, Sun } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface PortalPlant {
   id: string;
@@ -16,6 +17,10 @@ interface PortalPlant {
   client_instructions: string | null;
   do_not_do: string | null;
   care_responsibility: string | null;
+  light_required: string | null;
+  light_actual: string | null;
+  water_state: 'regar' | 'no_regar' | 'revisar';
+  water_message: string | null;
 }
 
 interface PortalData {
@@ -26,14 +31,21 @@ interface PortalData {
   manual: any | null;
   manual_approved_at: string | null;
   plants?: PortalPlant[];
-  activity?: { id: string; action: string; at: string; notes: string | null }[];
+  activity?: { id: string; action: string; at: string }[];
   invoices?: { invoice_number: string; status: string; issue_date: string; total: number; currency: string }[];
 }
 
 const ACTION_ES: Record<string, string> = {
-  water: 'Riego', skip: 'Revisión sin riego', clean: 'Limpieza', prune: 'Poda',
+  water: 'Riego', skip_water: 'Revisión sin riego', clean: 'Limpieza', prune: 'Poda',
   fertilize: 'Abono', rotate: 'Rotación', inspect: 'Revisión', issue: 'Incidencia',
-  replace_requested: 'Reemplazo solicitado',
+  pest: 'Plaga', light_issue: 'Problema de luz', move: 'Reubicación',
+  replace: 'Reemplazo', replace_requested: 'Reemplazo solicitado', photo: 'Foto', note: 'Nota',
+};
+
+const RESPONSIBILITY_ES: Record<string, string> = {
+  raiz_y_forma: 'A cargo nuestro',
+  cliente: 'A su cargo',
+  compartido: 'Compartido',
 };
 
 export default function PlantOpsPortal() {
@@ -70,6 +82,40 @@ export default function PlantOpsPortal() {
     })();
     return () => { cancelled = true; };
   }, [token]);
+
+  /** Exports the approved manual snapshot exactly as received — no live data. */
+  const downloadManual = async () => {
+    if (!data?.manual) return;
+    const { default: jsPDF } = await import('jspdf');
+    const doc = new jsPDF({ unit: 'pt', format: 'letter' });
+    const margin = 48;
+    const width = doc.internal.pageSize.getWidth() - margin * 2;
+    let y = margin;
+    const line = (text: string, size = 11, bold = false) => {
+      doc.setFont('helvetica', bold ? 'bold' : 'normal');
+      doc.setFontSize(size);
+      for (const chunk of doc.splitTextToSize(text, width)) {
+        if (y > doc.internal.pageSize.getHeight() - margin) { doc.addPage(); y = margin; }
+        doc.text(chunk, margin, y);
+        y += size + 4;
+      }
+    };
+    line(data.estate?.name || 'Manual de cuidado', 18, true);
+    if (data.company) line(data.company, 11);
+    if (data.manual_approved_at) {
+      line(`Versión aprobada el ${new Date(data.manual_approved_at).toLocaleDateString('es-CR')}`, 9);
+    }
+    y += 10;
+    const sections = Array.isArray(data.manual)
+      ? data.manual.map((s: any) => [s?.title ?? '', s?.body ?? String(s)] as [string, string])
+      : Object.entries(data.manual as Record<string, unknown>).map(([k, v]) => [k, String(v)] as [string, string]);
+    for (const [title, bodyText] of sections) {
+      if (title) line(title, 13, true);
+      if (bodyText) line(bodyText, 11);
+      y += 8;
+    }
+    doc.save(`manual-${(data.estate?.name || 'propiedad').toLowerCase().replace(/\s+/g, '-')}.pdf`);
+  };
 
   if (loading) {
     return (
@@ -122,15 +168,21 @@ export default function PlantOpsPortal() {
                     </div>
                     {p.care_responsibility && (
                       <Badge variant="outline">
-                        {p.care_responsibility === 'client' ? 'A su cargo'
-                          : p.care_responsibility === 'shared' ? 'Compartido' : 'A cargo nuestro'}
+                        {RESPONSIBILITY_ES[p.care_responsibility] ?? 'A cargo nuestro'}
                       </Badge>
                     )}
                   </div>
-                  {p.next_water_due && (
-                    <p className="text-sm flex items-center gap-2">
-                      <Droplets className="h-4 w-4 text-primary" /> Próximo riego: {p.next_water_due}
-                      {p.water_amount_note ? ` · ${p.water_amount_note}` : ''}
+                  <p className="text-sm flex items-center gap-2 font-medium">
+                    <Droplets className={p.water_state === 'regar' ? 'h-4 w-4 text-primary' : 'h-4 w-4 text-muted-foreground'} />
+                    {p.water_message ?? 'Pendiente de revisión por nuestro equipo'}
+                  </p>
+                  {p.water_amount_note && (
+                    <p className="text-sm text-muted-foreground">Cantidad: {p.water_amount_note}</p>
+                  )}
+                  {(p.light_required || p.light_actual) && (
+                    <p className="text-sm text-muted-foreground flex items-center gap-2">
+                      <Sun className="h-4 w-4" />
+                      Luz: {p.light_required ?? '—'}{p.light_actual ? ` · actual: ${p.light_actual}` : ''}
                     </p>
                   )}
                   {p.client_instructions && <p className="text-sm">{p.client_instructions}</p>}
@@ -143,8 +195,11 @@ export default function PlantOpsPortal() {
 
         {data.manual && (
           <Card>
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-2 flex-row items-center justify-between gap-2 space-y-0">
               <CardTitle className="text-base">Manual de cuidado</CardTitle>
+              <Button variant="outline" size="sm" onClick={downloadManual}>
+                <Download className="h-4 w-4 mr-1" /> PDF
+              </Button>
             </CardHeader>
             <CardContent className="space-y-2 text-sm">
               {Array.isArray(data.manual)
@@ -179,7 +234,7 @@ export default function PlantOpsPortal() {
             <CardContent className="space-y-2 text-sm">
               {data.activity.map((a) => (
                 <div key={a.id} className="flex justify-between gap-3 border-b border-border/50 pb-2 last:border-0">
-                  <span>{ACTION_ES[a.action] || a.action}{a.notes ? ` — ${a.notes}` : ''}</span>
+                  <span>{ACTION_ES[a.action] || a.action}</span>
                   <span className="text-muted-foreground whitespace-nowrap">
                     {new Date(a.at).toLocaleDateString('es-CR')}
                   </span>

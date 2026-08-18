@@ -3649,48 +3649,27 @@ export type Database = {
         Args: { p_link_id: string }
         Returns: undefined
       }
-      plantops_set_care_plan:
-        | {
-            Args: {
-              p_care_notes?: string
-              p_care_responsibility?: string
-              p_client_instructions?: string
-              p_do_not_do?: string
-              p_light_actual?: string
-              p_light_required?: string
-              p_min_interval_days?: number
-              p_override_days?: number
-              p_override_reason?: string
-              p_placement_id: string
-              p_reminder_contact?: string
-              p_ventilation?: string
-              p_water_amount_note?: string
-              p_water_interval_days?: number
-              p_water_method?: string
-            }
-            Returns: Json
-          }
-        | {
-            Args: {
-              p_care_notes?: string
-              p_care_responsibility?: string
-              p_client_instructions?: string
-              p_do_not_do?: string
-              p_explicit?: boolean
-              p_light_actual?: string
-              p_light_required?: string
-              p_min_interval_days?: number
-              p_override_days?: number
-              p_override_reason?: string
-              p_placement_id: string
-              p_reminder_contact?: string
-              p_ventilation?: string
-              p_water_amount_note?: string
-              p_water_interval_days?: number
-              p_water_method?: string
-            }
-            Returns: Json
-          }
+      plantops_set_care_plan: {
+        Args: {
+          p_care_notes?: string
+          p_care_responsibility?: string
+          p_client_instructions?: string
+          p_do_not_do?: string
+          p_explicit?: boolean
+          p_light_actual?: string
+          p_light_required?: string
+          p_min_interval_days?: number
+          p_override_days?: number
+          p_override_reason?: string
+          p_placement_id: string
+          p_reminder_contact?: string
+          p_ventilation?: string
+          p_water_amount_note?: string
+          p_water_interval_days?: number
+          p_water_method?: string
+        }
+        Returns: Json
+      }
       plantops_set_pot_details: {
         Args: {
           p_asset_id: string

@@ -63,7 +63,9 @@ export const CARE_RESPONSIBILITY_LABELS: Record<CareResponsibility, { en: string
 /* ---------- Types ---------- */
 
 export interface CareFactor {
-  label: string;
+  key?: string;
+  value?: string;
+  label?: string;
   days: number;
 }
 
@@ -86,11 +88,13 @@ export interface EffectiveCare {
   species_baseline_days: number | null;
   /** Explicit operational base interval in force. */
   base_days: number | null;
-  base_source: 'placement' | 'species_structured' | 'none';
+  /** 'placement' = explicit operational base; 'none' = not configured yet (REVISAR). */
+  base_source: 'placement' | 'none';
   configured_factors: CareFactor[];
   factors_total_days: number;
   override_days: number | null;
   effective_days: number | null;
+  needs_review?: boolean;
   min_interval_days: number | null;
   override_reason: string | null;
   water_amount_note: string | null;

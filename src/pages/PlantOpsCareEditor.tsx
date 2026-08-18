@@ -18,7 +18,8 @@ import {
   type EffectiveCare, type CareResponsibility,
 } from '@/lib/plantopsCare';
 
-const NONE = '__none__';
+/** care_responsibility is NOT NULL in the database: there is no "not defined" option. */
+const DEFAULT_RESPONSIBILITY: CareResponsibility = 'raiz_y_forma';
 
 export default function PlantOpsCareEditor() {
   const { placementId } = useParams<{ placementId: string }>();
@@ -42,7 +43,7 @@ export default function PlantOpsCareEditor() {
     light_required: '',
     light_actual: '',
     ventilation: '',
-    care_responsibility: NONE,
+    care_responsibility: DEFAULT_RESPONSIBILITY as string,
     reminder_contact: '',
     client_instructions: '',
     do_not_do: '',
@@ -55,7 +56,7 @@ export default function PlantOpsCareEditor() {
     setForm({
       // Only the explicit placement base is editable here; a structured species
       // number may prefill it but is never silently persisted as the base.
-      base_days: c.base_source === 'placement' && c.base_days != null ? String(c.base_days) : '',
+      base_days: c.base_days != null ? String(c.base_days) : '',
       override_days: c.override_days != null ? String(c.override_days) : '',
       min_interval_days: c.min_interval_days != null ? String(c.min_interval_days) : '',
       water_amount_note: c.water_amount_note || '',
@@ -63,7 +64,9 @@ export default function PlantOpsCareEditor() {
       light_required: c.light_required || '',
       light_actual: c.light_actual || '',
       ventilation: c.ventilation || '',
-      care_responsibility: c.care_responsibility || NONE,
+      care_responsibility: (CARE_RESPONSIBILITIES as readonly string[]).includes(c.care_responsibility || '')
+        ? (c.care_responsibility as string)
+        : DEFAULT_RESPONSIBILITY,
       reminder_contact: c.reminder_contact || '',
       client_instructions: c.client_instructions || '',
       do_not_do: c.do_not_do || '',
@@ -133,7 +136,7 @@ export default function PlantOpsCareEditor() {
         lightRequired: form.light_required || null,
         lightActual: form.light_actual || null,
         ventilation: form.ventilation || null,
-        careResponsibility: form.care_responsibility === NONE ? null : (form.care_responsibility as CareResponsibility),
+        careResponsibility: form.care_responsibility as CareResponsibility,
         reminderContact: form.reminder_contact || null,
         clientInstructions: form.client_instructions || null,
         doNotDo: form.do_not_do || null,
@@ -217,8 +220,8 @@ export default function PlantOpsCareEditor() {
                 </CardHeader>
                 <CardContent className="space-y-1.5 text-sm">
                   <p>{l('Operational base', 'Base operativa', 'Betriebsbasis')}: <strong>{days(care?.base_days)}</strong>{' '}
-                    {care?.base_source === 'species_structured' && (
-                      <Badge variant="outline">{l('from species guide', 'de la guía de especie', 'aus Leitfaden')}</Badge>
+                    {care?.base_source === 'none' && (
+                      <Badge variant="outline">{l('not defined — review', 'sin definir — revisar', 'nicht definiert — prüfen')}</Badge>
                     )}
                   </p>
                   <p>{l('Configured factors', 'Factores configurados', 'Konfigurierte Faktoren')}:{' '}
@@ -227,7 +230,7 @@ export default function PlantOpsCareEditor() {
                   {(care?.configured_factors || []).length > 0 && (
                     <ul className="text-muted-foreground pl-3">
                       {(care?.configured_factors || []).map((f, i) => (
-                        <li key={i}>{f.label}: {f.days > 0 ? `+${f.days}` : f.days}</li>
+                        <li key={i}>{f.label ?? `${f.key ?? ''}: ${f.value ?? ''}`}: {f.days > 0 ? `+${f.days}` : f.days}</li>
                       ))}
                     </ul>
                   )}
@@ -310,7 +313,7 @@ export default function PlantOpsCareEditor() {
                       onValueChange={(v) => setForm({ ...form, care_responsibility: v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
-                        <SelectItem value={NONE}>{l('Not defined', 'Sin definir', 'Nicht definiert')}</SelectItem>
+                        
                         {CARE_RESPONSIBILITIES.map((r) => (
                           <SelectItem key={r} value={r}>{tl(CARE_RESPONSIBILITY_LABELS[r])}</SelectItem>
                         ))}

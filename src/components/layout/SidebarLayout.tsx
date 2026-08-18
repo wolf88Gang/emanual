@@ -8,6 +8,7 @@ import { TrialBanner } from '@/components/subscription/TrialBanner';
 import { DemoBanner } from '@/components/DemoBanner';
 import { DevelopmentBanner } from '@/components/DevelopmentBanner';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
+import { BottomNav } from './BottomNav';
 
 
 interface SidebarLayoutProps {
@@ -37,9 +38,10 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           <DevelopmentBanner />
           <DemoBanner />
           <TrialBanner />
-          <main className="flex-1 overflow-auto safe-area-content">
+          <main className="flex-1 overflow-auto safe-area-content pb-20 lg:pb-0">
             {children}
           </main>
+          <BottomNav />
         </div>
       </div>
     </SidebarProvider>
