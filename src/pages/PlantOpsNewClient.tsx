@@ -163,6 +163,10 @@ export default function PlantOpsNewClient() {
   const [propertyName, setPropertyName] = useState('');
   const [propertyAddress, setPropertyAddress] = useState('');
   const [clientId, setClientId] = useState<string | null>(null);
+  /** True when the client already exists (came from the workspace): never duplicated,
+   *  and its contact is only touched through an explicit action. */
+  const [existingClient, setExistingClient] = useState(false);
+  const [contactUpdateRequested, setContactUpdateRequested] = useState(false);
   const [estateId, setEstateId] = useState<string | null>(null);
 
   // Step 2
@@ -173,6 +177,7 @@ export default function PlantOpsNewClient() {
     manual: true,
   });
   const [frequency, setFrequency] = useState('weekly');
+  const [projectType, setProjectType] = useState('residential');
   const [startsOn, setStartsOn] = useState(new Date().toISOString().slice(0, 10));
   const [contractId, setContractId] = useState<string | null>(null);
 
@@ -205,7 +210,26 @@ export default function PlantOpsNewClient() {
   /* ---------- resume: hydrate everything already persisted ---------- */
 
   const resumeEstateId = searchParams.get('estate');
+  const presetClientId = searchParams.get('client');
   const allowEdit = searchParams.get('edit') === 'true';
+
+  /** New project for an existing client: load the client, never create another one. */
+  useEffect(() => {
+    if (!presetClientId || resumeEstateId) return;
+    let cancelled = false;
+    (async () => {
+      setHydrating(true);
+      const { data } = await supabase.from('clients').select('id, name, email, phone').eq('id', presetClientId).maybeSingle();
+      if (cancelled || !data) { setHydrating(false); return; }
+      setClientId((data as any).id);
+      setExistingClient(true);
+      setClientName((data as any).name || '');
+      setClientEmail((data as any).email || '');
+      setClientPhone((data as any).phone || '');
+      setHydrating(false);
+    })();
+    return () => { cancelled = true; };
+  }, [presetClientId, resumeEstateId]);
 
   useEffect(() => {
     if (!resumeEstateId) return;
@@ -224,12 +248,14 @@ export default function PlantOpsNewClient() {
         setPropertyName(detail.estate.name);
         setPropertyAddress(detail.estate.address_text || '');
         setClientId(detail.client?.id ?? null);
+        setExistingClient(!!detail.client?.id);
         setClientName(detail.client?.name ?? '');
         setClientEmail(detail.client?.email ?? '');
         setClientPhone(detail.client?.phone ?? '');
 
         if (plan.services) setServices(plan.services);
         if (plan.visit_frequency) setFrequency(plan.visit_frequency);
+        if ((plan as any).project_type) setProjectType((plan as any).project_type);
         if (plan.starts_on) setStartsOn(plan.starts_on);
         if (plan.currency) setCurrency(plan.currency);
         if (plan.billing_period) setBillingPeriod(plan.billing_period);
@@ -375,8 +401,14 @@ export default function PlantOpsNewClient() {
         if (error) throw error;
         cid = (data as any).id;
         setClientId(cid);
-      } else {
-        await supabase.from('clients').update({ name: clientName.trim(), email: clientEmail.trim() || null, phone: clientPhone.trim() || null } as any).eq('id', cid);
+      } else if (!existingClient || contactUpdateRequested) {
+        // An existing client's contact is only rewritten when the operator asks for it.
+        const { error } = await supabase
+          .from('clients')
+          .update({ name: clientName.trim(), email: clientEmail.trim() || null, phone: clientPhone.trim() || null } as any)
+          .eq('id', cid);
+        if (error) throw error;
+        setContactUpdateRequested(false);
       }
 
       let eid = estateId;
@@ -420,6 +452,20 @@ export default function PlantOpsNewClient() {
         visit_frequency: frequency,
         starts_on: startsOn,
         currency,
+        project_type: projectType,
+        project_status: 'setup',
+        // Project capabilities derive from the selected services but stay editable per project.
+        capabilities: {
+          ...DEFAULT_PROJECT_CAPABILITIES,
+          care: true,
+          plants_pots: true,
+          reminders: !!services.recordatorios,
+          visits: !!services.mantenimiento,
+          manuals: !!services.manual,
+          rentals: !!services.alquiler,
+          events: !!services.eventos,
+        },
+        portal_visibility: { ...DEFAULT_PORTAL_VISIBILITY, manuals: !!services.manual },
       });
 
       // A rental contract exists ONLY when the client actually rents plants or books events.
@@ -709,7 +755,7 @@ export default function PlantOpsNewClient() {
       }
 
       await supabase.from('estates').update({ setup_status: 'active' } as any).eq('id', estateId);
-      await persistServicePlan(estateId, { setup_step: 'completed' });
+      await persistServicePlan(estateId, { setup_step: 'completed', project_status: 'active' });
       await refetchEstates();
       toast({ title: l('Client is ready', 'Cliente listo') });
     } catch (e: any) {
