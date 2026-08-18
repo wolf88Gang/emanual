@@ -15,6 +15,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEstate } from '@/contexts/EstateContext';
 import { useOrgType } from '@/hooks/usePlantOps';
+import { DEFAULT_PROJECT_CAPABILITIES, DEFAULT_PORTAL_VISIBILITY, PROJECT_TYPES } from '@/lib/plantopsClients';
 import { reserveAsset, installAsset, BILLING_PERIODS, BILLING_PERIOD_LABELS } from '@/lib/plantops';
 import {
   setCarePlan,
@@ -805,6 +806,26 @@ export default function PlantOpsNewClient() {
         {step === 1 && (
           <Card>
             <CardContent className="p-4 space-y-3">
+              {existingClient && (
+                <div className="rounded-md border border-border p-3 text-xs space-y-2">
+                  <p className="text-muted-foreground">
+                    {l(
+                      'Existing client: only a new project will be created. The contact stays untouched unless you request an update.',
+                      'Cliente existente: solo se creará un proyecto nuevo. El contacto no se modifica salvo que solicite actualizarlo.',
+                    )}
+                  </p>
+                  <Button
+                    type="button"
+                    size="sm"
+                    variant={contactUpdateRequested ? 'default' : 'outline'}
+                    onClick={() => setContactUpdateRequested((v) => !v)}
+                  >
+                    {contactUpdateRequested
+                      ? l('Contact will be updated', 'El contacto se actualizará')
+                      : l('Update contact too', 'Actualizar también el contacto')}
+                  </Button>
+                </div>
+              )}
               <div className="space-y-1">
                 <Label>{l('Client name', 'Nombre del cliente')} *</Label>
                 <Input value={clientName} onChange={(e) => setClientName(e.target.value)} />
@@ -848,6 +869,17 @@ export default function PlantOpsNewClient() {
                   'Riego, limpieza, poda, fertilización y rotación son acciones de mantenimiento que se registran en cada visita, no servicios comerciales.',
                 )}
               </p>
+              <div className="space-y-1">
+                <Label>{l('Project type', 'Tipo de proyecto')}</Label>
+                <Select value={projectType} onValueChange={setProjectType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PROJECT_TYPES.map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <Label>{l('Visit frequency', 'Frecuencia de visitas')}</Label>
