@@ -194,6 +194,7 @@ export async function fetchPropertyDetail(estateId: string): Promise<PropertyDet
         installed_at: p.installed_at,
         water_interval_days: p.water_interval_days,
         water_interval_override_days: p.water_interval_override_days,
+        care_override_reason: p.care_override_reason ?? null,
         min_interval_days: p.min_interval_days,
         next_water_due: p.next_water_due,
         last_watered_at: p.last_watered_at,
@@ -458,4 +459,52 @@ export async function updateShareLink(params: {
     p_clear_expiry: params.clearExpiry ?? false,
   } as never);
   if (error) throw error;
+}
+
+/* ---------- Service plan (a property can be served without a rental contract) ---------- */
+
+export interface ServicePlan {
+  services?: Record<string, boolean>;
+  visit_frequency?: string;
+  starts_on?: string;
+  base_price?: number | null;
+  currency?: string;
+  billing_period?: string;
+  reminder_contact?: string | null;
+}
+
+export async function fetchServicePlan(estateId: string): Promise<ServicePlan> {
+  const { data, error } = await supabase
+    .from('estates')
+    .select('plantops_service_plan_json')
+    .eq('id', estateId)
+    .single();
+  if (error) throw error;
+  return (((data as any)?.plantops_service_plan_json as ServicePlan) || {}) as ServicePlan;
+}
+
+export async function saveServicePlan(estateId: string, plan: ServicePlan): Promise<void> {
+  const { error } = await supabase
+    .from('estates')
+    .update({ plantops_service_plan_json: plan } as any)
+    .eq('id', estateId);
+  if (error) throw error;
+}
+
+/** Properties whose PlantOps setup wizard was never finished. */
+export async function fetchIncompleteSetups(
+  orgId: string,
+): Promise<{ id: string; name: string; client_name: string | null }[]> {
+  const { data, error } = await supabase
+    .from('estates')
+    .select('id, name, client:clients(name)')
+    .eq('org_id', orgId)
+    .eq('setup_status' as never, 'setup')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return ((data || []) as any[]).map((e) => ({
+    id: e.id,
+    name: e.name,
+    client_name: e.client?.name ?? null,
+  }));
 }
