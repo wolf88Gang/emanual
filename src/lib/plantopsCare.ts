@@ -208,7 +208,39 @@ export async function logCare(input: LogCareInput): Promise<LogCareResult> {
   return data as unknown as LogCareResult;
 }
 
+/* ---------- Pot attributes (the pot is a care variable, not decoration) ---------- */
+
+export interface PotDetailsInput {
+  assetId: string;
+  material?: string | null;
+  diameterCm?: number | null;
+  heightCm?: number | null;
+  volumeLiters?: number | null;
+  hasDrainage?: boolean | null;
+  drainageHoles?: number | null;
+  hasSaucer?: boolean | null;
+  reservoir?: boolean | null;
+  notes?: string | null;
+}
+
+export async function setPotDetails(input: PotDetailsInput): Promise<void> {
+  const { error } = await supabase.rpc('plantops_set_pot_details', {
+    p_asset_id: input.assetId,
+    p_material: input.material ?? null,
+    p_diameter_cm: input.diameterCm ?? null,
+    p_height_cm: input.heightCm ?? null,
+    p_volume_liters: input.volumeLiters ?? null,
+    p_has_drainage: input.hasDrainage ?? null,
+    p_drainage_holes: input.drainageHoles ?? null,
+    p_has_saucer: input.hasSaucer ?? null,
+    p_reservoir: input.reservoir ?? null,
+    p_notes: input.notes ?? null,
+  } as never);
+  if (error) throw error;
+}
+
 /* ---------- Visits ---------- */
+
 
 export async function startVisit(estateId: string, notes?: string | null): Promise<string> {
   const { data, error } = await supabase.rpc('plantops_start_visit', {

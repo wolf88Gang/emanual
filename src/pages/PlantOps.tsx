@@ -1,4 +1,5 @@
 import React, { useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
   Leaf, Plus, Loader2, MapPin, PackageCheck, RefreshCw, Truck, XCircle, Search, Sprout,
 } from 'lucide-react';
@@ -26,6 +27,7 @@ import {
 
 export default function PlantOps() {
   const { tl } = useLanguage();
+  const navigate = useNavigate();
   const { estates } = useEstate();
   const { orgId, inventory, placements, contracts, loading, error, refetch } = usePlantOpsData();
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
@@ -324,6 +326,36 @@ export default function PlantOps() {
             </Card>
           ))}
         </div>
+
+        <Card>
+          <CardHeader className="pb-2 flex-row items-center justify-between">
+            <CardTitle className="text-base">{l('Properties', 'Propiedades', 'Objekte')}</CardTitle>
+            <Button size="sm" onClick={() => navigate('/plantops/nuevo-cliente')}>
+              {l('New client', 'Nuevo cliente', 'Neuer Kunde')}
+            </Button>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {estates.length === 0 ? (
+              <p className="text-sm text-muted-foreground">
+                {l('No properties yet.', 'Sin propiedades todavía.', 'Noch keine Objekte.')}
+              </p>
+            ) : (
+              estates.map((e) => (
+                <button
+                  key={e.id}
+                  onClick={() => navigate(`/plantops/propiedad/${e.id}`)}
+                  className="w-full text-left rounded-lg border p-3 hover:border-primary/50 transition-colors"
+                >
+                  <p className="font-medium text-sm">{e.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {placements.filter((p) => p.estate_id === e.id && p.status === 'installed').length}{' '}
+                    {l('plants on site', 'plantas en sitio', 'Pflanzen vor Ort')}
+                  </p>
+                </button>
+              ))
+            )}
+          </CardContent>
+        </Card>
 
         {error && <p className="text-sm text-destructive">{error}</p>}
 
