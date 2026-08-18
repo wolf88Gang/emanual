@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Leaf, Loader2, Droplets, ShieldAlert, CalendarDays, Phone } from 'lucide-react';
+import { Leaf, Loader2, Droplets, ShieldAlert, CalendarDays, Phone, Download, Sun } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 interface PortalPlant {
   id: string;
@@ -16,6 +17,10 @@ interface PortalPlant {
   client_instructions: string | null;
   do_not_do: string | null;
   care_responsibility: string | null;
+  light_required: string | null;
+  light_actual: string | null;
+  water_state: 'regar' | 'no_regar' | 'revisar';
+  water_message: string | null;
 }
 
 interface PortalData {
@@ -26,14 +31,21 @@ interface PortalData {
   manual: any | null;
   manual_approved_at: string | null;
   plants?: PortalPlant[];
-  activity?: { id: string; action: string; at: string; notes: string | null }[];
+  activity?: { id: string; action: string; at: string }[];
   invoices?: { invoice_number: string; status: string; issue_date: string; total: number; currency: string }[];
 }
 
 const ACTION_ES: Record<string, string> = {
-  water: 'Riego', skip: 'Revisión sin riego', clean: 'Limpieza', prune: 'Poda',
+  water: 'Riego', skip_water: 'Revisión sin riego', clean: 'Limpieza', prune: 'Poda',
   fertilize: 'Abono', rotate: 'Rotación', inspect: 'Revisión', issue: 'Incidencia',
-  replace_requested: 'Reemplazo solicitado',
+  pest: 'Plaga', light_issue: 'Problema de luz', move: 'Reubicación',
+  replace: 'Reemplazo', replace_requested: 'Reemplazo solicitado', photo: 'Foto', note: 'Nota',
+};
+
+const RESPONSIBILITY_ES: Record<string, string> = {
+  raiz_y_forma: 'A cargo nuestro',
+  cliente: 'A su cargo',
+  compartido: 'Compartido',
 };
 
 export default function PlantOpsPortal() {
