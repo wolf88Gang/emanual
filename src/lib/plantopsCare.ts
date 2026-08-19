@@ -270,9 +270,30 @@ export interface VisitToolRow {
   id: string;
   inventory_item_id: string;
   quantity_assigned: number;
+  quantity_returned: number;
   returned_at: string | null;
   return_condition: string | null;
   name: string;
+}
+
+/** Organization-wide tool stock (all properties/warehouses of the org). */
+export interface OrgToolRow {
+  id: string;
+  name: string;
+  name_en: string;
+  category: string;
+  condition: string | null;
+  estate_id: string;
+  estate_name: string | null;
+  quantity: number;
+  assigned_open: number;
+  available: number;
+}
+
+export async function fetchOrgToolInventory(): Promise<OrgToolRow[]> {
+  const { data, error } = await supabase.rpc('plantops_org_tool_inventory' as never);
+  if (error) throw error;
+  return (data as unknown as OrgToolRow[]) || [];
 }
 
 export async function assignVisitTools(
@@ -289,7 +310,7 @@ export async function assignVisitTools(
 
 export async function returnVisitTools(
   shiftId: string,
-  items: { assignment_id: string; condition?: string | null }[],
+  items: { assignment_id: string; quantity_returned_now: number; condition?: string | null }[],
 ): Promise<number> {
   const { data, error } = await supabase.rpc('plantops_return_visit_tools', {
     p_shift_id: shiftId,
@@ -303,7 +324,7 @@ export async function returnVisitTools(
 export async function fetchVisitTools(shiftId: string): Promise<VisitToolRow[]> {
   const { data, error } = await supabase
     .from('tool_assignments')
-    .select('id, inventory_item_id, quantity_assigned, returned_at, return_condition, item:inventory_items(name, name_es)')
+    .select('id, inventory_item_id, quantity_assigned, quantity_returned, returned_at, return_condition, item:inventory_items(name, name_es)')
     .eq('shift_id' as never, shiftId)
     .order('assigned_at', { ascending: true });
   if (error) throw error;
@@ -311,11 +332,13 @@ export async function fetchVisitTools(shiftId: string): Promise<VisitToolRow[]> 
     id: r.id,
     inventory_item_id: r.inventory_item_id,
     quantity_assigned: r.quantity_assigned,
+    quantity_returned: r.quantity_returned ?? 0,
     returned_at: r.returned_at,
     return_condition: r.return_condition,
     name: r.item?.name_es || r.item?.name || '—',
   }));
 }
+
 
 /* ---------- Billing ---------- */
 
