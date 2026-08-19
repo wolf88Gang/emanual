@@ -240,6 +240,18 @@ export async function fetchOutbox(clientId: string, limit = 100): Promise<Outbox
   return ((data as any[]) || []) as OutboxMessage[];
 }
 
+/** Whole-organization outbox, used by the Reminders module. */
+export async function fetchOrgOutbox(orgId: string, limit = 200): Promise<OutboxMessage[]> {
+  const { data, error } = await supabase
+    .from('client_message_outbox' as any)
+    .select('*, contact:client_contacts(name, email, phone_e164), estate:estates(name), client:clients(name)')
+    .eq('org_id', orgId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return ((data as any[]) || []) as OutboxMessage[];
+}
+
 export interface QueueMessageInput {
   clientId: string;
   messageType: MessageType;
@@ -251,6 +263,8 @@ export interface QueueMessageInput {
   placementId?: string | null;
   ccEmails?: string[];
   idempotencyKey?: string | null;
+  scheduledAt?: string | null;
+  sendMode?: 'manual' | 'automatic';
 }
 
 export async function queueMessage(input: QueueMessageInput): Promise<string> {
@@ -264,13 +278,21 @@ export async function queueMessage(input: QueueMessageInput): Promise<string> {
     p_contact_id: input.contactId ?? null,
     p_placement_id: input.placementId ?? null,
     p_cc_emails: input.ccEmails ?? [],
-    p_scheduled_at: null,
+    p_scheduled_at: input.scheduledAt ?? null,
     p_idempotency_key: input.idempotencyKey ?? null,
-    p_send_mode: 'manual',
+    p_send_mode: input.sendMode ?? 'manual',
   } as any);
   if (error) throw error;
   return data as string;
 }
+
+/** Enqueues every reminder that is due right now (watering engine + settings). */
+export async function enqueueDueReminders(): Promise<number> {
+  const { data, error } = await supabase.rpc('plantops_enqueue_due_client_reminders' as any, {} as any);
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+
 
 export async function markMessageSent(id: string) {
   const { error } = await supabase.rpc('plantops_mark_message_sent' as any, { p_message_id: id } as any);
