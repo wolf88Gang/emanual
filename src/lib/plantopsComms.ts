@@ -530,3 +530,61 @@ export async function revokeClientPortalLink(linkId: string) {
   const { error } = await supabase.rpc('plantops_revoke_client_portal_link' as any, { p_link_id: linkId } as any);
   if (error) throw error;
 }
+
+/* ------------------ custom maintenance reminders ------------------ */
+
+export interface MaintenanceReminderContext {
+  projectName?: string | null;
+  plantName?: string | null;
+  location?: string | null;
+  /** Free-text instruction shown to the client. */
+  instruction?: string | null;
+  /** ISO date the action should happen on. */
+  dueDate?: string | null;
+}
+
+const MAINTENANCE_HEADINGS: Record<string, { en: string; es: string; de: string }> = {
+  light_check: { en: 'LIGHT CHECK', es: 'REVISIÓN DE LUZ', de: 'LICHTKONTROLLE' },
+  fertilization: { en: 'FERTILIZATION', es: 'FERTILIZACIÓN', de: 'DÜNGUNG' },
+  pruning: { en: 'PRUNING', es: 'PODA', de: 'RÜCKSCHNITT' },
+  cleaning: { en: 'LEAF CLEANING', es: 'LIMPIEZA DE HOJAS', de: 'BLATTREINIGUNG' },
+  rotation: { en: 'ROTATION', es: 'ROTACIÓN', de: 'ROTATION' },
+  replacement: { en: 'REPLACEMENT', es: 'REEMPLAZO', de: 'ERSATZ' },
+  visit_reminder: { en: 'UPCOMING VISIT', es: 'PRÓXIMA VISITA', de: 'KOMMENDER BESUCH' },
+  custom: { en: 'NOTICE', es: 'AVISO', de: 'HINWEIS' },
+};
+
+/**
+ * Builds the text of a maintenance reminder. Every reminder states WHAT to do
+ * and WHEN — never a vague instruction.
+ */
+export function maintenanceReminderMessage(
+  type: MessageType,
+  ctx: MaintenanceReminderContext,
+  lang: string,
+): { subject: string; body: string } {
+  const l = L(lang);
+  const heading = (MAINTENANCE_HEADINGS[type] ?? MAINTENANCE_HEADINGS.custom)[l];
+  const typeLabel = MESSAGE_TYPE_LABELS[type][l];
+  const where = [ctx.projectName, ctx.location].filter(Boolean).join(' · ');
+  const whenLine = ctx.dueDate
+    ? l === 'en'
+      ? `Date: ${ctx.dueDate}`
+      : l === 'de'
+        ? `Datum: ${ctx.dueDate}`
+        : `Fecha: ${ctx.dueDate}`
+    : '';
+  const closing =
+    l === 'en'
+      ? 'Do nothing else until you receive the next notice.'
+      : l === 'de'
+        ? 'Bitte nichts weiter tun, bis der nächste Hinweis kommt.'
+        : 'No haga nada más hasta recibir el próximo aviso.';
+
+  const subject = [typeLabel, ctx.plantName || ctx.projectName].filter(Boolean).join(': ');
+  const body = [heading, '', ctx.plantName || '', where, whenLine, '', ctx.instruction || '', '', closing]
+    .filter((line, i, arr) => !(line === '' && arr[i - 1] === ''))
+    .join('\n');
+
+  return { subject, body };
+}
