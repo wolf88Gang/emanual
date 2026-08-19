@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loader2, Save, Settings as SettingsIcon } from 'lucide-react';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,27 +6,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useOrgType } from '@/hooks/usePlantOps';
+import { useModules } from '@/hooks/useModules';
 import {
   fetchCareSettings,
   saveCareSettings,
-  fetchModules,
-  saveModules,
   POT_MATERIALS,
   POT_MATERIAL_LABELS,
   type PotMaterial,
   type CareSettings,
 } from '@/lib/plantopsCare';
 
-import { CAPABILITY_KEYS, CAPABILITY_LABELS, normalizeOrgModules } from '@/lib/plantopsClients';
+import {
+  MODULE_KEYS,
+  MODULES,
+  PRESETS,
+  moduleDescription,
+  moduleLabel,
+  resolveModules,
+  type ModuleKey,
+  type PresetKey,
+} from '@/lib/homeGuideModules';
 
-/** Canonical organization-level module keys (they gate nav, dashboard, routes and wizard). */
-const MODULE_KEYS = CAPABILITY_KEYS;
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+
 
 /**
  * PlantOps configuration. Every agronomic adjustment factor lives here — nothing
