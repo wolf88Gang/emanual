@@ -227,6 +227,8 @@ export interface OutboxMessage {
   created_at: string;
   contact?: { name: string; email: string | null; phone_e164: string | null } | null;
   estate?: { name: string | null } | null;
+  client?: { name: string | null } | null;
+
 }
 
 export async function fetchOutbox(clientId: string, limit = 100): Promise<OutboxMessage[]> {
