@@ -176,20 +176,69 @@ export default function PlantOpsSettings() {
           <>
             <Card>
               <CardHeader className="pb-2">
+                <CardTitle className="text-base">{l('Operation preset', 'Preajuste de operación')}</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2 sm:grid-cols-2">
+                {PRESETS.filter((p) => p.modules).map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => applyPreset(p.key)}
+                    className={`text-left rounded-lg border p-3 transition-colors ${
+                      activePreset === p.key ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium">
+                        {language === 'es' ? p.label.es : language === 'de' ? p.label.de : p.label.en}
+                      </span>
+                      {activePreset === p.key && <Badge variant="secondary">{l('Active', 'Activo')}</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' ? p.description.es : language === 'de' ? p.description.de : p.description.en}
+                    </p>
+                  </button>
+                ))}
+                <p className="text-xs text-muted-foreground sm:col-span-2">
+                  {activePreset === 'custom'
+                    ? l('Custom selection — presets only prefill the switches below.',
+                        'Selección personalizada: los preajustes solo precargan los interruptores.')
+                    : l('A preset only prefills the switches below; you can still change any module.',
+                        'Un preajuste solo precarga los interruptores; puede cambiar cualquier módulo.')}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
                 <CardTitle className="text-base">{l('Modules', 'Módulos')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {MODULE_KEYS.map((k) => (
-                  <div key={k} className="flex items-center justify-between">
-                    <Label className="text-sm">{language === 'es' ? CAPABILITY_LABELS[k].es : language === 'de' ? CAPABILITY_LABELS[k].de : CAPABILITY_LABELS[k].en}</Label>
-                    <Switch
-                      checked={modules[k] !== false}
-                      onCheckedChange={(v) => setModules((prev) => ({ ...prev, [k]: v }))}
-                    />
-                  </div>
-                ))}
+                {MODULE_KEYS.map((k) => {
+                  const missing = MODULES[k].dependencies.filter((d) => !effective[d]);
+                  return (
+                    <div key={k} className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <Label className="text-sm">{moduleLabel(k, language)}</Label>
+                        <p className="text-xs text-muted-foreground">{moduleDescription(k, language)}</p>
+                        {missing.length > 0 && (
+                          <p className="text-xs text-destructive mt-1">
+                            {l('Requires: ', 'Requiere: ')}
+                            {missing.map((d) => moduleLabel(d, language)).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                      <Switch
+                        checked={effective[k] === true}
+                        disabled={missing.length > 0}
+                        onCheckedChange={(v) => toggleModule(k, v)}
+                      />
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
+
 
             <p className="text-xs text-muted-foreground">
               {l('Positive values stretch the interval, negative values shorten it (days).',
