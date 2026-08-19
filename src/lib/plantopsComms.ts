@@ -153,17 +153,58 @@ export async function saveReminderSettings(estateId: string, settings: ReminderS
 
 /* ----------------------------- outbox ----------------------------- */
 
-export type MessageType =
-  | 'watering_due'
-  | 'watering_completed'
-  | 'do_not_water'
-  | 'care_issue'
-  | 'visit_reminder'
-  | 'visit_summary'
-  | 'manual_ready'
-  | 'invoice_sent'
-  | 'invoice_overdue'
-  | 'custom';
+export const MESSAGE_TYPES = [
+  'watering_due',
+  'watering_completed',
+  'do_not_water',
+  'care_issue',
+  'visit_reminder',
+  'visit_summary',
+  'manual_ready',
+  'invoice_sent',
+  'invoice_overdue',
+  'light_check',
+  'fertilization',
+  'pruning',
+  'cleaning',
+  'rotation',
+  'replacement',
+  'custom',
+] as const;
+
+export type MessageType = (typeof MESSAGE_TYPES)[number];
+
+/** Reminder kinds the operator can create by hand (watering is engine-driven). */
+export const CUSTOM_REMINDER_TYPES: MessageType[] = [
+  'light_check',
+  'fertilization',
+  'pruning',
+  'cleaning',
+  'rotation',
+  'replacement',
+  'visit_reminder',
+  'custom',
+];
+
+export const MESSAGE_TYPE_LABELS: Record<MessageType, { en: string; es: string; de: string }> = {
+  watering_due: { en: 'Watering due', es: 'Riego pendiente', de: 'Gießen fällig' },
+  watering_completed: { en: 'Watering completed', es: 'Riego realizado', de: 'Gießen erledigt' },
+  do_not_water: { en: 'Do not water', es: 'No regar', de: 'Nicht gießen' },
+  care_issue: { en: 'Care issue', es: 'Problema de cuidado', de: 'Pflegeproblem' },
+  visit_reminder: { en: 'Visit reminder', es: 'Recordatorio de visita', de: 'Besuchserinnerung' },
+  visit_summary: { en: 'Visit summary', es: 'Resumen de visita', de: 'Besuchsbericht' },
+  manual_ready: { en: 'Manual ready', es: 'Manual listo', de: 'Handbuch bereit' },
+  invoice_sent: { en: 'Invoice sent', es: 'Factura enviada', de: 'Rechnung gesendet' },
+  invoice_overdue: { en: 'Invoice overdue', es: 'Factura vencida', de: 'Rechnung überfällig' },
+  light_check: { en: 'Light check', es: 'Revisión de luz', de: 'Lichtkontrolle' },
+  fertilization: { en: 'Fertilization', es: 'Fertilización', de: 'Düngung' },
+  pruning: { en: 'Pruning', es: 'Poda', de: 'Rückschnitt' },
+  cleaning: { en: 'Leaf cleaning', es: 'Limpieza de hojas', de: 'Blattreinigung' },
+  rotation: { en: 'Rotation', es: 'Rotación', de: 'Rotation' },
+  replacement: { en: 'Replacement', es: 'Reemplazo', de: 'Ersatz' },
+  custom: { en: 'Custom message', es: 'Mensaje personalizado', de: 'Eigene Nachricht' },
+};
+
 
 export type MessageStatus = 'queued' | 'sending' | 'sent' | 'failed' | 'blocked' | 'cancelled';
 
