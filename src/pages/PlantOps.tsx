@@ -424,12 +424,17 @@ export default function PlantOps() {
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         ) : (
-          <Tabs defaultValue="plants">
+          <Tabs defaultValue={isEnabled('plants_pots') ? 'plants' : 'history'}>
             <TabsList>
-              <TabsTrigger value="plants"><Leaf className="h-4 w-4 mr-1" />{l('Plants', 'Plantas', 'Pflanzen')}</TabsTrigger>
-              <TabsTrigger value="pots">{l('Pots', 'Macetas', 'Töpfe')}</TabsTrigger>
+              {isEnabled('plants_pots') && (
+                <>
+                  <TabsTrigger value="plants"><Leaf className="h-4 w-4 mr-1" />{l('Plants', 'Plantas', 'Pflanzen')}</TabsTrigger>
+                  <TabsTrigger value="pots">{l('Pots', 'Macetas', 'Töpfe')}</TabsTrigger>
+                </>
+              )}
               <TabsTrigger value="history">{l('History', 'Historial', 'Verlauf')}</TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="plants" className="mt-4">
               <Card><CardContent className="p-0 overflow-x-auto">{renderRows(plants)}</CardContent></Card>
