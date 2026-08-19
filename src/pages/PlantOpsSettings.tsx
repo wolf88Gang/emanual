@@ -44,11 +44,12 @@ export default function PlantOpsSettings() {
   const { language } = useLanguage();
   const { orgId } = useOrgType();
   const { toast } = useToast();
+  const { modules: savedModules, saveModules, loading: modulesLoading } = useModules();
   const l = (en: string, es: string) => (language === 'es' ? es : en);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [modules, setModules] = useState<Record<string, boolean>>({});
+  const [modules, setModules] = useState<Record<ModuleKey, boolean> | null>(null);
   const [settings, setSettings] = useState<CareSettings>({});
 
   useEffect(() => {
@@ -56,12 +57,14 @@ export default function PlantOpsSettings() {
   }, [language]);
 
   useEffect(() => {
+    if (!modulesLoading) setModules((prev) => prev ?? savedModules);
+  }, [modulesLoading, savedModules]);
+
+  useEffect(() => {
     if (!orgId) return;
     (async () => {
       try {
-        const [m, s] = await Promise.all([fetchModules(orgId), fetchCareSettings(orgId)]);
-        setModules(normalizeOrgModules(m));
-        setSettings(s);
+        setSettings(await fetchCareSettings(orgId));
       } catch (e: any) {
         toast({ title: l('Could not load settings', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
       } finally {
@@ -69,6 +72,32 @@ export default function PlantOpsSettings() {
       }
     })();
   }, [orgId]);
+
+  const effective = useMemo(() => resolveModules(modules ?? {}), [modules]);
+
+  /** Which preset the current selection matches (for highlighting). */
+  const activePreset: PresetKey = useMemo(() => {
+    for (const p of PRESETS) {
+      if (!p.modules) continue;
+      if (MODULE_KEYS.every((k) => !!p.modules![k] === !!effective[k])) return p.key;
+    }
+    return 'custom';
+  }, [effective]);
+
+  const toggleModule = (key: ModuleKey, value: boolean) => {
+    setModules((prev) => {
+      const base = { ...(prev ?? savedModules) };
+      base[key] = value;
+      // Turning a module off also turns off whatever depends on it.
+      return resolveModules(base);
+    });
+  };
+
+  const applyPreset = (key: PresetKey) => {
+    const p = PRESETS.find((x) => x.key === key);
+    if (!p?.modules) return;
+    setModules(resolveModules(p.modules));
+  };
 
   const setFactor = (group: keyof CareSettings, key: string, value: string) => {
     setSettings((prev) => {
@@ -90,7 +119,7 @@ export default function PlantOpsSettings() {
     if (!orgId) return;
     setSaving(true);
     try {
-      await Promise.all([saveModules(orgId, modules), saveCareSettings(orgId, settings)]);
+      await Promise.all([saveModules(effective), saveCareSettings(orgId, settings)]);
       toast({ title: l('Settings saved', 'Configuración guardada') });
     } catch (e: any) {
       toast({ title: l('Could not save', 'No se pudo guardar'), description: e.message, variant: 'destructive' });
@@ -98,6 +127,7 @@ export default function PlantOpsSettings() {
       setSaving(false);
     }
   };
+
 
   const factorGroup = (
     group: keyof CareSettings,
