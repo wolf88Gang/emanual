@@ -101,18 +101,20 @@ export function AppSidebar() {
     { path: '/labor', icon: Clock, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
   ];
 
-  // Plant rental (PlantOps) items
+  // Plant rental (PlantOps) items — generated from the modules the org enabled.
   const plantRentalNav: NavItem[] = [
-    { path: '/plantops', icon: Sprout, label: 'PlantOps', tooltip: l('Plant rental inventory & placements', 'Inventario de alquiler y ubicaciones', 'Mietbestand & Standorte') },
-    { path: '/plantops/clientes', icon: Users, label: l('Clients', 'Clientes', 'Kunden'), tooltip: l('Clients and their projects', 'Clientes y sus proyectos', 'Kunden und ihre Projekte') },
-    { path: '/plantops/nuevo-cliente', icon: ShoppingBag, label: l('New client', 'Nuevo cliente', 'Neuer Kunde'), tooltip: l('6-step client setup', 'Alta de cliente en 6 pasos', 'Kundenanlage in 6 Schritten') },
-    { path: '/plantops/visita', icon: ClipboardList, label: l('Visit', 'Visita', 'Besuch'), tooltip: l('Run a maintenance visit', 'Ejecutar una visita de mantenimiento', 'Wartungsbesuch durchführen') },
-    { path: '/plantops/care', icon: Sprout, label: l('Care', 'Cuidados', 'Pflege'), tooltip: l('Operational care plans', 'Planes de cuidado operativos', 'Betriebliche Pflegepläne') },
-    { path: '/plantops/contracts', icon: FileSignature, label: l('Contracts', 'Contratos', 'Verträge'), tooltip: l('Rental contracts & events', 'Contratos de alquiler y eventos', 'Mietverträge & Events') },
-    { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
-    { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
+    ...navModules.map((m) => ({
+      path: m.navRoute!,
+      icon: m.icon,
+      label: moduleLabel(m.key, language),
+      tooltip: moduleDescription(m.key, language),
+    })),
+    ...(canUse('clients')
+      ? [{ path: '/plantops/nuevo-cliente', icon: ShoppingBag, label: l('New client', 'Nuevo cliente', 'Neuer Kunde'), tooltip: l('6-step client setup', 'Alta de cliente en 6 pasos', 'Kundenanlage in 6 Schritten') }]
+      : []),
     { path: '/plantops/settings', icon: Settings, label: l('PlantOps settings', 'Configuración PlantOps', 'PlantOps-Einstellungen'), tooltip: l('Modules & care factors', 'Módulos y factores de cuidado', 'Module & Pflegefaktoren') },
   ];
+
 
   // Homeowner financials
   const homeownerNav: NavItem[] = [
