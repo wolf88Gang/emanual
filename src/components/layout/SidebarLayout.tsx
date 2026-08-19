@@ -9,6 +9,7 @@ import { DemoBanner } from '@/components/DemoBanner';
 import { DevelopmentBanner } from '@/components/DevelopmentBanner';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { BottomNav } from './BottomNav';
+import { useOrgType } from '@/hooks/usePlantOps';
 
 
 interface SidebarLayoutProps {
@@ -16,6 +17,8 @@ interface SidebarLayoutProps {
 }
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
+  const { isPlantRental } = useOrgType();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full">

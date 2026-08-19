@@ -5,8 +5,6 @@ import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrgType } from '@/hooks/usePlantOps';
-import { useModules } from '@/hooks/useModules';
-import { moduleLabel } from '@/lib/homeGuideModules';
 
 interface NavItem {
   path: string;
@@ -19,7 +17,6 @@ export function BottomNav() {
   const { language } = useLanguage();
   const { hasRole } = useAuth();
   const { isPlantRental } = useOrgType();
-  const { navModules } = useModules();
   const location = useLocation();
 
   const isCrew = hasRole('crew');
@@ -27,17 +24,6 @@ export function BottomNav() {
   const es = language === 'es';
   const de = language === 'de';
   const t = (en: string, esL: string, deL: string) => (es ? esL : de ? deL : en);
-
-  // No generic bottom bar: entries come from the modules the organization enabled
-  // and the role of the signed-in user. Four module entries + "More" for settings.
-  const moduleItems: NavItem[] = [
-    ...navModules.slice(0, isCrew ? 5 : 4).map((m) => ({
-      path: m.navRoute!,
-      icon: m.icon,
-      label: moduleLabel(m.key, language),
-    })),
-    ...(isCrew ? [] : [{ path: '/plantops/settings', icon: MoreHorizontal, label: t('More', 'Más', 'Mehr') }]),
-  ];
 
   // Priority items on top: Map, Assets, Tasks, Shift/Work
   const estateItems: NavItem[] = [
