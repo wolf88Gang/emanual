@@ -141,14 +141,17 @@ export function AppSidebar() {
     { path: '/requests', icon: MessageSquarePlus, label: l('Requests', 'Solicitudes', 'Anfragen'), tooltip: l('Feature requests & feedback', 'Solicitudes y comentarios', 'Anfragen & Feedback') },
   ];
 
-  // Optional module gating: organizations.modules_json = { "/topography": false, ... }
-  // Absent or empty object = everything visible (no silent hiding).
+  // Module gating: canonical module keys own routes (see src/lib/homeGuideModules.ts).
+  // Legacy path-keyed overrides in organizations.modules_json are still honoured.
   const moduleEnabled = (path: string) => {
+    const owner = moduleForRoute(path);
+    if (owner && !canUse(owner.key)) return false;
     if (!modules) return true;
     const key = path.replace(/^\//, '');
     const v = modules[path] ?? modules[key];
     return v === undefined ? true : Boolean(v);
   };
+
 
   const ownerNav: NavItem[] = [
     ...coreNav,
