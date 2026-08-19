@@ -1,12 +1,10 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Map, Briefcase, Box, ClipboardList, Clock, MoreHorizontal } from 'lucide-react';
+import { Map, Briefcase, Box, ClipboardList, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useOrgType } from '@/hooks/usePlantOps';
-import { useModules } from '@/hooks/useModules';
-import { moduleLabel } from '@/lib/homeGuideModules';
 
 interface NavItem {
   path: string;
@@ -19,7 +17,6 @@ export function BottomNav() {
   const { language } = useLanguage();
   const { hasRole } = useAuth();
   const { isPlantRental } = useOrgType();
-  const { navModules } = useModules();
   const location = useLocation();
 
   const isCrew = hasRole('crew');
@@ -27,17 +24,6 @@ export function BottomNav() {
   const es = language === 'es';
   const de = language === 'de';
   const t = (en: string, esL: string, deL: string) => (es ? esL : de ? deL : en);
-
-  // No generic bottom bar: entries come from the modules the organization enabled
-  // and the role of the signed-in user. Four module entries + "More" for settings.
-  const moduleItems: NavItem[] = [
-    ...navModules.slice(0, isCrew ? 5 : 4).map((m) => ({
-      path: m.navRoute!,
-      icon: m.icon,
-      label: moduleLabel(m.key, language),
-    })),
-    ...(isCrew ? [] : [{ path: '/plantops/settings', icon: MoreHorizontal, label: t('More', 'Más', 'Mehr') }]),
-  ];
 
   // Priority items on top: Map, Assets, Tasks, Shift/Work
   const estateItems: NavItem[] = [
@@ -47,9 +33,11 @@ export function BottomNav() {
     { path: isCrew ? '/checkin' : '/', icon: isCrew ? Clock : Briefcase, label: isCrew ? t('Shift', 'Turno', 'Schicht') : t('Work', 'Trabajo', 'Arbeit') },
   ];
 
-  const navItems = (isPlantRental ? moduleItems : estateItems).filter(
-    (item) => !(isVendor && item.hideForVendor),
-  );
+  // PlantOps (plant_rental) organizations have no fixed mobile bottom bar at all:
+  // navigation happens through the drawer/sidebar and contextual page actions.
+  if (isPlantRental) return null;
+
+  const navItems = estateItems.filter((item) => !(isVendor && item.hideForVendor));
 
   if (navItems.length === 0) return null;
 

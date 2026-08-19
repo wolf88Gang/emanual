@@ -211,7 +211,7 @@ export default function PlantOpsProperty() {
 
   return (
     <ModernAppLayout>
-      <main className="p-4 space-y-4 max-w-3xl mx-auto safe-area-content pb-28">
+      <main className="p-4 space-y-4 max-w-3xl mx-auto safe-area-content">
         <div className="flex items-start gap-2">
           <Button variant="ghost" size="icon" onClick={() => navigate('/plantops')}><ArrowLeft className="h-4 w-4" /></Button>
           <div className="min-w-0">
