@@ -21,30 +21,11 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import {
-  dueState, careState, formatDateEs, logCare, startVisit, closeVisit, addChargeForEstate,
-  assignVisitTools, returnVisitTools, fetchVisitTools, CARE_ISSUE_ACTIONS,
-  type CareActionType, type VisitToolRow, type CareState,
+  dueState, formatDateEs, logCare, startVisit, closeVisit, addChargeForEstate,
+  assignVisitTools, returnVisitTools, fetchVisitTools, fetchCareQueue, fetchOrgToolInventory,
+  type CareActionType, type VisitToolRow, type CareState, type CareQueueRow, type OrgToolRow,
 } from '@/lib/plantopsCare';
 import { uploadPlacementPhoto } from '@/lib/plantops';
-
-interface QueueRow {
-  id: string;
-  asset_id: string;
-  spot_label: string | null;
-  spot_notes: string | null;
-  access_notes: string | null;
-  next_water_due: string | null;
-  last_watered_at: string | null;
-  water_amount_note: string | null;
-  water_method: string | null;
-  water_interval_days: number | null;
-  water_interval_override_days: number | null;
-  do_not_do: string | null;
-  care_responsibility: string | null;
-  plant_name: string;
-  zone_name: string | null;
-  state: CareState;
-}
 
 const ORDER: Record<CareState, number> = { regar: 0, revisar: 1, no_regar: 2 };
 
@@ -54,13 +35,14 @@ export default function PlantOpsVisit() {
   const [searchParams] = useSearchParams();
   const { tl } = useLanguage();
   const navigate = useNavigate();
-  const l = (en: string, es: string) => tl({ en, es, de: en });
+  /** Trilingual literal: EN / ES / DE. */
+  const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
-  const [rows, setRows] = useState<QueueRow[]>([]);
+  const [rows, setRows] = useState<CareQueueRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [shiftId, setShiftId] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
-  const [detail, setDetail] = useState<QueueRow | null>(null);
+  const [detail, setDetail] = useState<CareQueueRow | null>(null);
   const [action, setAction] = useState<CareActionType>('water');
   const [note, setNote] = useState('');
   const [amountNote, setAmountNote] = useState('');
@@ -73,9 +55,10 @@ export default function PlantOpsVisit() {
   const [closeNotes, setCloseNotes] = useState('');
   const [toolsOpen, setToolsOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [inventory, setInventory] = useState<{ id: string; name: string; quantity: number }[]>([]);
+  const [inventory, setInventory] = useState<OrgToolRow[]>([]);
   const [pick, setPick] = useState<Record<string, number>>({});
   const [visitTools, setVisitTools] = useState<VisitToolRow[]>([]);
+  const [returnQty, setReturnQty] = useState<Record<string, number>>({});
   const [returnCond, setReturnCond] = useState<Record<string, string>>({});
   const [toolsException, setToolsException] = useState('');
 
@@ -89,44 +72,23 @@ export default function PlantOpsVisit() {
 
   const estateClientName = estateClient?.name ?? null;
 
+  // Care state comes ONLY from the canonical queue RPC. No React-side recalculation.
   const load = useCallback(async () => {
     if (!currentEstate?.id) { setLoading(false); return; }
     setLoading(true);
-    const [{ data, error }, { data: logs }] = await Promise.all([
-      supabase
-        .from('plant_placements')
-        .select('id, asset_id, spot_label, spot_notes, access_notes, next_water_due, last_watered_at, water_amount_note, water_method, water_interval_days, water_interval_override_days, do_not_do, care_responsibility, asset:assets!plant_placements_asset_id_fkey(name), zone:zones(name)')
-        .eq('estate_id', currentEstate.id)
-        .eq('status', 'installed'),
-      supabase
-        .from('plant_care_logs')
-        .select('placement_id, action_type, performed_at')
-        .eq('estate_id', currentEstate.id)
-        .order('performed_at', { ascending: false })
-        .limit(400),
-    ]);
-    if (error) {
-      toast({ title: l('Could not load plants', 'No se pudieron cargar las plantas'), description: error.message, variant: 'destructive' });
-    } else {
-      // Latest log per placement decides whether the plant has an open problem.
-      const latest = new Map<string, string>();
-      ((logs || []) as any[]).forEach((r) => {
-        if (r.placement_id && !latest.has(r.placement_id)) latest.set(r.placement_id, r.action_type);
+    try {
+      const queue = await fetchCareQueue(currentEstate.id);
+      const sorted = [...queue].sort((a, b) => ORDER[a.care_state] - ORDER[b.care_state]);
+      setRows(sorted);
+    } catch (e: any) {
+      toast({
+        title: l('Could not load plants', 'No se pudieron cargar las plantas', 'Pflanzen konnten nicht geladen werden'),
+        description: e.message,
+        variant: 'destructive',
       });
-      const mapped = (data || []).map((r: any) => {
-        const effective = r.water_interval_override_days ?? r.water_interval_days ?? null;
-        const openIssue = CARE_ISSUE_ACTIONS.includes(latest.get(r.id) as CareActionType);
-        return {
-          ...r,
-          plant_name: r.asset?.name ?? '—',
-          zone_name: r.zone?.name ?? null,
-          state: openIssue ? ('revisar' as CareState) : careState(r.next_water_due, effective),
-        } as QueueRow;
-      });
-      mapped.sort((a, b) => ORDER[a.state] - ORDER[b.state]);
-      setRows(mapped);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   }, [currentEstate?.id]);
 
   useEffect(() => { load(); }, [load]);
@@ -141,14 +103,16 @@ export default function PlantOpsVisit() {
       });
   }, [currentEstate?.id]);
 
-  // Inventory available for tool check-in (per property).
-  useEffect(() => {
-    if (!currentEstate?.id) return;
-    supabase.from('inventory_items').select('id, name, name_es, quantity').eq('estate_id', currentEstate.id).order('name')
-      .then(({ data }) => setInventory(((data || []) as any[]).map((i) => ({
-        id: i.id, name: i.name_es || i.name, quantity: i.quantity ?? 1,
-      }))));
-  }, [currentEstate?.id]);
+  // Organization-wide tool stock (every property / warehouse of the org).
+  const loadInventory = useCallback(async () => {
+    try {
+      setInventory(await fetchOrgToolInventory());
+    } catch {
+      setInventory([]);
+    }
+  }, []);
+
+  useEffect(() => { loadInventory(); }, [loadInventory]);
 
   // Resume an open visit for this estate
   useEffect(() => {
@@ -165,23 +129,25 @@ export default function PlantOpsVisit() {
 
   useEffect(() => { if (shiftId) refreshTools(shiftId); }, [shiftId, refreshTools]);
 
-  const pendingTools = visitTools.filter((t) => !t.returned_at);
+  const pendingTools = visitTools.filter((t) => t.quantity_returned < t.quantity_assigned);
+  const pendingUnits = pendingTools.reduce((s, t) => s + (t.quantity_assigned - t.quantity_returned), 0);
 
   const counts = useMemo(() => {
     const c = { regar: 0, no_regar: 0, revisar: 0 };
-    rows.forEach((r) => { c[r.state]++; });
+    rows.forEach((r) => { c[r.care_state]++; });
     return c;
   }, [rows]);
 
-  const badgeFor = (r: QueueRow) => {
-    if (r.state === 'regar') return <Badge className="bg-primary text-primary-foreground">{l('WATER', 'REGAR')}</Badge>;
-    if (r.state === 'revisar') return <Badge variant="destructive">{l('REVIEW', 'REVISAR')}</Badge>;
-    return <Badge variant="outline">{l('DO NOT WATER', 'NO REGAR')}</Badge>;
+  const badgeFor = (r: CareQueueRow) => {
+    if (r.care_state === 'regar') return <Badge className="bg-primary text-primary-foreground">{l('WATER', 'REGAR', 'GIESSEN')}</Badge>;
+    if (r.care_state === 'revisar') return <Badge variant="destructive">{l('REVIEW', 'REVISAR', 'PRÜFEN')}</Badge>;
+    return <Badge variant="outline">{l('DO NOT WATER', 'NO REGAR', 'NICHT GIESSEN')}</Badge>;
   };
 
-  const isFutureDue = (r: QueueRow | null) => !!r && dueState(r.next_water_due) !== 'overdue' && dueState(r.next_water_due) !== 'today' && !!r.next_water_due;
+  const isFutureDue = (r: CareQueueRow | null) =>
+    !!r && !!r.next_water_due && dueState(r.next_water_due) !== 'overdue' && dueState(r.next_water_due) !== 'today';
 
-  const openDetail = (r: QueueRow, a: CareActionType) => {
+  const openDetail = (r: CareQueueRow, a: CareActionType) => {
     setDetail(r); setAction(a); setNote(''); setAmountNote(r.water_amount_note || '');
     setOverrideReason(''); setPhoto(null);
   };
@@ -193,10 +159,11 @@ export default function PlantOpsVisit() {
       const id = await startVisit(currentEstate.id);
       setShiftId(id);
       setPick({});
+      await loadInventory();
       setToolsOpen(true);
-      toast({ title: l('Visit started', 'Visita iniciada') });
+      toast({ title: l('Visit started', 'Visita iniciada', 'Besuch gestartet') });
     } catch (e: any) {
-      toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
+      toast({ title: l('Error', 'Error', 'Fehler'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
   };
 
@@ -206,27 +173,40 @@ export default function PlantOpsVisit() {
     setBusy('tools');
     try {
       if (items.length) await assignVisitTools(shiftId, items);
-      await refreshTools(shiftId);
+      await Promise.all([refreshTools(shiftId), loadInventory()]);
+      setPick({});
       setToolsOpen(false);
-      toast({ title: l('Tools registered', 'Herramientas registradas') });
+      toast({ title: l('Tools registered', 'Herramientas registradas', 'Werkzeuge erfasst') });
     } catch (e: any) {
-      toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
+      toast({ title: l('Error', 'Error', 'Fehler'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
   };
 
   const handleReturnTools = async () => {
     if (!shiftId) return;
     const items = pendingTools
-      .filter((t) => returnCond[t.id] !== undefined)
-      .map((t) => ({ assignment_id: t.id, condition: returnCond[t.id] || 'good' }));
-    if (!items.length) { setCheckoutOpen(false); return; }
+      .map((t) => ({
+        assignment_id: t.id,
+        quantity_returned_now: Number(returnQty[t.id] ?? 0),
+        condition: returnCond[t.id] || 'good',
+      }))
+      .filter((i) => i.quantity_returned_now > 0);
+    if (!items.length) {
+      toast({
+        title: l('Nothing to return', 'Nada por devolver', 'Nichts zurückzugeben'),
+        description: l('Enter a quantity greater than zero.', 'Indique una cantidad mayor que cero.', 'Geben Sie eine Menge größer als null ein.'),
+        variant: 'destructive',
+      });
+      return;
+    }
     setBusy('return');
     try {
       await returnVisitTools(shiftId, items);
-      await refreshTools(shiftId);
-      toast({ title: l('Tools returned', 'Herramientas devueltas') });
+      await Promise.all([refreshTools(shiftId), loadInventory()]);
+      setReturnQty({}); setReturnCond({});
+      toast({ title: l('Tools returned', 'Herramientas devueltas', 'Werkzeuge zurückgegeben') });
     } catch (e: any) {
-      toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
+      toast({ title: l('Error', 'Error', 'Fehler'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
   };
 
@@ -234,8 +214,8 @@ export default function PlantOpsVisit() {
     if (!detail) return;
     if (action === 'water' && isFutureDue(detail) && !overrideReason.trim()) {
       toast({
-        title: l('Too early to water', 'Aún es pronto para regar'),
-        description: `${l('Do not water before', 'No regar antes del')} ${formatDateEs(detail.next_water_due)}. ${l('A reason is required.', 'Se requiere un motivo.')}`,
+        title: l('Too early to water', 'Aún es pronto para regar', 'Noch zu früh zum Gießen'),
+        description: `${l('Do not water before', 'No regar antes del', 'Nicht gießen vor dem')} ${formatDateEs(detail.next_water_due)}. ${l('A reason is required.', 'Se requiere un motivo.', 'Ein Grund ist erforderlich.')}`,
         variant: 'destructive',
       });
       return;
@@ -243,9 +223,9 @@ export default function PlantOpsVisit() {
     setBusy('log');
     try {
       let photoPath: string | null = null;
-      if (photo && profile?.org_id) photoPath = await uploadPlacementPhoto(profile.org_id, detail.id, photo);
+      if (photo && profile?.org_id) photoPath = await uploadPlacementPhoto(profile.org_id, detail.placement_id, photo);
       const res = await logCare({
-        placementId: detail.id,
+        placementId: detail.placement_id,
         actionType: action,
         notes: note || null,
         amountNote: amountNote || null,
@@ -255,8 +235,8 @@ export default function PlantOpsVisit() {
       });
       if ((res as any)?.too_early && !overrideReason) {
         toast({
-          title: l('Too early to water', 'Aún es pronto para regar'),
-          description: l('Add a reason to confirm.', 'Agregue un motivo para confirmar.'),
+          title: l('Too early to water', 'Aún es pronto para regar', 'Noch zu früh zum Gießen'),
+          description: l('Add a reason to confirm.', 'Agregue un motivo para confirmar.', 'Fügen Sie einen Grund hinzu, um zu bestätigen.'),
           variant: 'destructive',
         });
         return;
@@ -264,20 +244,24 @@ export default function PlantOpsVisit() {
       const nextDue = (res as any)?.care?.next_water_due ?? null;
       if (action === 'water' && nextDue) {
         toast({
-          title: l('Plant watered', 'Planta regada'),
-          description: `${l('Do not water again before', 'No volver a regar antes del')} ${formatDateEs(nextDue)}.`,
+          title: l('Plant watered', 'Planta regada', 'Pflanze gegossen'),
+          description: `${l('Do not water again before', 'No volver a regar antes del', 'Nicht erneut gießen vor dem')} ${formatDateEs(nextDue)}.`,
         });
       } else {
-        toast({ title: l('Registered', 'Registrado') });
+        toast({ title: l('Registered', 'Registrado', 'Erfasst') });
       }
       setDetail(null);
       load();
     } catch (e: any) {
       const msg = String(e.message || '');
       if (/too early|demasiado pronto/i.test(msg) && !overrideReason) {
-        toast({ title: l('Too early to water', 'Aún es pronto para regar'), description: l('Add a reason to confirm.', 'Agregue un motivo para confirmar.'), variant: 'destructive' });
+        toast({
+          title: l('Too early to water', 'Aún es pronto para regar', 'Noch zu früh zum Gießen'),
+          description: l('Add a reason to confirm.', 'Agregue un motivo para confirmar.', 'Fügen Sie einen Grund hinzu, um zu bestätigen.'),
+          variant: 'destructive',
+        });
       } else {
-        toast({ title: l('Error', 'Error'), description: msg, variant: 'destructive' });
+        toast({ title: l('Error', 'Error', 'Fehler'), description: msg, variant: 'destructive' });
       }
     } finally { setBusy(null); }
   };
@@ -294,20 +278,24 @@ export default function PlantOpsVisit() {
         shiftId,
         currency: charge.currency,
       });
-      toast({ title: l('Charge added to draft invoice', 'Cargo agregado a la factura borrador') });
+      toast({ title: l('Charge added to draft invoice', 'Cargo agregado a la factura borrador', 'Position zur Rechnungsvorlage hinzugefügt') });
       setChargeOpen(false);
       setCharge({ description: '', quantity: '1', unitPrice: '', currency: charge.currency });
     } catch (e: any) {
-      toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
+      toast({ title: l('Error', 'Error', 'Fehler'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
   };
 
   const handleClose = async () => {
     if (!shiftId) return;
-    if (pendingTools.length > 0 && !toolsException.trim()) {
+    if (pendingUnits > 0 && !toolsException.trim()) {
       toast({
-        title: l('Tools pending', 'Herramientas pendientes'),
-        description: l('Return the tools of this visit or record an exception reason.', 'Devuelva las herramientas de esta visita o registre un motivo de excepción.'),
+        title: l('Tools pending', 'Herramientas pendientes', 'Offene Werkzeuge'),
+        description: l(
+          'Return the tools of this visit or record an exception reason.',
+          'Devuelva las herramientas de esta visita o registre un motivo de excepción.',
+          'Geben Sie die Werkzeuge dieses Besuchs zurück oder erfassen Sie einen Ausnahmegrund.',
+        ),
         variant: 'destructive',
       });
       return;
@@ -317,13 +305,14 @@ export default function PlantOpsVisit() {
       await closeVisit({
         shiftId,
         workDescription: closeNotes || null,
-        toolsExceptionReason: pendingTools.length > 0 ? toolsException : null,
+        toolsExceptionReason: pendingUnits > 0 ? toolsException : null,
       });
-      toast({ title: l('Visit closed', 'Visita cerrada') });
+      toast({ title: l('Visit closed', 'Visita cerrada', 'Besuch abgeschlossen') });
       setShiftId(null); setCloseOpen(false); setCloseNotes(''); setToolsException('');
       setVisitTools([]);
+      loadInventory();
     } catch (e: any) {
-      toast({ title: l('Error', 'Error'), description: e.message, variant: 'destructive' });
+      toast({ title: l('Error', 'Error', 'Fehler'), description: e.message, variant: 'destructive' });
     } finally { setBusy(null); }
   };
 
@@ -331,9 +320,9 @@ export default function PlantOpsVisit() {
     <ModernAppLayout>
       <main className="p-4 space-y-4 safe-area-content max-w-3xl mx-auto">
         <header className="space-y-1">
-          <h1 className="text-2xl font-semibold">{l('Visit', 'Visita')}</h1>
+          <h1 className="text-2xl font-semibold">{l('Visit', 'Visita', 'Besuch')}</h1>
           <p className="text-sm text-muted-foreground">
-            {currentEstate?.name} · {l('WATER', 'REGAR')}: {counts.regar} · {l('REVIEW', 'REVISAR')}: {counts.revisar} · {l('DO NOT WATER', 'NO REGAR')}: {counts.no_regar}
+            {currentEstate?.name} · {l('WATER', 'REGAR', 'GIESSEN')}: {counts.regar} · {l('REVIEW', 'REVISAR', 'PRÜFEN')}: {counts.revisar} · {l('DO NOT WATER', 'NO REGAR', 'NICHT GIESSEN')}: {counts.no_regar}
           </p>
         </header>
 
@@ -341,24 +330,24 @@ export default function PlantOpsVisit() {
           {shiftId ? (
             <>
               <Button variant="outline" onClick={() => setToolsOpen(true)}>
-                <Wrench className="h-4 w-4 mr-2" />{l('Tools', 'Herramientas')}
+                <Wrench className="h-4 w-4 mr-2" />{l('Tools', 'Herramientas', 'Werkzeuge')}
               </Button>
-              <Button variant="outline" onClick={() => { setReturnCond({}); setCheckoutOpen(true); }}>
+              <Button variant="outline" onClick={() => { setReturnQty({}); setReturnCond({}); setCheckoutOpen(true); }}>
                 <PackageCheck className="h-4 w-4 mr-2" />
-                {l('Check out tools', 'Devolver herramientas')}
-                {pendingTools.length > 0 && <Badge variant="destructive" className="ml-2">{pendingTools.length}</Badge>}
+                {l('Check out tools', 'Devolver herramientas', 'Werkzeuge zurückgeben')}
+                {pendingUnits > 0 && <Badge variant="destructive" className="ml-2">{pendingUnits}</Badge>}
               </Button>
               <Button variant="secondary" onClick={() => setChargeOpen(true)}>
-                <Receipt className="h-4 w-4 mr-2" />{l('Charge', 'Cargo')}
+                <Receipt className="h-4 w-4 mr-2" />{l('Charge', 'Cargo', 'Position')}
               </Button>
               <Button onClick={() => setCloseOpen(true)}>
-                <Square className="h-4 w-4 mr-2" />{l('Close visit', 'Cerrar visita')}
+                <Square className="h-4 w-4 mr-2" />{l('Close visit', 'Cerrar visita', 'Besuch abschließen')}
               </Button>
             </>
           ) : (
             <Button className="flex-1" onClick={handleStart} disabled={busy === 'visit' || !currentEstate}>
               {busy === 'visit' ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Play className="h-4 w-4 mr-2" />}
-              {l('Start visit', 'Iniciar visita')}
+              {l('Start visit', 'Iniciar visita', 'Besuch starten')}
             </Button>
           )}
         </div>
@@ -367,51 +356,69 @@ export default function PlantOpsVisit() {
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : rows.length === 0 ? (
           <Card><CardContent className="py-10 text-center text-muted-foreground">
-            {l('No installed plants on this property.', 'No hay plantas instaladas en esta propiedad.')}
+            {l('No installed plants on this property.', 'No hay plantas instaladas en esta propiedad.', 'Keine installierten Pflanzen auf diesem Objekt.')}
           </CardContent></Card>
         ) : (
           <div className="space-y-3">
             {rows.map((r) => (
-              <Card key={r.id}>
+              <Card key={r.placement_id}>
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="font-medium truncate">{r.plant_name}</p>
                       <p className="text-sm text-muted-foreground truncate">
-                        {[r.zone_name, r.spot_label].filter(Boolean).join(' · ') || l('No spot', 'Sin punto')}
+                        {[r.zone_name, r.spot_label].filter(Boolean).join(' · ') || l('No spot', 'Sin punto', 'Kein Standort')}
                       </p>
-                      {r.state === 'no_regar' && (
+                      {r.care_state === 'no_regar' && (
                         <p className="text-sm font-semibold text-amber-700 dark:text-amber-400 mt-1">
-                          {l('DO NOT WATER BEFORE', 'NO REGAR ANTES DEL')} {formatDateEs(r.next_water_due)}
+                          {l('DO NOT WATER BEFORE', 'NO REGAR ANTES DEL', 'NICHT GIESSEN VOR DEM')} {formatDateEs(r.next_water_due)}
+                        </p>
+                      )}
+                      {r.effective_days != null && (
+                        <p className="text-sm text-muted-foreground mt-1">
+                          {l('Every', 'Cada', 'Alle')} {r.effective_days} {l('days', 'días', 'Tage')}
                         </p>
                       )}
                       {r.water_amount_note && (
                         <p className="text-sm text-muted-foreground mt-1">💧 {r.water_amount_note}</p>
                       )}
+                      {r.water_method && (
+                        <p className="text-sm text-muted-foreground">{l('Method', 'Método', 'Methode')}: {r.water_method}</p>
+                      )}
+                      {r.open_incident && (
+                        <p className="text-sm font-semibold text-destructive mt-1">
+                          {l('Open issue', 'Incidencia abierta', 'Offener Vorfall')}
+                        </p>
+                      )}
+                      {r.replacement_pending && (
+                        <p className="text-sm text-destructive">
+                          {l('Replacement pending', 'Reemplazo pendiente', 'Ersatz ausstehend')}
+                        </p>
+                      )}
                       {r.do_not_do && (
-                        <p className="text-sm text-destructive mt-1">{l('Do not', 'No hacer')}: {r.do_not_do}</p>
+                        <p className="text-sm text-destructive mt-1">{l('Do not', 'No hacer', 'Nicht tun')}: {r.do_not_do}</p>
                       )}
                     </div>
                     <div className="flex flex-col items-end gap-2">
                       {badgeFor(r)}
-                      <Button size="icon" variant="ghost" aria-label={l('Care plan', 'Plan de cuidado')}
-                        onClick={() => navigate(`/plantops/cuidados/${r.id}`)}>
+                      <Button size="icon" variant="ghost" aria-label={l('Care plan', 'Plan de cuidado', 'Pflegeplan')}
+                        onClick={() => navigate(`/plantops/cuidados/${r.placement_id}`)}>
                         <Settings2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                     <Button size="sm" onClick={() => openDetail(r, 'water')}>
-                      <Droplets className="h-4 w-4 mr-1" />{l('Watered', 'Regada')}
+                      <Droplets className="h-4 w-4 mr-1" />{l('Watered', 'Regada', 'Gegossen')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => openDetail(r, 'skip_water')}>
-                      <CheckCircle2 className="h-4 w-4 mr-1" />{l('No water', 'Sin agua')}
+                      <CheckCircle2 className="h-4 w-4 mr-1" />{l('No water', 'Sin agua', 'Kein Wasser')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => openDetail(r, 'clean')}>
-                      <Brush className="h-4 w-4 mr-1" />{l('Cleaned', 'Limpieza')}
+                      <Brush className="h-4 w-4 mr-1" />{l('Cleaned', 'Limpieza', 'Gereinigt')}
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => openDetail(r, 'issue')}>
-                      <AlertTriangle className="h-4 w-4 mr-1" />{l('Issue', 'Problema')}
+                      <AlertTriangle className="h-4 w-4 mr-1" />{l('Issue', 'Problema', 'Problem')}
                     </Button>
                   </div>
                 </CardContent>
@@ -426,132 +433,160 @@ export default function PlantOpsVisit() {
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>{detail?.plant_name}</DialogTitle>
-            <DialogDescription>{l('Register the action performed.', 'Registre la acción realizada.')}</DialogDescription>
+            <DialogDescription>{l('Register the action performed.', 'Registre la acción realizada.', 'Erfassen Sie die durchgeführte Maßnahme.')}</DialogDescription>
           </DialogHeader>
           {action === 'water' && isFutureDue(detail) && (
             <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm">
               <p className="font-semibold text-destructive">
-                {l('DO NOT WATER BEFORE', 'NO REGAR ANTES DEL')} {formatDateEs(detail?.next_water_due)}
+                {l('DO NOT WATER BEFORE', 'NO REGAR ANTES DEL', 'NICHT GIESSEN VOR DEM')} {formatDateEs(detail?.next_water_due)}
               </p>
               <p className="text-muted-foreground">
-                {l('Watering earlier requires a reason, saved in the care log.', 'Regar antes requiere un motivo, que queda guardado en el historial.')}
+                {l('Watering earlier requires a reason, saved in the care log.', 'Regar antes requiere un motivo, que queda guardado en el historial.', 'Früheres Gießen erfordert einen Grund, der im Verlauf gespeichert wird.')}
               </p>
             </div>
           )}
           <div className="space-y-3">
             <div>
-              <Label>{l('Action', 'Acción')}</Label>
+              <Label>{l('Action', 'Acción', 'Maßnahme')}</Label>
               <Select value={action} onValueChange={(v) => setAction(v as CareActionType)}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="water">{l('Watered', 'Regada')}</SelectItem>
-                  <SelectItem value="skip_water">{l('No water needed', 'No necesitaba agua')}</SelectItem>
-                  <SelectItem value="clean">{l('Cleaned', 'Limpieza')}</SelectItem>
-                  <SelectItem value="prune">{l('Pruned', 'Poda')}</SelectItem>
-                  <SelectItem value="fertilize">{l('Fertilized', 'Abonada')}</SelectItem>
-                  <SelectItem value="rotate">{l('Rotated', 'Rotada')}</SelectItem>
-                  <SelectItem value="inspect">{l('Inspected', 'Revisada')}</SelectItem>
-                  <SelectItem value="issue">{l('Issue', 'Problema')}</SelectItem>
-                  <SelectItem value="replace_requested">{l('Replacement requested', 'Reemplazo solicitado')}</SelectItem>
+                  <SelectItem value="water">{l('Watered', 'Regada', 'Gegossen')}</SelectItem>
+                  <SelectItem value="skip_water">{l('No water needed', 'No necesitaba agua', 'Kein Wasser nötig')}</SelectItem>
+                  <SelectItem value="clean">{l('Cleaned', 'Limpieza', 'Gereinigt')}</SelectItem>
+                  <SelectItem value="prune">{l('Pruned', 'Poda', 'Beschnitten')}</SelectItem>
+                  <SelectItem value="fertilize">{l('Fertilized', 'Abonada', 'Gedüngt')}</SelectItem>
+                  <SelectItem value="rotate">{l('Rotated', 'Rotada', 'Gedreht')}</SelectItem>
+                  <SelectItem value="inspect">{l('Inspected', 'Revisada', 'Geprüft')}</SelectItem>
+                  <SelectItem value="issue">{l('Issue', 'Problema', 'Problem')}</SelectItem>
+                  <SelectItem value="replace_requested">{l('Replacement requested', 'Reemplazo solicitado', 'Ersatz angefordert')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             {action === 'water' && (
               <div>
-                <Label>{l('Amount', 'Cantidad')}</Label>
-                <Input value={amountNote} onChange={(e) => setAmountNote(e.target.value)} placeholder={l('e.g. 1 liter', 'ej. 1 litro')} />
+                <Label>{l('Amount', 'Cantidad', 'Menge')}</Label>
+                <Input value={amountNote} onChange={(e) => setAmountNote(e.target.value)} placeholder={l('e.g. 1 liter', 'ej. 1 litro', 'z. B. 1 Liter')} />
               </div>
             )}
             <div>
-              <Label>{l('Notes', 'Notas')}</Label>
+              <Label>{l('Notes', 'Notas', 'Notizen')}</Label>
               <Textarea value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
             </div>
             <div>
-              <Label className="flex items-center gap-2"><Camera className="h-4 w-4" />{l('Photo (optional)', 'Foto (opcional)')}</Label>
+              <Label className="flex items-center gap-2"><Camera className="h-4 w-4" />{l('Photo (optional)', 'Foto (opcional)', 'Foto (optional)')}</Label>
               <Input type="file" accept="image/*" capture="environment"
                 onChange={(e) => setPhoto(e.target.files?.[0] ?? null)} />
             </div>
             <div>
-              <Label>{l('Reason (if out of schedule)', 'Motivo (si está fuera de programa)')}</Label>
+              <Label>{l('Reason (if out of schedule)', 'Motivo (si está fuera de programa)', 'Grund (bei Abweichung vom Plan)')}</Label>
               <Input value={overrideReason} onChange={(e) => setOverrideReason(e.target.value)} />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDetail(null)}>{l('Cancel', 'Cancelar')}</Button>
+            <Button variant="outline" onClick={() => setDetail(null)}>{l('Cancel', 'Cancelar', 'Abbrechen')}</Button>
             <Button onClick={handleLog} disabled={busy === 'log'}>
-              {busy === 'log' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Save', 'Guardar')}
+              {busy === 'log' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Save', 'Guardar', 'Speichern')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Tool check-in */}
+      {/* Tool check-in — organization-wide stock */}
       <Dialog open={toolsOpen} onOpenChange={setToolsOpen}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{l('What tools are you bringing?', '¿Qué herramientas lleva?')}</DialogTitle>
+            <DialogTitle>{l('What tools are you bringing?', '¿Qué herramientas lleva?', 'Welche Werkzeuge nehmen Sie mit?')}</DialogTitle>
             <DialogDescription>
-              {l('They stay linked to this visit until you check them out.', 'Quedan ligadas a esta visita hasta que las devuelva.')}
+              {l('They stay linked to this visit until you check them out.', 'Quedan ligadas a esta visita hasta que las devuelva.', 'Sie bleiben diesem Besuch zugeordnet, bis Sie sie zurückgeben.')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
             {inventory.length === 0 && (
-              <p className="text-sm text-muted-foreground">{l('No inventory registered for this property.', 'No hay inventario registrado en esta propiedad.')}</p>
+              <p className="text-sm text-muted-foreground">
+                {l('No tools registered in your organization.', 'No hay herramientas registradas en su organización.', 'In Ihrer Organisation sind keine Werkzeuge erfasst.')}
+              </p>
             )}
             {inventory.map((i) => (
               <div key={i.id} className="flex items-center justify-between gap-3 border-b border-border/50 pb-2">
-                <span className="text-sm">{i.name}</span>
-                <Input type="number" min="0" max={i.quantity} className="w-20"
+                <div className="min-w-0">
+                  <p className="text-sm truncate">{i.name}</p>
+                  <p className="text-sm text-muted-foreground truncate">
+                    {i.estate_name} · {l('Available', 'Disponible', 'Verfügbar')}: {i.available} / {i.quantity}
+                    {i.assigned_open > 0 && ` · ${l('Out', 'Fuera', 'Ausgegeben')}: ${i.assigned_open}`}
+                  </p>
+                </div>
+                <Input type="number" min="0" max={i.available} className="w-20"
+                  aria-label={i.name}
                   value={pick[i.id] ?? ''}
                   onChange={(e) => setPick({ ...pick, [i.id]: Number(e.target.value) || 0 })} />
               </div>
             ))}
             {visitTools.length > 0 && (
               <div className="pt-2 text-sm text-muted-foreground">
-                {l('Already on this visit', 'Ya en esta visita')}: {visitTools.map((t) => `${t.name}×${t.quantity_assigned}`).join(', ')}
+                {l('Already on this visit', 'Ya en esta visita', 'Bereits bei diesem Besuch')}: {visitTools.map((t) => `${t.name}×${t.quantity_assigned}`).join(', ')}
               </div>
             )}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setToolsOpen(false)}>{l('Skip', 'Omitir')}</Button>
+            <Button variant="outline" onClick={() => setToolsOpen(false)}>{l('Skip', 'Omitir', 'Überspringen')}</Button>
             <Button onClick={handleAssignTools} disabled={busy === 'tools'}>
-              {busy === 'tools' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Confirm', 'Confirmar')}
+              {busy === 'tools' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Confirm', 'Confirmar', 'Bestätigen')}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* Tool checkout */}
+      {/* Tool checkout — partial returns */}
       <Dialog open={checkoutOpen} onOpenChange={setCheckoutOpen}>
         <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>{l('Check out tools', 'Devolver herramientas')}</DialogTitle>
+            <DialogTitle>{l('Check out tools', 'Devolver herramientas', 'Werkzeuge zurückgeben')}</DialogTitle>
             <DialogDescription>
-              {l('Only the tools taken out on this visit.', 'Solo las herramientas sacadas en esta visita.')}
+              {l('Only the tools taken out on this visit.', 'Solo las herramientas sacadas en esta visita.', 'Nur die bei diesem Besuch entnommenen Werkzeuge.')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             {pendingTools.length === 0 && (
-              <p className="text-sm text-muted-foreground">{l('Nothing pending.', 'Nada pendiente.')}</p>
+              <p className="text-sm text-muted-foreground">{l('Nothing pending.', 'Nada pendiente.', 'Nichts offen.')}</p>
             )}
-            {pendingTools.map((t) => (
-              <div key={t.id} className="space-y-1 border-b border-border/50 pb-2">
-                <p className="text-sm font-medium">{t.name} × {t.quantity_assigned}</p>
-                <Select value={returnCond[t.id] ?? ''} onValueChange={(v) => setReturnCond({ ...returnCond, [t.id]: v })}>
-                  <SelectTrigger><SelectValue placeholder={l('Condition on return', 'Condición al devolver')} /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="good">{l('Good', 'Buena')}</SelectItem>
-                    <SelectItem value="fair">{l('Fair', 'Regular')}</SelectItem>
-                    <SelectItem value="needs_repair">{l('Needs repair', 'Requiere reparación')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            ))}
+            {pendingTools.map((t) => {
+              const pending = t.quantity_assigned - t.quantity_returned;
+              return (
+                <div key={t.id} className="space-y-2 border-b border-border/50 pb-3">
+                  <p className="text-sm font-medium">{t.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {l('Assigned', 'Asignadas', 'Ausgegeben')}: {t.quantity_assigned} ·{' '}
+                    {l('Returned', 'Devueltas', 'Zurückgegeben')}: {t.quantity_returned} ·{' '}
+                    {l('Pending', 'Pendientes', 'Offen')}: {pending}
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-sm">{l('Return now', 'Devolver ahora', 'Jetzt zurückgeben')}</Label>
+                      <Input type="number" min="0" max={pending}
+                        value={returnQty[t.id] ?? ''}
+                        onChange={(e) => setReturnQty({ ...returnQty, [t.id]: Number(e.target.value) || 0 })} />
+                    </div>
+                    <div>
+                      <Label className="text-sm">{l('Condition', 'Condición', 'Zustand')}</Label>
+                      <Select value={returnCond[t.id] ?? ''} onValueChange={(v) => setReturnCond({ ...returnCond, [t.id]: v })}>
+                        <SelectTrigger><SelectValue placeholder={l('Condition on return', 'Condición al devolver', 'Zustand bei Rückgabe')} /></SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="good">{l('Good', 'Buena', 'Gut')}</SelectItem>
+                          <SelectItem value="fair">{l('Fair', 'Regular', 'Mittel')}</SelectItem>
+                          <SelectItem value="needs_repair">{l('Needs repair', 'Requiere reparación', 'Reparatur nötig')}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCheckoutOpen(false)}>{l('Close', 'Cerrar')}</Button>
+            <Button variant="outline" onClick={() => setCheckoutOpen(false)}>{l('Close', 'Cerrar', 'Schließen')}</Button>
             <Button onClick={handleReturnTools} disabled={busy === 'return' || pendingTools.length === 0}>
-              {busy === 'return' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Confirm return', 'Confirmar devolución')}
+              {busy === 'return' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Confirm return', 'Confirmar devolución', 'Rückgabe bestätigen')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -561,31 +596,31 @@ export default function PlantOpsVisit() {
       <Dialog open={chargeOpen} onOpenChange={setChargeOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{l('Extra charge', 'Cargo extra')}</DialogTitle>
+            <DialogTitle>{l('Extra charge', 'Cargo extra', 'Zusatzposition')}</DialogTitle>
             <DialogDescription>
-              {l('Adds a line to the client draft invoice.', 'Agrega una línea a la factura borrador del cliente.')}
+              {l('Adds a line to the client draft invoice.', 'Agrega una línea a la factura borrador del cliente.', 'Fügt der Rechnungsvorlage des Kunden eine Zeile hinzu.')}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
             <div>
-              <Label>{l('Client', 'Cliente')}</Label>
-              <Input readOnly value={estateClientName || l('No client assigned to this property', 'Esta propiedad no tiene cliente asignado')} />
+              <Label>{l('Client', 'Cliente', 'Kunde')}</Label>
+              <Input readOnly value={estateClientName || l('No client assigned to this property', 'Esta propiedad no tiene cliente asignado', 'Diesem Objekt ist kein Kunde zugeordnet')} />
             </div>
             <div>
-              <Label>{l('Description', 'Descripción')}</Label>
+              <Label>{l('Description', 'Descripción', 'Beschreibung')}</Label>
               <Input value={charge.description} onChange={(e) => setCharge({ ...charge, description: e.target.value })} />
             </div>
             <div className="grid grid-cols-3 gap-2">
               <div>
-                <Label>{l('Qty', 'Cant.')}</Label>
+                <Label>{l('Qty', 'Cant.', 'Menge')}</Label>
                 <Input type="number" min="1" value={charge.quantity} onChange={(e) => setCharge({ ...charge, quantity: e.target.value })} />
               </div>
               <div>
-                <Label>{l('Unit price', 'Precio')}</Label>
+                <Label>{l('Unit price', 'Precio', 'Preis')}</Label>
                 <Input type="number" min="0" value={charge.unitPrice} onChange={(e) => setCharge({ ...charge, unitPrice: e.target.value })} />
               </div>
               <div>
-                <Label>{l('Currency', 'Moneda')}</Label>
+                <Label>{l('Currency', 'Moneda', 'Währung')}</Label>
                 <Select value={charge.currency} onValueChange={(v) => setCharge({ ...charge, currency: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
@@ -597,9 +632,9 @@ export default function PlantOpsVisit() {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setChargeOpen(false)}>{l('Cancel', 'Cancelar')}</Button>
+            <Button variant="outline" onClick={() => setChargeOpen(false)}>{l('Cancel', 'Cancelar', 'Abbrechen')}</Button>
             <Button onClick={handleCharge} disabled={busy === 'charge' || !estateClient}>
-              {busy === 'charge' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Add', 'Agregar')}
+              {busy === 'charge' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Add', 'Agregar', 'Hinzufügen')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -609,23 +644,26 @@ export default function PlantOpsVisit() {
       <Dialog open={closeOpen} onOpenChange={setCloseOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>{l('Close visit', 'Cerrar visita')}</DialogTitle>
-            <DialogDescription>{l('Summary of the work done.', 'Resumen del trabajo realizado.')}</DialogDescription>
+            <DialogTitle>{l('Close visit', 'Cerrar visita', 'Besuch abschließen')}</DialogTitle>
+            <DialogDescription>{l('Summary of the work done.', 'Resumen del trabajo realizado.', 'Zusammenfassung der Arbeiten.')}</DialogDescription>
           </DialogHeader>
-          {pendingTools.length > 0 && (
+          {pendingUnits > 0 && (
             <div className="rounded-lg border border-destructive/40 bg-destructive/10 p-3 space-y-2">
               <p className="text-sm font-semibold text-destructive">
-                {l('Tools not returned', 'Herramientas sin devolver')}: {pendingTools.map((t) => t.name).join(', ')}
+                {l('Tools not returned', 'Herramientas sin devolver', 'Nicht zurückgegebene Werkzeuge')}:{' '}
+                {pendingTools.map((t) => `${t.name} (${t.quantity_assigned - t.quantity_returned})`).join(', ')}
               </p>
-              <Label className="text-sm">{l('Exception reason (required to close anyway)', 'Motivo de excepción (requerido para cerrar así)')}</Label>
+              <Label className="text-sm">
+                {l('Exception reason (required to close anyway)', 'Motivo de excepción (requerido para cerrar así)', 'Ausnahmegrund (zum Abschließen erforderlich)')}
+              </Label>
               <Input value={toolsException} onChange={(e) => setToolsException(e.target.value)} />
             </div>
           )}
           <Textarea value={closeNotes} onChange={(e) => setCloseNotes(e.target.value)} rows={4} />
           <DialogFooter>
-            <Button variant="outline" onClick={() => setCloseOpen(false)}>{l('Cancel', 'Cancelar')}</Button>
+            <Button variant="outline" onClick={() => setCloseOpen(false)}>{l('Cancel', 'Cancelar', 'Abbrechen')}</Button>
             <Button onClick={handleClose} disabled={busy === 'close'}>
-              {busy === 'close' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Close', 'Cerrar')}
+              {busy === 'close' && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}{l('Close', 'Cerrar', 'Abschließen')}
             </Button>
           </DialogFooter>
         </DialogContent>

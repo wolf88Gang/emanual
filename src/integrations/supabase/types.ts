@@ -3091,6 +3091,7 @@ export type Database = {
           inventory_item_id: string
           notes: string | null
           quantity_assigned: number
+          quantity_returned: number
           return_condition:
             | Database["public"]["Enums"]["inventory_condition"]
             | null
@@ -3107,6 +3108,7 @@ export type Database = {
           inventory_item_id: string
           notes?: string | null
           quantity_assigned?: number
+          quantity_returned?: number
           return_condition?:
             | Database["public"]["Enums"]["inventory_condition"]
             | null
@@ -3123,6 +3125,7 @@ export type Database = {
           inventory_item_id?: string
           notes?: string | null
           quantity_assigned?: number
+          quantity_returned?: number
           return_condition?:
             | Database["public"]["Enums"]["inventory_condition"]
             | null
@@ -3907,6 +3910,7 @@ export type Database = {
         Args: { p_message_id: string }
         Returns: undefined
       }
+      plantops_org_tool_inventory: { Args: never; Returns: Json }
       plantops_property_billing: {
         Args: { p_estate_id: string }
         Returns: Json
