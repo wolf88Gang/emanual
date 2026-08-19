@@ -323,21 +323,41 @@ export default function PlantOps() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { label: l('Registered units', 'Unidades registradas', 'Registrierte Einheiten'), value: stats.total },
-            { label: l('On site', 'En sitio', 'Vor Ort'), value: stats.installed },
-            { label: l('Reserved', 'Reservadas', 'Reserviert'), value: stats.reserved },
-            { label: l('In recovery', 'En recuperación', 'In Erholung'), value: stats.recovery },
-          ].map((s) => (
-            <Card key={s.label}>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-                <p className="text-2xl font-bold">{s.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {navModules.length > 0 && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {navModules.map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                onClick={() => navigate(m.navRoute!)}
+                className="text-left rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors"
+              >
+                <m.icon className="h-5 w-5 text-primary" />
+                <p className="text-sm font-medium mt-2">{moduleLabel(m.key, language)}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{moduleDescription(m.key, language)}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {isEnabled('plants_pots') && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: l('Registered units', 'Unidades registradas', 'Registrierte Einheiten'), value: stats.total },
+              { label: l('On site', 'En sitio', 'Vor Ort'), value: stats.installed },
+              { label: l('Reserved', 'Reservadas', 'Reserviert'), value: stats.reserved },
+              { label: l('In recovery', 'En recuperación', 'In Erholung'), value: stats.recovery },
+            ].map((s) => (
+              <Card key={s.label}>
+                <CardContent className="p-4">
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-2xl font-bold">{s.value}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
 
         <Card>
           <CardHeader className="pb-2 flex-row items-center justify-between">
