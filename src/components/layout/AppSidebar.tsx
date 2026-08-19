@@ -144,8 +144,9 @@ export function AppSidebar() {
   // Module gating: canonical module keys own routes (see src/lib/homeGuideModules.ts).
   // Legacy path-keyed overrides in organizations.modules_json are still honoured.
   const moduleEnabled = (path: string) => {
-    const owner = moduleForRoute(path);
+    const owner = isPlantRental ? moduleForRoute(path) : null;
     if (owner && !canUse(owner.key)) return false;
+
     if (!modules) return true;
     const key = path.replace(/^\//, '');
     const v = modules[path] ?? modules[key];
