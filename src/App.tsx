@@ -239,6 +239,8 @@ function AppRoutes() {
       <Route path="/plantops/clientes" element={<EstateRoute><AdminRoute><PlantOpsClients /></AdminRoute></EstateRoute>} />
       <Route path="/plantops/clientes/:clientId" element={<EstateRoute><AdminRoute><PlantOpsClientDetail /></AdminRoute></EstateRoute>} />
       <Route path="/plantops/settings" element={<EstateRoute><AdminRoute><PlantOpsSettings /></AdminRoute></EstateRoute>} />
+      <Route path="/plantops/reminders" element={<EstateRoute><AdminRoute><PlantOpsReminders /></AdminRoute></EstateRoute>} />
+
       <Route path="/setup-wizard" element={<EstateRoute><SetupWizard /></EstateRoute>} />
       <Route path="/requests" element={<EstateRoute><FeatureRequests /></EstateRoute>} />
       <Route path="/my-jobs" element={<EstateRoute><MyJobPostings /></EstateRoute>} />
