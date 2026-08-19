@@ -44,6 +44,8 @@ export function AppSidebar() {
   const { language, tl } = useLanguage();
   const [orgType, setOrgType] = useState<string>('residential');
   const [modules, setModules] = useState<Record<string, boolean> | null>(null);
+  const { navModules, canUse } = useModules();
+
 
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
