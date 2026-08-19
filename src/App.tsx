@@ -51,6 +51,8 @@ const PlantOpsNewClient = lazy(() => import("./pages/PlantOpsNewClient"));
 const PlantOpsProperty = lazy(() => import("./pages/PlantOpsProperty"));
 const PlantOpsSettings = lazy(() => import("./pages/PlantOpsSettings"));
 const PlantOpsClients = lazy(() => import("./pages/PlantOpsClients"));
+const PlantOpsReminders = lazy(() => import("./pages/PlantOpsReminders"));
+
 const PlantOpsClientDetail = lazy(() => import("./pages/PlantOpsClientDetail"));
 const Features = lazy(() => import("./pages/Features"));
 const SetupWizard = lazy(() => import("./pages/SetupWizard"));
