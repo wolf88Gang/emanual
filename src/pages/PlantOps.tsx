@@ -25,12 +25,15 @@ import {
   uploadPlacementPhoto, type PlantOpsAssetRow,
 } from '@/lib/plantops';
 import { fetchIncompleteSetups } from '@/lib/plantopsProperty';
+import { useModules } from '@/hooks/useModules';
+import { moduleLabel, moduleDescription } from '@/lib/homeGuideModules';
 
 export default function PlantOps() {
-  const { tl } = useLanguage();
+  const { tl, language } = useLanguage();
   const navigate = useNavigate();
   const { estates } = useEstate();
   const { orgId, inventory, placements, contracts, loading, error, refetch } = usePlantOpsData();
+  const { navModules, isEnabled } = useModules();
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
   const [search, setSearch] = useState('');
@@ -323,21 +326,41 @@ export default function PlantOps() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {[
-            { label: l('Registered units', 'Unidades registradas', 'Registrierte Einheiten'), value: stats.total },
-            { label: l('On site', 'En sitio', 'Vor Ort'), value: stats.installed },
-            { label: l('Reserved', 'Reservadas', 'Reserviert'), value: stats.reserved },
-            { label: l('In recovery', 'En recuperación', 'In Erholung'), value: stats.recovery },
-          ].map((s) => (
-            <Card key={s.label}>
-              <CardContent className="p-4">
-                <p className="text-xs text-muted-foreground">{s.label}</p>
-                <p className="text-2xl font-bold">{s.value}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+        {navModules.length > 0 && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {navModules.map((m) => (
+              <button
+                key={m.key}
+                type="button"
+                onClick={() => navigate(m.navRoute!)}
+                className="text-left rounded-lg border border-border p-4 hover:bg-muted/50 transition-colors"
+              >
+                <m.icon className="h-5 w-5 text-primary" />
+                <p className="text-sm font-medium mt-2">{moduleLabel(m.key, language)}</p>
+                <p className="text-xs text-muted-foreground line-clamp-2">{moduleDescription(m.key, language)}</p>
+              </button>
+            ))}
+          </div>
+        )}
+
+        {isEnabled('plants_pots') && (
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[
+              { label: l('Registered units', 'Unidades registradas', 'Registrierte Einheiten'), value: stats.total },
+              { label: l('On site', 'En sitio', 'Vor Ort'), value: stats.installed },
+              { label: l('Reserved', 'Reservadas', 'Reserviert'), value: stats.reserved },
+              { label: l('In recovery', 'En recuperación', 'In Erholung'), value: stats.recovery },
+            ].map((s) => (
+              <Card key={s.label}>
+                <CardContent className="p-4">
+                  <p className="text-xs text-muted-foreground">{s.label}</p>
+                  <p className="text-2xl font-bold">{s.value}</p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
 
         <Card>
           <CardHeader className="pb-2 flex-row items-center justify-between">
@@ -401,12 +424,17 @@ export default function PlantOps() {
         {loading ? (
           <div className="flex justify-center py-16"><Loader2 className="h-6 w-6 animate-spin text-primary" /></div>
         ) : (
-          <Tabs defaultValue="plants">
+          <Tabs defaultValue={isEnabled('plants_pots') ? 'plants' : 'history'}>
             <TabsList>
-              <TabsTrigger value="plants"><Leaf className="h-4 w-4 mr-1" />{l('Plants', 'Plantas', 'Pflanzen')}</TabsTrigger>
-              <TabsTrigger value="pots">{l('Pots', 'Macetas', 'Töpfe')}</TabsTrigger>
+              {isEnabled('plants_pots') && (
+                <>
+                  <TabsTrigger value="plants"><Leaf className="h-4 w-4 mr-1" />{l('Plants', 'Plantas', 'Pflanzen')}</TabsTrigger>
+                  <TabsTrigger value="pots">{l('Pots', 'Macetas', 'Töpfe')}</TabsTrigger>
+                </>
+              )}
               <TabsTrigger value="history">{l('History', 'Historial', 'Verlauf')}</TabsTrigger>
             </TabsList>
+
 
             <TabsContent value="plants" className="mt-4">
               <Card><CardContent className="p-0 overflow-x-auto">{renderRows(plants)}</CardContent></Card>

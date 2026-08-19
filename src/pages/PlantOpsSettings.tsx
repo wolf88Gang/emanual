@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Loader2, Save, Settings as SettingsIcon } from 'lucide-react';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,27 +6,35 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useOrgType } from '@/hooks/usePlantOps';
+import { useModules } from '@/hooks/useModules';
 import {
   fetchCareSettings,
   saveCareSettings,
-  fetchModules,
-  saveModules,
   POT_MATERIALS,
   POT_MATERIAL_LABELS,
   type PotMaterial,
   type CareSettings,
 } from '@/lib/plantopsCare';
 
-import { CAPABILITY_KEYS, CAPABILITY_LABELS, normalizeOrgModules } from '@/lib/plantopsClients';
+import {
+  MODULE_KEYS,
+  MODULES,
+  PRESETS,
+  moduleDescription,
+  moduleLabel,
+  resolveModules,
+  type ModuleKey,
+  type PresetKey,
+} from '@/lib/homeGuideModules';
 
-/** Canonical organization-level module keys (they gate nav, dashboard, routes and wizard). */
-const MODULE_KEYS = CAPABILITY_KEYS;
 const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
 const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
 const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
+
 
 /**
  * PlantOps configuration. Every agronomic adjustment factor lives here — nothing
@@ -36,11 +44,12 @@ export default function PlantOpsSettings() {
   const { language } = useLanguage();
   const { orgId } = useOrgType();
   const { toast } = useToast();
+  const { modules: savedModules, saveModules, loading: modulesLoading } = useModules();
   const l = (en: string, es: string) => (language === 'es' ? es : en);
 
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
-  const [modules, setModules] = useState<Record<string, boolean>>({});
+  const [modules, setModules] = useState<Record<ModuleKey, boolean> | null>(null);
   const [settings, setSettings] = useState<CareSettings>({});
 
   useEffect(() => {
@@ -48,12 +57,14 @@ export default function PlantOpsSettings() {
   }, [language]);
 
   useEffect(() => {
+    if (!modulesLoading) setModules((prev) => prev ?? savedModules);
+  }, [modulesLoading, savedModules]);
+
+  useEffect(() => {
     if (!orgId) return;
     (async () => {
       try {
-        const [m, s] = await Promise.all([fetchModules(orgId), fetchCareSettings(orgId)]);
-        setModules(normalizeOrgModules(m));
-        setSettings(s);
+        setSettings(await fetchCareSettings(orgId));
       } catch (e: any) {
         toast({ title: l('Could not load settings', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
       } finally {
@@ -61,6 +72,32 @@ export default function PlantOpsSettings() {
       }
     })();
   }, [orgId]);
+
+  const effective = useMemo(() => resolveModules(modules ?? {}), [modules]);
+
+  /** Which preset the current selection matches (for highlighting). */
+  const activePreset: PresetKey = useMemo(() => {
+    for (const p of PRESETS) {
+      if (!p.modules) continue;
+      if (MODULE_KEYS.every((k) => !!p.modules![k] === !!effective[k])) return p.key;
+    }
+    return 'custom';
+  }, [effective]);
+
+  const toggleModule = (key: ModuleKey, value: boolean) => {
+    setModules((prev) => {
+      const base = { ...(prev ?? savedModules) };
+      base[key] = value;
+      // Turning a module off also turns off whatever depends on it.
+      return resolveModules(base);
+    });
+  };
+
+  const applyPreset = (key: PresetKey) => {
+    const p = PRESETS.find((x) => x.key === key);
+    if (!p?.modules) return;
+    setModules(resolveModules(p.modules));
+  };
 
   const setFactor = (group: keyof CareSettings, key: string, value: string) => {
     setSettings((prev) => {
@@ -82,7 +119,7 @@ export default function PlantOpsSettings() {
     if (!orgId) return;
     setSaving(true);
     try {
-      await Promise.all([saveModules(orgId, modules), saveCareSettings(orgId, settings)]);
+      await Promise.all([saveModules(effective), saveCareSettings(orgId, settings)]);
       toast({ title: l('Settings saved', 'Configuración guardada') });
     } catch (e: any) {
       toast({ title: l('Could not save', 'No se pudo guardar'), description: e.message, variant: 'destructive' });
@@ -90,6 +127,7 @@ export default function PlantOpsSettings() {
       setSaving(false);
     }
   };
+
 
   const factorGroup = (
     group: keyof CareSettings,
@@ -138,20 +176,69 @@ export default function PlantOpsSettings() {
           <>
             <Card>
               <CardHeader className="pb-2">
+                <CardTitle className="text-base">{l('Operation preset', 'Preajuste de operación')}</CardTitle>
+              </CardHeader>
+              <CardContent className="grid gap-2 sm:grid-cols-2">
+                {PRESETS.filter((p) => p.modules).map((p) => (
+                  <button
+                    key={p.key}
+                    type="button"
+                    onClick={() => applyPreset(p.key)}
+                    className={`text-left rounded-lg border p-3 transition-colors ${
+                      activePreset === p.key ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium">
+                        {language === 'es' ? p.label.es : language === 'de' ? p.label.de : p.label.en}
+                      </span>
+                      {activePreset === p.key && <Badge variant="secondary">{l('Active', 'Activo')}</Badge>}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {language === 'es' ? p.description.es : language === 'de' ? p.description.de : p.description.en}
+                    </p>
+                  </button>
+                ))}
+                <p className="text-xs text-muted-foreground sm:col-span-2">
+                  {activePreset === 'custom'
+                    ? l('Custom selection — presets only prefill the switches below.',
+                        'Selección personalizada: los preajustes solo precargan los interruptores.')
+                    : l('A preset only prefills the switches below; you can still change any module.',
+                        'Un preajuste solo precarga los interruptores; puede cambiar cualquier módulo.')}
+                </p>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-2">
                 <CardTitle className="text-base">{l('Modules', 'Módulos')}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {MODULE_KEYS.map((k) => (
-                  <div key={k} className="flex items-center justify-between">
-                    <Label className="text-sm">{language === 'es' ? CAPABILITY_LABELS[k].es : language === 'de' ? CAPABILITY_LABELS[k].de : CAPABILITY_LABELS[k].en}</Label>
-                    <Switch
-                      checked={modules[k] !== false}
-                      onCheckedChange={(v) => setModules((prev) => ({ ...prev, [k]: v }))}
-                    />
-                  </div>
-                ))}
+                {MODULE_KEYS.map((k) => {
+                  const missing = MODULES[k].dependencies.filter((d) => !effective[d]);
+                  return (
+                    <div key={k} className="flex items-start justify-between gap-3">
+                      <div className="min-w-0">
+                        <Label className="text-sm">{moduleLabel(k, language)}</Label>
+                        <p className="text-xs text-muted-foreground">{moduleDescription(k, language)}</p>
+                        {missing.length > 0 && (
+                          <p className="text-xs text-destructive mt-1">
+                            {l('Requires: ', 'Requiere: ')}
+                            {missing.map((d) => moduleLabel(d, language)).join(', ')}
+                          </p>
+                        )}
+                      </div>
+                      <Switch
+                        checked={effective[k] === true}
+                        disabled={missing.length > 0}
+                        onCheckedChange={(v) => toggleModule(k, v)}
+                      />
+                    </div>
+                  );
+                })}
               </CardContent>
             </Card>
+
 
             <p className="text-xs text-muted-foreground">
               {l('Positive values stretch the interval, negative values shorten it (days).',

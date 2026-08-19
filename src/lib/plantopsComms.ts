@@ -153,17 +153,58 @@ export async function saveReminderSettings(estateId: string, settings: ReminderS
 
 /* ----------------------------- outbox ----------------------------- */
 
-export type MessageType =
-  | 'watering_due'
-  | 'watering_completed'
-  | 'do_not_water'
-  | 'care_issue'
-  | 'visit_reminder'
-  | 'visit_summary'
-  | 'manual_ready'
-  | 'invoice_sent'
-  | 'invoice_overdue'
-  | 'custom';
+export const MESSAGE_TYPES = [
+  'watering_due',
+  'watering_completed',
+  'do_not_water',
+  'care_issue',
+  'visit_reminder',
+  'visit_summary',
+  'manual_ready',
+  'invoice_sent',
+  'invoice_overdue',
+  'light_check',
+  'fertilization',
+  'pruning',
+  'cleaning',
+  'rotation',
+  'replacement',
+  'custom',
+] as const;
+
+export type MessageType = (typeof MESSAGE_TYPES)[number];
+
+/** Reminder kinds the operator can create by hand (watering is engine-driven). */
+export const CUSTOM_REMINDER_TYPES: MessageType[] = [
+  'light_check',
+  'fertilization',
+  'pruning',
+  'cleaning',
+  'rotation',
+  'replacement',
+  'visit_reminder',
+  'custom',
+];
+
+export const MESSAGE_TYPE_LABELS: Record<MessageType, { en: string; es: string; de: string }> = {
+  watering_due: { en: 'Watering due', es: 'Riego pendiente', de: 'Gießen fällig' },
+  watering_completed: { en: 'Watering completed', es: 'Riego realizado', de: 'Gießen erledigt' },
+  do_not_water: { en: 'Do not water', es: 'No regar', de: 'Nicht gießen' },
+  care_issue: { en: 'Care issue', es: 'Problema de cuidado', de: 'Pflegeproblem' },
+  visit_reminder: { en: 'Visit reminder', es: 'Recordatorio de visita', de: 'Besuchserinnerung' },
+  visit_summary: { en: 'Visit summary', es: 'Resumen de visita', de: 'Besuchsbericht' },
+  manual_ready: { en: 'Manual ready', es: 'Manual listo', de: 'Handbuch bereit' },
+  invoice_sent: { en: 'Invoice sent', es: 'Factura enviada', de: 'Rechnung gesendet' },
+  invoice_overdue: { en: 'Invoice overdue', es: 'Factura vencida', de: 'Rechnung überfällig' },
+  light_check: { en: 'Light check', es: 'Revisión de luz', de: 'Lichtkontrolle' },
+  fertilization: { en: 'Fertilization', es: 'Fertilización', de: 'Düngung' },
+  pruning: { en: 'Pruning', es: 'Poda', de: 'Rückschnitt' },
+  cleaning: { en: 'Leaf cleaning', es: 'Limpieza de hojas', de: 'Blattreinigung' },
+  rotation: { en: 'Rotation', es: 'Rotación', de: 'Rotation' },
+  replacement: { en: 'Replacement', es: 'Reemplazo', de: 'Ersatz' },
+  custom: { en: 'Custom message', es: 'Mensaje personalizado', de: 'Eigene Nachricht' },
+};
+
 
 export type MessageStatus = 'queued' | 'sending' | 'sent' | 'failed' | 'blocked' | 'cancelled';
 
@@ -186,6 +227,8 @@ export interface OutboxMessage {
   created_at: string;
   contact?: { name: string; email: string | null; phone_e164: string | null } | null;
   estate?: { name: string | null } | null;
+  client?: { name: string | null } | null;
+
 }
 
 export async function fetchOutbox(clientId: string, limit = 100): Promise<OutboxMessage[]> {
@@ -193,6 +236,18 @@ export async function fetchOutbox(clientId: string, limit = 100): Promise<Outbox
     .from('client_message_outbox' as any)
     .select('*, contact:client_contacts(name, email, phone_e164), estate:estates(name)')
     .eq('client_id', clientId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+  if (error) throw error;
+  return ((data as any[]) || []) as OutboxMessage[];
+}
+
+/** Whole-organization outbox, used by the Reminders module. */
+export async function fetchOrgOutbox(orgId: string, limit = 200): Promise<OutboxMessage[]> {
+  const { data, error } = await supabase
+    .from('client_message_outbox' as any)
+    .select('*, contact:client_contacts(name, email, phone_e164), estate:estates(name), client:clients(name)')
+    .eq('org_id', orgId)
     .order('created_at', { ascending: false })
     .limit(limit);
   if (error) throw error;
@@ -210,6 +265,8 @@ export interface QueueMessageInput {
   placementId?: string | null;
   ccEmails?: string[];
   idempotencyKey?: string | null;
+  scheduledAt?: string | null;
+  sendMode?: 'manual' | 'automatic';
 }
 
 export async function queueMessage(input: QueueMessageInput): Promise<string> {
@@ -223,13 +280,21 @@ export async function queueMessage(input: QueueMessageInput): Promise<string> {
     p_contact_id: input.contactId ?? null,
     p_placement_id: input.placementId ?? null,
     p_cc_emails: input.ccEmails ?? [],
-    p_scheduled_at: null,
+    p_scheduled_at: input.scheduledAt ?? null,
     p_idempotency_key: input.idempotencyKey ?? null,
-    p_send_mode: 'manual',
+    p_send_mode: input.sendMode ?? 'manual',
   } as any);
   if (error) throw error;
   return data as string;
 }
+
+/** Enqueues every reminder that is due right now (watering engine + settings). */
+export async function enqueueDueReminders(): Promise<number> {
+  const { data, error } = await supabase.rpc('plantops_enqueue_due_client_reminders' as any, {} as any);
+  if (error) throw error;
+  return Number(data ?? 0);
+}
+
 
 export async function markMessageSent(id: string) {
   const { error } = await supabase.rpc('plantops_mark_message_sent' as any, { p_message_id: id } as any);
@@ -464,4 +529,62 @@ export async function updateClientPortalLink(link: ClientPortalLink) {
 export async function revokeClientPortalLink(linkId: string) {
   const { error } = await supabase.rpc('plantops_revoke_client_portal_link' as any, { p_link_id: linkId } as any);
   if (error) throw error;
+}
+
+/* ------------------ custom maintenance reminders ------------------ */
+
+export interface MaintenanceReminderContext {
+  projectName?: string | null;
+  plantName?: string | null;
+  location?: string | null;
+  /** Free-text instruction shown to the client. */
+  instruction?: string | null;
+  /** ISO date the action should happen on. */
+  dueDate?: string | null;
+}
+
+const MAINTENANCE_HEADINGS: Record<string, { en: string; es: string; de: string }> = {
+  light_check: { en: 'LIGHT CHECK', es: 'REVISIÓN DE LUZ', de: 'LICHTKONTROLLE' },
+  fertilization: { en: 'FERTILIZATION', es: 'FERTILIZACIÓN', de: 'DÜNGUNG' },
+  pruning: { en: 'PRUNING', es: 'PODA', de: 'RÜCKSCHNITT' },
+  cleaning: { en: 'LEAF CLEANING', es: 'LIMPIEZA DE HOJAS', de: 'BLATTREINIGUNG' },
+  rotation: { en: 'ROTATION', es: 'ROTACIÓN', de: 'ROTATION' },
+  replacement: { en: 'REPLACEMENT', es: 'REEMPLAZO', de: 'ERSATZ' },
+  visit_reminder: { en: 'UPCOMING VISIT', es: 'PRÓXIMA VISITA', de: 'KOMMENDER BESUCH' },
+  custom: { en: 'NOTICE', es: 'AVISO', de: 'HINWEIS' },
+};
+
+/**
+ * Builds the text of a maintenance reminder. Every reminder states WHAT to do
+ * and WHEN — never a vague instruction.
+ */
+export function maintenanceReminderMessage(
+  type: MessageType,
+  ctx: MaintenanceReminderContext,
+  lang: string,
+): { subject: string; body: string } {
+  const l = L(lang);
+  const heading = (MAINTENANCE_HEADINGS[type] ?? MAINTENANCE_HEADINGS.custom)[l];
+  const typeLabel = MESSAGE_TYPE_LABELS[type][l];
+  const where = [ctx.projectName, ctx.location].filter(Boolean).join(' · ');
+  const whenLine = ctx.dueDate
+    ? l === 'en'
+      ? `Date: ${ctx.dueDate}`
+      : l === 'de'
+        ? `Datum: ${ctx.dueDate}`
+        : `Fecha: ${ctx.dueDate}`
+    : '';
+  const closing =
+    l === 'en'
+      ? 'Do nothing else until you receive the next notice.'
+      : l === 'de'
+        ? 'Bitte nichts weiter tun, bis der nächste Hinweis kommt.'
+        : 'No haga nada más hasta recibir el próximo aviso.';
+
+  const subject = [typeLabel, ctx.plantName || ctx.projectName].filter(Boolean).join(': ');
+  const body = [heading, '', ctx.plantName || '', where, whenLine, '', ctx.instruction || '', '', closing]
+    .filter((line, i, arr) => !(line === '' && arr[i - 1] === ''))
+    .join('\n');
+
+  return { subject, body };
 }
