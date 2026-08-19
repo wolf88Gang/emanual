@@ -12,81 +12,37 @@ import { fetchServicePlan, saveServicePlan, type ServicePlan } from '@/lib/plant
  * All writes keep going through the existing PlantOps RPCs.
  */
 
-/* ---------------- capability / module vocabulary ---------------- */
+/* ---------------- capability / module vocabulary ----------------
+ * Single source of truth: src/lib/homeGuideModules.ts. The names below are
+ * kept as aliases so existing screens continue to compile.
+ */
 
-export const CAPABILITY_KEYS = [
-  'clients',
-  'projects',
-  'plants_pots',
-  'care',
-  'reminders',
-  'visits',
-  'tools',
-  'manuals',
-  'billing_payments',
-  'rentals',
-  'events',
-  'documents',
-] as const;
+import {
+  MODULE_KEYS,
+  MODULES,
+  MODULE_LIST,
+  PROJECT_MODULE_KEYS,
+  DEFAULT_MODULES,
+  resolveModules,
+  type ModuleKey,
+} from '@/lib/homeGuideModules';
 
-export type CapabilityKey = (typeof CAPABILITY_KEYS)[number];
+export const CAPABILITY_KEYS = MODULE_KEYS;
+export type CapabilityKey = ModuleKey;
 
 /** Capabilities that can be toggled per project (org-level keys are a superset). */
-export const PROJECT_CAPABILITY_KEYS: CapabilityKey[] = [
-  'plants_pots',
-  'care',
-  'reminders',
-  'visits',
-  'tools',
-  'manuals',
-  'billing_payments',
-  'rentals',
-  'events',
-  'documents',
-];
+export const PROJECT_CAPABILITY_KEYS: CapabilityKey[] = PROJECT_MODULE_KEYS;
 
-export const CAPABILITY_LABELS: Record<CapabilityKey, { en: string; es: string; de: string }> = {
-  clients: { en: 'Clients', es: 'Clientes', de: 'Kunden' },
-  projects: { en: 'Projects', es: 'Proyectos', de: 'Projekte' },
-  plants_pots: { en: 'Plants & pots', es: 'Plantas y macetas', de: 'Pflanzen & Töpfe' },
-  care: { en: 'Care', es: 'Cuidados', de: 'Pflege' },
-  reminders: { en: 'Reminders', es: 'Recordatorios', de: 'Erinnerungen' },
-  visits: { en: 'Visits', es: 'Visitas', de: 'Besuche' },
-  tools: { en: 'Tools', es: 'Herramientas', de: 'Werkzeuge' },
-  manuals: { en: 'Manuals', es: 'Manuales', de: 'Handbücher' },
-  billing_payments: { en: 'Billing & payments', es: 'Facturación y pagos', de: 'Abrechnung & Zahlungen' },
-  rentals: { en: 'Rentals', es: 'Alquileres', de: 'Vermietung' },
-  events: { en: 'Events', es: 'Eventos', de: 'Events' },
-  documents: { en: 'Documents', es: 'Documentos', de: 'Dokumente' },
-};
+export const CAPABILITY_LABELS = Object.fromEntries(
+  MODULE_LIST.map((m) => [m.key, m.label]),
+) as Record<CapabilityKey, { en: string; es: string; de: string }>;
 
-export const DEFAULT_ORG_MODULES: Record<CapabilityKey, boolean> = {
-  clients: true,
-  projects: true,
-  plants_pots: true,
-  care: true,
-  reminders: true,
-  visits: true,
-  tools: false,
-  manuals: true,
-  billing_payments: true,
-  rentals: false,
-  events: false,
-  documents: false,
-};
+export const DEFAULT_ORG_MODULES: Record<CapabilityKey, boolean> = DEFAULT_MODULES;
 
-export const DEFAULT_PROJECT_CAPABILITIES: Record<string, boolean> = {
-  plants_pots: true,
-  care: true,
-  reminders: true,
-  visits: true,
-  tools: false,
-  manuals: true,
-  billing_payments: true,
-  rentals: false,
-  events: false,
-  documents: false,
-};
+export const DEFAULT_PROJECT_CAPABILITIES: Record<string, boolean> = Object.fromEntries(
+  PROJECT_MODULE_KEYS.map((k) => [k, DEFAULT_MODULES[k]]),
+);
+
 
 export const PORTAL_VISIBILITY_KEYS = ['plants', 'care', 'manuals', 'visits', 'invoices', 'documents'] as const;
 export type PortalVisibilityKey = (typeof PORTAL_VISIBILITY_KEYS)[number];
