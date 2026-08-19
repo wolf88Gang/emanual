@@ -1,6 +1,6 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Map, Briefcase, Box, ClipboardList, Clock, MoreHorizontal } from 'lucide-react';
+import { Map, Briefcase, Box, ClipboardList, Clock } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';

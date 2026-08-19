@@ -779,7 +779,7 @@ export default function PlantOpsNewClient() {
 
   return (
     <ModernAppLayout>
-      <main className="p-4 space-y-4 max-w-2xl mx-auto safe-area-content pb-28">
+      <main className="p-4 space-y-4 max-w-2xl mx-auto safe-area-content">
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <UserPlus className="h-6 w-6 text-primary" />

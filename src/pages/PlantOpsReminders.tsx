@@ -251,7 +251,7 @@ export default function PlantOpsReminders() {
   if (!isEnabled('reminders')) {
     return (
       <ModernAppLayout>
-        <main className="p-4 max-w-3xl mx-auto safe-area-content pb-28">
+        <main className="p-4 max-w-3xl mx-auto safe-area-content">
           <Card>
             <CardHeader>
               <CardTitle className="text-base">{l('Reminders module is off', 'El módulo de recordatorios está desactivado', 'Erinnerungsmodul ist aus')}</CardTitle>
@@ -269,7 +269,7 @@ export default function PlantOpsReminders() {
 
   return (
     <ModernAppLayout>
-      <main className="p-4 space-y-4 max-w-4xl mx-auto safe-area-content pb-28">
+      <main className="p-4 space-y-4 max-w-4xl mx-auto safe-area-content">
         <div className="flex items-start justify-between gap-3 flex-wrap">
           <div>
             <h1 className="text-2xl font-semibold flex items-center gap-2">
