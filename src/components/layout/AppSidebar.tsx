@@ -24,6 +24,9 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 import { Button } from '@/components/ui/button';
 import { LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useModules } from '@/hooks/useModules';
+import { moduleLabel, moduleDescription, moduleForRoute } from '@/lib/homeGuideModules';
+
 
 interface NavItem {
   path: string;
