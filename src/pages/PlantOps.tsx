@@ -25,12 +25,15 @@ import {
   uploadPlacementPhoto, type PlantOpsAssetRow,
 } from '@/lib/plantops';
 import { fetchIncompleteSetups } from '@/lib/plantopsProperty';
+import { useModules } from '@/hooks/useModules';
+import { moduleLabel, moduleDescription } from '@/lib/homeGuideModules';
 
 export default function PlantOps() {
-  const { tl } = useLanguage();
+  const { tl, language } = useLanguage();
   const navigate = useNavigate();
   const { estates } = useEstate();
   const { orgId, inventory, placements, contracts, loading, error, refetch } = usePlantOpsData();
+  const { navModules, isEnabled } = useModules();
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
   const [search, setSearch] = useState('');
