@@ -97,11 +97,13 @@ export function effectiveProjectCapabilities(
   orgModules: Record<string, boolean>,
   plan: ServicePlan | null | undefined,
 ): Record<string, boolean> {
+  const org = resolveModules(orgModules);
   const caps = projectCapabilities(plan);
   const out: Record<string, boolean> = {};
-  for (const k of PROJECT_CAPABILITY_KEYS) out[k] = !!caps[k] && orgModules[k] !== false;
+  for (const k of PROJECT_CAPABILITY_KEYS) out[k] = !!caps[k] && org[k] === true;
   return out;
 }
+
 
 export async function saveProjectPlanPatch(estateId: string, patch: Partial<ServicePlan> & Record<string, unknown>) {
   const current = await fetchServicePlan(estateId);
