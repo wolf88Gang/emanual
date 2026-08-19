@@ -68,16 +68,11 @@ export const PORTAL_VISIBILITY_LABELS: Record<PortalVisibilityKey, { en: string;
 export const PROJECT_TYPES = ['residential', 'commercial', 'mall', 'office', 'hotel', 'event', 'other'] as const;
 export const PROJECT_STATUSES = ['setup', 'active', 'paused', 'archived'] as const;
 
-/** Org-level modules, always normalized to the canonical keys. */
+/** Org-level modules, always normalized to the canonical keys (dependencies enforced). */
 export function normalizeOrgModules(raw: Record<string, unknown> | null | undefined): Record<CapabilityKey, boolean> {
-  const out = { ...DEFAULT_ORG_MODULES };
-  if (raw && typeof raw === 'object') {
-    for (const k of CAPABILITY_KEYS) {
-      if (k in raw) out[k] = !!(raw as Record<string, unknown>)[k];
-    }
-  }
-  return out;
+  return resolveModules(raw);
 }
+
 
 export function projectCapabilities(plan: ServicePlan | null | undefined): Record<string, boolean> {
   const raw = (plan as any)?.capabilities;
