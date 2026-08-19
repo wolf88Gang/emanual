@@ -47,9 +47,11 @@ export function BottomNav() {
     { path: isCrew ? '/checkin' : '/', icon: isCrew ? Clock : Briefcase, label: isCrew ? t('Shift', 'Turno', 'Schicht') : t('Work', 'Trabajo', 'Arbeit') },
   ];
 
-  const navItems = (isPlantRental ? moduleItems : estateItems).filter(
-    (item) => !(isVendor && item.hideForVendor),
-  );
+  // PlantOps (plant_rental) organizations have no fixed mobile bottom bar at all:
+  // navigation happens through the drawer/sidebar and contextual page actions.
+  if (isPlantRental) return null;
+
+  const navItems = estateItems.filter((item) => !(isVendor && item.hideForVendor));
 
   if (navItems.length === 0) return null;
 

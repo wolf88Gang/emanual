@@ -38,7 +38,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           <DevelopmentBanner />
           <DemoBanner />
           <TrialBanner />
-          <main className="flex-1 overflow-auto safe-area-content pb-20 lg:pb-0">
+          <main className={`flex-1 overflow-auto safe-area-content ${isPlantRental ? '' : 'pb-20 lg:pb-0'}`}>
             {children}
           </main>
           <BottomNav />
