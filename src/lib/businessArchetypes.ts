@@ -95,7 +95,7 @@ export const ARCHETYPES: Record<BusinessArchetype, ArchetypeDefinition> = {
       'Para empresas que gestionan jardines, paisajismo, mantenimiento y trabajo de campo.',
       'Für Unternehmen mit Gärten, Landschaftsbau, Pflege und Außendienst.',
     ),
-    suggestedModules: ['clients', 'projects', 'assets', 'tasks', 'visits', 'reminders'],
+    suggestedModules: ['clients', 'projects', 'assets', 'map', 'tasks', 'visits', 'reminders', 'documents'],
     landingRoute: '/clients',
     entityLabels: {
       client: L('Client', 'Cliente', 'Kunde'),
