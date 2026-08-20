@@ -350,7 +350,24 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
     dashboardWidgets: [],
     projectCapability: false,
   },
+  labor: {
+    key: 'labor',
+    label: L('Labor & shifts', 'Trabajo y turnos', 'Arbeit & Schichten'),
+    description: L(
+      'Shifts, hours, rates and payroll validation.',
+      'Turnos, horas, tarifas y validación de pagos.',
+      'Schichten, Stunden, Sätze und Lohnprüfung.',
+    ),
+    icon: Timer,
+    routes: ['/labor'],
+    navRoute: '/labor',
+    allowedRoles: ['owner', 'manager'],
+    dependencies: [],
+    dashboardWidgets: [],
+    projectCapability: false,
+  },
 };
+
 
 export const MODULE_LIST: ModuleDefinition[] = MODULE_KEYS.map((k) => MODULES[k]);
 
