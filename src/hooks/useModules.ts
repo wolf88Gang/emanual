@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   DEFAULT_MODULES,
+  MODULE_KEYS,
   MODULE_LIST,
   moduleForRoute,
   routeAccess,
