@@ -87,32 +87,18 @@ export function AppSidebar() {
     tooltip: moduleDescription(m.key, language),
   }));
 
-  // Secondary entries without their own module — each rides on a module toggle.
-  const extrasNav: NavItem[] = [
-    ...(canUse('clients')
-      ? [{ path: '/plantops/nuevo-cliente', icon: ShoppingBag, label: l('New client', 'Nuevo cliente', 'Neuer Kunde'), tooltip: l('Guided client setup', 'Alta guiada de cliente', 'Geführte Kundenanlage') }]
-      : []),
-    ...(canUse('billing_payments')
-      ? [
-          { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
-          { path: '/labor', icon: Clock, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
-        ]
-      : []),
-    ...(canUse('plants_pots')
-      ? [{ path: '/compost', icon: Recycle, label: 'Compost', tooltip: l('Compost manager', 'Gestor de compost', 'Kompostverwaltung') }]
-      : []),
-    ...(canUse('manuals')
-      ? [{ path: '/reports', icon: BookOpen, label: l('Reports', 'Reportes', 'Berichte'), tooltip: l('Reports & manuals', 'Reportes y manuales', 'Berichte & Handbücher') }]
-      : []),
-  ];
-
+  /**
+   * Shell entries only. Every operational entry must come from the module
+   * registry — no implicit relationships (Billing never implies Labor,
+   * Plants never implies Compost).
+   */
   const settingsNav: NavItem[] = [
     { path: '/plantops/settings', icon: Settings, label: l('Settings', 'Configuración', 'Einstellungen'), tooltip: l('Modules & operation setup', 'Módulos y configuración de operación', 'Module & Betriebseinrichtung') },
     { path: '/admin', icon: Wrench, label: 'Admin', tooltip: l('Organization admin', 'Administración de la organización', 'Organisationsverwaltung') },
     { path: '/requests', icon: MessageSquarePlus, label: l('Requests', 'Solicitudes', 'Anfragen'), tooltip: l('Feature requests & feedback', 'Solicitudes y comentarios', 'Anfragen & Feedback') },
   ];
 
-  const ownerNav: NavItem[] = [...homeNav, ...moduleNav, ...extrasNav, ...settingsNav];
+  const ownerNav: NavItem[] = [...homeNav, ...moduleNav, ...settingsNav];
 
   // Crew nav — also module gated.
   const crewNav: NavItem[] = [

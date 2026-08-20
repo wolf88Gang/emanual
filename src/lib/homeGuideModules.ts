@@ -98,7 +98,8 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
     routes: ['/plantops/propiedad'],
     navRoute: '/plantops/clientes',
     allowedRoles: ['owner', 'manager'],
-    dependencies: ['clients'],
+    // Projects/sites may exist without a CRM client record (own service sites).
+    dependencies: [],
     dashboardWidgets: [{ id: 'projects.active', label: L('Active projects', 'Proyectos activos', 'Aktive Projekte'), route: '/plantops/clientes' }],
     projectCapability: false,
   },
@@ -198,7 +199,9 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
     routes: ['/plantops/reminders'],
     navRoute: '/plantops/reminders',
     allowedRoles: ['owner', 'manager'],
-    dependencies: ['clients'],
+    // Internal/custom reminders do not need a CRM client; only client-facing
+    // sends require an actual recipient.
+    dependencies: [],
     dashboardWidgets: [
       { id: 'reminders.pending', label: L('Pending reminders', 'Recordatorios pendientes', 'Offene Erinnerungen'), route: '/plantops/reminders' },
       { id: 'reminders.blocked', label: L('Blocked reminders', 'Recordatorios bloqueados', 'Blockierte Erinnerungen'), route: '/plantops/reminders?status=blocked' },
@@ -246,6 +249,7 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
     ),
     icon: BookOpen,
     routes: ['/reports'],
+    navRoute: '/reports',
     allowedRoles: ['owner', 'manager'],
     dependencies: [],
     dashboardWidgets: [],
