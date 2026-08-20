@@ -242,22 +242,23 @@ export default function PlantOpsSettings() {
 
 
             {effective.care && (
-              <>
-                <p className="text-xs text-muted-foreground">
-                  {l('Positive values stretch the interval, negative values shorten it (days).',
-                     'Valores positivos alargan el intervalo, negativos lo acortan (días).')}
-                </p>
-
-                {factorGroup('pot_material', l('Pot material', 'Material de maceta'), [...POT_MATERIALS], (k) =>
-                  language === 'es' ? POT_MATERIAL_LABELS[k as PotMaterial].es : POT_MATERIAL_LABELS[k as PotMaterial].en,
-                )}
-                {factorGroup('ventilation', l('Ventilation', 'Ventilación'), VENTILATION)}
-                {factorGroup('light_actual', l('Actual light', 'Luz real'), LIGHT)}
-                {factorGroup('season', l('Month', 'Mes'), MONTHS, (k) =>
-                  new Date(2024, Number(k) - 1, 1).toLocaleDateString(language === 'es' ? 'es-CR' : 'en-US', { month: 'short' }),
-                )}
-              </>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{l('Care criteria', 'Criterios de cuidado')}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    {l('Care intervals are never guessed from global coefficients. Each plant uses, in this order: a documented exception, the interval recorded for that placement, or the species baseline.',
+                       'Los intervalos de cuidado no se estiman con coeficientes globales. Cada planta usa, en este orden: una excepción documentada, el intervalo registrado en esa ubicación, o la línea base de la especie.')}
+                  </p>
+                  <p>
+                    {l('When none of those exist the plant is listed as “Needs review” instead of receiving an invented interval.',
+                       'Si no existe ninguno, la planta queda como «Requiere revisión» en lugar de recibir un intervalo inventado.')}
+                  </p>
+                </CardContent>
+              </Card>
             )}
+
 
 
             <Button onClick={save} disabled={saving} className="w-full">
