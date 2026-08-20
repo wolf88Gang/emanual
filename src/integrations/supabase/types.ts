@@ -2003,6 +2003,8 @@ export type Database = {
           asset_id: string
           cancelled_at: string | null
           care_notes: string | null
+          care_override_at: string | null
+          care_override_by: string | null
           care_override_reason: string | null
           care_responsibility: string
           care_updated_at: string | null
@@ -2044,6 +2046,8 @@ export type Database = {
           asset_id: string
           cancelled_at?: string | null
           care_notes?: string | null
+          care_override_at?: string | null
+          care_override_by?: string | null
           care_override_reason?: string | null
           care_responsibility?: string
           care_updated_at?: string | null
@@ -2085,6 +2089,8 @@ export type Database = {
           asset_id?: string
           cancelled_at?: string | null
           care_notes?: string | null
+          care_override_at?: string | null
+          care_override_by?: string | null
           care_override_reason?: string | null
           care_responsibility?: string
           care_updated_at?: string | null

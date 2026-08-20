@@ -239,7 +239,12 @@ export default function Onboarding() {
       );
       navigate('/', { replace: true });
     } catch (err: any) {
-      toast.error(err.message || l('Setup failed', 'La configuración falló', 'Einrichtung fehlgeschlagen'));
+      // Server failures never advance the wizard: values stay on screen so the
+      // user can retry the same step.
+      const detail = [err?.message, err?.details, err?.hint].filter(Boolean).join(' — ');
+      toast.error(l('Setup could not be completed', 'No se pudo completar la configuración', 'Einrichtung nicht abgeschlossen'), {
+        description: detail || l('Please try again.', 'Intente de nuevo.', 'Bitte erneut versuchen.'),
+      });
     } finally {
       setIsLoading(false);
     }

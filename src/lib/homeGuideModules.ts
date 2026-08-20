@@ -89,19 +89,20 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
   },
   projects: {
     key: 'projects',
-    label: L('Projects', 'Proyectos', 'Projekte'),
+    label: L('Sites', 'Sitios', 'Standorte'),
     description: L(
-      'Properties or sites served for each client.',
-      'Propiedades o sitios atendidos de cada cliente.',
-      'Objekte oder Standorte pro Kunde.',
+      'Properties or sites served, across all clients.',
+      'Propiedades o sitios atendidos, de todos los clientes.',
+      'Objekte oder Standorte, über alle Kunden.',
     ),
     icon: FolderKanban,
-    routes: ['/plantops/propiedad'],
-    navRoute: '/plantops/clientes',
+    // /sites = organization-wide site list; /plantops/propiedad = one site detail.
+    routes: ['/sites', '/plantops/propiedad'],
+    navRoute: '/sites',
     allowedRoles: ['owner', 'manager'],
     // Projects/sites may exist without a CRM client record (own service sites).
     dependencies: [],
-    dashboardWidgets: [{ id: 'projects.active', label: L('Active projects', 'Proyectos activos', 'Aktive Projekte'), route: '/plantops/clientes' }],
+    dashboardWidgets: [{ id: 'projects.active', label: L('Active sites', 'Sitios activos', 'Aktive Standorte'), route: '/sites' }],
     projectCapability: false,
   },
   assets: {

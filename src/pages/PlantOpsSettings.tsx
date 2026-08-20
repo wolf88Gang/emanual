@@ -11,14 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useOrgType } from '@/hooks/usePlantOps';
 import { useModules } from '@/hooks/useModules';
-import {
-  fetchCareSettings,
-  saveCareSettings,
-  POT_MATERIALS,
-  POT_MATERIAL_LABELS,
-  type PotMaterial,
-  type CareSettings,
-} from '@/lib/plantopsCare';
 
 import {
   MODULE_KEYS,
@@ -31,14 +23,10 @@ import {
   type PresetKey,
 } from '@/lib/homeGuideModules';
 
-const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
-const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
-const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-
-
 /**
- * PlantOps configuration. Every agronomic adjustment factor lives here — nothing
- * is hardcoded in the care engine.
+ * PlantOps configuration: which modules the organization operates.
+ * No global agronomic coefficients live here — care always comes from the
+ * species baseline, the placement baseline or a documented exception.
  */
 export default function PlantOpsSettings() {
   const { language } = useLanguage();
@@ -47,10 +35,9 @@ export default function PlantOpsSettings() {
   const { modules: savedModules, saveModules, loading: modulesLoading } = useModules();
   const l = (en: string, es: string) => (language === 'es' ? es : en);
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [modules, setModules] = useState<Record<ModuleKey, boolean> | null>(null);
-  const [settings, setSettings] = useState<CareSettings>({});
+  const loading = modulesLoading && !modules;
 
   useEffect(() => {
     document.title = l('PlantOps settings', 'Configuración PlantOps');
@@ -59,19 +46,6 @@ export default function PlantOpsSettings() {
   useEffect(() => {
     if (!modulesLoading) setModules((prev) => prev ?? savedModules);
   }, [modulesLoading, savedModules]);
-
-  useEffect(() => {
-    if (!orgId) return;
-    (async () => {
-      try {
-        setSettings(await fetchCareSettings(orgId));
-      } catch (e: any) {
-        toast({ title: l('Could not load settings', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [orgId]);
 
   const effective = useMemo(() => resolveModules(modules ?? {}), [modules]);
 
@@ -99,28 +73,19 @@ export default function PlantOpsSettings() {
     setModules(resolveModules(p.modules));
   };
 
-  const setFactor = (group: keyof CareSettings, key: string, value: string) => {
-    setSettings((prev) => {
-      const next = { ...prev, [group]: { ...(prev[group] as Record<string, number> | undefined) } } as CareSettings;
-      const bucket = next[group] as Record<string, number>;
-      if (value === '') delete bucket[key];
-      else bucket[key] = Number(value);
-      return next;
-    });
-  };
-
-  const factorValue = (group: keyof CareSettings, key: string) => {
-    const bucket = settings[group] as Record<string, number> | undefined;
-    const v = bucket?.[key];
-    return v == null ? '' : String(v);
-  };
-
   const save = async () => {
     if (!orgId) return;
     setSaving(true);
     try {
-      await Promise.all([saveModules(effective), saveCareSettings(orgId, settings)]);
-      toast({ title: l('Settings saved', 'Configuración guardada') });
+      await saveModules(effective);
+      const active = MODULE_KEYS.filter((k) => effective[k]).map((k) => moduleLabel(k, language));
+      toast({
+        title: l('Settings saved', 'Configuración guardada'),
+        description: active.length
+          ? `${l('Active modules', 'Módulos activos')}: ${active.join(', ')}`
+          : l('No modules active — only configuration stays available.',
+               'Sin módulos activos: solo queda disponible la configuración.'),
+      });
     } catch (e: any) {
       toast({ title: l('Could not save', 'No se pudo guardar'), description: e.message, variant: 'destructive' });
     } finally {
@@ -129,32 +94,6 @@ export default function PlantOpsSettings() {
   };
 
 
-  const factorGroup = (
-    group: keyof CareSettings,
-    title: string,
-    keys: string[],
-    labeler?: (k: string) => string,
-  ) => (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {keys.map((k) => (
-          <div key={k} className="space-y-1">
-            <Label className="text-xs capitalize">{labeler ? labeler(k) : k.replace(/_/g, ' ')}</Label>
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="0"
-              value={factorValue(group, k)}
-              onChange={(e) => setFactor(group, k, e.target.value)}
-            />
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
 
   return (
     <ModernAppLayout>
@@ -242,22 +181,23 @@ export default function PlantOpsSettings() {
 
 
             {effective.care && (
-              <>
-                <p className="text-xs text-muted-foreground">
-                  {l('Positive values stretch the interval, negative values shorten it (days).',
-                     'Valores positivos alargan el intervalo, negativos lo acortan (días).')}
-                </p>
-
-                {factorGroup('pot_material', l('Pot material', 'Material de maceta'), [...POT_MATERIALS], (k) =>
-                  language === 'es' ? POT_MATERIAL_LABELS[k as PotMaterial].es : POT_MATERIAL_LABELS[k as PotMaterial].en,
-                )}
-                {factorGroup('ventilation', l('Ventilation', 'Ventilación'), VENTILATION)}
-                {factorGroup('light_actual', l('Actual light', 'Luz real'), LIGHT)}
-                {factorGroup('season', l('Month', 'Mes'), MONTHS, (k) =>
-                  new Date(2024, Number(k) - 1, 1).toLocaleDateString(language === 'es' ? 'es-CR' : 'en-US', { month: 'short' }),
-                )}
-              </>
+              <Card>
+                <CardHeader className="pb-2">
+                  <CardTitle className="text-base">{l('Care criteria', 'Criterios de cuidado')}</CardTitle>
+                </CardHeader>
+                <CardContent className="text-sm text-muted-foreground space-y-2">
+                  <p>
+                    {l('Care intervals are never guessed from global coefficients. Each plant uses, in this order: a documented exception, the interval recorded for that placement, or the species baseline.',
+                       'Los intervalos de cuidado no se estiman con coeficientes globales. Cada planta usa, en este orden: una excepción documentada, el intervalo registrado en esa ubicación, o la línea base de la especie.')}
+                  </p>
+                  <p>
+                    {l('When none of those exist the plant is listed as “Needs review” instead of receiving an invented interval.',
+                       'Si no existe ninguno, la planta queda como «Requiere revisión» en lugar de recibir un intervalo inventado.')}
+                  </p>
+                </CardContent>
+              </Card>
             )}
+
 
 
             <Button onClick={save} disabled={saving} className="w-full">

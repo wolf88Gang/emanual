@@ -81,22 +81,41 @@ export interface PotInfo {
   notes: string | null;
 }
 
+/** A review signal emitted by the care engine — never a day adjustment. */
+export interface CareReviewFlag {
+  key: 'no_baseline' | 'light_mismatch' | 'override_without_reason' | string;
+  required?: string | null;
+  actual?: string | null;
+}
+
 export interface EffectiveCare {
   placement_id: string;
   estate_id: string | null;
-  /** Structured numeric value from the species guide, reference/prefill only. */
+  /** Structured numeric value documented for the species (used directly as baseline). */
   species_baseline_days: number | null;
-  /** Explicit operational base interval in force. */
+  species_profile_id?: string | null;
+  species_common_name?: string | null;
+  species_scientific_name?: string | null;
+  species_care_template?: Record<string, unknown> | null;
+  /** Interval explicitly recorded for THIS placement. */
+  placement_baseline_days?: number | null;
+  /** Baseline in force. */
   base_days: number | null;
-  /** 'placement' = explicit operational base; 'none' = not configured yet (REVISAR). */
-  base_source: 'placement' | 'none';
+  /** Where the baseline comes from. 'none' = nothing documented (needs review). */
+  base_source: 'placement' | 'species_profile' | 'none';
+  /** Source of the effective interval: documented override > placement > species. */
+  effective_source?: 'override' | 'placement' | 'species_profile' | 'none';
+  /** Kept for compatibility; the engine no longer applies global coefficients. */
   configured_factors: CareFactor[];
   factors_total_days: number;
   override_days: number | null;
   effective_days: number | null;
   needs_review?: boolean;
+  review_flags?: CareReviewFlag[];
   min_interval_days: number | null;
   override_reason: string | null;
+  override_by?: string | null;
+  override_at?: string | null;
   water_amount_note: string | null;
   water_method: string | null;
   light_required: string | null;

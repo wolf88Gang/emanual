@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import {
   DEFAULT_MODULES,
+  MODULE_KEYS,
   MODULE_LIST,
   moduleForRoute,
   routeAccess,
@@ -48,9 +49,16 @@ export function useModules() {
       const row = data as any;
       const archetype = resolveArchetype(row?.business_archetype, row?.org_type);
       const scope = resolveAccountScope(row?.account_scope, archetype);
-      // Organizations that never saved a configuration keep the module set
-      // implied by their archetype (legacy accounts must not lose features).
-      const modules = resolveModules(row?.modules_json, suggestedModuleFlags(archetype));
+      // An explicit saved configuration always wins: once the organization has
+      // saved modules, the archetype suggestion is never re-applied (a module
+      // switched off stays off). Only organizations that never saved a
+      // configuration inherit the archetype defaults.
+      const saved = row?.modules_json as Record<string, unknown> | null | undefined;
+      const hasExplicit = !!saved && typeof saved === 'object' && MODULE_KEYS.some((k) => k in saved);
+      const fallback = hasExplicit
+        ? (Object.fromEntries(MODULE_KEYS.map((k) => [k, false])) as Record<ModuleKey, boolean>)
+        : suggestedModuleFlags(archetype);
+      const modules = resolveModules(saved, fallback);
       return { modules, archetype, scope };
     },
   });
