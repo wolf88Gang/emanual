@@ -9,7 +9,7 @@ import { DemoBanner } from '@/components/DemoBanner';
 import { DevelopmentBanner } from '@/components/DevelopmentBanner';
 import { NotificationBell } from '@/components/notifications/NotificationBell';
 import { BottomNav } from './BottomNav';
-import { useOrgType } from '@/hooks/usePlantOps';
+import { useModules } from '@/hooks/useModules';
 
 
 interface SidebarLayoutProps {
@@ -17,7 +17,7 @@ interface SidebarLayoutProps {
 }
 
 export function SidebarLayout({ children }: SidebarLayoutProps) {
-  const { isPlantRental } = useOrgType();
+  const { isBusiness } = useModules();
 
   return (
     <SidebarProvider>
@@ -41,7 +41,7 @@ export function SidebarLayout({ children }: SidebarLayoutProps) {
           <DevelopmentBanner />
           <DemoBanner />
           <TrialBanner />
-          <main className={`flex-1 overflow-auto safe-area-content ${isPlantRental ? '' : 'pb-20 lg:pb-0'}`}>
+          <main className={`flex-1 overflow-auto safe-area-content ${isBusiness ? '' : 'pb-20 lg:pb-0'}`}>
             {children}
           </main>
           <BottomNav />

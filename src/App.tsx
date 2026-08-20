@@ -4,7 +4,8 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { useModules } from "@/hooks/useModules";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
@@ -22,6 +23,7 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PlatformAdmin = lazy(() => import("./pages/PlatformAdmin"));
 const PlatformClients = lazy(() => import("./pages/PlatformClients"));
 const WorkView = lazy(() => import("./pages/WorkView"));
+const BusinessHome = lazy(() => import("./pages/BusinessHome"));
 const MapView = lazy(() => import("./pages/MapView"));
 const Tasks = lazy(() => import("./pages/Tasks"));
 const Assets = lazy(() => import("./pages/Assets"));
@@ -125,13 +127,41 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <EstateProvider><SubscriptionProvider>{children}</SubscriptionProvider></EstateProvider>;
 }
 
+/**
+ * Module route guard. The module registry owns routes, so a module that is off
+ * cannot be reached by URL either. Routes without an owning module stay open.
+ */
+function ModuleGate({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const { loading, isRouteAllowed, homeRoute } = useModules();
+
+  if (loading) return <PageLoader />;
+
+  if (!isRouteAllowed(location.pathname)) {
+    const fallback = isRouteAllowed(homeRoute) ? homeRoute : '/';
+    return <Navigate to={fallback} replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function EstateRoute({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute>
-      <SidebarLayout>{children}</SidebarLayout>
+      <SidebarLayout>
+        <ModuleGate>{children}</ModuleGate>
+      </SidebarLayout>
     </ProtectedRoute>
   );
 }
+
+/** Tenant landing screen: client-first for businesses, work view for individuals. */
+function TenantHome() {
+  const { isBusiness, loading } = useModules();
+  if (loading) return <PageLoader />;
+  return isBusiness ? <BusinessHome /> : <WorkView />;
+}
+
 
 /**
  * Administrative modules (client onboarding, contracts, property files, settings).
@@ -172,7 +202,7 @@ function RootRoute() {
   const target = getPostAuthRoute({ isPlatformAdmin, orgId: profile?.org_id, orgType, roles });
   if (target !== "/") return <Navigate to={target} replace />;
 
-  return <EstateRoute><WorkView /></EstateRoute>;
+  return <EstateRoute><TenantHome /></EstateRoute>;
 }
 
 function AppRoutes() {
@@ -236,6 +266,8 @@ function AppRoutes() {
       <Route path="/plantops/cuidados/:placementId" element={<EstateRoute><PlantOpsCareEditor /></EstateRoute>} />
       <Route path="/plantops/nuevo-cliente" element={<EstateRoute><AdminRoute><PlantOpsNewClient /></AdminRoute></EstateRoute>} />
       <Route path="/plantops/propiedad/:estateId" element={<EstateRoute><AdminRoute><PlantOpsProperty /></AdminRoute></EstateRoute>} />
+      <Route path="/clients" element={<EstateRoute><AdminRoute><PlantOpsClients /></AdminRoute></EstateRoute>} />
+      <Route path="/clients/:clientId" element={<EstateRoute><AdminRoute><PlantOpsClientDetail /></AdminRoute></EstateRoute>} />
       <Route path="/plantops/clientes" element={<EstateRoute><AdminRoute><PlantOpsClients /></AdminRoute></EstateRoute>} />
       <Route path="/plantops/clientes/:clientId" element={<EstateRoute><AdminRoute><PlantOpsClientDetail /></AdminRoute></EstateRoute>} />
       <Route path="/plantops/settings" element={<EstateRoute><AdminRoute><PlantOpsSettings /></AdminRoute></EstateRoute>} />

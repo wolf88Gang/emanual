@@ -1,7 +1,9 @@
 import {
   Users, FolderKanban, Box, Sprout, Droplets, BellRing, ClipboardList, Wrench,
   BookOpen, Globe, Receipt, FileSignature, CalendarDays, FolderOpen, Package,
+  Map as MapIcon, ListChecks,
 } from 'lucide-react';
+
 import type { ComponentType } from 'react';
 
 /**
@@ -18,6 +20,8 @@ export const MODULE_KEYS = [
   'clients',
   'projects',
   'assets',
+  'map',
+  'tasks',
   'plants_pots',
   'care',
   'reminders',
@@ -31,6 +35,7 @@ export const MODULE_KEYS = [
   'documents',
   'inventory',
 ] as const;
+
 
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
@@ -73,8 +78,9 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
       'Kundenakten, Kontakte und Kommunikation.',
     ),
     icon: Users,
-    routes: ['/plantops/clientes', '/plantops/nuevo-cliente'],
-    navRoute: '/plantops/clientes',
+    routes: ['/clients', '/plantops/clientes', '/plantops/nuevo-cliente'],
+    navRoute: '/clients',
+
     allowedRoles: ['owner', 'manager'],
     dependencies: [],
     dashboardWidgets: [{ id: 'clients.active', label: L('Active clients', 'Clientes activos', 'Aktive Kunden'), route: '/plantops/clientes' }],
@@ -98,20 +104,53 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
   },
   assets: {
     key: 'assets',
-    label: L('Assets & map', 'Activos y mapa', 'Anlagen & Karte'),
+    label: L('Assets', 'Activos', 'Anlagen'),
     description: L(
-      'Spatial asset registry with map and zones.',
-      'Registro espacial de activos con mapa y zonas.',
-      'Räumliches Anlagenregister mit Karte und Zonen.',
+      'Asset registry: what exists, where it is and its condition.',
+      'Registro de activos: qué existe, dónde está y en qué estado.',
+      'Anlagenregister: was existiert, wo es ist und in welchem Zustand.',
     ),
     icon: Box,
-    routes: ['/assets', '/map', '/tasks', '/plants'],
+    routes: ['/assets', '/plants'],
     navRoute: '/assets',
     allowedRoles: ['owner', 'manager', 'crew'],
     dependencies: [],
     dashboardWidgets: [],
     projectCapability: true,
   },
+  map: {
+    key: 'map',
+    label: L('Map & zones', 'Mapa y zonas', 'Karte & Zonen'),
+    description: L(
+      'Spatial map, zones and GPS positioning.',
+      'Mapa espacial, zonas y ubicación GPS.',
+      'Räumliche Karte, Zonen und GPS-Position.',
+    ),
+    icon: MapIcon,
+    routes: ['/map', '/topography'],
+    navRoute: '/map',
+    allowedRoles: ['owner', 'manager', 'crew'],
+    dependencies: [],
+    dashboardWidgets: [],
+    projectCapability: true,
+  },
+  tasks: {
+    key: 'tasks',
+    label: L('Tasks', 'Tareas', 'Aufgaben'),
+    description: L(
+      'Work orders and maintenance obligations.',
+      'Órdenes de trabajo y obligaciones de mantenimiento.',
+      'Arbeitsaufträge und Wartungspflichten.',
+    ),
+    icon: ListChecks,
+    routes: ['/tasks'],
+    navRoute: '/tasks',
+    allowedRoles: ['owner', 'manager', 'crew'],
+    dependencies: [],
+    dashboardWidgets: [{ id: 'tasks.open', label: L('Open tasks', 'Tareas abiertas', 'Offene Aufgaben'), route: '/tasks' }],
+    projectCapability: true,
+  },
+
   plants_pots: {
     key: 'plants_pots',
     label: L('Plants & pots', 'Plantas y macetas', 'Pflanzen & Töpfe'),
@@ -313,35 +352,51 @@ export const MODULE_LIST: ModuleDefinition[] = MODULE_KEYS.map((k) => MODULES[k]
 /** Project-level toggles (subset of org modules). */
 export const PROJECT_MODULE_KEYS: ModuleKey[] = MODULE_LIST.filter((m) => m.projectCapability).map((m) => m.key);
 
+/**
+ * Minimal core: a business only needs clients and projects to be usable.
+ * Everything else is opt-in and must be selected explicitly.
+ */
 export const DEFAULT_MODULES: Record<ModuleKey, boolean> = {
   clients: true,
   projects: true,
   assets: false,
-  plants_pots: true,
-  care: true,
-  reminders: true,
-  visits: true,
+  map: false,
+  tasks: false,
+  plants_pots: false,
+  care: false,
+  reminders: false,
+  visits: false,
   tools: false,
-  manuals: true,
-  client_portal: true,
-  billing_payments: true,
+  manuals: false,
+  client_portal: false,
+  billing_payments: false,
   rentals: false,
   events: false,
   documents: false,
   inventory: false,
 };
 
-export function normalizeModules(raw: Record<string, unknown> | null | undefined): Record<ModuleKey, boolean> {
-  const out = { ...DEFAULT_MODULES };
+export function normalizeModules(
+  raw: Record<string, unknown> | null | undefined,
+  fallback: Record<ModuleKey, boolean> = DEFAULT_MODULES,
+): Record<ModuleKey, boolean> {
+  const out = { ...fallback };
   if (raw && typeof raw === 'object') {
     for (const k of MODULE_KEYS) if (k in raw) out[k] = !!(raw as Record<string, unknown>)[k];
   }
   return out;
 }
 
-/** Dependencies are enforced: a module without its dependency is not usable. */
-export function resolveModules(raw: Record<string, unknown> | null | undefined): Record<ModuleKey, boolean> {
-  const flags = normalizeModules(raw);
+/**
+ * Dependencies are enforced: a module without its dependency is not usable.
+ * `fallback` covers organizations that never saved a configuration (legacy
+ * accounts keep the module set implied by their archetype).
+ */
+export function resolveModules(
+  raw: Record<string, unknown> | null | undefined,
+  fallback: Record<ModuleKey, boolean> = DEFAULT_MODULES,
+): Record<ModuleKey, boolean> {
+  const flags = normalizeModules(raw, fallback);
   let changed = true;
   while (changed) {
     changed = false;
@@ -354,6 +409,7 @@ export function resolveModules(raw: Record<string, unknown> | null | undefined):
   }
   return flags;
 }
+
 
 /** The module that owns a route, if any. Longest prefix wins. */
 export function moduleForRoute(pathname: string): ModuleDefinition | null {
@@ -372,7 +428,14 @@ export function moduleForRoute(pathname: string): ModuleDefinition | null {
 
 /* --------------------------- presets --------------------------- */
 
-export type PresetKey = 'plant_care_lite' | 'field_service' | 'rental_operations' | 'custom';
+export type PresetKey =
+  | 'minimal_core'
+  | 'plant_care_essentials'
+  | 'plant_service_operations'
+  | 'asset_tracking'
+  | 'field_service'
+  | 'property_management'
+  | 'custom';
 
 export interface OperationPreset {
   key: PresetKey;
@@ -390,39 +453,69 @@ const preset = (enabled: ModuleKey[]): Record<ModuleKey, boolean> => {
 
 export const PRESETS: OperationPreset[] = [
   {
-    key: 'plant_care_lite',
-    label: L('Plant Care Lite', 'Cuidado de plantas simple', 'Pflanzenpflege Lite'),
+    key: 'minimal_core',
+    label: L('Minimal Core', 'Núcleo mínimo', 'Minimalkern'),
     description: L(
-      'Clients, plants, care and reminders only.',
-      'Solo clientes, plantas, cuidados y recordatorios.',
-      'Nur Kunden, Pflanzen, Pflege und Erinnerungen.',
+      'Clients and projects only — nothing else.',
+      'Solo clientes y proyectos, nada más.',
+      'Nur Kunden und Projekte, nichts weiter.',
     ),
-    modules: preset(['clients', 'projects', 'plants_pots', 'care', 'reminders', 'client_portal', 'manuals']),
+    modules: preset(['clients', 'projects']),
   },
   {
-    key: 'field_service',
-    label: L('Field Service', 'Servicio de campo', 'Außendienst'),
+    key: 'plant_care_essentials',
+    label: L('Plant Care Essentials', 'Cuidado de plantas esencial', 'Pflanzenpflege Basis'),
     description: L(
-      'Visits, tools and billing for crews on site.',
-      'Visitas, herramientas y facturación para equipos en sitio.',
-      'Besuche, Werkzeuge und Abrechnung für Teams vor Ort.',
+      'Clients, plants, care and reminders.',
+      'Clientes, plantas, cuidados y recordatorios.',
+      'Kunden, Pflanzen, Pflege und Erinnerungen.',
     ),
-    modules: preset([
-      'clients', 'projects', 'assets', 'care', 'visits', 'tools', 'reminders', 'billing_payments', 'client_portal', 'manuals',
-    ]),
+    modules: preset(['clients', 'projects', 'plants_pots', 'care', 'reminders', 'client_portal']),
   },
   {
-    key: 'rental_operations',
-    label: L('Rental Operations', 'Operación de alquiler', 'Mietbetrieb'),
+    key: 'plant_service_operations',
+    label: L('Plant Service Operations', 'Operación de servicio de plantas', 'Pflanzenservice-Betrieb'),
     description: L(
-      'Full plant rental operation with contracts.',
-      'Operación completa de alquiler de plantas con contratos.',
-      'Vollständiger Pflanzenmietbetrieb mit Verträgen.',
+      'Full plant operation: visits, tools, rentals, billing, manuals.',
+      'Operación completa: visitas, herramientas, alquileres, facturación y manuales.',
+      'Vollbetrieb: Besuche, Werkzeuge, Vermietung, Abrechnung, Handbücher.',
     ),
     modules: preset([
       'clients', 'projects', 'assets', 'plants_pots', 'care', 'reminders', 'visits', 'tools', 'rentals',
       'billing_payments', 'client_portal', 'manuals',
     ]),
+  },
+  {
+    key: 'asset_tracking',
+    label: L('Asset Tracking', 'Registro de activos', 'Anlagenerfassung'),
+    description: L(
+      'Clients, projects and their assets, with reminders.',
+      'Clientes, proyectos y sus activos, con recordatorios.',
+      'Kunden, Projekte und ihre Anlagen mit Erinnerungen.',
+    ),
+    modules: preset(['clients', 'projects', 'assets', 'reminders']),
+  },
+  {
+    key: 'field_service',
+    label: L('Field Service', 'Servicio de campo', 'Außendienst'),
+    description: L(
+      'Visits, tasks, tools and billing for crews on site.',
+      'Visitas, tareas, herramientas y facturación para equipos en sitio.',
+      'Besuche, Aufgaben, Werkzeuge und Abrechnung für Teams vor Ort.',
+    ),
+    modules: preset([
+      'clients', 'projects', 'assets', 'map', 'tasks', 'visits', 'tools', 'reminders', 'billing_payments',
+    ]),
+  },
+  {
+    key: 'property_management',
+    label: L('Property Management', 'Administración de propiedades', 'Immobilienverwaltung'),
+    description: L(
+      'Properties, tasks, documents, billing and reminders.',
+      'Propiedades, tareas, documentos, facturación y recordatorios.',
+      'Objekte, Aufgaben, Dokumente, Abrechnung und Erinnerungen.',
+    ),
+    modules: preset(['clients', 'projects', 'tasks', 'documents', 'billing_payments', 'reminders']),
   },
   {
     key: 'custom',
@@ -431,6 +524,7 @@ export const PRESETS: OperationPreset[] = [
     modules: null,
   },
 ];
+
 
 export function moduleLabel(key: ModuleKey, language: string): string {
   const l = MODULES[key].label;

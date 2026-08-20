@@ -25,18 +25,12 @@ export function getPostAuthRoute({
 
   if (!orgId) return '/onboarding';
 
-  switch (orgType) {
-    case 'plant_rental':
-      return '/plantops/clientes';
-    case 'landscaping_company':
-    case 'hybrid':
-      return '/crm';
-    case 'property_management':
-      return '/';
-    default:
-      return '/';
-  }
+  // Every tenant lands on '/', which renders the client-first business home for
+  // business accounts and the work view for individual accounts. Module
+  // configuration — not org type — decides what is reachable from there.
+  return '/';
 }
+
 
 /** True when the tenant home dashboard (WorkView) is the correct landing screen. */
 export function landsOnWorkView(input: AuthRoutingInput): boolean {

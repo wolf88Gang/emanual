@@ -42,32 +42,11 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { hasRole, isOwnerOrManager, isPlatformAdmin, signOut, profile } = useAuth();
   const { language, tl } = useLanguage();
-  const [orgType, setOrgType] = useState<string>('residential');
-  const [modules, setModules] = useState<Record<string, boolean> | null>(null);
-  const { navModules, canUse } = useModules();
-
+  const { navModules, canUse, isBusiness, labels } = useModules();
 
   const isCrew = hasRole('crew');
   const isVendor = hasRole('vendor');
   const isClient = hasRole('client');
-
-  useEffect(() => {
-    if (profile?.org_id) {
-      supabase.from('organizations').select('org_type, modules_json').eq('id', profile.org_id).single()
-        .then(({ data }) => {
-          if (data) {
-            setOrgType((data as any).org_type || 'residential');
-            const m = (data as any).modules_json;
-            setModules(m && typeof m === 'object' && Object.keys(m).length > 0 ? m : null);
-          }
-        });
-    }
-  }, [profile?.org_id]);
-
-  const isLandscaper = orgType === 'landscaping_company' || orgType === 'hybrid';
-  const isPropManager = orgType === 'property_management';
-  const isPlantRental = orgType === 'plant_rental';
-
 
   const l = (en: string, es: string, de: string) => tl({ en, es, de });
 
@@ -81,93 +60,65 @@ export function AppSidebar() {
     { path: '/platform/system', icon: Activity, label: l('System', 'Sistema', 'System'), tooltip: l('System health', 'Salud del sistema', 'Systemzustand') },
   ];
 
-  // --- Build owner/manager nav based on org type ---
-  // Core items every owner/manager sees
-  const coreNav: NavItem[] = [
-    { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
-    { path: '/map', icon: Map, label: l('Map', 'Mapa', 'Karte'), tooltip: l('Interactive map', 'Mapa interactivo', 'Interaktive Karte') },
-    { path: '/assets', icon: Box, label: l('Assets', 'Activos', 'Anlagen'), tooltip: l('Manage assets', 'Gestionar activos', 'Anlagen verwalten') },
-    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('Task list', 'Lista de tareas', 'Aufgabenliste') },
-    { path: '/plants', icon: Leaf, label: l('Plants', 'Plantas', 'Pflanzen'), tooltip: l('Plant registry', 'Registro de plantas', 'Pflanzenregister') },
-    { path: '/documents', icon: FolderOpen, label: l('Documents', 'Documentos', 'Dokumente'), tooltip: l('Files & documents', 'Archivos y documentos', 'Dateien & Dokumente') },
+  /**
+   * Owner/manager navigation.
+   * The module registry (`src/lib/homeGuideModules.ts`) is the SOLE source of
+   * operational entries — no org-type branching anywhere.
+   */
+  const homeNav: NavItem[] = [
+    {
+      path: '/',
+      icon: isBusiness ? LayoutDashboard : Briefcase,
+      label: isBusiness ? l('Home', 'Inicio', 'Start') : l('Work', 'Trabajo', 'Arbeit'),
+      tooltip: isBusiness
+        ? l('Business overview', 'Resumen del negocio', 'Geschäftsübersicht')
+        : l('Work view', 'Vista de trabajo', 'Arbeitsansicht'),
+    },
   ];
 
-  // Landscaper-only items
-  const landscaperNav: NavItem[] = [
-    { path: '/labor', icon: DollarSign, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
-    { path: '/crm', icon: ShoppingBag, label: l('Sales', 'Ventas', 'Verkauf'), tooltip: l('Clients, invoices & payments', 'Clientes, facturas y pagos', 'Kunden, Rechnungen & Zahlungen') },
-    { path: '/my-jobs', icon: Megaphone, label: l('Jobs', 'Empleos', 'Jobs'), tooltip: l('Job postings & marketplace', 'Publicaciones de empleo', 'Stellenangebote & Marktplatz') },
-  ];
+  const moduleNav: NavItem[] = navModules.map((m) => ({
+    path: m.navRoute!,
+    icon: m.icon,
+    label: m.key === 'clients'
+      ? labels.client + (language === 'de' ? 'n' : 's')
+      : m.key === 'projects'
+        ? labels.projectPlural
+        : moduleLabel(m.key, language),
+    tooltip: moduleDescription(m.key, language),
+  }));
 
-  // Property manager items (invoicing + financials)
-  const propManagerNav: NavItem[] = [
-    { path: '/crm', icon: ShoppingBag, label: l('Invoicing', 'Facturación', 'Rechnungen'), tooltip: l('Clients, invoices & billing', 'Clientes, facturas y cobros', 'Kunden, Rechnungen & Abrechnung') },
-    { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
-    { path: '/labor', icon: Clock, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
-  ];
-
-  // Plant rental (PlantOps) items — generated from the modules the org enabled.
-  const plantRentalNav: NavItem[] = [
-    ...navModules.map((m) => ({
-      path: m.navRoute!,
-      icon: m.icon,
-      label: moduleLabel(m.key, language),
-      tooltip: moduleDescription(m.key, language),
-    })),
+  // Secondary entries without their own module — each rides on a module toggle.
+  const extrasNav: NavItem[] = [
     ...(canUse('clients')
-      ? [{ path: '/plantops/nuevo-cliente', icon: ShoppingBag, label: l('New client', 'Nuevo cliente', 'Neuer Kunde'), tooltip: l('6-step client setup', 'Alta de cliente en 6 pasos', 'Kundenanlage in 6 Schritten') }]
+      ? [{ path: '/plantops/nuevo-cliente', icon: ShoppingBag, label: l('New client', 'Nuevo cliente', 'Neuer Kunde'), tooltip: l('Guided client setup', 'Alta guiada de cliente', 'Geführte Kundenanlage') }]
       : []),
-    { path: '/plantops/settings', icon: Settings, label: l('PlantOps settings', 'Configuración PlantOps', 'PlantOps-Einstellungen'), tooltip: l('Modules & care factors', 'Módulos y factores de cuidado', 'Module & Pflegefaktoren') },
-  ];
-
-
-  // Homeowner financials
-  const homeownerNav: NavItem[] = [
-    { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
-  ];
-
-
-  // Optional / advanced items
-  const advancedNav: NavItem[] = [
-    { path: '/inventory', icon: Package, label: l('Inventory', 'Inventario', 'Inventar'), tooltip: l('Tools & supplies', 'Herramientas y suministros', 'Werkzeuge & Materialien') },
-    { path: '/compost', icon: Recycle, label: 'Compost', tooltip: l('Compost manager', 'Gestor de compost', 'Kompostverwaltung') },
-    { path: '/topography', icon: Mountain, label: l('Topography', 'Topografía', 'Topographie'), tooltip: l('Topographic analysis', 'Análisis topográfico', 'Topographische Analyse') },
-    { path: '/reports', icon: BookOpen, label: l('Reports', 'Reportes', 'Berichte'), tooltip: l('Reports & manuals', 'Reportes y manuales', 'Berichte & Handbücher') },
+    ...(canUse('billing_payments')
+      ? [
+          { path: '/financials', icon: DollarSign, label: l('Financials', 'Finanzas', 'Finanzen'), tooltip: l('Tax tracking & expenses', 'Seguimiento fiscal y gastos', 'Steuerverfolgung & Ausgaben') },
+          { path: '/labor', icon: Clock, label: l('Labor', 'Laboral', 'Arbeit'), tooltip: l('Labor management', 'Gestión laboral', 'Arbeitsverwaltung') },
+        ]
+      : []),
+    ...(canUse('plants_pots')
+      ? [{ path: '/compost', icon: Recycle, label: 'Compost', tooltip: l('Compost manager', 'Gestor de compost', 'Kompostverwaltung') }]
+      : []),
+    ...(canUse('manuals')
+      ? [{ path: '/reports', icon: BookOpen, label: l('Reports', 'Reportes', 'Berichte'), tooltip: l('Reports & manuals', 'Reportes y manuales', 'Berichte & Handbücher') }]
+      : []),
   ];
 
   const settingsNav: NavItem[] = [
-    { path: '/admin', icon: Settings, label: 'Admin', tooltip: l('Settings', 'Configuración', 'Einstellungen') },
-    { path: '/setup-wizard', icon: Wand2, label: l('Setup Wizard', 'Asistente', 'Assistent'), tooltip: l('Guided asset setup', 'Asistente de configuración', 'Geführte Anlageneinrichtung') },
+    { path: '/plantops/settings', icon: Settings, label: l('Settings', 'Configuración', 'Einstellungen'), tooltip: l('Modules & operation setup', 'Módulos y configuración de operación', 'Module & Betriebseinrichtung') },
+    { path: '/admin', icon: Wrench, label: 'Admin', tooltip: l('Organization admin', 'Administración de la organización', 'Organisationsverwaltung') },
     { path: '/requests', icon: MessageSquarePlus, label: l('Requests', 'Solicitudes', 'Anfragen'), tooltip: l('Feature requests & feedback', 'Solicitudes y comentarios', 'Anfragen & Feedback') },
   ];
 
-  // Module gating: canonical module keys own routes (see src/lib/homeGuideModules.ts).
-  // Legacy path-keyed overrides in organizations.modules_json are still honoured.
-  const moduleEnabled = (path: string) => {
-    const owner = isPlantRental ? moduleForRoute(path) : null;
-    if (owner && !canUse(owner.key)) return false;
+  const ownerNav: NavItem[] = [...homeNav, ...moduleNav, ...extrasNav, ...settingsNav];
 
-    if (!modules) return true;
-    const key = path.replace(/^\//, '');
-    const v = modules[path] ?? modules[key];
-    return v === undefined ? true : Boolean(v);
-  };
-
-
-  const ownerNav: NavItem[] = [
-    ...coreNav,
-    ...(isPlantRental ? plantRentalNav : isLandscaper ? landscaperNav : isPropManager ? propManagerNav : homeownerNav),
-    ...advancedNav,
-    ...settingsNav,
-  ].filter((item) => moduleEnabled(item.path));
-
-  // Crew nav
+  // Crew nav — also module gated.
   const crewNav: NavItem[] = [
     { path: '/', icon: Briefcase, label: l('Work', 'Trabajo', 'Arbeit'), tooltip: l('Work view', 'Vista de trabajo', 'Arbeitsansicht') },
-    { path: '/map', icon: Map, label: l('Map', 'Mapa', 'Karte'), tooltip: l('Map', 'Mapa', 'Karte') },
     { path: '/checkin', icon: Clock, label: l('Shift', 'Turno', 'Schicht'), tooltip: l('Clock in/out', 'Registrar turno', 'Ein-/Ausstempeln') },
-    { path: '/tasks', icon: ClipboardList, label: l('Tasks', 'Tareas', 'Aufgaben'), tooltip: l('My tasks', 'Mis tareas', 'Meine Aufgaben') },
-    { path: '/assets', icon: Box, label: l('Assets', 'Activos', 'Anlagen'), tooltip: l('View assets', 'Ver activos', 'Anlagen ansehen') },
+    ...moduleNav,
   ];
 
   // Vendor nav
@@ -178,7 +129,7 @@ export function AppSidebar() {
     { path: '/jobs', icon: Wrench, label: l('Job Board', 'Bolsa de Trabajo', 'Jobbörse'), tooltip: l('Find work opportunities', 'Buscar oportunidades de trabajo', 'Arbeitsmöglichkeiten finden') },
   ];
 
-  // Client nav - dynamically built based on permissions (all items shown, permission enforcement in pages)
+  // Client nav — dynamically built based on permissions (enforced in pages)
   const clientNav: NavItem[] = [
     { path: '/map', icon: Map, label: l('Map', 'Mapa', 'Karte'), tooltip: l('Property map', 'Mapa de propiedad', 'Grundstückskarte') },
     { path: '/assets', icon: Box, label: l('Assets', 'Activos', 'Anlagen'), tooltip: l('View assets', 'Ver activos', 'Anlagen ansehen') },
@@ -204,8 +155,9 @@ export function AppSidebar() {
     groupLabel = l('Crew', 'Equipo', 'Team');
   } else {
     navItems = ownerNav;
-    groupLabel = l('Management', 'Gestión', 'Verwaltung');
+    groupLabel = isBusiness ? l('Operation', 'Operación', 'Betrieb') : l('Management', 'Gestión', 'Verwaltung');
   }
+
 
   const isActive = (path: string) => {
     if (path === '/') return location.pathname === '/';
