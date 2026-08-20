@@ -6,29 +6,30 @@ Note: this is a large correctness pass, so it goes through plan approval once �
 
 Confirmed: `organizations` has columns `id, name, org_type, business_archetype, account_scope, modules_json, plantops_care_settings_json, created_at, updated_at` — no `country`, and `profiles` has no `country` either. That is why `complete_business_onboarding` fails.
 
-- Additive migration: `ALTER TABLE public.organizations ADD COLUMN country text`.
-- Rewrite `complete_business_onboarding` to write org name, archetype, scope, modules_json, country on the organization, the owner role, and the profile org link only. No estate created.
+- No schema added just to satisfy the RPC: country has no product use today, so `p_country` persistence is removed from onboarding for now (no new column).
+- Rewrite `complete_business_onboarding` to write org name, archetype, scope, modules_json, the owner role, and the profile org link only. No estate created.
 - Onboarding UI: destructive toast on any RPC error, keep all entered values, stay on the modules step, allow retry, never navigate on failure.
 - Re-test signup + finish end-to-end before continuing.
 
 ## 2. Remove organization-wide agronomic day offsets
 
 - Delete the pot material / ventilation / actual light / month "+days" factor sections and the "positive values stretch the interval" helper text from `/plantops/settings`.
-- Stop exposing `plantops_care_settings_json` as an owner-facing coefficient editor (column stays in the DB, unused by the engine).
+- `plantops_care_settings_json` stays in the database for backwards compatibility (not dropped in this pass) but is removed from the effective-care calculation and from all owner-facing UI.
 
 ## 3-5. Canonical care model
 
-Rewrite `plantops_effective_care()` (and the care queue) to resolve, in this precedence:
+Rewrite `plantops_effective_care()` (and the care queue) to resolve, in exactly this precedence:
 
-1. documented manual override (value + reason + actor + timestamp)
+1. documented manual override (value + reason + actor + timestamp, all retained)
 2. explicit placement baseline, only when deliberately set
 3. structured species baseline from `plant_profiles.care_template_json`
 4. otherwise `REVISAR`
 
 - Remove all org-level factor arithmetic; add no replacement constants.
-- Species baseline is used automatically — no "Use as base" copy step, no duplication into the placement. Source is reported as `species_profile` / `placement` / `override`.
-- No free-text parsing into numeric days.
-- Environmental data becomes review signals, not day math: e.g. species requires indirect light while actual light is artificial/insufficient → light-mismatch flag / review, never `+2 days`.
+- Species baseline is used automatically — no "Use as base" copy step, and the species value is never duplicated into or overwritten on the placement. Source is reported as `override` / `placement` / `species_profile`.
+- Care prose is never parsed into watering days: if a profile has no reliable structured numeric baseline, the result is `REVISAR`.
+- Environmental data becomes review signals from normalized structured fields only (e.g. required light vs `light_actual` enum) — never free-text or multilingual prose comparison, and never day math like `+2 days`.
+- `care_template_json` remains the scientific/reference source; placement data describes the installed specimen and its environment; overrides are explicit operational exceptions.
 
 ## 6. Data stays where it belongs
 
