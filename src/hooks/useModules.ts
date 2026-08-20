@@ -127,6 +127,8 @@ export function useModules() {
     canUse,
     navModules,
     isRouteAllowed,
+    routeRedirect,
+
     saveModules: save.mutateAsync,
     saving: save.isPending,
   };

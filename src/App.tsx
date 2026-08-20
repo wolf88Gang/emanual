@@ -133,9 +133,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
  */
 function ModuleGate({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const { loading, isRouteAllowed, homeRoute } = useModules();
+  const { loading, isRouteAllowed, routeRedirect, homeRoute } = useModules();
 
   if (loading) return <PageLoader />;
+
+  const deprecated = routeRedirect(location.pathname);
+  if (deprecated) return <Navigate to={deprecated} replace />;
 
   if (!isRouteAllowed(location.pathname)) {
     const fallback = isRouteAllowed(homeRoute) ? homeRoute : '/';
