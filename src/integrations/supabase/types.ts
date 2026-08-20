@@ -1815,6 +1815,8 @@ export type Database = {
       }
       organizations: {
         Row: {
+          account_scope: string | null
+          business_archetype: string | null
           created_at: string
           id: string
           modules_json: Json
@@ -1824,6 +1826,8 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          account_scope?: string | null
+          business_archetype?: string | null
           created_at?: string
           id?: string
           modules_json?: Json
@@ -1833,6 +1837,8 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          account_scope?: string | null
+          business_archetype?: string | null
           created_at?: string
           id?: string
           modules_json?: Json
@@ -3698,6 +3704,15 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      complete_business_onboarding: {
+        Args: {
+          p_archetype: string
+          p_country?: string
+          p_modules?: Json
+          p_org_name: string
+        }
+        Returns: string
+      }
       complete_initial_onboarding: {
         Args: {
           p_address_text?: string
