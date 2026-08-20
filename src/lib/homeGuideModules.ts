@@ -352,35 +352,51 @@ export const MODULE_LIST: ModuleDefinition[] = MODULE_KEYS.map((k) => MODULES[k]
 /** Project-level toggles (subset of org modules). */
 export const PROJECT_MODULE_KEYS: ModuleKey[] = MODULE_LIST.filter((m) => m.projectCapability).map((m) => m.key);
 
+/**
+ * Minimal core: a business only needs clients and projects to be usable.
+ * Everything else is opt-in and must be selected explicitly.
+ */
 export const DEFAULT_MODULES: Record<ModuleKey, boolean> = {
   clients: true,
   projects: true,
   assets: false,
-  plants_pots: true,
-  care: true,
-  reminders: true,
-  visits: true,
+  map: false,
+  tasks: false,
+  plants_pots: false,
+  care: false,
+  reminders: false,
+  visits: false,
   tools: false,
-  manuals: true,
-  client_portal: true,
-  billing_payments: true,
+  manuals: false,
+  client_portal: false,
+  billing_payments: false,
   rentals: false,
   events: false,
   documents: false,
   inventory: false,
 };
 
-export function normalizeModules(raw: Record<string, unknown> | null | undefined): Record<ModuleKey, boolean> {
-  const out = { ...DEFAULT_MODULES };
+export function normalizeModules(
+  raw: Record<string, unknown> | null | undefined,
+  fallback: Record<ModuleKey, boolean> = DEFAULT_MODULES,
+): Record<ModuleKey, boolean> {
+  const out = { ...fallback };
   if (raw && typeof raw === 'object') {
     for (const k of MODULE_KEYS) if (k in raw) out[k] = !!(raw as Record<string, unknown>)[k];
   }
   return out;
 }
 
-/** Dependencies are enforced: a module without its dependency is not usable. */
-export function resolveModules(raw: Record<string, unknown> | null | undefined): Record<ModuleKey, boolean> {
-  const flags = normalizeModules(raw);
+/**
+ * Dependencies are enforced: a module without its dependency is not usable.
+ * `fallback` covers organizations that never saved a configuration (legacy
+ * accounts keep the module set implied by their archetype).
+ */
+export function resolveModules(
+  raw: Record<string, unknown> | null | undefined,
+  fallback: Record<ModuleKey, boolean> = DEFAULT_MODULES,
+): Record<ModuleKey, boolean> {
+  const flags = normalizeModules(raw, fallback);
   let changed = true;
   while (changed) {
     changed = false;
@@ -393,6 +409,7 @@ export function resolveModules(raw: Record<string, unknown> | null | undefined):
   }
   return flags;
 }
+
 
 /** The module that owns a route, if any. Longest prefix wins. */
 export function moduleForRoute(pathname: string): ModuleDefinition | null {
