@@ -172,31 +172,31 @@ export default function PlantOpsCareEditor() {
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (
           <>
-            {/* Species guidance = reference knowledge, never an operational value */}
+            {/* 1. What the species needs (documented reference) */}
             <div className="grid gap-4 md:grid-cols-2">
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <BookOpen className="h-4 w-4" />{l('Species guidance (reference)', 'Guía de especie (referencia)', 'Artenleitfaden (Referenz)')}
+                    <BookOpen className="h-4 w-4" />{l('What the species needs', 'Qué necesita la especie', 'Was die Art braucht')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
-                  {speciesName && <p className="font-medium italic">{speciesName}</p>}
-                  {care?.species_baseline_days != null ? (
-                    <p>
-                      {l('Structured suggestion', 'Sugerencia estructurada', 'Strukturierter Vorschlag')}:{' '}
-                      <strong>{days(care.species_baseline_days)}</strong>
-                      <Button variant="link" className="px-2 h-auto text-sm"
-                        onClick={() => setForm({ ...form, base_days: String(care.species_baseline_days) })}>
-                        {l('Use as base', 'Usar como base', 'Als Basis verwenden')}
-                      </Button>
-                    </p>
-                  ) : (
+                  {(speciesName || care?.species_scientific_name) && (
+                    <p className="font-medium italic">{speciesName || care?.species_scientific_name}</p>
+                  )}
+                  <p>
+                    {l('Documented interval', 'Intervalo documentado', 'Dokumentiertes Intervall')}:{' '}
+                    <strong>{days(care?.species_baseline_days)}</strong>
+                  </p>
+                  {care?.species_baseline_days == null && (
                     <p className="text-muted-foreground">
-                      {l('No structured numeric interval in the guide. Free text is never converted into a number.',
-                        'La guía no tiene un intervalo numérico estructurado. El texto libre nunca se convierte en número.',
-                        'Kein strukturiertes Intervall im Leitfaden.')}
+                      {l('The species guide has no structured interval. Free text is never converted into a number.',
+                        'La guía de especie no tiene un intervalo estructurado. El texto libre nunca se convierte en número.',
+                        'Der Artenleitfaden hat kein strukturiertes Intervall.')}
                     </p>
+                  )}
+                  {care?.light_required && (
+                    <p>{l('Light required', 'Luz requerida', 'Benötigtes Licht')}: <strong>{care.light_required}</strong></p>
                   )}
                   {speciesGuide ? (
                     <ul className="space-y-1 text-muted-foreground">
@@ -212,39 +212,17 @@ export default function PlantOpsCareEditor() {
                 </CardContent>
               </Card>
 
+              {/* 2. Real conditions + 3. operational result + 4. exception */}
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base flex items-center gap-2">
-                    <Wrench className="h-4 w-4" />{l('Operational plan (in force)', 'Plan operativo (vigente)', 'Betriebsplan (gültig)')}
+                    <Wrench className="h-4 w-4" />{l('Real conditions and result', 'Condiciones reales y resultado', 'Reale Bedingungen und Ergebnis')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-1.5 text-sm">
-                  <p>{l('Operational base', 'Base operativa', 'Betriebsbasis')}: <strong>{days(care?.base_days)}</strong>{' '}
-                    {care?.base_source === 'none' && (
-                      <Badge variant="outline">{l('not defined — review', 'sin definir — revisar', 'nicht definiert — prüfen')}</Badge>
-                    )}
-                  </p>
-                  <p>{l('Configured factors', 'Factores configurados', 'Konfigurierte Faktoren')}:{' '}
-                    <strong>{(care?.factors_total_days ?? 0) > 0 ? `+${care?.factors_total_days}` : care?.factors_total_days ?? 0}</strong>
-                  </p>
-                  {(care?.configured_factors || []).length > 0 && (
-                    <ul className="text-muted-foreground pl-3">
-                      {(care?.configured_factors || []).map((f, i) => (
-                        <li key={i}>{f.label ?? `${f.key ?? ''}: ${f.value ?? ''}`}: {f.days > 0 ? `+${f.days}` : f.days}</li>
-                      ))}
-                    </ul>
-                  )}
-                  <p>{l('Manual override', 'Ajuste manual', 'Manuelle Anpassung')}:{' '}
-                    <strong>{care?.override_days != null ? days(care.override_days) : l('none', 'ninguno', 'keine')}</strong>
-                  </p>
-                  <p className="pt-1 border-t border-border/60">
-                    {l('Effective plan', 'Plan efectivo', 'Effektiver Plan')}: <strong>{days(care?.effective_days)}</strong>
-                  </p>
                   <p className="text-muted-foreground">
-                    {l('Last watered', 'Último riego', 'Letzte Gießung')}: {care?.last_watered_at ? formatDateEs(care.last_watered_at) : '—'}
-                  </p>
-                  <p className="text-muted-foreground">
-                    {l('Next watering', 'Próximo riego', 'Nächste Gießung')}: {formatDateEs(care?.next_water_due)}
+                    {l('Actual light', 'Luz actual', 'Aktuelles Licht')}: {care?.light_actual || '—'} ·{' '}
+                    {l('Ventilation', 'Ventilación', 'Belüftung')}: {care?.ventilation || '—'}
                   </p>
                   {care?.pot && (
                     <p className="text-muted-foreground">
@@ -252,9 +230,54 @@ export default function PlantOpsCareEditor() {
                         care.pot.has_drainage === false ? l('no drainage', 'sin drenaje', 'keine Drainage') : null].filter(Boolean).join(' · ') || '—'}
                     </p>
                   )}
+                  <p className="pt-1 border-t border-border/60">
+                    {l('Interval in force', 'Intervalo vigente', 'Gültiges Intervall')}: <strong>{days(care?.effective_days)}</strong>{' '}
+                    <Badge variant="outline">
+                      {care?.effective_source === 'override'
+                        ? l('documented exception', 'excepción documentada', 'dokumentierte Ausnahme')
+                        : care?.effective_source === 'placement'
+                          ? l('this plant', 'esta planta', 'diese Pflanze')
+                          : care?.effective_source === 'species_profile'
+                            ? l('species', 'especie', 'Art')
+                            : l('needs review', 'requiere revisión', 'prüfen')}
+                    </Badge>
+                  </p>
+                  {care?.override_days != null && (
+                    <p className="text-muted-foreground">
+                      {l('Exception', 'Excepción', 'Ausnahme')}: {days(care.override_days)}
+                      {care.override_reason ? ` — ${care.override_reason}` : ''}
+                      {care.override_at ? ` (${formatDateEs(care.override_at)})` : ''}
+                    </p>
+                  )}
+                  {(care?.review_flags || []).length > 0 && (
+                    <ul className="pt-1 space-y-1">
+                      {(care?.review_flags || []).map((f, i) => (
+                        <li key={i} className="text-amber-600 dark:text-amber-400">
+                          {f.key === 'no_baseline'
+                            ? l('No documented interval — review required, no interval is invented.',
+                                'Sin intervalo documentado: requiere revisión, no se inventa ningún intervalo.',
+                                'Kein dokumentiertes Intervall — Prüfung erforderlich.')
+                            : f.key === 'light_mismatch'
+                              ? `${l('Light mismatch', 'Luz no coincide', 'Licht abweichend')}: ${f.required} → ${f.actual}`
+                              : f.key === 'override_without_reason'
+                                ? l('Exception without a documented reason.',
+                                    'Excepción sin motivo documentado.',
+                                    'Ausnahme ohne dokumentierten Grund.')
+                                : f.key}
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  <p className="text-muted-foreground pt-1">
+                    {l('Last watered', 'Último riego', 'Letzte Gießung')}: {care?.last_watered_at ? formatDateEs(care.last_watered_at) : '—'}
+                  </p>
+                  <p className="text-muted-foreground">
+                    {l('Next watering', 'Próximo riego', 'Nächste Gießung')}: {formatDateEs(care?.next_water_due)}
+                  </p>
                 </CardContent>
               </Card>
             </div>
+
 
             {/* Editor */}
             <Card>
