@@ -581,7 +581,7 @@ export const PRESETS: OperationPreset[] = [
       'Besuche, Aufgaben, Werkzeuge und Abrechnung für Teams vor Ort.',
     ),
     modules: preset([
-      'clients', 'projects', 'assets', 'map', 'tasks', 'visits', 'tools', 'reminders', 'billing_payments',
+      'clients', 'projects', 'assets', 'map', 'tasks', 'visits', 'tools', 'reminders', 'billing_payments', 'labor',
     ]),
   },
   {
