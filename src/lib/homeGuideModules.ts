@@ -78,8 +78,9 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
       'Kundenakten, Kontakte und Kommunikation.',
     ),
     icon: Users,
-    routes: ['/plantops/clientes', '/plantops/nuevo-cliente'],
-    navRoute: '/plantops/clientes',
+    routes: ['/clients', '/plantops/clientes', '/plantops/nuevo-cliente'],
+    navRoute: '/clients',
+
     allowedRoles: ['owner', 'manager'],
     dependencies: [],
     dashboardWidgets: [{ id: 'clients.active', label: L('Active clients', 'Clientes activos', 'Aktive Kunden'), route: '/plantops/clientes' }],
