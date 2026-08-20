@@ -20,6 +20,8 @@ export const MODULE_KEYS = [
   'clients',
   'projects',
   'assets',
+  'map',
+  'tasks',
   'plants_pots',
   'care',
   'reminders',
@@ -33,6 +35,7 @@ export const MODULE_KEYS = [
   'documents',
   'inventory',
 ] as const;
+
 
 export type ModuleKey = (typeof MODULE_KEYS)[number];
 
