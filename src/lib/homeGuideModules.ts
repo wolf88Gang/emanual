@@ -1,7 +1,7 @@
 import {
   Users, FolderKanban, Box, Sprout, Droplets, BellRing, ClipboardList, Wrench,
   BookOpen, Globe, Receipt, FileSignature, CalendarDays, FolderOpen, Package,
-  Map as MapIcon, ListChecks,
+  Map as MapIcon, ListChecks, Timer,
 } from 'lucide-react';
 
 import type { ComponentType } from 'react';
@@ -34,6 +34,7 @@ export const MODULE_KEYS = [
   'events',
   'documents',
   'inventory',
+  'labor',
 ] as const;
 
 
