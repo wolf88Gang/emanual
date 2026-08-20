@@ -1,7 +1,9 @@
 import {
   Users, FolderKanban, Box, Sprout, Droplets, BellRing, ClipboardList, Wrench,
   BookOpen, Globe, Receipt, FileSignature, CalendarDays, FolderOpen, Package,
+  Map as MapIcon, ListChecks,
 } from 'lucide-react';
+
 import type { ComponentType } from 'react';
 
 /**
