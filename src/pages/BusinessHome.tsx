@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2, Plus, ArrowRight, Users, Settings } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useModules } from '@/hooks/useModules';
 import { fetchClientWorkspace } from '@/lib/plantopsClients';
@@ -34,8 +35,23 @@ export default function BusinessHome() {
     queryFn: () => fetchClientWorkspace(orgId!),
   });
 
+  /** Total sites in the organization (including sites not yet linked to a client). */
+  const { data: siteCount } = useQuery({
+    queryKey: ['business-home-sites', orgId],
+    enabled: !!orgId,
+    queryFn: async () => {
+      const { count, error } = await supabase
+        .from('estates')
+        .select('id', { count: 'exact', head: true })
+        .eq('org_id', orgId!);
+      if (error) throw error;
+      return count ?? 0;
+    },
+  });
+
   const rows = clients ?? [];
-  const projectCount = rows.reduce((n, c) => n + (c.projects?.length ?? 0), 0);
+  const projectCount = siteCount ?? rows.reduce((n, c) => n + (c.projects?.length ?? 0), 0);
+
 
   return (
     <ModernAppLayout>

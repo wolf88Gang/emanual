@@ -241,19 +241,24 @@ export default function PlantOpsSettings() {
             </Card>
 
 
-            <p className="text-xs text-muted-foreground">
-              {l('Positive values stretch the interval, negative values shorten it (days).',
-                 'Valores positivos alargan el intervalo, negativos lo acortan (días).')}
-            </p>
+            {effective.care && (
+              <>
+                <p className="text-xs text-muted-foreground">
+                  {l('Positive values stretch the interval, negative values shorten it (days).',
+                     'Valores positivos alargan el intervalo, negativos lo acortan (días).')}
+                </p>
 
-            {factorGroup('pot_material', l('Pot material', 'Material de maceta'), [...POT_MATERIALS], (k) =>
-              language === 'es' ? POT_MATERIAL_LABELS[k as PotMaterial].es : POT_MATERIAL_LABELS[k as PotMaterial].en,
+                {factorGroup('pot_material', l('Pot material', 'Material de maceta'), [...POT_MATERIALS], (k) =>
+                  language === 'es' ? POT_MATERIAL_LABELS[k as PotMaterial].es : POT_MATERIAL_LABELS[k as PotMaterial].en,
+                )}
+                {factorGroup('ventilation', l('Ventilation', 'Ventilación'), VENTILATION)}
+                {factorGroup('light_actual', l('Actual light', 'Luz real'), LIGHT)}
+                {factorGroup('season', l('Month', 'Mes'), MONTHS, (k) =>
+                  new Date(2024, Number(k) - 1, 1).toLocaleDateString(language === 'es' ? 'es-CR' : 'en-US', { month: 'short' }),
+                )}
+              </>
             )}
-            {factorGroup('ventilation', l('Ventilation', 'Ventilación'), VENTILATION)}
-            {factorGroup('light_actual', l('Actual light', 'Luz real'), LIGHT)}
-            {factorGroup('season', l('Month', 'Mes'), MONTHS, (k) =>
-              new Date(2024, Number(k) - 1, 1).toLocaleDateString(language === 'es' ? 'es-CR' : 'en-US', { month: 'short' }),
-            )}
+
 
             <Button onClick={save} disabled={saving} className="w-full">
               {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
