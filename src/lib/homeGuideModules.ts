@@ -428,7 +428,14 @@ export function moduleForRoute(pathname: string): ModuleDefinition | null {
 
 /* --------------------------- presets --------------------------- */
 
-export type PresetKey = 'plant_care_lite' | 'field_service' | 'rental_operations' | 'custom';
+export type PresetKey =
+  | 'minimal_core'
+  | 'plant_care_essentials'
+  | 'plant_service_operations'
+  | 'asset_tracking'
+  | 'field_service'
+  | 'property_management'
+  | 'custom';
 
 export interface OperationPreset {
   key: PresetKey;
@@ -446,39 +453,69 @@ const preset = (enabled: ModuleKey[]): Record<ModuleKey, boolean> => {
 
 export const PRESETS: OperationPreset[] = [
   {
-    key: 'plant_care_lite',
-    label: L('Plant Care Lite', 'Cuidado de plantas simple', 'Pflanzenpflege Lite'),
+    key: 'minimal_core',
+    label: L('Minimal Core', 'Núcleo mínimo', 'Minimalkern'),
     description: L(
-      'Clients, plants, care and reminders only.',
-      'Solo clientes, plantas, cuidados y recordatorios.',
-      'Nur Kunden, Pflanzen, Pflege und Erinnerungen.',
+      'Clients and projects only — nothing else.',
+      'Solo clientes y proyectos, nada más.',
+      'Nur Kunden und Projekte, nichts weiter.',
     ),
-    modules: preset(['clients', 'projects', 'plants_pots', 'care', 'reminders', 'client_portal', 'manuals']),
+    modules: preset(['clients', 'projects']),
   },
   {
-    key: 'field_service',
-    label: L('Field Service', 'Servicio de campo', 'Außendienst'),
+    key: 'plant_care_essentials',
+    label: L('Plant Care Essentials', 'Cuidado de plantas esencial', 'Pflanzenpflege Basis'),
     description: L(
-      'Visits, tools and billing for crews on site.',
-      'Visitas, herramientas y facturación para equipos en sitio.',
-      'Besuche, Werkzeuge und Abrechnung für Teams vor Ort.',
+      'Clients, plants, care and reminders.',
+      'Clientes, plantas, cuidados y recordatorios.',
+      'Kunden, Pflanzen, Pflege und Erinnerungen.',
     ),
-    modules: preset([
-      'clients', 'projects', 'assets', 'care', 'visits', 'tools', 'reminders', 'billing_payments', 'client_portal', 'manuals',
-    ]),
+    modules: preset(['clients', 'projects', 'plants_pots', 'care', 'reminders', 'client_portal']),
   },
   {
-    key: 'rental_operations',
-    label: L('Rental Operations', 'Operación de alquiler', 'Mietbetrieb'),
+    key: 'plant_service_operations',
+    label: L('Plant Service Operations', 'Operación de servicio de plantas', 'Pflanzenservice-Betrieb'),
     description: L(
-      'Full plant rental operation with contracts.',
-      'Operación completa de alquiler de plantas con contratos.',
-      'Vollständiger Pflanzenmietbetrieb mit Verträgen.',
+      'Full plant operation: visits, tools, rentals, billing, manuals.',
+      'Operación completa: visitas, herramientas, alquileres, facturación y manuales.',
+      'Vollbetrieb: Besuche, Werkzeuge, Vermietung, Abrechnung, Handbücher.',
     ),
     modules: preset([
       'clients', 'projects', 'assets', 'plants_pots', 'care', 'reminders', 'visits', 'tools', 'rentals',
       'billing_payments', 'client_portal', 'manuals',
     ]),
+  },
+  {
+    key: 'asset_tracking',
+    label: L('Asset Tracking', 'Registro de activos', 'Anlagenerfassung'),
+    description: L(
+      'Clients, projects and their assets, with reminders.',
+      'Clientes, proyectos y sus activos, con recordatorios.',
+      'Kunden, Projekte und ihre Anlagen mit Erinnerungen.',
+    ),
+    modules: preset(['clients', 'projects', 'assets', 'reminders']),
+  },
+  {
+    key: 'field_service',
+    label: L('Field Service', 'Servicio de campo', 'Außendienst'),
+    description: L(
+      'Visits, tasks, tools and billing for crews on site.',
+      'Visitas, tareas, herramientas y facturación para equipos en sitio.',
+      'Besuche, Aufgaben, Werkzeuge und Abrechnung für Teams vor Ort.',
+    ),
+    modules: preset([
+      'clients', 'projects', 'assets', 'map', 'tasks', 'visits', 'tools', 'reminders', 'billing_payments',
+    ]),
+  },
+  {
+    key: 'property_management',
+    label: L('Property Management', 'Administración de propiedades', 'Immobilienverwaltung'),
+    description: L(
+      'Properties, tasks, documents, billing and reminders.',
+      'Propiedades, tareas, documentos, facturación y recordatorios.',
+      'Objekte, Aufgaben, Dokumente, Abrechnung und Erinnerungen.',
+    ),
+    modules: preset(['clients', 'projects', 'tasks', 'documents', 'billing_payments', 'reminders']),
   },
   {
     key: 'custom',
@@ -487,6 +524,7 @@ export const PRESETS: OperationPreset[] = [
     modules: null,
   },
 ];
+
 
 export function moduleLabel(key: ModuleKey, language: string): string {
   const l = MODULES[key].label;
