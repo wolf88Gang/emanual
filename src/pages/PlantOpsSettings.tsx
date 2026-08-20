@@ -162,12 +162,13 @@ export default function PlantOpsSettings() {
         <div>
           <h1 className="text-2xl font-semibold flex items-center gap-2">
             <SettingsIcon className="h-6 w-6 text-primary" />
-            {l('PlantOps settings', 'Configuración PlantOps')}
+            {l('Operation settings', 'Configuración de la operación')}
           </h1>
           <p className="text-sm text-muted-foreground">
-            {l('Active modules and the day adjustments applied to every care plan.',
-               'Módulos activos y los ajustes en días que se aplican a cada plan de cuidado.')}
+            {l('Choose the functionality you use. Everything can be turned off.',
+               'Elija la funcionalidad que usa. Todo se puede desactivar.')}
           </p>
+
         </div>
 
         {loading ? (
