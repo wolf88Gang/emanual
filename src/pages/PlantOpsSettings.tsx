@@ -11,14 +11,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useOrgType } from '@/hooks/usePlantOps';
 import { useModules } from '@/hooks/useModules';
-import {
-  fetchCareSettings,
-  saveCareSettings,
-  POT_MATERIALS,
-  POT_MATERIAL_LABELS,
-  type PotMaterial,
-  type CareSettings,
-} from '@/lib/plantopsCare';
 
 import {
   MODULE_KEYS,
@@ -31,14 +23,10 @@ import {
   type PresetKey,
 } from '@/lib/homeGuideModules';
 
-const VENTILATION = ['baja', 'media', 'alta', 'aire_acondicionado'];
-const LIGHT = ['sombra', 'luz_indirecta', 'luz_directa', 'artificial'];
-const MONTHS = ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12'];
-
-
 /**
- * PlantOps configuration. Every agronomic adjustment factor lives here — nothing
- * is hardcoded in the care engine.
+ * PlantOps configuration: which modules the organization operates.
+ * No global agronomic coefficients live here — care always comes from the
+ * species baseline, the placement baseline or a documented exception.
  */
 export default function PlantOpsSettings() {
   const { language } = useLanguage();
