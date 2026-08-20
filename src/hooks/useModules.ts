@@ -6,6 +6,8 @@ import {
   DEFAULT_MODULES,
   MODULE_LIST,
   moduleForRoute,
+  routeAccess,
+
   resolveModules,
   type ModuleDefinition,
   type ModuleKey,
