@@ -78,7 +78,7 @@ export default function PlantOpsSettings() {
     setSaving(true);
     try {
       await saveModules(effective);
-      const active = MODULE_KEYS.filter((k) => effective[k]).map((k) => moduleLabel(MODULES[k], language));
+      const active = MODULE_KEYS.filter((k) => effective[k]).map((k) => moduleLabel(k, language));
       toast({
         title: l('Settings saved', 'Configuración guardada'),
         description: active.length
