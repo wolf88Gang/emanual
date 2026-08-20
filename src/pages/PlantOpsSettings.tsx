@@ -35,10 +35,9 @@ export default function PlantOpsSettings() {
   const { modules: savedModules, saveModules, loading: modulesLoading } = useModules();
   const l = (en: string, es: string) => (language === 'es' ? es : en);
 
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [modules, setModules] = useState<Record<ModuleKey, boolean> | null>(null);
-  const [settings, setSettings] = useState<CareSettings>({});
+  const loading = modulesLoading && !modules;
 
   useEffect(() => {
     document.title = l('PlantOps settings', 'Configuración PlantOps');
@@ -47,19 +46,6 @@ export default function PlantOpsSettings() {
   useEffect(() => {
     if (!modulesLoading) setModules((prev) => prev ?? savedModules);
   }, [modulesLoading, savedModules]);
-
-  useEffect(() => {
-    if (!orgId) return;
-    (async () => {
-      try {
-        setSettings(await fetchCareSettings(orgId));
-      } catch (e: any) {
-        toast({ title: l('Could not load settings', 'No se pudo cargar la configuración'), description: e.message, variant: 'destructive' });
-      } finally {
-        setLoading(false);
-      }
-    })();
-  }, [orgId]);
 
   const effective = useMemo(() => resolveModules(modules ?? {}), [modules]);
 
@@ -87,28 +73,19 @@ export default function PlantOpsSettings() {
     setModules(resolveModules(p.modules));
   };
 
-  const setFactor = (group: keyof CareSettings, key: string, value: string) => {
-    setSettings((prev) => {
-      const next = { ...prev, [group]: { ...(prev[group] as Record<string, number> | undefined) } } as CareSettings;
-      const bucket = next[group] as Record<string, number>;
-      if (value === '') delete bucket[key];
-      else bucket[key] = Number(value);
-      return next;
-    });
-  };
-
-  const factorValue = (group: keyof CareSettings, key: string) => {
-    const bucket = settings[group] as Record<string, number> | undefined;
-    const v = bucket?.[key];
-    return v == null ? '' : String(v);
-  };
-
   const save = async () => {
     if (!orgId) return;
     setSaving(true);
     try {
-      await Promise.all([saveModules(effective), saveCareSettings(orgId, settings)]);
-      toast({ title: l('Settings saved', 'Configuración guardada') });
+      await saveModules(effective);
+      const active = MODULE_KEYS.filter((k) => effective[k]).map((k) => moduleLabel(MODULES[k], language));
+      toast({
+        title: l('Settings saved', 'Configuración guardada'),
+        description: active.length
+          ? `${l('Active modules', 'Módulos activos')}: ${active.join(', ')}`
+          : l('No modules active — only configuration stays available.',
+               'Sin módulos activos: solo queda disponible la configuración.'),
+      });
     } catch (e: any) {
       toast({ title: l('Could not save', 'No se pudo guardar'), description: e.message, variant: 'destructive' });
     } finally {
@@ -117,32 +94,6 @@ export default function PlantOpsSettings() {
   };
 
 
-  const factorGroup = (
-    group: keyof CareSettings,
-    title: string,
-    keys: string[],
-    labeler?: (k: string) => string,
-  ) => (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-base">{title}</CardTitle>
-      </CardHeader>
-      <CardContent className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-        {keys.map((k) => (
-          <div key={k} className="space-y-1">
-            <Label className="text-xs capitalize">{labeler ? labeler(k) : k.replace(/_/g, ' ')}</Label>
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="0"
-              value={factorValue(group, k)}
-              onChange={(e) => setFactor(group, k, e.target.value)}
-            />
-          </div>
-        ))}
-      </CardContent>
-    </Card>
-  );
 
   return (
     <ModernAppLayout>
