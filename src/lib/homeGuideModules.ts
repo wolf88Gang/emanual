@@ -396,6 +396,8 @@ export const DEFAULT_MODULES: Record<ModuleKey, boolean> = {
   events: false,
   documents: false,
   inventory: false,
+  labor: false,
+
 };
 
 export function normalizeModules(
