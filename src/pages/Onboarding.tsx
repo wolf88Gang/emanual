@@ -1,181 +1,149 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { ArrowRight, ArrowLeft, Check, Building2, RotateCcw, Users } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Building2, Home, HardHat, RotateCcw, Users, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { PRICE_PER_PROPERTY, TRIAL_DAYS } from '@/contexts/SubscriptionContext';
+import { Switch } from '@/components/ui/switch';
+import { TRIAL_DAYS } from '@/contexts/SubscriptionContext';
+import {
+  BUSINESS_ARCHETYPES,
+  suggestedModuleFlags,
+  archetypeLabel,
+  archetypeDescription,
+  type BusinessArchetype,
+} from '@/lib/businessArchetypes';
+import {
+  MODULE_LIST,
+  PRESETS,
+  moduleLabel,
+  moduleDescription,
+  resolveModules,
+  type ModuleKey,
+  type PresetKey,
+} from '@/lib/homeGuideModules';
 
-declare global {
-  interface Window {
-    paypal?: any;
-  }
-}
+/**
+ * Onboarding is scope-first.
+ *
+ *   Business  -> creates the ORGANIZATION (name + archetype + modules). No property.
+ *   Individual-> creates the organization AND the first property.
+ *   Worker    -> marketplace only.
+ *
+ * A business account is never a property: clients and projects come later.
+ */
+type Scope = 'business' | 'individual' | 'worker';
+type Step = 'scope' | 'details' | 'modules';
 
-type ClientType = 'property_owner' | 'landscaping_company' | 'property_management' | 'plant_rental' | 'hybrid' | 'worker' | 'other';
-type Step = 'profile' | 'plan' | 'estate';
-
-const STEPS: Step[] = ['profile', 'plan', 'estate'];
-
-const CLIENT_TYPE_OPTIONS: {
-  id: ClientType;
-  label: string;
-  labelEs: string;
-  labelDe: string;
-  description: string;
-  descriptionEs: string;
-  descriptionDe: string;
-  emoji: string;
-}[] = [
-  {
-    id: 'property_owner',
-    label: 'Property Owner',
-    labelEs: 'Dueño de propiedad',
-    labelDe: 'Immobilienbesitzer',
-    description: 'I manage my own properties',
-    descriptionEs: 'Gestiono mis propias propiedades',
-    descriptionDe: 'Ich verwalte meine eigenen Immobilien',
-    emoji: '🏡',
-  },
-  {
-    id: 'landscaping_company',
-    label: 'Landscaping Company',
-    labelEs: 'Empresa de landscaping',
-    labelDe: 'Landschaftsbau-Unternehmen',
-    description: 'I manage client properties',
-    descriptionEs: 'Gestiono propiedades de clientes',
-    descriptionDe: 'Ich verwalte Kundenimmobilien',
-    emoji: '🏢',
-  },
-  {
-    id: 'property_management',
-    label: 'Property Manager',
-    labelEs: 'Administrador de propiedades',
-    labelDe: 'Immobilienverwalter',
-    description: 'I manage villas or rentals for owners',
-    descriptionEs: 'Administro villas o alquileres para dueños',
-    descriptionDe: 'Ich verwalte Villen oder Mietobjekte für Eigentümer',
-    emoji: '🏘️',
-  },
-  {
-    id: 'plant_rental',
-    label: 'Plant Rental Company',
-    labelEs: 'Empresa de alquiler de plantas',
-    labelDe: 'Pflanzenverleih',
-    description: 'I rent plants to malls, offices and events',
-    descriptionEs: 'Alquilo plantas a centros comerciales, oficinas y eventos',
-    descriptionDe: 'Ich vermiete Pflanzen an Malls, Büros und Events',
-    emoji: '🪴',
-  },
-  {
-    id: 'hybrid',
-    label: 'Both',
-    labelEs: 'Ambos',
-    labelDe: 'Beides',
-    description: 'I manage private and client properties',
-    descriptionEs: 'Gestiono propiedades privadas y de clientes',
-    descriptionDe: 'Ich verwalte private und Kundenimmobilien',
-    emoji: '🔀',
-  },
-  {
-    id: 'worker',
-    label: 'Looking for work',
-    labelEs: 'Busco trabajo',
-    labelDe: 'Arbeit suchen',
-    description: 'I want to find landscaping jobs near me',
-    descriptionEs: 'Quiero encontrar trabajos de jardinería cerca de mí',
-    descriptionDe: 'Ich möchte Gartenbauarbeiten in meiner Nähe finden',
-    emoji: '👷',
-  },
-  {
-    id: 'other',
-    label: 'Other',
-    labelEs: 'Otro',
-    labelDe: 'Andere',
-    description: 'I need a custom setup',
-    descriptionEs: 'Necesito una configuración personalizada',
-    descriptionDe: 'Ich brauche eine individuelle Konfiguration',
-    emoji: '⚙️',
-  },
-];
+const STEP_COUNT = 3;
 
 export default function Onboarding() {
   const { user, profile, signOut, refreshUserData } = useAuth();
   const { language } = useLanguage();
   const navigate = useNavigate();
 
-  const [currentStep, setCurrentStep] = useState<Step>('profile');
-  const [selectedClientType, setSelectedClientType] = useState<ClientType | ''>('');
-  const [estateName, setEstateName] = useState('');
-  const [estateCountry, setEstateCountry] = useState('');
-  const [estateAddress, setEstateAddress] = useState('');
+  const [step, setStep] = useState<Step>('scope');
+  const [scope, setScope] = useState<Scope | ''>('');
+  const [archetype, setArchetype] = useState<BusinessArchetype | ''>('');
+  const [orgName, setOrgName] = useState('');
+  const [country, setCountry] = useState('');
+  const [propertyName, setPropertyName] = useState('');
+  const [propertyAddress, setPropertyAddress] = useState('');
+  const [flags, setFlags] = useState<Record<ModuleKey, boolean> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedPath, setSelectedPath] = useState<'trial' | 'paid' | ''>('');
 
-  const stepIndex = STEPS.indexOf(currentStep);
-  const progress = ((stepIndex + 1) / STEPS.length) * 100;
   const es = language === 'es';
   const de = language === 'de';
+  const l = (en: string, esStr: string, deStr: string) => (de ? deStr : es ? esStr : en);
 
-  const l = (en: string, esStr: string, deStr: string) => de ? deStr : es ? esStr : en;
+  const stepIndex = step === 'scope' ? 0 : step === 'details' ? 1 : 2;
+  const progress = ((stepIndex + 1) / STEP_COUNT) * 100;
 
-  const resetWizard = () => {
-    setCurrentStep('profile');
-    setSelectedClientType('');
-    setSelectedPath('');
-    setEstateName('');
-    setEstateCountry('');
-    setEstateAddress('');
+  const effectiveArchetype: BusinessArchetype =
+    scope === 'individual' ? 'individual' : (archetype || 'general_service');
+
+  const currentFlags = useMemo(
+    () => flags ?? suggestedModuleFlags(effectiveArchetype),
+    [flags, effectiveArchetype],
+  );
+
+  const activePreset: PresetKey = useMemo(() => {
+    for (const p of PRESETS) {
+      if (!p.modules) continue;
+      if (MODULE_LIST.every((m) => !!p.modules![m.key] === !!currentFlags[m.key])) return p.key;
+    }
+    return 'custom';
+  }, [currentFlags]);
+
+  const reset = () => {
+    setStep('scope');
+    setScope('');
+    setArchetype('');
+    setOrgName('');
+    setCountry('');
+    setPropertyName('');
+    setPropertyAddress('');
+    setFlags(null);
   };
 
-  const nextStep = () => {
-    const idx = STEPS.indexOf(currentStep);
-    if (idx < STEPS.length - 1) setCurrentStep(STEPS[idx + 1]);
-  };
-
-  const prevStep = () => {
-    const idx = STEPS.indexOf(currentStep);
-    if (idx > 0) setCurrentStep(STEPS[idx - 1]);
-  };
-
-  const handleCancelOnboarding = async () => {
+  const exitOnboarding = async () => {
     await signOut();
     navigate('/auth', { replace: true });
   };
 
-  const handleProfileContinue = async () => {
-    if (!selectedClientType) {
-      toast.error(l('Please select an account type', 'Selecciona un tipo de cuenta', 'Bitte wählen Sie einen Kontotyp'));
-      return;
+  const toggleModule = (key: ModuleKey, value: boolean) => {
+    const next = { ...currentFlags, [key]: value };
+    if (!value) {
+      // Turning a module off also turns off whatever depends on it.
+      for (const m of MODULE_LIST) if (m.dependencies.includes(key)) next[m.key] = false;
+    } else {
+      for (const dep of MODULE_LIST.find((m) => m.key === key)!.dependencies) next[dep] = true;
     }
-    // Workers skip estate creation — go directly to marketplace
-    if (selectedClientType === 'worker') {
-      await handleWorkerSetup();
-      return;
-    }
-    nextStep();
+    setFlags(next);
+  };
+
+  const ensureTrialSubscription = async () => {
+    if (!user) return;
+    const { data: existing } = await supabase
+      .from('subscriptions')
+      .select('id')
+      .eq('user_id', user.id)
+      .maybeSingle();
+    if (existing) return;
+
+    const start = new Date();
+    const end = new Date();
+    end.setDate(end.getDate() + TRIAL_DAYS);
+    await supabase.from('subscriptions').insert({
+      user_id: user.id,
+      plan_type: 'trial',
+      status: 'active',
+      amount: 0,
+      trial_started_at: start.toISOString(),
+      trial_ends_at: end.toISOString(),
+      current_period_start: start.toISOString(),
+      current_period_end: end.toISOString(),
+    });
   };
 
   const handleWorkerSetup = async () => {
     if (!user) return;
     setIsLoading(true);
     try {
-      // Update profile with client_type
       await supabase.from('profiles').update({ client_type: 'worker' } as any).eq('id', user.id);
-      // Add worker_marketplace role
-      const { data: existingRole } = await supabase.from('user_roles').select('id').eq('user_id', user.id).eq('role', 'worker_marketplace' as any).maybeSingle();
+      const { data: existingRole } = await supabase
+        .from('user_roles').select('id').eq('user_id', user.id).eq('role', 'worker_marketplace' as any).maybeSingle();
       if (!existingRole) {
         await supabase.from('user_roles').insert({ user_id: user.id, role: 'worker_marketplace' as any });
       }
-      // Create worker profile
       await supabase.from('worker_profiles').upsert({ user_id: user.id } as any, { onConflict: 'user_id' });
+      await refreshUserData();
       toast.success(l('Welcome! Find jobs on the marketplace', '¡Bienvenido! Encuentra trabajos en el marketplace', 'Willkommen! Finden Sie Jobs auf dem Marktplatz'));
       navigate('/jobs', { replace: true });
     } catch (err: any) {
@@ -185,91 +153,126 @@ export default function Onboarding() {
     }
   };
 
-  const handleStartTrial = () => {
-    setSelectedPath('trial');
-    setCurrentStep('estate');
-  };
-
-  const handleCreateEstate = async () => {
-    if (!user || !estateName.trim()) {
-      toast.error(l('Enter the property name', 'Ingresa el nombre de la propiedad', 'Geben Sie den Immobiliennamen ein'));
+  const handleScopeContinue = async () => {
+    if (!scope) return;
+    if (scope === 'worker') {
+      await handleWorkerSetup();
       return;
     }
+    setStep('details');
+  };
 
+  const handleDetailsContinue = () => {
+    if (scope === 'business') {
+      if (!orgName.trim()) {
+        toast.error(l('Enter your business name', 'Ingrese el nombre de su empresa', 'Geben Sie Ihren Firmennamen ein'));
+        return;
+      }
+      if (!archetype) {
+        toast.error(l('Select what your business does', 'Seleccione a qué se dedica su empresa', 'Wählen Sie die Tätigkeit Ihres Unternehmens'));
+        return;
+      }
+    } else if (!propertyName.trim()) {
+      toast.error(l('Enter the property name', 'Ingrese el nombre de la propiedad', 'Geben Sie den Immobiliennamen ein'));
+      return;
+    }
+    setFlags(suggestedModuleFlags(effectiveArchetype));
+    setStep('modules');
+  };
+
+  const finish = async () => {
+    if (!user) return;
     setIsLoading(true);
     try {
-      const orgTypeMap: Record<string, string> = {
-        property_owner: 'residential',
-        landscaping_company: 'landscaping_company',
-        property_management: 'property_management',
-        plant_rental: 'plant_rental',
-        hybrid: 'hybrid',
-        other: 'residential',
-      };
+      const modules = resolveModules(currentFlags, currentFlags);
 
-      if (!profile?.org_id) {
-        const { error: onboardingError } = await (supabase as any).rpc('complete_initial_onboarding', {
-          p_org_name: estateName,
-          p_org_type: orgTypeMap[selectedClientType] || 'residential',
-          p_client_type: selectedClientType || null,
-          p_estate_name: estateName,
-          p_country: estateCountry || null,
-          p_address_text: estateAddress || null,
+      if (scope === 'business') {
+        const { error } = await (supabase as any).rpc('complete_business_onboarding', {
+          p_org_name: orgName.trim(),
+          p_archetype: archetype,
+          p_country: country || null,
+          p_modules: modules,
         });
-
-        if (onboardingError) throw onboardingError;
+        if (error) throw error;
       } else {
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({ client_type: selectedClientType || null } as any)
-          .eq('id', user.id);
-        if (profileError) throw profileError;
-
-        const { error: estateError } = await supabase.from('estates').insert({
-          name: estateName,
-          org_id: profile.org_id,
-          country: estateCountry || null,
-          address_text: estateAddress || null,
-        });
-        if (estateError) throw estateError;
+        // Individual: organization + first property in one transaction.
+        if (!profile?.org_id) {
+          const { error } = await (supabase as any).rpc('complete_initial_onboarding', {
+            p_org_name: propertyName.trim(),
+            p_org_type: 'residential',
+            p_client_type: 'property_owner',
+            p_estate_name: propertyName.trim(),
+            p_country: country || null,
+            p_address_text: propertyAddress || null,
+          });
+          if (error) throw error;
+        } else {
+          const { error } = await supabase.from('estates').insert({
+            name: propertyName.trim(),
+            org_id: profile.org_id,
+            country: country || null,
+            address_text: propertyAddress || null,
+          });
+          if (error) throw error;
+        }
+        const { data: prof } = await supabase.from('profiles').select('org_id').eq('id', user.id).maybeSingle();
+        const orgId = (prof as any)?.org_id ?? profile?.org_id;
+        if (orgId) {
+          await supabase
+            .from('organizations')
+            .update({
+              modules_json: modules as any,
+              business_archetype: 'individual',
+              account_scope: 'individual',
+            } as any)
+            .eq('id', orgId);
+        }
       }
 
-      // Create trial subscription (1 property, 15 days)
-      const { data: existingSub } = await supabase
-        .from('subscriptions')
-        .select('id')
-        .eq('user_id', user.id)
-        .maybeSingle();
-
-      if (!existingSub) {
-        const trialStart = new Date();
-        const trialEnd = new Date();
-        trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS);
-
-        const { error: subscriptionError } = await supabase.from('subscriptions').insert({
-          user_id: user.id,
-          plan_type: 'trial',
-          status: 'active',
-          amount: 0,
-          trial_started_at: trialStart.toISOString(),
-          trial_ends_at: trialEnd.toISOString(),
-          current_period_start: trialStart.toISOString(),
-          current_period_end: trialEnd.toISOString(),
-        });
-
-        if (subscriptionError) throw subscriptionError;
-      }
-
+      await ensureTrialSubscription();
       await refreshUserData();
 
-      toast.success(l('Property created! Welcome to Home Guide', '¡Propiedad creada! Bienvenido a Home Guide', 'Immobilie erstellt! Willkommen bei Home Guide'));
+      toast.success(
+        scope === 'business'
+          ? l('Your workspace is ready', 'Su espacio de trabajo está listo', 'Ihr Arbeitsbereich ist bereit')
+          : l('Property created', 'Propiedad creada', 'Immobilie erstellt'),
+      );
       navigate('/', { replace: true });
     } catch (err: any) {
-      toast.error(err.message || l('Failed to create property', 'No se pudo crear la propiedad', 'Immobilie konnte nicht erstellt werden'));
+      toast.error(err.message || l('Setup failed', 'La configuración falló', 'Einrichtung fehlgeschlagen'));
     } finally {
       setIsLoading(false);
     }
   };
+
+  const scopeOptions: { id: Scope; icon: React.ComponentType<{ className?: string }>; title: string; desc: string }[] = [
+    {
+      id: 'business',
+      icon: Building2,
+      title: l('I run a business that serves clients', 'Tengo una empresa que atiende clientes', 'Ich führe ein Unternehmen mit Kunden'),
+      desc: l(
+        'Manage your clients, their projects and the work you do for them.',
+        'Gestione sus clientes, sus proyectos y el trabajo que realiza para ellos.',
+        'Verwalten Sie Kunden, deren Projekte und Ihre Arbeit.',
+      ),
+    },
+    {
+      id: 'individual',
+      icon: Home,
+      title: l('I manage my own property or assets', 'Gestiono mi propia propiedad o activos', 'Ich verwalte meine eigene Immobilie'),
+      desc: l(
+        'Track your own property, assets and maintenance.',
+        'Gestione su propia propiedad, activos y mantenimiento.',
+        'Eigene Immobilie, Anlagen und Wartung verfolgen.',
+      ),
+    },
+    {
+      id: 'worker',
+      icon: HardHat,
+      title: l('I am looking for work', 'Busco trabajo', 'Ich suche Arbeit'),
+      desc: l('Find jobs on the marketplace.', 'Encuentre trabajos en el marketplace.', 'Jobs auf dem Marktplatz finden.'),
+    },
+  ];
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
@@ -279,11 +282,11 @@ export default function Onboarding() {
           <span className="text-xl font-display font-semibold text-primary">Home Guide</span>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onClick={resetWizard}>
+          <Button variant="ghost" size="sm" onClick={reset}>
             <RotateCcw className="h-4 w-4 mr-2" />
             {l('Restart', 'Reiniciar', 'Neustart')}
           </Button>
-          <Button variant="ghost" size="sm" onClick={handleCancelOnboarding}>
+          <Button variant="ghost" size="sm" onClick={exitOnboarding}>
             {l('Exit', 'Salir', 'Beenden')}
           </Button>
         </div>
@@ -292,56 +295,46 @@ export default function Onboarding() {
       <div className="px-6 pt-4">
         <Progress value={progress} className="h-2" />
         <p className="text-xs text-muted-foreground mt-1 text-right">
-          {l(`Step ${stepIndex + 1} of ${STEPS.length}`, `Paso ${stepIndex + 1} de ${STEPS.length}`, `Schritt ${stepIndex + 1} von ${STEPS.length}`)}
+          {l(`Step ${stepIndex + 1} of ${STEP_COUNT}`, `Paso ${stepIndex + 1} de ${STEP_COUNT}`, `Schritt ${stepIndex + 1} von ${STEP_COUNT}`)}
         </p>
       </div>
 
-      <main className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-xl">
-          {currentStep === 'profile' && (
+      <main className="flex-1 flex items-start sm:items-center justify-center p-6">
+        <div className="w-full max-w-2xl">
+          {/* STEP 1 — scope */}
+          {step === 'scope' && (
             <Card className="border-0 shadow-xl">
               <CardHeader>
                 <CardTitle className="text-2xl font-display">
-                  {l('What type of account do you want to create?', '¿Qué tipo de cuenta quieres crear?', 'Welche Art von Konto möchten Sie erstellen?')}
+                  {l('How will you use Home Guide?', '¿Cómo usará Home Guide?', 'Wie werden Sie Home Guide nutzen?')}
                 </CardTitle>
                 <CardDescription>
-                  {l('Select one option to personalize the platform.', 'Selecciona una opción para personalizar la plataforma.', 'Wählen Sie eine Option, um die Plattform zu personalisieren.')}
+                  {l(
+                    'This defines the structure of your account. It is not a property yet.',
+                    'Esto define la estructura de su cuenta. Todavía no es una propiedad.',
+                    'Dies bestimmt die Struktur Ihres Kontos — noch keine Immobilie.',
+                  )}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <RadioGroup
-                  value={selectedClientType}
-                  onValueChange={(value) => setSelectedClientType(value as ClientType)}
-                  className="space-y-3"
-                >
-                  {CLIENT_TYPE_OPTIONS.map((option) => {
-                    const selected = selectedClientType === option.id;
-                    return (
-                      <label
-                        key={option.id}
-                        htmlFor={option.id}
-                        className={`flex items-start gap-3 p-4 rounded-xl border cursor-pointer transition-all ${
-                          selected ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40 bg-secondary/30'
-                        }`}
-                      >
-                        <RadioGroupItem id={option.id} value={option.id} className="mt-1" />
-                        <div className="flex items-start gap-3 flex-1">
-                          <span className="text-lg mt-0.5">{option.emoji}</span>
-                          <div>
-                            <p className="font-semibold text-foreground text-base">
-                              {de ? option.labelDe : es ? option.labelEs : option.label}
-                            </p>
-                            <p className="text-sm text-muted-foreground">
-                              {de ? option.descriptionDe : es ? option.descriptionEs : option.description}
-                            </p>
-                          </div>
-                        </div>
-                      </label>
-                    );
-                  })}
-                </RadioGroup>
+              <CardContent className="space-y-3">
+                {scopeOptions.map((o) => (
+                  <button
+                    key={o.id}
+                    type="button"
+                    onClick={() => setScope(o.id)}
+                    className={`w-full flex items-start gap-3 p-4 rounded-xl border text-left transition-all ${
+                      scope === o.id ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40 bg-secondary/30'
+                    }`}
+                  >
+                    <o.icon className="h-5 w-5 text-primary mt-0.5 flex-shrink-0" />
+                    <div>
+                      <p className="font-semibold text-foreground">{o.title}</p>
+                      <p className="text-sm text-muted-foreground">{o.desc}</p>
+                    </div>
+                  </button>
+                ))}
 
-                <Button className="w-full" size="lg" onClick={handleProfileContinue} disabled={!selectedClientType}>
+                <Button className="w-full" size="lg" onClick={handleScopeContinue} disabled={!scope || isLoading}>
                   {l('Continue', 'Continuar', 'Weiter')}
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
@@ -359,154 +352,161 @@ export default function Onboarding() {
             </Card>
           )}
 
-          {currentStep === 'plan' && (
+          {/* STEP 2 — business or property details */}
+          {step === 'details' && (
             <Card className="border-0 shadow-xl">
               <CardHeader>
                 <CardTitle className="text-2xl font-display">
-                  {l('How would you like to start?', '¿Cómo te gustaría empezar?', 'Wie möchten Sie beginnen?')}
+                  {scope === 'business'
+                    ? l('About your business', 'Sobre su empresa', 'Über Ihr Unternehmen')
+                    : l('Your first property', 'Su primera propiedad', 'Ihre erste Immobilie')}
                 </CardTitle>
                 <CardDescription>
-                  {l(
-                    `Home Guide is $${PRICE_PER_PROPERTY}/month per property. All features included.`,
-                    `Home Guide cuesta $${PRICE_PER_PROPERTY}/mes por propiedad. Todas las funciones incluidas.`,
-                    `Home Guide kostet $${PRICE_PER_PROPERTY}/Monat pro Immobilie. Alle Funktionen inklusive.`
-                  )}
+                  {scope === 'business'
+                    ? l(
+                        'We create your business account. Clients and projects are added afterwards.',
+                        'Creamos su cuenta de empresa. Los clientes y proyectos se agregan después.',
+                        'Wir erstellen Ihr Firmenkonto. Kunden und Projekte folgen danach.',
+                      )
+                    : l('Add the property you want to manage.', 'Agregue la propiedad que desea gestionar.', 'Fügen Sie die zu verwaltende Immobilie hinzu.')}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
-                {/* Paid option */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedPath('paid');
-                    setCurrentStep('estate');
-                  }}
-                  className="w-full p-5 rounded-xl border-2 border-primary/50 text-left transition-all hover:border-primary hover:bg-primary/5"
-                >
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-                      <Building2 className="h-6 w-6 text-primary" />
+                {scope === 'business' ? (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="orgName">{l('Business name', 'Nombre de la empresa', 'Firmenname')}</Label>
+                      <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder={l('e.g. Raíz y Forma', 'ej. Raíz y Forma', 'z. B. Raíz y Forma')} />
                     </div>
-                    <div>
-                      <div className="font-semibold text-foreground text-lg">
-                        {l('Subscribe', 'Suscribirse', 'Abonnieren')}
+                    <div className="space-y-2">
+                      <Label>{l('What does your business do?', '¿A qué se dedica su empresa?', 'Was macht Ihr Unternehmen?')}</Label>
+                      <div className="grid gap-2">
+                        {BUSINESS_ARCHETYPES.map((a) => (
+                          <button
+                            key={a.key}
+                            type="button"
+                            onClick={() => { setArchetype(a.key); setFlags(null); }}
+                            className={`w-full p-3 rounded-lg border text-left transition-all ${
+                              archetype === a.key ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
+                            }`}
+                          >
+                            <p className="font-medium text-sm text-foreground">{archetypeLabel(a.key, language)}</p>
+                            <p className="text-xs text-muted-foreground">{archetypeDescription(a.key, language)}</p>
+                          </button>
+                        ))}
                       </div>
-                      <div className="text-2xl font-bold text-primary mt-1">
-                        ${PRICE_PER_PROPERTY}<span className="text-sm font-normal text-muted-foreground">
-                          {l('/mo per property', '/mes por propiedad', '/Monat pro Immobilie')}
-                        </span>
-                      </div>
-                      <ul className="mt-2 text-sm text-muted-foreground space-y-1">
-                        <li className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> {l('Unlimited assets & zones', 'Activos y zonas ilimitados', 'Unbegrenzte Assets & Zonen')}</li>
-                        <li className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> {l('Reports, PDF export, AI', 'Reportes, PDF, IA', 'Berichte, PDF-Export, KI')}</li>
-                        <li className="flex items-center gap-1.5"><Check className="h-3.5 w-3.5 text-primary" /> {l('Labor & CRM tools', 'Herramientas laborales y CRM', 'Arbeits- & CRM-Tools')}</li>
-                      </ul>
                     </div>
-                  </div>
-                </button>
+                  </>
+                ) : (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="propertyName">{l('Property name', 'Nombre de la propiedad', 'Immobilienname')}</Label>
+                      <Input id="propertyName" value={propertyName} onChange={(e) => setPropertyName(e.target.value)} />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="propertyAddress">{l('Address (optional)', 'Dirección (opcional)', 'Adresse (optional)')}</Label>
+                      <Input id="propertyAddress" value={propertyAddress} onChange={(e) => setPropertyAddress(e.target.value)} />
+                    </div>
+                  </>
+                )}
 
-                {/* Divider */}
-                <div className="relative py-1">
-                  <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-border" /></div>
-                  <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">{l('or', 'o', 'oder')}</span></div>
+                <div className="space-y-2">
+                  <Label htmlFor="country">{l('Country (optional)', 'País (opcional)', 'Land (optional)')}</Label>
+                  <Input id="country" value={country} onChange={(e) => setCountry(e.target.value)} />
                 </div>
 
-                {/* Trial option */}
-                <button
-                  type="button"
-                  onClick={handleStartTrial}
-                  className="w-full p-4 rounded-xl border-2 border-dashed border-accent/50 text-left transition-all hover:border-accent hover:bg-accent/5"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="text-2xl">🎁</span>
-                    <div>
-                      <div className="font-semibold text-foreground">
-                        {l(`${TRIAL_DAYS}-Day Free Trial`, `Prueba gratuita de ${TRIAL_DAYS} días`, `${TRIAL_DAYS}-Tage Testversion`)}
-                      </div>
-                      <div className="text-sm text-muted-foreground">
-                        {l(
-                          '1 property · Max 3 assets · No reports or PDF export',
-                          '1 propiedad · Máx 3 activos · Sin reportes ni PDF',
-                          '1 Immobilie · Max 3 Assets · Keine Berichte oder PDF'
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                </button>
-
                 <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={prevStep} className="flex-1">
+                  <Button variant="outline" className="flex-1" onClick={() => setStep('scope')}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     {l('Back', 'Atrás', 'Zurück')}
+                  </Button>
+                  <Button className="flex-1" onClick={handleDetailsContinue}>
+                    {l('Continue', 'Continuar', 'Weiter')}
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {currentStep === 'estate' && (
+          {/* STEP 3 — module selection */}
+          {step === 'modules' && (
             <Card className="border-0 shadow-xl">
               <CardHeader>
-                <div className="mx-auto w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-2">
-                  <Building2 className="h-7 w-7 text-primary" />
-                </div>
-                <CardTitle className="text-2xl font-display text-center">
-                  {l('Create your first property', 'Crea tu primera propiedad', 'Erstellen Sie Ihre erste Immobilie')}
+                <CardTitle className="text-2xl font-display">
+                  {l('What do you need to manage?', '¿Qué necesita gestionar?', 'Was möchten Sie verwalten?')}
                 </CardTitle>
-                <CardDescription className="text-center">
-                  {selectedPath === 'trial'
-                    ? l(
-                        `${TRIAL_DAYS}-day free trial · 1 property included`,
-                        `Prueba de ${TRIAL_DAYS} días · 1 propiedad incluida`,
-                        `${TRIAL_DAYS}-Tage Test · 1 Immobilie inklusive`
-                      )
-                    : l(
-                        `$${PRICE_PER_PROPERTY}/mo · All features included`,
-                        `$${PRICE_PER_PROPERTY}/mes · Todas las funciones incluidas`,
-                        `$${PRICE_PER_PROPERTY}/Monat · Alle Funktionen inklusive`
-                      )
-                  }
+                <CardDescription>
+                  {l(
+                    'Pick only what you use. You can change this at any time in settings.',
+                    'Elija solo lo que use. Puede cambiarlo cuando quiera en configuración.',
+                    'Wählen Sie nur, was Sie nutzen. Jederzeit in den Einstellungen änderbar.',
+                  )}
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="estateName">{l('Property name *', 'Nombre de la propiedad *', 'Immobilienname *')}</Label>
-                  <Input
-                    id="estateName"
-                    placeholder={l('e.g. Villa Hermosa', 'Ej: Villa Hermosa', 'z.B. Villa Hermosa')}
-                    value={estateName}
-                    onChange={(e) => setEstateName(e.target.value)}
-                  />
+                  <Label>{l('Suggested setups', 'Configuraciones sugeridas', 'Vorgeschlagene Konfigurationen')}</Label>
+                  <div className="grid sm:grid-cols-2 gap-2">
+                    {PRESETS.filter((p) => p.modules).map((p) => (
+                      <button
+                        key={p.key}
+                        type="button"
+                        onClick={() => setFlags({ ...p.modules! })}
+                        className={`p-3 rounded-lg border text-left transition-all ${
+                          activePreset === p.key ? 'border-primary bg-primary/5' : 'border-border hover:border-primary/40'
+                        }`}
+                      >
+                        <span className="flex items-center gap-2 font-medium text-sm">
+                          {activePreset === p.key && <Check className="h-3.5 w-3.5 text-primary" />}
+                          {de ? p.label.de : es ? p.label.es : p.label.en}
+                        </span>
+                        <span className="block text-xs text-muted-foreground">
+                          {de ? p.description.de : es ? p.description.es : p.description.en}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="estateCountry">{l('Country', 'País', 'Land')}</Label>
-                  <Input
-                    id="estateCountry"
-                    placeholder={l('e.g. Costa Rica', 'Ej: Costa Rica', 'z.B. Costa Rica')}
-                    value={estateCountry}
-                    onChange={(e) => setEstateCountry(e.target.value)}
-                  />
+                  <Label>{l('Functionality', 'Funcionalidad', 'Funktionen')}</Label>
+                  <div className="grid gap-2">
+                    {MODULE_LIST.map((m) => {
+                      const blocked = m.dependencies.filter((d) => !currentFlags[d]);
+                      return (
+                        <div key={m.key} className="flex items-start justify-between gap-3 p-3 rounded-lg border border-border">
+                          <div className="flex items-start gap-3 min-w-0">
+                            <m.icon className="h-4 w-4 text-primary mt-0.5 flex-shrink-0" />
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-foreground">{moduleLabel(m.key, language)}</p>
+                              <p className="text-xs text-muted-foreground">{moduleDescription(m.key, language)}</p>
+                              {blocked.length > 0 && (
+                                <p className="text-xs text-amber-600 dark:text-amber-400 mt-1">
+                                  {l('Requires', 'Requiere', 'Erfordert')}: {blocked.map((d) => moduleLabel(d, language)).join(', ')}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                          <Switch
+                            checked={!!currentFlags[m.key]}
+                            onCheckedChange={(v) => toggleModule(m.key, v)}
+                            disabled={blocked.length > 0}
+                          />
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="estateAddress">{l('Address', 'Dirección', 'Adresse')}</Label>
-                  <Input
-                    id="estateAddress"
-                    placeholder={l('Property address', 'Dirección de la propiedad', 'Immobilienadresse')}
-                    value={estateAddress}
-                    onChange={(e) => setEstateAddress(e.target.value)}
-                  />
-                </div>
-
-                <div className="flex gap-3 pt-2">
-                  <Button variant="outline" onClick={prevStep} className="flex-1">
+                <div className="flex gap-3">
+                  <Button variant="outline" className="flex-1" onClick={() => setStep('details')}>
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     {l('Back', 'Atrás', 'Zurück')}
                   </Button>
-                  <Button onClick={handleCreateEstate} className="flex-1" disabled={isLoading || !estateName.trim()}>
-                    {isLoading ? l('Creating...', 'Creando...', 'Erstellen...') : l('Finish', 'Finalizar', 'Abschließen')}
-                    <Check className="ml-2 h-4 w-4" />
+                  <Button className="flex-1" onClick={finish} disabled={isLoading}>
+                    {l('Finish setup', 'Finalizar configuración', 'Einrichtung abschließen')}
+                    <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </div>
               </CardContent>
