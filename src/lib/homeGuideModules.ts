@@ -95,7 +95,7 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
       'Objekte oder Standorte pro Kunde.',
     ),
     icon: FolderKanban,
-    routes: ['/plantops/propiedad', '/estates'],
+    routes: ['/plantops/propiedad'],
     navRoute: '/plantops/clientes',
     allowedRoles: ['owner', 'manager'],
     dependencies: ['clients'],
@@ -411,8 +411,15 @@ export function resolveModules(
 }
 
 
+/**
+ * Routes that are never owned by a module: configuration must stay reachable
+ * even when every module is switched off.
+ */
+export const UNOWNED_ROUTES = ['/plantops/settings', '/admin', '/requests', '/subscription', '/estates'];
+
 /** The module that owns a route, if any. Longest prefix wins. */
 export function moduleForRoute(pathname: string): ModuleDefinition | null {
+  if (UNOWNED_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))) return null;
   let best: ModuleDefinition | null = null;
   let bestLen = -1;
   for (const m of MODULE_LIST) {
