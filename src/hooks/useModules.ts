@@ -1,6 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useLanguage } from '@/contexts/LanguageContext';
 import {
   DEFAULT_MODULES,
   MODULE_LIST,
@@ -10,14 +11,25 @@ import {
   type ModuleKey,
   type ModuleRole,
 } from '@/lib/homeGuideModules';
+import {
+  getEntityLabels,
+  landingRoute,
+  resolveAccountScope,
+  resolveArchetype,
+  suggestedModuleFlags,
+  type AccountScope,
+  type BusinessArchetype,
+} from '@/lib/businessArchetypes';
 
 /**
- * Enabled modules for the current organization. Reads `organizations.modules_json`
- * and applies it everywhere (navigation, dashboard, route guards) — no hardcoded
- * module lists anywhere else.
+ * Enabled modules + account taxonomy for the current organization.
+ * Reads `organizations.modules_json`, `business_archetype` and `account_scope`
+ * and applies them everywhere (navigation, dashboard, route guards) — no
+ * hardcoded module or org-type lists anywhere else.
  */
 export function useModules() {
   const { profile, hasRole, isOwnerOrManager } = useAuth();
+  const { language } = useLanguage();
   const orgId = profile?.org_id ?? null;
   const queryClient = useQueryClient();
 
@@ -27,22 +39,30 @@ export function useModules() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from('organizations')
-        .select('modules_json')
+        .select('modules_json, org_type, business_archetype, account_scope')
         .eq('id', orgId!)
         .single();
       if (error) throw error;
-      return resolveModules((data as any)?.modules_json);
+      const row = data as any;
+      const archetype = resolveArchetype(row?.business_archetype, row?.org_type);
+      const scope = resolveAccountScope(row?.account_scope, archetype);
+      // Organizations that never saved a configuration keep the module set
+      // implied by their archetype (legacy accounts must not lose features).
+      const modules = resolveModules(row?.modules_json, suggestedModuleFlags(archetype));
+      return { modules, archetype, scope };
     },
   });
 
-  const modules = data ?? DEFAULT_MODULES;
+  const archetype: BusinessArchetype = data?.archetype ?? 'general_service';
+  const scope: AccountScope = data?.scope ?? 'business';
+  const modules = data?.modules ?? DEFAULT_MODULES;
 
   const save = useMutation({
     mutationFn: async (next: Record<ModuleKey, boolean>) => {
       if (!orgId) throw new Error('No organization');
       const { error } = await supabase
         .from('organizations')
-        .update({ modules_json: resolveModules(next) as any })
+        .update({ modules_json: resolveModules(next, next) as any })
         .eq('id', orgId);
       if (error) throw error;
     },
@@ -84,6 +104,12 @@ export function useModules() {
     modules,
     loading: isLoading,
     role,
+    archetype,
+    scope,
+    isBusiness: scope === 'business',
+    isIndividual: scope === 'individual',
+    labels: getEntityLabels(archetype, language),
+    homeRoute: landingRoute(archetype),
     isEnabled,
     canUse,
     navModules,
