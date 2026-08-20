@@ -34,8 +34,6 @@ export const MODULE_KEYS = [
   'events',
   'documents',
   'inventory',
-  'labor',
-  'compost',
 ] as const;
 
 
