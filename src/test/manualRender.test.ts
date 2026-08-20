@@ -5,7 +5,7 @@ const snapshot = {
   version: 1,
   generated_at: '2026-08-18T00:00:00.000Z',
   property: { name: 'Mall Oeste — Lobby', address: 'Santa Ana' },
-  client: { name: 'Raíz Cliente S.A.' },
+  client: { name: 'Cliente Demo S.A.' },
   services: ['mantenimiento', 'manual'],
   plants: [
     {
@@ -51,6 +51,6 @@ describe('manual snapshot rendering', () => {
   it('translates responsibility to client wording', () => {
     const doc = buildManualDocument(snapshot);
     const plant = doc.sections.find((s) => s.title === 'Zamioculca')!;
-    expect(plant.lines.find((l) => l.label === 'Responsable')!.value).toBe('Raíz y Forma');
+    expect(plant.lines.find((l) => l.label === 'Responsable')!.value).toBe('Nuestro equipo');
   });
 });

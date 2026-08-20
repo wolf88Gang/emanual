@@ -376,7 +376,7 @@ export default function Onboarding() {
                   <>
                     <div className="space-y-2">
                       <Label htmlFor="orgName">{l('Business name', 'Nombre de la empresa', 'Firmenname')}</Label>
-                      <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder={l('e.g. Raíz y Forma', 'ej. Raíz y Forma', 'z. B. Raíz y Forma')} />
+                      <Input id="orgName" value={orgName} onChange={(e) => setOrgName(e.target.value)} placeholder={l('Your company name', 'Nombre de su empresa', 'Name Ihres Unternehmens')} />
                     </div>
                     <div className="space-y-2">
                       <Label>{l('What does your business do?', '¿A qué se dedica su empresa?', 'Was macht Ihr Unternehmen?')}</Label>
