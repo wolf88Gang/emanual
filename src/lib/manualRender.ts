@@ -45,7 +45,7 @@ export interface ManualDocument {
 }
 
 const RESPONSIBILITY_ES: Record<string, string> = {
-  raiz_y_forma: 'Raíz y Forma',
+  raiz_y_forma: 'Nuestro equipo',
   cliente: 'Cliente',
   compartido: 'Compartido',
 };
@@ -139,7 +139,7 @@ export function buildManualDocument(
   const approvedAt = opts.approvedAt ?? null;
 
   return {
-    brand: 'Raíz y Forma',
+    brand: 'Home Guide',
     title: `Manual de cuidados — ${manualText(s.property?.name)}`,
     approvedLabel: approvedAt
       ? `Versión aprobada el ${new Date(approvedAt).toLocaleDateString('es-CR')}`

@@ -234,7 +234,7 @@ export default function PlantOpsCareEditor() {
                       ))}
                     </ul>
                   )}
-                  <p>{l('Raíz y Forma override', 'Ajuste de Raíz y Forma', 'Manuelle Anpassung')}:{' '}
+                  <p>{l('Manual override', 'Ajuste manual', 'Manuelle Anpassung')}:{' '}
                     <strong>{care?.override_days != null ? days(care.override_days) : l('none', 'ninguno', 'keine')}</strong>
                   </p>
                   <p className="pt-1 border-t border-border/60">

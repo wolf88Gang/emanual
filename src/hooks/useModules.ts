@@ -6,6 +6,8 @@ import {
   DEFAULT_MODULES,
   MODULE_LIST,
   moduleForRoute,
+  routeAccess,
+
   resolveModules,
   type ModuleDefinition,
   type ModuleKey,
@@ -93,12 +95,23 @@ export function useModules() {
   /** Modules with a navigation entry, in canonical order, filtered by role. */
   const navModules: ModuleDefinition[] = MODULE_LIST.filter((m) => m.navRoute && canUse(m.key));
 
-  /** A route is allowed when its owning module is on (unowned routes stay open). */
+  /**
+   * Fail-closed: shell routes stay open, module routes need their module,
+   * deprecated and unknown operational routes are never reachable.
+   */
   const isRouteAllowed = (pathname: string) => {
-    const owner = moduleForRoute(pathname);
-    if (!owner) return true;
-    return canUse(owner.key);
+    const access = routeAccess(pathname);
+    if (access.kind === 'shell') return true;
+    if (access.kind === 'module') return canUse(access.module.key);
+    return false;
   };
+
+  /** Canonical destination for a deprecated route, if any. */
+  const routeRedirect = (pathname: string) => {
+    const access = routeAccess(pathname);
+    return access.kind === 'deprecated' ? access.redirectTo : null;
+  };
+
 
   return {
     modules,
@@ -114,6 +127,8 @@ export function useModules() {
     canUse,
     navModules,
     isRouteAllowed,
+    routeRedirect,
+
     saveModules: save.mutateAsync,
     saving: save.isPending,
   };

@@ -1,7 +1,7 @@
 import {
   Users, FolderKanban, Box, Sprout, Droplets, BellRing, ClipboardList, Wrench,
   BookOpen, Globe, Receipt, FileSignature, CalendarDays, FolderOpen, Package,
-  Map as MapIcon, ListChecks,
+  Map as MapIcon, ListChecks, Timer,
 } from 'lucide-react';
 
 import type { ComponentType } from 'react';
@@ -35,7 +35,6 @@ export const MODULE_KEYS = [
   'documents',
   'inventory',
   'labor',
-  'compost',
 ] as const;
 
 
@@ -351,7 +350,24 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
     dashboardWidgets: [],
     projectCapability: false,
   },
+  labor: {
+    key: 'labor',
+    label: L('Labor & shifts', 'Trabajo y turnos', 'Arbeit & Schichten'),
+    description: L(
+      'Shifts, hours, rates and payroll validation.',
+      'Turnos, horas, tarifas y validación de pagos.',
+      'Schichten, Stunden, Sätze und Lohnprüfung.',
+    ),
+    icon: Timer,
+    routes: ['/labor'],
+    navRoute: '/labor',
+    allowedRoles: ['owner', 'manager'],
+    dependencies: [],
+    dashboardWidgets: [],
+    projectCapability: false,
+  },
 };
+
 
 export const MODULE_LIST: ModuleDefinition[] = MODULE_KEYS.map((k) => MODULES[k]);
 
@@ -380,6 +396,8 @@ export const DEFAULT_MODULES: Record<ModuleKey, boolean> = {
   events: false,
   documents: false,
   inventory: false,
+  labor: false,
+
 };
 
 export function normalizeModules(
@@ -418,19 +436,49 @@ export function resolveModules(
 
 
 /**
- * Routes that are never owned by a module: configuration must stay reachable
- * even when every module is switched off.
+ * Shell / configuration routes: never owned by a module, so configuration and
+ * self-service stay reachable even when every module is switched off.
  */
-export const UNOWNED_ROUTES = ['/plantops/settings', '/admin', '/requests', '/subscription', '/estates'];
+export const SHELL_ROUTES = [
+  '/plantops/settings',
+  '/admin',
+  '/requests',
+  '/subscription',
+  '/estates',
+  '/setup-wizard',
+  '/my-jobs',
+  '/my-profile',
+  '/jobs/post',
+];
+
+/** Backwards-compatible alias. */
+export const UNOWNED_ROUTES = SHELL_ROUTES;
+
+/**
+ * Legacy operational routes kept only as redirects to a canonical destination.
+ * They are never reachable as features.
+ */
+export const DEPRECATED_ROUTES: Record<string, string> = {
+  '/compost': '/plantops',
+};
+
+export type RouteAccess =
+  | { kind: 'shell' }
+  | { kind: 'module'; module: ModuleDefinition }
+  | { kind: 'deprecated'; redirectTo: string }
+  | { kind: 'unknown' };
+
+const matches = (pathname: string, route: string) =>
+  pathname === route || pathname.startsWith(`${route}/`);
 
 /** The module that owns a route, if any. Longest prefix wins. */
 export function moduleForRoute(pathname: string): ModuleDefinition | null {
-  if (UNOWNED_ROUTES.some((r) => pathname === r || pathname.startsWith(`${r}/`))) return null;
+  if (SHELL_ROUTES.some((r) => matches(pathname, r))) return null;
   let best: ModuleDefinition | null = null;
   let bestLen = -1;
   for (const m of MODULE_LIST) {
     for (const r of m.routes) {
-      if ((pathname === r || pathname.startsWith(`${r}/`)) && r.length > bestLen) {
+      if (matches(pathname, r) && r.length > bestLen) {
         best = m;
         bestLen = r.length;
       }
@@ -438,6 +486,22 @@ export function moduleForRoute(pathname: string): ModuleDefinition | null {
   }
   return best;
 }
+
+/**
+ * Fail-closed route classification for authenticated tenant routes.
+ * Unknown operational routes do NOT bypass module gating.
+ */
+export function routeAccess(pathname: string): RouteAccess {
+  if (pathname === '/') return { kind: 'shell' };
+  for (const [route, redirectTo] of Object.entries(DEPRECATED_ROUTES)) {
+    if (matches(pathname, route)) return { kind: 'deprecated', redirectTo };
+  }
+  if (SHELL_ROUTES.some((r) => matches(pathname, r))) return { kind: 'shell' };
+  const owner = moduleForRoute(pathname);
+  if (owner) return { kind: 'module', module: owner };
+  return { kind: 'unknown' };
+}
+
 
 /* --------------------------- presets --------------------------- */
 
@@ -517,7 +581,7 @@ export const PRESETS: OperationPreset[] = [
       'Besuche, Aufgaben, Werkzeuge und Abrechnung für Teams vor Ort.',
     ),
     modules: preset([
-      'clients', 'projects', 'assets', 'map', 'tasks', 'visits', 'tools', 'reminders', 'billing_payments',
+      'clients', 'projects', 'assets', 'map', 'tasks', 'visits', 'tools', 'reminders', 'billing_payments', 'labor',
     ]),
   },
   {

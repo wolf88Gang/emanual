@@ -55,7 +55,7 @@ export const CARE_ACTION_LABELS: Record<CareActionType, { en: string; es: string
 };
 
 export const CARE_RESPONSIBILITY_LABELS: Record<CareResponsibility, { en: string; es: string; de: string }> = {
-  raiz_y_forma: { en: 'Raíz y Forma', es: 'Raíz y Forma', de: 'Raíz y Forma' },
+  raiz_y_forma: { en: 'Our team', es: 'Nuestro equipo', de: 'Unser Team' },
   cliente: { en: 'Client', es: 'Cliente', de: 'Kunde' },
   compartido: { en: 'Shared', es: 'Compartido', de: 'Geteilt' },
 };
