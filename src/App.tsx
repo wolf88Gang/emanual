@@ -125,13 +125,41 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <EstateProvider><SubscriptionProvider>{children}</SubscriptionProvider></EstateProvider>;
 }
 
+/**
+ * Module route guard. The module registry owns routes, so a module that is off
+ * cannot be reached by URL either. Routes without an owning module stay open.
+ */
+function ModuleGate({ children }: { children: React.ReactNode }) {
+  const location = useLocation();
+  const { loading, isRouteAllowed, homeRoute } = useModules();
+
+  if (loading) return <PageLoader />;
+
+  if (!isRouteAllowed(location.pathname)) {
+    const fallback = isRouteAllowed(homeRoute) ? homeRoute : '/';
+    return <Navigate to={fallback} replace />;
+  }
+
+  return <>{children}</>;
+}
+
 function EstateRoute({ children }: { children: React.ReactNode }) {
   return (
     <ProtectedRoute>
-      <SidebarLayout>{children}</SidebarLayout>
+      <SidebarLayout>
+        <ModuleGate>{children}</ModuleGate>
+      </SidebarLayout>
     </ProtectedRoute>
   );
 }
+
+/** Tenant landing screen: client-first for businesses, work view for individuals. */
+function TenantHome() {
+  const { isBusiness, loading } = useModules();
+  if (loading) return <PageLoader />;
+  return isBusiness ? <BusinessHome /> : <WorkView />;
+}
+
 
 /**
  * Administrative modules (client onboarding, contracts, property files, settings).
