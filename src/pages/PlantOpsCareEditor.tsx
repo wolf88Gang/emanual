@@ -285,13 +285,13 @@ export default function PlantOpsCareEditor() {
               <CardContent className="space-y-4">
                 <div className="grid gap-3 sm:grid-cols-3">
                   <div>
-                    <Label>{l('Base interval (days)', 'Intervalo base (días)', 'Basisintervall (Tage)')}</Label>
+                    <Label>{l('Interval for this plant (days)', 'Intervalo de esta planta (días)', 'Intervall dieser Pflanze (Tage)')}</Label>
                     <Input type="number" min="1" max="365" value={form.base_days}
                       onChange={(e) => setForm({ ...form, base_days: e.target.value })}
                       placeholder={l('Recommended', 'Recomendado', 'Empfohlen')} />
                   </div>
                   <div>
-                    <Label>{l('Manual override (days)', 'Ajuste manual (días)', 'Manuell (Tage)')}</Label>
+                    <Label>{l('Documented exception (days)', 'Excepción documentada (días)', 'Dokumentierte Ausnahme (Tage)')}</Label>
                     <Input type="number" min="1" max="365" value={form.override_days}
                       onChange={(e) => setForm({ ...form, override_days: e.target.value })}
                       placeholder={l('Always wins', 'Siempre gana', 'Hat Vorrang')} />
@@ -304,7 +304,7 @@ export default function PlantOpsCareEditor() {
                 </div>
 
                 <div>
-                  <Label>{l('Override reason', 'Motivo del ajuste', 'Grund der Anpassung')}</Label>
+                  <Label>{l('Exception reason (required for an exception)', 'Motivo de la excepción (obligatorio)', 'Grund der Ausnahme (erforderlich)')}</Label>
                   <Input value={form.override_reason}
                     onChange={(e) => setForm({ ...form, override_reason: e.target.value })} />
                 </div>
