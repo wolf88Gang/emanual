@@ -6,8 +6,8 @@ Note: this is a large correctness pass, so it goes through plan approval once â€
 
 Confirmed: `organizations` has columns `id, name, org_type, business_archetype, account_scope, modules_json, plantops_care_settings_json, created_at, updated_at` â€” no `country`, and `profiles` has no `country` either. That is why `complete_business_onboarding` fails.
 
-- Additive migration: `ALTER TABLE public.organizations ADD COLUMN country text`.
-- Rewrite `complete_business_onboarding` to write org name, archetype, scope, modules_json, country on the organization, the owner role, and the profile org link only. No estate created.
+- No schema added just to satisfy the RPC: country has no product use today, so `p_country` persistence is removed from onboarding for now (no new column).
+- Rewrite `complete_business_onboarding` to write org name, archetype, scope, modules_json, the owner role, and the profile org link only. No estate created.
 - Onboarding UI: destructive toast on any RPC error, keep all entered values, stay on the modules step, allow retry, never navigate on failure.
 - Re-test signup + finish end-to-end before continuing.
 
