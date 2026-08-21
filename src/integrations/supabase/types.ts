@@ -2030,6 +2030,7 @@ export type Database = {
           reminder_contact: string | null
           reserved_from: string
           reserved_until: string | null
+          send_water_reminders: boolean
           spot_label: string | null
           spot_notes: string | null
           status: string
@@ -2073,6 +2074,7 @@ export type Database = {
           reminder_contact?: string | null
           reserved_from: string
           reserved_until?: string | null
+          send_water_reminders?: boolean
           spot_label?: string | null
           spot_notes?: string | null
           status: string
@@ -2116,6 +2118,7 @@ export type Database = {
           reminder_contact?: string | null
           reserved_from?: string
           reserved_until?: string | null
+          send_water_reminders?: boolean
           spot_label?: string | null
           spot_notes?: string | null
           status?: string
@@ -4084,6 +4087,10 @@ export type Database = {
           p_volume_liters?: number
         }
         Returns: undefined
+      }
+      plantops_set_water_reminders: {
+        Args: { p_enabled: boolean; p_placement_id: string }
+        Returns: Json
       }
       plantops_start_visit: {
         Args: { p_estate_id: string; p_notes?: string }
