@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DEPRECATED_ROUTES, SHELL_ROUTES, routeAccess } from '@/lib/homeGuideModules';
+import { DEPRECATED_ROUTES, MODULE_LIST, SHELL_ROUTES, routeAccess } from '@/lib/homeGuideModules';
 
 /**
  * Route ownership invariant.
@@ -72,5 +72,38 @@ describe('tenant route registry', () => {
       expect(access.kind === 'deprecated' && access.redirectTo).toBe(target);
       expect(routeAccess(target).kind).not.toBe('unknown');
     }
+  });
+});
+
+/**
+ * Module surface invariant: every selectable module must be discoverable —
+ * either with its own navigation entry, or explicitly documented as embedded
+ * inside another module's screen. No toggle may do nothing.
+ */
+describe('module surfaces', () => {
+  const EMBEDDED: Record<string, string> = {
+    manuals: 'manual tab inside site detail',
+    tools: 'tool assignment inside the visit runner',
+    inventory: 'stock inside tools/assets screens',
+  };
+
+  it('every module has a navigation route or a documented embedded surface', () => {
+    const orphans = MODULE_LIST.filter((m) => !m.navRoute && !EMBEDDED[m.key]).map((m) => m.key);
+    expect(orphans, `Modules without any user-facing surface: ${orphans.join(', ')}`).toEqual([]);
+  });
+
+  it('every module navigation route is owned by that same module', () => {
+    for (const m of MODULE_LIST) {
+      if (!m.navRoute) continue;
+      const access = routeAccess(m.navRoute);
+      expect(access.kind, `${m.key} -> ${m.navRoute}`).toBe('module');
+      if (access.kind === 'module') expect(access.module.key).toBe(m.key);
+    }
+  });
+
+  it('client_portal owns /portals', () => {
+    const access = routeAccess('/portals');
+    expect(access.kind).toBe('module');
+    if (access.kind === 'module') expect(access.module.key).toBe('client_portal');
   });
 });
