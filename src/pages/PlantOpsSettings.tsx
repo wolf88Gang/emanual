@@ -48,6 +48,14 @@ export default function PlantOpsSettings() {
   }, [modulesLoading, savedModules]);
 
   const effective = useMemo(() => resolveModules(modules ?? {}), [modules]);
+  const enabledCount = MODULE_KEYS.filter((k) => effective[k]).length;
+
+  /** Dirty = the edited selection differs from what the database holds. */
+  const dirty = useMemo(
+    () => MODULE_KEYS.some((k) => !!effective[k] !== !!savedModules[k]),
+    [effective, savedModules],
+  );
+  const [justSaved, setJustSaved] = useState(false);
 
   /** Which preset the current selection matches (for highlighting). */
   const activePreset: PresetKey = useMemo(() => {
@@ -59,6 +67,7 @@ export default function PlantOpsSettings() {
   }, [effective]);
 
   const toggleModule = (key: ModuleKey, value: boolean) => {
+    setJustSaved(false);
     setModules((prev) => {
       const base = { ...(prev ?? savedModules) };
       base[key] = value;
@@ -70,6 +79,7 @@ export default function PlantOpsSettings() {
   const applyPreset = (key: PresetKey) => {
     const p = PRESETS.find((x) => x.key === key);
     if (!p?.modules) return;
+    setJustSaved(false);
     setModules(resolveModules(p.modules));
   };
 
@@ -77,21 +87,26 @@ export default function PlantOpsSettings() {
     if (!orgId) return;
     setSaving(true);
     try {
+      // Every canonical key is persisted explicitly (true/false) so archetype
+      // defaults can never re-introduce a module that was switched off.
       await saveModules(effective);
+      setJustSaved(true);
       const active = MODULE_KEYS.filter((k) => effective[k]).map((k) => moduleLabel(k, language));
       toast({
         title: l('Settings saved', 'Configuración guardada'),
         description: active.length
-          ? `${l('Active modules', 'Módulos activos')}: ${active.join(', ')}`
+          ? `${active.length} ${l('modules enabled', 'módulos activos')}: ${active.join(', ')}`
           : l('No modules active — only configuration stays available.',
                'Sin módulos activos: solo queda disponible la configuración.'),
       });
     } catch (e: any) {
+      setJustSaved(false);
       toast({ title: l('Could not save', 'No se pudo guardar'), description: e.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
+
 
 
 
@@ -198,12 +213,25 @@ export default function PlantOpsSettings() {
               </Card>
             )}
 
+            <div className="sticky bottom-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {enabledCount} {l('modules enabled', 'módulos activos')}
+                </span>
+                {saving ? (
+                  <Badge variant="secondary">{l('Saving…', 'Guardando…')}</Badge>
+                ) : dirty ? (
+                  <Badge variant="destructive">{l('Unsaved changes', 'Cambios sin guardar')}</Badge>
+                ) : justSaved ? (
+                  <Badge variant="secondary">{l('Saved', 'Guardado')}</Badge>
+                ) : null}
+              </div>
+              <Button onClick={save} disabled={saving || !dirty} className="w-full">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                {saving ? l('Saving…', 'Guardando…') : l('Save settings', 'Guardar configuración')}
+              </Button>
+            </div>
 
-
-            <Button onClick={save} disabled={saving} className="w-full">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-              {l('Save settings', 'Guardar configuración')}
-            </Button>
           </>
         )}
       </main>

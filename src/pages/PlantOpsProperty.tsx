@@ -3,6 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   AlertTriangle, ArrowLeft, Copy, Droplets, FileText, Link2, Loader2, Plus, RefreshCw, ShieldOff, Wallet,
 } from 'lucide-react';
+import { useModules } from '@/hooks/useModules';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -42,6 +43,8 @@ export default function PlantOpsProperty() {
   const [billing, setBilling] = useState<PropertyBilling | null>(null);
   /** Totals are always kept separated per currency — CRC and USD are never summed. */
   const [byCurrency, setByCurrency] = useState<CurrencyBilling[]>([]);
+  const { canUse } = useModules();
+  const portalOn = canUse('client_portal');
   const [links, setLinks] = useState<ShareLinkRow[]>([]);
   const [busy, setBusy] = useState(false);
 
@@ -227,7 +230,9 @@ export default function PlantOpsProperty() {
             <TabsTrigger value="resumen">{l('Summary', 'Resumen')}</TabsTrigger>
             <TabsTrigger value="plantas">{l('Plants', 'Plantas')}</TabsTrigger>
             <TabsTrigger value="historial">{l('History', 'Historial')}</TabsTrigger>
-            <TabsTrigger value="manual">{l('Manual', 'Manual')}</TabsTrigger>
+            <TabsTrigger value="manual">
+              {portalOn ? l('Manual & portal', 'Manual y portal') : l('Manual', 'Manual')}
+            </TabsTrigger>
             <TabsTrigger value="cobros">{l('Billing', 'Cobros')}</TabsTrigger>
           </TabsList>
 
@@ -343,8 +348,9 @@ export default function PlantOpsProperty() {
               </CardContent>
             </Card>
 
+            {portalOn && (
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Link2 className="h-4 w-4" />{l('Share link', 'Enlace compartido')}</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Link2 className="h-4 w-4" />{l('Share portal', 'Compartir portal')}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {activeLink ? (
                   <>
@@ -385,6 +391,7 @@ export default function PlantOpsProperty() {
                 )}
               </CardContent>
             </Card>
+            )}
           </TabsContent>
 
           {/* Billing */}

@@ -259,19 +259,24 @@ export const MODULES: Record<ModuleKey, ModuleDefinition> = {
   },
   client_portal: {
     key: 'client_portal',
-    label: L('Client portal', 'Portal del cliente', 'Kundenportal'),
+    label: L('Client Portals', 'Portales de clientes', 'Kundenportale'),
     description: L(
       'Login-free portal links for clients.',
       'Enlaces de portal sin cuenta para los clientes.',
       'Portal-Links für Kunden ohne Konto.',
     ),
     icon: Globe,
-    routes: [],
+    // Organization-wide portal management screen owned by this module.
+    routes: ['/portals'],
+    navRoute: '/portals',
     allowedRoles: ['owner', 'manager'],
     dependencies: ['clients'],
-    dashboardWidgets: [],
+    dashboardWidgets: [
+      { id: 'portals.active', label: L('Active client portals', 'Portales activos', 'Aktive Kundenportale'), route: '/portals' },
+    ],
     projectCapability: true,
   },
+
   billing_payments: {
     key: 'billing_payments',
     label: L('Billing & payments', 'Facturación y pagos', 'Abrechnung & Zahlungen'),
