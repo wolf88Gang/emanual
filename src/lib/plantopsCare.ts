@@ -725,3 +725,28 @@ export async function fetchCareQueue(estateId?: string | null): Promise<CareQueu
   if (error) throw error;
   return (data as unknown as CareQueueRow[]) || [];
 }
+
+/* ---------- Watering reminders per plant ---------- */
+
+/** Turns the client watering reminders on/off for a single plant line. */
+export async function setWaterReminders(placementId: string, enabled: boolean): Promise<boolean> {
+  const { error } = await supabase.rpc('plantops_set_water_reminders' as never, {
+    p_placement_id: placementId,
+    p_enabled: enabled,
+  } as never);
+  if (error) throw error;
+  return enabled;
+}
+
+/** Reads the reminder switch for a set of plant lines (placement id -> enabled). */
+export async function fetchWaterReminderFlags(placementIds: string[]): Promise<Record<string, boolean>> {
+  if (placementIds.length === 0) return {};
+  const { data, error } = await supabase
+    .from('plant_placements')
+    .select('id, send_water_reminders')
+    .in('id', placementIds);
+  if (error) throw error;
+  const map: Record<string, boolean> = {};
+  for (const row of (data as any[]) || []) map[row.id] = row.send_water_reminders !== false;
+  return map;
+}

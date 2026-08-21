@@ -15,6 +15,9 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useOrgType } from '@/hooks/usePlantOps';
 import { useModules } from '@/hooks/useModules';
 import { fetchClientWorkspace, type ClientWorkspaceRow } from '@/lib/plantopsClients';
+import { Switch } from '@/components/ui/switch';
+import { Droplets } from 'lucide-react';
+import { fetchCareQueue, fetchWaterReminderFlags, setWaterReminders, type CareQueueRow } from '@/lib/plantopsCare';
 import {
   CUSTOM_REMINDER_TYPES,
   MESSAGE_TYPE_LABELS,
@@ -51,6 +54,8 @@ export default function PlantOpsReminders() {
   const [clients, setClients] = useState<ClientWorkspaceRow[]>([]);
   const [contacts, setContacts] = useState<ClientContact[]>([]);
   const [createOpen, setCreateOpen] = useState(false);
+  const [wateringRows, setWateringRows] = useState<CareQueueRow[]>([]);
+  const [wateringFlags, setWateringFlags] = useState<Record<string, boolean>>({});
 
   const [form, setForm] = useState({
     clientId: '',
@@ -71,9 +76,15 @@ export default function PlantOpsReminders() {
     if (!orgId) return;
     setLoading(true);
     try {
-      const [out, cl] = await Promise.all([fetchOrgOutbox(orgId), fetchClientWorkspace(orgId)]);
+      const [out, cl, queue] = await Promise.all([
+        fetchOrgOutbox(orgId),
+        fetchClientWorkspace(orgId),
+        fetchCareQueue(null).catch(() => [] as CareQueueRow[]),
+      ]);
       setMessages(out);
       setClients(cl);
+      setWateringRows(queue);
+      setWateringFlags(await fetchWaterReminderFlags(queue.map((q) => q.placement_id)).catch(() => ({})));
     } catch (e: any) {
       toast({ title: l('Could not load reminders', 'No se pudieron cargar los recordatorios'), description: e.message, variant: 'destructive' });
     } finally {
@@ -179,6 +190,63 @@ export default function PlantOpsReminders() {
 
   const typeLabel = (t: MessageType) =>
     language === 'es' ? MESSAGE_TYPE_LABELS[t].es : language === 'de' ? MESSAGE_TYPE_LABELS[t].de : MESSAGE_TYPE_LABELS[t].en;
+
+
+  const toggleWatering = async (row: CareQueueRow, enabled: boolean) => {
+    setWateringFlags((prev) => ({ ...prev, [row.placement_id]: enabled }));
+    try {
+      await setWaterReminders(row.placement_id, enabled);
+    } catch (e: any) {
+      setWateringFlags((prev) => ({ ...prev, [row.placement_id]: !enabled }));
+      toast({ title: l('Could not update the reminder', 'No se pudo actualizar el recordatorio'), description: e.message, variant: 'destructive' });
+    }
+  };
+
+  const wateringList = () => (
+    <div className="space-y-3">
+      {wateringRows.length === 0 && (
+        <p className="text-sm text-muted-foreground py-6 text-center">
+          {l('No plants installed yet.', 'Todavía no hay plantas instaladas.', 'Noch keine Pflanzen installiert.')}
+        </p>
+      )}
+      {wateringRows.map((r) => {
+        const on = wateringFlags[r.placement_id] !== false;
+        return (
+          <Card key={r.placement_id}>
+            <CardContent className="p-4 flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <Badge variant={r.care_state === 'regar' ? 'default' : r.care_state === 'revisar' ? 'destructive' : 'secondary'}>
+                    {r.care_state === 'regar'
+                      ? l('Water today', 'Regar hoy', 'Heute gießen')
+                      : r.care_state === 'revisar'
+                        ? l('Review', 'Revisar', 'Prüfen')
+                        : l('Do not water', 'No regar', 'Nicht gießen')}
+                  </Badge>
+                  {r.effective_days != null && (
+                    <Badge variant="outline">{l('every', 'cada', 'alle')} {r.effective_days} {l('days', 'días', 'Tage')}</Badge>
+                  )}
+                </div>
+                <p className="text-sm font-medium mt-2 truncate">{r.plant_name}</p>
+                <p className="text-xs text-muted-foreground truncate">
+                  {[r.estate_name, r.zone_name, r.spot_label].filter(Boolean).join(' · ') || '—'}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {l('Next watering', 'Próximo riego', 'Nächstes Gießen')}: {r.next_water_due ? new Date(r.next_water_due).toLocaleDateString() : '—'}
+                </p>
+              </div>
+              <div className="flex flex-col items-end gap-1">
+                <Switch checked={on} onCheckedChange={(v) => toggleWatering(r, v)} />
+                <span className="text-[11px] text-muted-foreground">
+                  {on ? l('Reminders on', 'Recordatorios activos', 'Erinnerungen an') : l('Reminders off', 'Sin recordatorios', 'Erinnerungen aus')}
+                </span>
+              </div>
+            </CardContent>
+          </Card>
+        );
+      })}
+    </div>
+  );
 
   const list = (rows: OutboxMessage[], showSend: boolean) => (
     <div className="space-y-3">
@@ -297,13 +365,18 @@ export default function PlantOpsReminders() {
         {loading ? (
           <div className="flex justify-center py-12"><Loader2 className="h-6 w-6 animate-spin text-muted-foreground" /></div>
         ) : (
-          <Tabs defaultValue="due">
-            <TabsList className="w-full grid grid-cols-4">
+          <Tabs defaultValue="watering">
+            <TabsList className="w-full grid grid-cols-5">
+              <TabsTrigger value="watering" className="gap-1">
+                <Droplets className="h-3.5 w-3.5" />
+                {l('Watering', 'Riego', 'Gießen')}
+              </TabsTrigger>
               <TabsTrigger value="due">{l('Due', 'Pendientes', 'Fällig')} ({groups.due.length})</TabsTrigger>
               <TabsTrigger value="scheduled">{l('Scheduled', 'Programados', 'Geplant')} ({groups.scheduled.length})</TabsTrigger>
               <TabsTrigger value="sent">{l('Sent', 'Enviados', 'Gesendet')} ({groups.sent.length})</TabsTrigger>
               <TabsTrigger value="problems">{l('Problems', 'Problemas', 'Probleme')} ({groups.problems.length})</TabsTrigger>
             </TabsList>
+            <TabsContent value="watering" className="mt-4">{wateringList()}</TabsContent>
             <TabsContent value="due" className="mt-4">{list(groups.due, true)}</TabsContent>
             <TabsContent value="scheduled" className="mt-4">{list(groups.scheduled, true)}</TabsContent>
             <TabsContent value="sent" className="mt-4">{list(groups.sent, false)}</TabsContent>

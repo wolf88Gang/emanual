@@ -41,6 +41,7 @@ export interface PropertyPlacement {
   last_watered_at: string | null;
   care_responsibility: string | null;
   reminder_contact: string | null;
+  send_water_reminders: boolean;
   client_instructions: string | null;
   do_not_do: string | null;
   care_notes: string | null;
@@ -200,6 +201,7 @@ export async function fetchPropertyDetail(estateId: string): Promise<PropertyDet
         last_watered_at: p.last_watered_at,
         care_responsibility: p.care_responsibility,
         reminder_contact: p.reminder_contact,
+        send_water_reminders: (p as any).send_water_reminders !== false,
         client_instructions: p.client_instructions,
         do_not_do: p.do_not_do,
         care_notes: p.care_notes,
