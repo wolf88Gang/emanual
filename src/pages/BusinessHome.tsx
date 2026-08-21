@@ -53,9 +53,28 @@ export default function BusinessHome() {
     },
   });
 
+  const portalsOn = canUse('client_portal');
+
+  /** Active (non revoked, non expired) aggregated client portals. */
+  const { data: activePortals } = useQuery({
+    queryKey: ['business-home-portals', orgId],
+    enabled: !!orgId && portalsOn,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('client_portal_links' as any)
+        .select('id, revoked_at, expires_at')
+        .eq('org_id', orgId!)
+        .is('revoked_at', null);
+      if (error) throw error;
+      const now = new Date().toISOString();
+      return ((data || []) as any[]).filter((lk) => !lk.expires_at || lk.expires_at > now).length;
+    },
+  });
+
   const rows = clientsOn ? (clients ?? []) : [];
   const projectCount = projectsOn ? (siteCount ?? 0) : 0;
   const loading = modulesLoading || (clientsOn && clientsLoading) || (projectsOn && sitesLoading);
+
 
   /** Empty-state actions derived from enabled modules, in priority order. */
   const emptyActions: { key: string; label: string; route: string }[] = [
