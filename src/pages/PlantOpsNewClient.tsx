@@ -98,6 +98,7 @@ interface PlantDraft {
   ventilation: string;
   responsibility: CareResponsibility;
   reminderContact: string;
+  sendReminders: boolean;
   clientInstructions: string;
   doNotDo: string;
   placementId?: string;
@@ -135,6 +136,7 @@ const emptyPlant = (): PlantDraft => ({
   ventilation: '',
   responsibility: 'raiz_y_forma',
   reminderContact: '',
+  sendReminders: true,
   clientInstructions: '',
   doNotDo: '',
 });
@@ -318,6 +320,7 @@ export default function PlantOpsNewClient() {
               ventilation: p.ventilation || '',
               responsibility: (p.care_responsibility as CareResponsibility) || 'raiz_y_forma',
               reminderContact: p.reminder_contact || '',
+              sendReminders: p.send_water_reminders !== false,
               clientInstructions: p.client_instructions || '',
               doNotDo: p.do_not_do || '',
             })),
@@ -611,6 +614,7 @@ export default function PlantOpsNewClient() {
           clientInstructions: p.clientInstructions || null,
           doNotDo: p.doNotDo || null,
         });
+        await setWaterReminders(p.placementId!, p.sendReminders);
       }
       await goStep(5);
     } catch (e: any) {
@@ -1093,6 +1097,16 @@ export default function PlantOpsNewClient() {
                   <div className="space-y-1 col-span-2">
                     <Label>{l('Internal reminder contact', 'Contacto interno de recordatorio')}</Label>
                     <Input value={p.reminderContact} onChange={(e) => updatePlant(p.key, { reminderContact: e.target.value })} />
+                  </div>
+                  <div className="col-span-2 flex items-start justify-between gap-3 rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <Label>{l('Send watering reminders to the client', 'Enviar recordatorios de riego al cliente')}</Label>
+                      <p className="text-xs text-muted-foreground">
+                        {l('When on, this plant appears in the reminders queue on its watering date.',
+                           'Si está activo, esta planta entra en la cola de recordatorios en su fecha de riego.')}
+                      </p>
+                    </div>
+                    <Switch checked={p.sendReminders} onCheckedChange={(v) => updatePlant(p.key, { sendReminders: v })} />
                   </div>
                   <div className="space-y-1 col-span-2">
                     <Label>{l('Client instructions', 'Instrucciones para el cliente')}</Label>
