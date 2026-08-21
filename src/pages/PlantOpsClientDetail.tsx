@@ -17,19 +17,18 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useOrgType } from '@/hooks/usePlantOps';
 import {
   fetchClientDetail,
-  fetchOrgModules,
   updateClientContact,
   saveProjectPlanPatch,
   PROJECT_CAPABILITY_KEYS,
   PORTAL_VISIBILITY_KEYS,
   CAPABILITY_LABELS,
   PORTAL_VISIBILITY_LABELS,
-  DEFAULT_ORG_MODULES,
   type ClientDetailData,
   type ClientProjectRow,
   type CurrencyBalance,
 } from '@/lib/plantopsClients';
 import { fetchServicePlan } from '@/lib/plantopsProperty';
+import { useModules } from '@/hooks/useModules';
 import { ClientContactsPanel } from '@/components/plantops/ClientContactsPanel';
 import { ClientOutboxPanel } from '@/components/plantops/ClientOutboxPanel';
 import { ClientPortalPanel } from '@/components/plantops/ClientPortalPanel';
@@ -49,10 +48,11 @@ export default function PlantOpsClientDetail() {
   const { toast } = useToast();
   const { language, tl } = useLanguage();
   const { orgId } = useOrgType();
+  // Canonical module state — never a second local copy that can disagree.
+  const { modules: orgModules, canUse } = useModules();
   const l = (en: string, es: string, de?: string) => tl({ en, es, de: de || en });
 
   const [data, setData] = useState<ClientDetailData | null>(null);
-  const [orgModules, setOrgModules] = useState<Record<string, boolean>>(DEFAULT_ORG_MODULES);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(searchParams.get('tab') || 'resumen');
 
@@ -68,9 +68,8 @@ export default function PlantOpsClientDetail() {
     if (!orgId || !clientId) return;
     setLoading(true);
     try {
-      const [d, m] = await Promise.all([fetchClientDetail(orgId, clientId), fetchOrgModules(orgId)]);
+      const d = await fetchClientDetail(orgId, clientId);
       setData(d);
-      setOrgModules(m);
       setForm({ name: d.client.name, email: d.client.email ?? '', phone: d.client.phone ?? '', address: d.client.address ?? '' });
       document.title = `${d.client.name} | PlantOps`;
     } catch (e: any) {
@@ -189,7 +188,9 @@ export default function PlantOpsClientDetail() {
             <TabsTrigger value="proyectos">{l('Projects', 'Proyectos')}</TabsTrigger>
             <TabsTrigger value="contactos">{l('Contacts', 'Contactos')}</TabsTrigger>
             <TabsTrigger value="comunicaciones">{l('Communications', 'Comunicaciones')}</TabsTrigger>
-            <TabsTrigger value="portal">{l('Portal', 'Portal')}</TabsTrigger>
+            {canUse('client_portal') && (
+              <TabsTrigger value="portal">{l('Client portal', 'Portal del cliente', 'Kundenportal')}</TabsTrigger>
+            )}
             <TabsTrigger value="facturacion">{l('Billing', 'Facturación')}</TabsTrigger>
           </TabsList>
 
@@ -324,6 +325,11 @@ export default function PlantOpsClientDetail() {
 
           {/* ---------- Portal ---------- */}
           <TabsContent value="portal" className="pt-3 space-y-3">
+            {canUse('client_portal') && (
+              <Button variant="outline" size="sm" onClick={() => navigate('/portals')}>
+                {l('All client portals', 'Todos los portales', 'Alle Kundenportale')}
+              </Button>
+            )}
             <ClientPortalPanel clientId={data.client.id} />
             <div className="text-sm font-medium pt-2">{l('Per-project links', 'Enlaces por proyecto')}</div>
             {data.portals.length === 0 && (
