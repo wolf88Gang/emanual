@@ -348,8 +348,9 @@ export default function PlantOpsProperty() {
               </CardContent>
             </Card>
 
+            {portalOn && (
             <Card>
-              <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Link2 className="h-4 w-4" />{l('Share link', 'Enlace compartido')}</CardTitle></CardHeader>
+              <CardHeader className="pb-2"><CardTitle className="text-base flex items-center gap-2"><Link2 className="h-4 w-4" />{l('Share portal', 'Compartir portal')}</CardTitle></CardHeader>
               <CardContent className="space-y-3">
                 {activeLink ? (
                   <>
