@@ -25,11 +25,26 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** Public wording rules. */
-function waterMessage(nextDue: string | null): { state: 'no_regar' | 'regar' | 'revisar'; text: string | null } {
+type Lang = 'en' | 'es' | 'de';
+
+/** Public wording rules, localized (contact preference resolved by the caller). */
+function waterMessage(nextDue: string | null, lang: Lang): { state: 'no_regar' | 'regar' | 'revisar'; text: string | null } {
   if (!nextDue) return { state: 'revisar', text: null };
-  if (nextDue > todayISO()) return { state: 'no_regar', text: `NO REGAR ANTES DEL ${nextDue}` };
-  return { state: 'regar', text: 'PUEDE REGAR HOY' };
+  if (nextDue > todayISO()) {
+    const text = lang === 'es'
+      ? `NO REGAR ANTES DEL ${nextDue}`
+      : lang === 'de'
+        ? `NICHT GIESSEN VOR DEM ${nextDue}`
+        : `DO NOT WATER BEFORE ${nextDue}`;
+    return { state: 'no_regar', text };
+  }
+  const today = lang === 'es' ? 'PUEDE REGAR HOY' : lang === 'de' ? 'HEUTE GIESSEN MÖGLICH' : 'YOU MAY WATER TODAY';
+  return { state: 'regar', text: today };
+}
+
+function normalizeLang(value: unknown): Lang | null {
+  const v = typeof value === 'string' ? value.slice(0, 2).toLowerCase() : '';
+  return v === 'es' || v === 'de' || v === 'en' ? (v as Lang) : null;
 }
 
 Deno.serve(async (req) => {
@@ -74,6 +89,7 @@ Deno.serve(async (req) => {
     if ((estate.client_id ?? null) !== (link.client_id ?? null)) return json({ error: 'not_found' }, 404);
 
     let clientName: string | null = null;
+    let lang: Lang = 'en';
     if (link.client_id) {
       const { data: client } = await supabase
         .from('clients')
@@ -82,6 +98,18 @@ Deno.serve(async (req) => {
         .maybeSingle();
       if (!client || client.org_id !== link.org_id) return json({ error: 'not_found' }, 404);
       clientName = client.name ?? null;
+
+      // Language priority: primary contact preference, then any contact preference.
+      const { data: contacts } = await supabase
+        .from('client_contacts')
+        .select('preferred_language, is_primary')
+        .eq('org_id', link.org_id)
+        .eq('client_id', link.client_id);
+      const sorted = (contacts || []).sort((a: any, b: any) => Number(!!b.is_primary) - Number(!!a.is_primary));
+      for (const c of sorted) {
+        const l = normalizeLang((c as any).preferred_language);
+        if (l) { lang = l; break; }
+      }
     }
 
     const { data: org } = await supabase
@@ -95,6 +123,7 @@ Deno.serve(async (req) => {
       client: clientName,
       company: org?.name ?? null,
       contact_note: link.contact_note ?? null,
+      language: lang,
       // The manual is always the internally approved snapshot, never live data.
       manual: link.show_manual && link.manual_approved_at ? link.manual_snapshot_json : null,
       manual_approved_at: link.show_manual ? link.manual_approved_at : null,
@@ -108,7 +137,7 @@ Deno.serve(async (req) => {
         .eq('estate_id', link.estate_id)
         .eq('status', 'installed');
       payload.plants = (placements || []).map((p: any) => {
-        const msg = waterMessage(p.next_water_due ?? null);
+        const msg = waterMessage(p.next_water_due ?? null, lang);
         return {
           id: p.id,
           name: p.asset?.name ?? null,
