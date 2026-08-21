@@ -11,9 +11,11 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { toast } from '@/hooks/use-toast';
 import {
   fetchEffectiveCare, setCarePlan, formatDateEs,
+  setWaterReminders, fetchWaterReminderFlags,
   CARE_RESPONSIBILITIES, CARE_RESPONSIBILITY_LABELS,
   type EffectiveCare, type CareResponsibility,
 } from '@/lib/plantopsCare';
@@ -33,6 +35,7 @@ export default function PlantOpsCareEditor() {
   const [speciesName, setSpeciesName] = useState<string>('');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [sendReminders, setSendReminders] = useState(true);
 
   const emptyForm = {
     base_days: '',
@@ -346,6 +349,19 @@ export default function PlantOpsCareEditor() {
                   <div className="sm:col-span-2">
                     <Label>{l('Reminder contact', 'Contacto para recordatorios', 'Erinnerungskontakt')}</Label>
                     <Input value={form.reminder_contact} onChange={(e) => setForm({ ...form, reminder_contact: e.target.value })} />
+                  </div>
+                  <div className="sm:col-span-2 flex items-start justify-between gap-3 rounded-lg border p-3">
+                    <div className="space-y-0.5">
+                      <Label>{l('Send watering reminders to the client',
+                                'Enviar recordatorios de riego al cliente',
+                                'Gieß-Erinnerungen an den Kunden senden')}</Label>
+                      <p className="text-xs text-muted-foreground">
+                        {l('When on, this plant enters the reminders queue on its watering date.',
+                           'Si está activo, esta planta entra en la cola de recordatorios en su fecha de riego.',
+                           'Wenn aktiv, erscheint diese Pflanze am Gießtag in der Erinnerungsliste.')}
+                      </p>
+                    </div>
+                    <Switch checked={sendReminders} onCheckedChange={setSendReminders} />
                   </div>
                 </div>
 

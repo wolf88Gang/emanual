@@ -19,6 +19,7 @@ import { DEFAULT_PROJECT_CAPABILITIES, DEFAULT_PORTAL_VISIBILITY, PROJECT_TYPES 
 import { reserveAsset, installAsset, BILLING_PERIODS, BILLING_PERIOD_LABELS } from '@/lib/plantops';
 import {
   setCarePlan,
+  setWaterReminders,
   fetchCareQueue,
   addChargeForEstate,
   createShareLink,
