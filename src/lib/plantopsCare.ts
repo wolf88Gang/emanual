@@ -6,7 +6,8 @@ import { supabase } from '@/integrations/supabase/client';
  * IMPORTANT: no agronomic rule is hardcoded here. The operational base interval is
  * an explicit value stored on the installed plant (`plant_placements.water_interval_days`).
  * The species guide stays reference knowledge and is never parsed from free text.
- * Every adjustment factor comes from organizations.plantops_care_settings_json.
+ * No global organization coefficient affects intervals: care resolves as
+ * documented override > placement baseline > structured species baseline > review.
  */
 
 /* ---------- Canonical vocabularies (must match the DB constraints) ---------- */
@@ -105,8 +106,9 @@ export interface EffectiveCare {
   base_source: 'placement' | 'species_profile' | 'none';
   /** Source of the effective interval: documented override > placement > species. */
   effective_source?: 'override' | 'placement' | 'species_profile' | 'none';
-  /** Kept for compatibility; the engine no longer applies global coefficients. */
+  /** @deprecated always [] — the engine applies no global coefficients. */
   configured_factors: CareFactor[];
+  /** @deprecated always 0. */
   factors_total_days: number;
   override_days: number | null;
   effective_days: number | null;
@@ -131,14 +133,6 @@ export interface EffectiveCare {
   pot: PotInfo | null;
 }
 
-/** Organization-configured adjustment factors (days added/subtracted). */
-export interface CareSettings {
-  pot_material?: Record<string, number>;
-  ventilation?: Record<string, number>;
-  light_actual?: Record<string, number>;
-  /** keys are 2-digit months: "01".."12" */
-  season?: Record<string, number>;
-}
 
 export async function fetchEffectiveCare(placementId: string): Promise<EffectiveCare> {
   const { data, error } = await supabase.rpc('plantops_effective_care', {
@@ -427,26 +421,6 @@ export async function registerPayment(params: {
   } as never);
   if (error) throw error;
   return data as unknown as { total: number; paid: number; pending: number };
-}
-
-/* ---------- Care settings (organization-configured factors) ---------- */
-
-export async function fetchCareSettings(orgId: string): Promise<CareSettings> {
-  const { data, error } = await supabase
-    .from('organizations')
-    .select('plantops_care_settings_json')
-    .eq('id', orgId)
-    .single();
-  if (error) throw error;
-  return (((data as any)?.plantops_care_settings_json as CareSettings) || {}) as CareSettings;
-}
-
-export async function saveCareSettings(orgId: string, settings: CareSettings) {
-  const { error } = await supabase
-    .from('organizations')
-    .update({ plantops_care_settings_json: settings } as any)
-    .eq('id', orgId);
-  if (error) throw error;
 }
 
 export async function fetchModules(orgId: string): Promise<Record<string, boolean>> {
