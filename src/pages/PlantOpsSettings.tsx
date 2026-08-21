@@ -48,6 +48,14 @@ export default function PlantOpsSettings() {
   }, [modulesLoading, savedModules]);
 
   const effective = useMemo(() => resolveModules(modules ?? {}), [modules]);
+  const enabledCount = MODULE_KEYS.filter((k) => effective[k]).length;
+
+  /** Dirty = the edited selection differs from what the database holds. */
+  const dirty = useMemo(
+    () => MODULE_KEYS.some((k) => !!effective[k] !== !!savedModules[k]),
+    [effective, savedModules],
+  );
+  const [justSaved, setJustSaved] = useState(false);
 
   /** Which preset the current selection matches (for highlighting). */
   const activePreset: PresetKey = useMemo(() => {
@@ -59,6 +67,7 @@ export default function PlantOpsSettings() {
   }, [effective]);
 
   const toggleModule = (key: ModuleKey, value: boolean) => {
+    setJustSaved(false);
     setModules((prev) => {
       const base = { ...(prev ?? savedModules) };
       base[key] = value;
@@ -70,6 +79,7 @@ export default function PlantOpsSettings() {
   const applyPreset = (key: PresetKey) => {
     const p = PRESETS.find((x) => x.key === key);
     if (!p?.modules) return;
+    setJustSaved(false);
     setModules(resolveModules(p.modules));
   };
 
@@ -77,21 +87,26 @@ export default function PlantOpsSettings() {
     if (!orgId) return;
     setSaving(true);
     try {
+      // Every canonical key is persisted explicitly (true/false) so archetype
+      // defaults can never re-introduce a module that was switched off.
       await saveModules(effective);
+      setJustSaved(true);
       const active = MODULE_KEYS.filter((k) => effective[k]).map((k) => moduleLabel(k, language));
       toast({
         title: l('Settings saved', 'Configuración guardada'),
         description: active.length
-          ? `${l('Active modules', 'Módulos activos')}: ${active.join(', ')}`
+          ? `${active.length} ${l('modules enabled', 'módulos activos')}: ${active.join(', ')}`
           : l('No modules active — only configuration stays available.',
                'Sin módulos activos: solo queda disponible la configuración.'),
       });
     } catch (e: any) {
+      setJustSaved(false);
       toast({ title: l('Could not save', 'No se pudo guardar'), description: e.message, variant: 'destructive' });
     } finally {
       setSaving(false);
     }
   };
+
 
 
 
