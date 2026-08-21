@@ -85,6 +85,8 @@ export default function PlantOpsCareEditor() {
       const c = await fetchEffectiveCare(placementId);
       setCare(c);
       hydrate(c);
+      const flags = await fetchWaterReminderFlags([placementId]);
+      setSendReminders(flags[placementId] !== false);
 
       const { data: pl } = await supabase
         .from('plant_placements')
@@ -146,6 +148,7 @@ export default function PlantOpsCareEditor() {
         careNotes: form.care_notes || null,
         overrideReason: form.override_reason || null,
       });
+      await setWaterReminders(placementId, sendReminders);
       setCare(updated);
       hydrate(updated);
       toast({ title: l('Care plan saved', 'Plan de cuidado guardado', 'Pflegeplan gespeichert') });
