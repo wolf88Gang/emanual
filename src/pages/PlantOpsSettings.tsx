@@ -213,12 +213,25 @@ export default function PlantOpsSettings() {
               </Card>
             )}
 
+            <div className="sticky bottom-4 space-y-2">
+              <div className="flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">
+                  {enabledCount} {l('modules enabled', 'módulos activos')}
+                </span>
+                {saving ? (
+                  <Badge variant="secondary">{l('Saving…', 'Guardando…')}</Badge>
+                ) : dirty ? (
+                  <Badge variant="destructive">{l('Unsaved changes', 'Cambios sin guardar')}</Badge>
+                ) : justSaved ? (
+                  <Badge variant="secondary">{l('Saved', 'Guardado')}</Badge>
+                ) : null}
+              </div>
+              <Button onClick={save} disabled={saving || !dirty} className="w-full">
+                {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
+                {saving ? l('Saving…', 'Guardando…') : l('Save settings', 'Guardar configuración')}
+              </Button>
+            </div>
 
-
-            <Button onClick={save} disabled={saving} className="w-full">
-              {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Save className="h-4 w-4 mr-2" />}
-              {l('Save settings', 'Guardar configuración')}
-            </Button>
           </>
         )}
       </main>
