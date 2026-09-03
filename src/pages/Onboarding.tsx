@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,6 +57,10 @@ export default function Onboarding() {
   const [propertyAddress, setPropertyAddress] = useState('');
   const [flags, setFlags] = useState<Record<ModuleKey, boolean> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Account setup is a ONE-TIME step. An account that already belongs to an
+  // organization never sees it again, no matter how it got routed here.
+  if (profile?.org_id) return <Navigate to="/" replace />;
 
   const es = language === 'es';
   const de = language === 'de';

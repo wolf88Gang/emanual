@@ -57,8 +57,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // otherwise a fresh sign-in is briefly seen as "user with no org" and
         // gets pushed into account setup on every login.
         if (session?.user) {
-          setLoading(true);
-          setPlatformAdminStatus('loading');
+          // Only a genuinely new identity needs a hold; token refreshes must not
+          // flash the loader.
+          if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION' || event === 'USER_UPDATED') {
+            setLoading(true);
+            setPlatformAdminStatus('loading');
+          }
           setTimeout(() => {
             fetchUserData(session.user.id);
           }, 0);
