@@ -12,6 +12,7 @@ import { archetypeLabel } from '@/lib/businessArchetypes';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { StatTile, StatTileSkeleton } from '@/components/dashboard/StatTile';
 import { DashboardPanel } from '@/components/dashboard/DashboardPanel';
+import { QuickActionRail } from '@/components/dashboard/QuickActionRail';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
