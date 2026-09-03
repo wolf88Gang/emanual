@@ -1,11 +1,10 @@
 import React from 'react';
-import { LucideIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export interface QuickAction {
   key: string;
   label: string;
-  icon: LucideIcon;
+  icon: React.ComponentType<{ className?: string }>;
   onClick: () => void;
   /** Renders as the emphasized primary shortcut. */
   primary?: boolean;
