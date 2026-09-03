@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Users, CreditCard, BarChart3, Activity, TrendingUp, AlertTriangle, DollarSign, Building2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { QuickActionRail } from '@/components/dashboard/QuickActionRail';
 
 interface PlatformStats {
   totalOrgs: number;
@@ -19,6 +21,7 @@ interface PlatformStats {
 
 export default function PlatformAdmin() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const l = (en: string, es: string, de: string) => (language === 'es' ? es : language === 'de' ? de : en);
   const [stats, setStats] = useState<PlatformStats>({
     totalOrgs: 0, totalUsers: 0, totalEstates: 0,
@@ -66,6 +69,7 @@ export default function PlatformAdmin() {
       icon: Building2,
       tooltip: l('Total registered organizations', 'Total de organizaciones registradas', 'Registrierte Organisationen insgesamt'),
       color: 'text-primary',
+      route: '/platform/clients',
     },
     {
       title: l('Users', 'Usuarios', 'Benutzer'),
@@ -73,6 +77,7 @@ export default function PlatformAdmin() {
       icon: Users,
       tooltip: l('Total platform users', 'Total de usuarios en la plataforma', 'Benutzer der Plattform insgesamt'),
       color: 'text-primary',
+      route: '/platform/clients',
     },
     {
       title: l('Estates', 'Propiedades', 'Immobilien'),
@@ -80,6 +85,7 @@ export default function PlatformAdmin() {
       icon: BarChart3,
       tooltip: l('Active estates', 'Propiedades activas', 'Aktive Immobilien'),
       color: 'text-primary',
+      route: '/platform/metrics',
     },
     {
       title: l('Active Subscriptions', 'Suscripciones Activas', 'Aktive Abonnements'),
@@ -87,6 +93,7 @@ export default function PlatformAdmin() {
       icon: CreditCard,
       tooltip: l('Organizations with an active subscription', 'Organizaciones con suscripción activa', 'Organisationen mit aktivem Abonnement'),
       color: 'text-primary',
+      route: '/platform/subscriptions',
     },
     {
       title: l('Total Revenue', 'Ingresos Totales', 'Gesamtumsatz'),
@@ -94,6 +101,7 @@ export default function PlatformAdmin() {
       icon: DollarSign,
       tooltip: l('Total subscription revenue', 'Ingresos totales de suscripciones', 'Gesamter Abonnementumsatz'),
       color: 'text-primary',
+      route: '/platform/subscriptions',
     },
     {
       title: l('System Status', 'Estado del Sistema', 'Systemstatus'),
@@ -101,6 +109,7 @@ export default function PlatformAdmin() {
       icon: Activity,
       tooltip: l('All services running', 'Todos los servicios funcionando', 'Alle Dienste laufen'),
       color: 'text-primary',
+      route: '/platform/system',
     },
   ];
 
@@ -117,30 +126,44 @@ export default function PlatformAdmin() {
           </p>
         </div>
 
+        {/* Quick actions */}
+        <QuickActionRail
+          actions={[
+            { key: 'clients', label: l('Clients', 'Clientes', 'Kunden'), icon: Users, primary: true, onClick: () => navigate('/platform/clients'), badge: loading ? undefined : stats.totalOrgs },
+            { key: 'subs', label: l('Subscriptions', 'Suscripciones', 'Abonnements'), icon: CreditCard, onClick: () => navigate('/platform/subscriptions'), badge: loading ? undefined : stats.activeSubscriptions },
+            { key: 'metrics', label: l('Metrics', 'Métricas', 'Metriken'), icon: BarChart3, onClick: () => navigate('/platform/metrics') },
+            { key: 'system', label: l('System', 'Sistema', 'System'), icon: Activity, onClick: () => navigate('/platform/system') },
+            { key: 'revenue', label: l('Revenue', 'Ingresos', 'Umsatz'), icon: DollarSign, onClick: () => navigate('/platform/subscriptions') },
+          ]}
+        />
+
         {/* Stats Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {statCards.map((stat) => (
+          {statCards.map((stat, i) => (
             <Tooltip key={stat.title}>
               <TooltipTrigger asChild>
-                <Card className="hover:shadow-md transition-shadow cursor-default">
-                  <CardContent className="pt-6">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm text-muted-foreground">{stat.title}</p>
-                        <p className="text-2xl font-bold text-foreground mt-1">
-                          {loading ? '...' : stat.value}
-                        </p>
-                      </div>
-                      <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                        <stat.icon className={`h-6 w-6 ${stat.color}`} />
-                      </div>
+                <button
+                  onClick={() => navigate(stat.route)}
+                  style={{ animationDelay: `${i * 60}ms` }}
+                  className="group animate-rise-in text-left rounded-xl border border-border/70 bg-card p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-[var(--shadow-md)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                >
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm text-muted-foreground">{stat.title}</p>
+                      <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">
+                        {loading ? '—' : stat.value}
+                      </p>
                     </div>
-                  </CardContent>
-                </Card>
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 group-hover:scale-105">
+                      <stat.icon className={`h-6 w-6 ${stat.color}`} />
+                    </div>
+                  </div>
+                  <span className="mt-3 flex items-center gap-1 text-xs font-medium text-primary opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                    {l('Open', 'Abrir', 'Öffnen')} <TrendingUp className="h-3 w-3" />
+                  </span>
+                </button>
               </TooltipTrigger>
-              <TooltipContent>
-                {stat.tooltip}
-              </TooltipContent>
+              <TooltipContent>{stat.tooltip}</TooltipContent>
             </Tooltip>
           ))}
         </div>
@@ -171,7 +194,11 @@ export default function PlatformAdmin() {
               ) : (
                 <div className="space-y-3">
                   {stats.recentPayments.map((sub: any) => (
-                    <div key={sub.id} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
+                    <button
+                      key={sub.id}
+                      onClick={() => navigate('/platform/subscriptions')}
+                      className="flex w-full items-center justify-between rounded-lg bg-secondary/50 p-3 text-left transition-colors hover:bg-secondary"
+                    >
                       <div>
                         <p className="text-sm font-medium text-foreground">
                           {sub.plan_type === 'monthly' ? l('Monthly', 'Mensual', 'Monatlich') : l('Annual', 'Anual', 'Jährlich')}
@@ -181,7 +208,7 @@ export default function PlatformAdmin() {
                         </p>
                       </div>
                       <span className="text-sm font-bold text-foreground">${sub.amount}</span>
-                    </div>
+                    </button>
                   ))}
                 </div>
               )}
@@ -242,7 +269,7 @@ export default function PlatformAdmin() {
                   <TooltipTrigger asChild>
                     <button
                       className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/50 transition-all"
-                      onClick={() => window.location.href = action.path}
+                      onClick={() => navigate(action.path)}
                     >
                       <action.icon className="h-6 w-6 text-primary" />
                       <span className="text-xs font-medium text-foreground text-center">{action.label}</span>

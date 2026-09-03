@@ -12,6 +12,7 @@ import { archetypeLabel } from '@/lib/businessArchetypes';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { StatTile, StatTileSkeleton } from '@/components/dashboard/StatTile';
 import { DashboardPanel } from '@/components/dashboard/DashboardPanel';
+import { QuickActionRail } from '@/components/dashboard/QuickActionRail';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -154,6 +155,37 @@ export default function BusinessHome() {
             </Button>
           </div>
         </header>
+
+        {/* Quick actions: create shortcuts + one shortcut per enabled module */}
+        <QuickActionRail
+          actions={[
+            ...emptyActions.map((a, i) => ({
+              key: `new-${a.key}`,
+              label: a.label,
+              icon: Plus,
+              primary: i === 0,
+              onClick: () => navigate(a.route),
+            })),
+            ...navModules.map((m) => ({
+              key: `mod-${m.key}`,
+              label:
+                m.key === 'clients'
+                  ? labels.client
+                  : m.key === 'projects'
+                    ? labels.projectPlural
+                    : widgetLabel({ id: m.key, label: m.label, route: m.navRoute! }, language),
+              icon: m.icon,
+              onClick: () => navigate(m.navRoute!),
+            })),
+            {
+              key: 'settings',
+              label: l('Configure', 'Configurar', 'Konfigurieren'),
+              icon: Settings,
+              onClick: () => navigate('/plantops/settings'),
+            },
+          ]}
+        />
+
 
         {/* Metrics */}
         {loading ? (
