@@ -12,11 +12,15 @@ import { EstateStatsCard } from '@/components/dashboard/EstateStatsCard';
 import { CheckinDialog } from '@/components/checkin/CheckinDialog';
 import { Building2 } from 'lucide-react';
 import { NoEstateGuide } from '@/components/layout/NoEstateGuide';
+import { QuickActionRail } from '@/components/dashboard/QuickActionRail';
+import { useNavigate } from 'react-router-dom';
+import { Camera, Plus, Upload, CheckSquare, Map as MapIcon, FolderOpen } from 'lucide-react';
 
 export default function Dashboard() {
   const { t } = useLanguage();
   const { profile } = useAuth();
   const { currentEstate, loading: estateLoading } = useEstate();
+  const navigate = useNavigate();
   
   const [stats, setStats] = useState({
     totalAssets: 0,
@@ -167,6 +171,18 @@ export default function Dashboard() {
             </p>
           </div>
         </div>
+
+        {/* Quick actions */}
+        <QuickActionRail
+          actions={[
+            { key: 'checkin', label: t('dashboard.newCheckin'), icon: Camera, primary: true, onClick: () => setCheckinDialogOpen(true) },
+            { key: 'tasks', label: t('nav.tasks'), icon: CheckSquare, onClick: () => navigate('/tasks'), badge: tasks.length || undefined },
+            { key: 'map', label: t('nav.map'), icon: MapIcon, onClick: () => navigate('/map') },
+            { key: 'asset', label: t('dashboard.addAsset'), icon: Plus, onClick: () => navigate('/assets?action=add') },
+            { key: 'docs', label: t('nav.documents'), icon: FolderOpen, onClick: () => navigate('/documents') },
+            { key: 'upload', label: t('dashboard.uploadDocument'), icon: Upload, onClick: () => navigate('/documents?action=upload') },
+          ]}
+        />
 
         {/* Stats Overview */}
         <EstateStatsCard stats={stats} />

@@ -22,6 +22,7 @@ import { NearbyWorkCard } from '@/components/work/NearbyWorkCard';
 import { WeatherAlertWidget } from '@/components/dashboard/WeatherAlertWidget';
 import { CheckinDialog } from '@/components/checkin/CheckinDialog';
 import { useNearbyWork } from '@/hooks/useNearbyWork';
+import { QuickActionRail } from '@/components/dashboard/QuickActionRail';
 import { Building2 } from 'lucide-react';
 
 interface WorkZone {
@@ -277,6 +278,18 @@ export default function WorkView() {
             {language === 'es' ? 'Nuevo Registro' : 'New Check-in'}
           </Button>
         </div>
+
+        {/* Quick actions */}
+        <QuickActionRail
+          actions={[
+            { key: 'checkin', label: language === 'es' ? 'Nuevo Registro' : language === 'de' ? 'Neuer Check-in' : 'New Check-in', icon: Camera, primary: true, onClick: () => setCheckinDialogOpen(true) },
+            { key: 'tasks', label: t('nav.tasks'), icon: Clock, onClick: () => navigate('/tasks'), badge: upcomingTasks.length || undefined },
+            { key: 'map', label: t('nav.map'), icon: MapPin, onClick: () => navigate('/map') },
+            { key: 'assets', label: t('nav.assets'), icon: Navigation, onClick: () => navigate('/assets') },
+            { key: 'nearby', label: language === 'es' ? 'Cerca de mí' : language === 'de' ? 'In der Nähe' : 'Near me', icon: Navigation, onClick: refreshLocation },
+            { key: 'newtask', label: language === 'es' ? 'Nueva tarea' : language === 'de' ? 'Neue Aufgabe' : 'New task', icon: Plus, onClick: () => navigate('/tasks?action=add') },
+          ]}
+        />
 
         {/* Weather Alerts - Only show if there are active alerts */}
         {alerts.length > 0 && (
