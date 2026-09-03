@@ -1,6 +1,6 @@
 import React, { ReactNode } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Building2, CreditCard, LayoutDashboard, LogOut, Users } from 'lucide-react';
+import { Building2, CreditCard, LayoutDashboard, LogOut, MailQuestion, Users } from 'lucide-react';
 import { HGLogo } from '@/components/HGLogo';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguagePicker } from '@/components/LanguagePicker';
@@ -12,6 +12,7 @@ const NAV = [
   { to: '/platform', label: 'Console', icon: LayoutDashboard },
   { to: '/platform/clients', label: 'Clients', icon: Building2 },
   { to: '/platform/subscriptions', label: 'Subscriptions', icon: CreditCard },
+  { to: '/platform/requests', label: 'Requests', icon: MailQuestion },
   { to: '/platform/metrics', label: 'Metrics', icon: Users },
 ];
 

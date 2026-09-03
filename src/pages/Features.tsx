@@ -122,9 +122,12 @@ export default function Features() {
               {es ? 'Inicio' : language === 'de' ? 'Start' : 'Home'}
             </Link>
             <LanguagePicker />
-            <Link to="/auth">
+            <Link to="/auth" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
+              {es ? 'Iniciar Sesión' : language === 'de' ? 'Anmelden' : 'Sign In'}
+            </Link>
+            <Link to="/request-access">
               <Button size="sm" className="text-xs font-medium tracking-wide uppercase bg-primary text-primary-foreground hover:bg-primary/90">
-                {es ? 'Iniciar Sesión' : language === 'de' ? 'Anmelden' : 'Sign In'}
+                {es ? 'Solicitar Acceso' : language === 'de' ? 'Zugang anfragen' : 'Request Access'}
               </Button>
             </Link>
           </div>

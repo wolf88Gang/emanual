@@ -26,7 +26,10 @@ export default function Auth() {
   const { t, language } = useLanguage();
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(false);
+  // Sign-up is closed: accounts are provisioned by the Home Guide team after an
+  // access request. This flag stays false and exists only so the shared form
+  // keeps its single code path.
+  const isSignUp = false;
   const [isForgot, setIsForgot] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -279,14 +282,10 @@ export default function Auth() {
               </p>
             ) : (
             <p className="text-center text-sm text-muted-foreground">
-              {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
-              <button
-                type="button"
-                onClick={() => { setIsSignUp(!isSignUp); reset(); }}
-                className="text-primary font-medium hover:underline"
-              >
-                {isSignUp ? t('auth.signIn') : t('auth.signUp')}
-              </button>
+              {tr('No account yet?', '¿Aún no tiene cuenta?', 'Noch kein Konto?')}{' '}
+              <Link to="/request-access" className="text-primary font-medium hover:underline">
+                {tr('Request access', 'Solicitar acceso', 'Zugang anfragen')}
+              </Link>
             </p>
             )}
 
