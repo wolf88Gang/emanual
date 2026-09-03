@@ -155,6 +155,37 @@ export default function BusinessHome() {
           </div>
         </header>
 
+        {/* Quick actions: create shortcuts + one shortcut per enabled module */}
+        <QuickActionRail
+          actions={[
+            ...emptyActions.map((a, i) => ({
+              key: `new-${a.key}`,
+              label: a.label,
+              icon: Plus,
+              primary: i === 0,
+              onClick: () => navigate(a.route),
+            })),
+            ...navModules.map((m) => ({
+              key: `mod-${m.key}`,
+              label:
+                m.key === 'clients'
+                  ? labels.client
+                  : m.key === 'projects'
+                    ? labels.projectPlural
+                    : widgetLabel({ id: m.key, label: m.label, route: m.navRoute! }, language),
+              icon: m.icon,
+              onClick: () => navigate(m.navRoute!),
+            })),
+            {
+              key: 'settings',
+              label: l('Configure', 'Configurar', 'Konfigurieren'),
+              icon: Settings,
+              onClick: () => navigate('/plantops/settings'),
+            },
+          ]}
+        />
+
+
         {/* Metrics */}
         {loading ? (
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
