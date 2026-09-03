@@ -19,8 +19,10 @@ import { PlatformLayout } from "./components/layout/PlatformLayout";
 
 // Lazy-loaded pages for code splitting
 const Auth = lazy(() => import("./pages/Auth"));
+const RequestAccess = lazy(() => import("./pages/RequestAccess"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PlatformAdmin = lazy(() => import("./pages/PlatformAdmin"));
+const PlatformAccessRequests = lazy(() => import("./pages/PlatformAccessRequests"));
 const PlatformClients = lazy(() => import("./pages/PlatformClients"));
 const WorkView = lazy(() => import("./pages/WorkView"));
 const BusinessHome = lazy(() => import("./pages/BusinessHome"));
@@ -229,6 +231,7 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/features" element={<Navigate to="/" replace />} />
+      <Route path="/request-access" element={<RequestAccess />} />
       <Route path="/auth" element={user ? (platformAdminStatus === 'not_admin' || platformAdminStatus === 'admin' ? <Navigate to={postAuthRoute} replace /> : <PageLoader />) : <Auth />} />
       {/* Recovery link target — must stay reachable even with a recovery session active. */}
       <Route path="/auth/reset-password" element={<ResetPassword />} />
@@ -241,6 +244,7 @@ function AppRoutes() {
       <Route path="/platform/clients" element={<PlatformRoute><PlatformClients /></PlatformRoute>} />
       <Route path="/platform/subscriptions" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
       <Route path="/platform/payments" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/requests" element={<PlatformRoute><PlatformAccessRequests /></PlatformRoute>} />
       <Route path="/platform/metrics" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
       <Route path="/platform/system" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
 

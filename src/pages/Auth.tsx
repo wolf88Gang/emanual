@@ -24,9 +24,12 @@ type AuthFormData = z.infer<typeof authSchema>;
 
 export default function Auth() {
   const { t, language } = useLanguage();
-  const { user, signIn, signUp } = useAuth();
+  const { user, signIn } = useAuth();
   const navigate = useNavigate();
-  const [isSignUp, setIsSignUp] = useState(false);
+  // Sign-up is closed: accounts are provisioned by the Home Guide team after an
+  // access request. This flag stays false and exists only so the shared form
+  // keeps its single code path.
+  const isSignUp = false;
   const [isForgot, setIsForgot] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -85,16 +88,8 @@ export default function Auth() {
         toast.error(tr('Password must be at least 6 characters.', 'La contraseña debe tener al menos 6 caracteres.', 'Das Passwort muss mindestens 6 Zeichen haben.'));
         return;
       }
-      if (isSignUp) {
-        const { error } = await signUp(data.email, data.password, data.fullName);
-        if (error) {
-          toast.error(error.message.includes('already registered') ? 'This email is already registered. Please sign in instead.' : error.message);
-        } else {
-          toast.success('Account created! Please check your email to confirm.');
-          setIsSignUp(false);
-          reset();
-        }
-      } else {
+      {
+
         const { error } = await signIn(data.email, data.password);
         if (error) {
           toast.error(error.message.includes('Invalid login') ? 'Invalid email or password.' : error.message);
@@ -279,14 +274,10 @@ export default function Auth() {
               </p>
             ) : (
             <p className="text-center text-sm text-muted-foreground">
-              {isSignUp ? t('auth.hasAccount') : t('auth.noAccount')}{' '}
-              <button
-                type="button"
-                onClick={() => { setIsSignUp(!isSignUp); reset(); }}
-                className="text-primary font-medium hover:underline"
-              >
-                {isSignUp ? t('auth.signIn') : t('auth.signUp')}
-              </button>
+              {tr('No account yet?', '¿Aún no tiene cuenta?', 'Noch kein Konto?')}{' '}
+              <Link to="/request-access" className="text-primary font-medium hover:underline">
+                {tr('Request access', 'Solicitar acceso', 'Zugang anfragen')}
+              </Link>
             </p>
             )}
 

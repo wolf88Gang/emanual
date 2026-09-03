@@ -14,6 +14,63 @@ export type Database = {
   }
   public: {
     Tables: {
+      access_requests: {
+        Row: {
+          company_name: string | null
+          country: string | null
+          created_at: string
+          current_tools: string | null
+          email: string
+          full_name: string
+          id: string
+          internal_notes: string | null
+          needs: string
+          operation_type: string
+          phone: string | null
+          preferred_language: string
+          sites_count: string | null
+          status: string
+          team_size: string | null
+          updated_at: string
+        }
+        Insert: {
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          current_tools?: string | null
+          email: string
+          full_name: string
+          id?: string
+          internal_notes?: string | null
+          needs: string
+          operation_type: string
+          phone?: string | null
+          preferred_language?: string
+          sites_count?: string | null
+          status?: string
+          team_size?: string | null
+          updated_at?: string
+        }
+        Update: {
+          company_name?: string | null
+          country?: string | null
+          created_at?: string
+          current_tools?: string | null
+          email?: string
+          full_name?: string
+          id?: string
+          internal_notes?: string | null
+          needs?: string
+          operation_type?: string
+          phone?: string | null
+          preferred_language?: string
+          sites_count?: string | null
+          status?: string
+          team_size?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       asset_photos: {
         Row: {
           asset_id: string

@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -278,6 +278,10 @@ export default function Onboarding() {
       desc: l('Find jobs on the marketplace.', 'Encuentre trabajos en el marketplace.', 'Jobs auf dem Marktplatz finden.'),
     },
   ];
+
+  // Account setup is a ONE-TIME step. An account that already belongs to an
+  // organization never sees it again, no matter how it got routed here.
+  if (profile?.org_id) return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
