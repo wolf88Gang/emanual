@@ -53,8 +53,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         
-        // Defer profile/role fetch
+        // Defer profile/role fetch. Until that data lands, routing must HOLD:
+        // otherwise a fresh sign-in is briefly seen as "user with no org" and
+        // gets pushed into account setup on every login.
         if (session?.user) {
+          setLoading(true);
+          setPlatformAdminStatus('loading');
           setTimeout(() => {
             fetchUserData(session.user.id);
           }, 0);
