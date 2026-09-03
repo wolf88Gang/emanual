@@ -1,109 +1,358 @@
 import React from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import {
   Leaf, Map, Box, ClipboardList, FolderOpen, Package, Mountain, BookOpen,
-  DollarSign, Recycle, ShoppingBag, Users, Clock, Shield, Wrench, BarChart3,
-  Camera, QrCode, Bell, Zap, Globe, ArrowRight, Lock, Database, Eye, Calculator
+  DollarSign, Users, Clock, Shield, BarChart3, Building2, Share2, Droplets,
+  Camera, QrCode, Bell, Globe, ArrowRight, Lock, Database, Eye, Receipt, SlidersHorizontal
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Seo } from '@/components/Seo';
 
+type L3 = { en: string; es: string; de: string };
+
 interface FeatureItem {
   icon: React.ComponentType<{ className?: string }>;
-  title: string;
-  titleEs: string;
-  description: string;
-  descriptionEs: string;
+  title: L3;
+  description: L3;
 }
 
 interface FeatureSection {
   key: string;
-  labelEn: string;
-  labelEs: string;
+  label: L3;
+  intro: L3;
   image: string;
   features: FeatureItem[];
 }
 
 const sections: FeatureSection[] = [
   {
-    key: 'core',
-    labelEn: 'Core Estate Management',
-    labelEs: 'Gestión de Propiedad',
+    key: 'structure',
+    label: {
+      en: 'Clients, sites and assets',
+      es: 'Clientes, sitios y activos',
+      de: 'Kunden, Standorte und Anlagen',
+    },
+    intro: {
+      en: 'Home Guide is built around one hierarchy: your organization, the clients you serve, the sites you look after, and every asset inside them. Nothing lives without a place.',
+      es: 'Home Guide se construye sobre una jerarquía: su organización, los clientes que atiende, los sitios que cuida y cada activo dentro de ellos. Nada existe sin un lugar.',
+      de: 'Home Guide basiert auf einer Hierarchie: Ihre Organisation, Ihre Kunden, die betreuten Standorte und jede Anlage darin. Nichts existiert ohne Ort.',
+    },
     image: '/images/estate_guide_1.jpg',
     features: [
-      { icon: Map, title: 'Interactive Estate Map', titleEs: 'Mapa Interactivo', description: 'GIS-lite map with zones, asset pins, KML import, and zone drawing tools to visualize your entire property spatially.', descriptionEs: 'Mapa GIS con zonas, pins de activos, importación KML y herramientas de dibujo para visualizar tu propiedad.' },
-      { icon: Box, title: 'Asset Registry', titleEs: 'Registro de Activos', description: 'Catalog every living asset, irrigation system, hardscape, and equipment. Track install dates, service history, and risk flags.', descriptionEs: 'Cataloga cada activo vivo, riego, hardscape y equipo. Rastrea instalación, historial y riesgos.' },
-      { icon: ClipboardList, title: 'Smart Tasks', titleEs: 'Tareas Inteligentes', description: 'Recurring tasks with auto-suggested maintenance templates based on your asset profiles and seasonal patterns.', descriptionEs: 'Tareas recurrentes con plantillas de mantenimiento sugeridas basadas en tus activos y estaciones.' },
-      { icon: Leaf, title: 'Plant Registry & Protocols', titleEs: 'Registro de Plantas', description: 'Botanical library with scientific names, care templates, native status, and generated care protocols per asset.', descriptionEs: 'Biblioteca botánica con nombres científicos, plantillas de cuidado y protocolos generados por activo.' },
-      { icon: FolderOpen, title: 'Document Vault', titleEs: 'Bóveda de Documentos', description: 'Digital binder for warranties, as-builts, contracts, and insurance. Track expiry dates and link to assets or zones.', descriptionEs: 'Carpeta digital para garantías, planos, contratos y seguros. Rastrea vencimientos y vincula a activos.' },
+      {
+        icon: Building2,
+        title: { en: 'Client workspace', es: 'Espacio de clientes', de: 'Kunden-Arbeitsbereich' },
+        description: {
+          en: 'Each client has its own record with contacts, sites, service plan, care history and communications — so an owner, a villa manager or a shopping centre is never mixed up with another.',
+          es: 'Cada cliente tiene su propio registro con contactos, sitios, plan de servicio, historial de cuidado y comunicaciones — para que un propietario, una administradora de villas o un centro comercial nunca se mezclen.',
+          de: 'Jeder Kunde hat einen eigenen Datensatz mit Kontakten, Standorten, Serviceplan, Pflegehistorie und Kommunikation — nichts wird vermischt.',
+        },
+      },
+      {
+        icon: Map,
+        title: { en: 'Spatial site map', es: 'Mapa del sitio', de: 'Standortkarte' },
+        description: {
+          en: 'Satellite map with drawn zones, GPS-placed asset pins, clustering and KML/KMZ import. Every task and every photo is tied to a real location.',
+          es: 'Mapa satelital con zonas dibujadas, activos ubicados por GPS, agrupación e importación KML/KMZ. Cada tarea y cada foto queda ligada a una ubicación real.',
+          de: 'Satellitenkarte mit gezeichneten Zonen, GPS-Pins, Clustering und KML/KMZ-Import. Jede Aufgabe und jedes Foto ist verortet.',
+        },
+      },
+      {
+        icon: Box,
+        title: { en: 'Asset registry', es: 'Registro de activos', de: 'Anlagenregister' },
+        description: {
+          en: 'Plants, irrigation, hardscape and equipment with photos, install dates, condition, risk flags and full service history. QR labels link the physical asset to its record.',
+          es: 'Plantas, riego, obra dura y equipos con fotos, fechas de instalación, condición, banderas de riesgo e historial completo. Las etiquetas QR conectan el activo físico con su ficha.',
+          de: 'Pflanzen, Bewässerung, Hardscape und Geräte mit Fotos, Einbaudaten, Zustand, Risikomarkierungen und Historie. QR-Etiketten verbinden Objekt und Datensatz.',
+        },
+      },
+      {
+        icon: FolderOpen,
+        title: { en: 'Document vault', es: 'Bóveda de documentos', de: 'Dokumentenablage' },
+        description: {
+          en: 'Warranties, contracts, plans and insurance stored per site or asset, with expiry dates you can actually see coming.',
+          es: 'Garantías, contratos, planos y seguros guardados por sitio o activo, con vencimientos que sí se ven venir.',
+          de: 'Garantien, Verträge, Pläne und Versicherungen pro Standort oder Anlage, mit sichtbaren Ablaufdaten.',
+        },
+      },
+    ],
+  },
+  {
+    key: 'care',
+    label: {
+      en: 'Care that is documented, not guessed',
+      es: 'Cuidado documentado, no adivinado',
+      de: 'Pflege dokumentiert, nicht geraten',
+    },
+    intro: {
+      en: 'Care instructions follow a strict precedence: a documented override wins, then the placement baseline, then the species baseline. When none exists, Home Guide says "needs review" instead of inventing a number.',
+      es: 'Las instrucciones de cuidado siguen una precedencia estricta: manda la excepción documentada, luego la línea base de la ubicación, luego la de la especie. Si no existe ninguna, Home Guide indica «revisar» en vez de inventar un número.',
+      de: 'Pflegeangaben folgen einer festen Rangfolge: dokumentierte Ausnahme, dann Standort-Basis, dann Arten-Basis. Fehlt alles, zeigt Home Guide „prüfen" statt eine erfundene Zahl.',
+    },
+    image: '/images/estate_guide_5.jpg',
+    features: [
+      {
+        icon: Leaf,
+        title: { en: 'Species and placement baselines', es: 'Líneas base por especie y ubicación', de: 'Basiswerte je Art und Standort' },
+        description: {
+          en: 'A botanical library with scientific names, light, watering and substrate needs, combined with the real conditions of the pot and the spot where the plant actually stands.',
+          es: 'Biblioteca botánica con nombres científicos, luz, riego y sustrato, combinada con las condiciones reales de la maceta y del punto donde la planta está colocada.',
+          de: 'Botanische Bibliothek mit Namen, Licht-, Wasser- und Substratbedarf, kombiniert mit den realen Bedingungen von Topf und Standort.',
+        },
+      },
+      {
+        icon: Droplets,
+        title: { en: 'Watering queue and reminders', es: 'Cola de riego y recordatorios', de: 'Gieß-Warteschlange und Erinnerungen' },
+        description: {
+          en: 'The care engine calculates what is due today, this week or overdue. Reminders are opt-in per plant, so a client only hears about what they asked to be reminded of.',
+          es: 'El motor de cuidado calcula qué toca hoy, esta semana o está vencido. Los recordatorios se activan planta por planta, así el cliente solo recibe lo que pidió.',
+          de: 'Die Pflege-Engine berechnet Fälligkeiten für heute, diese Woche oder überfällig. Erinnerungen sind pro Pflanze aktivierbar.',
+        },
+      },
+      {
+        icon: ClipboardList,
+        title: { en: 'Guided visits', es: 'Visitas guiadas', de: 'Geführte Besuche' },
+        description: {
+          en: 'A technician opens a visit, sees the canonical care queue for that site, records what was actually done, and cannot close the visit with tools still unreturned.',
+          es: 'El técnico abre una visita, ve la cola de cuidado del sitio, registra lo que realmente hizo y no puede cerrarla con herramientas pendientes de devolver.',
+          de: 'Techniker öffnen einen Besuch, sehen die Pflegeliste des Standorts, erfassen das Erledigte und können nicht mit offenen Werkzeugen abschließen.',
+        },
+      },
+      {
+        icon: Bell,
+        title: { en: 'Weather-triggered work', es: 'Trabajo activado por clima', de: 'Wetterausgelöste Aufgaben' },
+        description: {
+          en: 'Define thresholds for wind, rain, heat or cold. When they are crossed, tasks and alerts are created for the affected sites.',
+          es: 'Defina umbrales de viento, lluvia, calor o frío. Al superarse, se crean tareas y alertas para los sitios afectados.',
+          de: 'Schwellen für Wind, Regen, Hitze oder Kälte definieren — bei Überschreitung entstehen Aufgaben und Warnungen.',
+        },
+      },
+      {
+        icon: Mountain,
+        title: { en: 'Terrain and risk', es: 'Terreno y riesgo', de: 'Gelände und Risiko' },
+        description: {
+          en: 'Import topographic data, draw elevation transects and read slope and drainage before planting or building in the wrong place.',
+          es: 'Importe datos topográficos, trace transectos de elevación y lea pendiente y drenaje antes de sembrar o construir en el lugar equivocado.',
+          de: 'Topografiedaten importieren, Höhenprofile zeichnen sowie Hang und Entwässerung prüfen.',
+        },
+      },
     ],
   },
   {
     key: 'operations',
-    labelEn: 'Operations & Workforce',
-    labelEs: 'Operaciones y Personal',
+    label: {
+      en: 'Field operations with evidence',
+      es: 'Operación de campo con evidencia',
+      de: 'Feldbetrieb mit Nachweis',
+    },
+    intro: {
+      en: 'Work is only "done" when there is proof: who, where, when, and a photo. Logs are immutable, so a completed visit can still be defended months later.',
+      es: 'El trabajo solo está «hecho» cuando hay prueba: quién, dónde, cuándo y una foto. Los registros son inmutables, así una visita se puede sustentar meses después.',
+      de: 'Arbeit gilt erst als erledigt, wenn es einen Nachweis gibt: wer, wo, wann und ein Foto. Protokolle sind unveränderlich.',
+    },
     image: '/images/estate_guide_3.jpg',
     features: [
-      { icon: Clock, title: 'Worker Check-in & Shifts', titleEs: 'Registro de Turnos', description: 'QR-based clock-in/out with GPS tracking, work logs, shift validations, and per-worker payment tracking.', descriptionEs: 'Entrada/salida por QR con GPS, bitácoras, validaciones de turno y seguimiento de pagos por trabajador.' },
-      { icon: DollarSign, title: 'Labor Management', titleEs: 'Gestión Laboral', description: 'Weekly shift summaries, configurable rates, multi-method payments, and AI-powered shift validation.', descriptionEs: 'Resúmenes semanales, tarifas configurables, pagos multi-método y validación de turnos con IA.' },
-      { icon: Package, title: 'Tool & Supply Inventory', titleEs: 'Inventario', description: 'Track tools, chemicals, fertilizers, and supplies. Assign to workers, monitor condition, manage returns.', descriptionEs: 'Rastrea herramientas, químicos, fertilizantes. Asigna a trabajadores, monitorea y gestiona devoluciones.' },
-      { icon: Camera, title: 'Photo Evidence System', titleEs: 'Evidencia Fotográfica', description: 'Geotagged, timestamped documentation for check-ins, task completions, and duty-of-care reporting.', descriptionEs: 'Documentación geoetiquetada para registros, tareas completadas e informes de deber de cuidado.' },
+      {
+        icon: Clock,
+        title: { en: 'Shifts by QR and GPS', es: 'Turnos por QR y GPS', de: 'Schichten per QR und GPS' },
+        description: {
+          en: 'Crews clock in and out by scanning a code on site. Hours, location and notes are recorded for the weekly review.',
+          es: 'Las cuadrillas marcan entrada y salida escaneando un código en el sitio. Horas, ubicación y notas quedan registradas para la revisión semanal.',
+          de: 'Teams stempeln per Code vor Ort ein und aus. Stunden, Ort und Notizen werden erfasst.',
+        },
+      },
+      {
+        icon: Camera,
+        title: { en: 'Photo and GPS evidence', es: 'Evidencia con foto y GPS', de: 'Foto- und GPS-Nachweis' },
+        description: {
+          en: 'Check-ins and task completions require geotagged, timestamped photos — the backbone of duty-of-care reporting.',
+          es: 'Los registros y las tareas completadas requieren fotos geoetiquetadas y con hora — la base del informe de deber de cuidado.',
+          de: 'Check-ins und Abschlüsse erfordern verortete Fotos mit Zeitstempel — Grundlage der Sorgfaltsnachweise.',
+        },
+      },
+      {
+        icon: Package,
+        title: { en: 'Tool inventory with returns', es: 'Inventario con devoluciones', de: 'Werkzeugbestand mit Rückgabe' },
+        description: {
+          en: 'Organization-wide stock: what is available, what is assigned and what came back. Partial returns are supported and over-assignment is rejected.',
+          es: 'Inventario de toda la organización: qué hay disponible, qué está asignado y qué regresó. Se admiten devoluciones parciales y se rechaza la sobreasignación.',
+          de: 'Organisationsweiter Bestand: verfügbar, zugewiesen, zurückgegeben. Teilrückgaben möglich, Überzuweisung wird abgelehnt.',
+        },
+      },
+      {
+        icon: DollarSign,
+        title: { en: 'Labor and rates', es: 'Mano de obra y tarifas', de: 'Arbeit und Sätze' },
+        description: {
+          en: 'Weekly shift summaries, configurable rates per worker and payment tracking in USD or colones.',
+          es: 'Resúmenes semanales, tarifas configurables por trabajador y seguimiento de pagos en dólares o colones.',
+          de: 'Wochenübersichten, konfigurierbare Sätze je Mitarbeiter und Zahlungsverfolgung in USD oder Colones.',
+        },
+      },
+      {
+        icon: QrCode,
+        title: { en: 'Scan-to-act labels', es: 'Etiquetas para escanear', de: 'Scan-Etiketten' },
+        description: {
+          en: 'Print QR labels for assets and sites. Scanning opens the record, starts a shift or logs a check-in — no menu hunting in the field.',
+          es: 'Imprima etiquetas QR para activos y sitios. Escanear abre la ficha, inicia un turno o registra una visita — sin buscar menús en el campo.',
+          de: 'QR-Etiketten drucken: Scannen öffnet den Datensatz, startet eine Schicht oder erfasst einen Check-in.',
+        },
+      },
     ],
   },
   {
-    key: 'sustainability',
-    labelEn: 'Sustainability & Environment',
-    labelEs: 'Sostenibilidad y Medio Ambiente',
-    image: '/images/estate_guide_5.jpg',
-    features: [
-      { icon: Recycle, title: 'Compost Manager', titleEs: 'Gestor de Compost', description: 'Full-cycle tracking from creation to application. Log ingredients, temperature, moisture, and turns.', descriptionEs: 'Seguimiento completo desde creación hasta aplicación. Registra ingredientes, temperatura y humedad.' },
-      { icon: Mountain, title: 'Topography & Risk Analysis', titleEs: 'Topografía y Riesgos', description: 'Import topographic data, draw elevation transects, analyze slopes and drainage, map erosion risks.', descriptionEs: 'Importa datos topográficos, traza transectos, analiza pendientes y drenaje, mapea riesgos de erosión.' },
-      { icon: Bell, title: 'Weather Alerts & Rules', titleEs: 'Alertas Climáticas', description: 'Define threshold rules for freeze, rain, wind, or drought. System auto-creates tasks and alerts your team.', descriptionEs: 'Define umbrales para helada, lluvia, viento o sequía. El sistema crea tareas y alerta al equipo.' },
-    ],
-  },
-  {
-    key: 'business',
-    labelEn: 'Financials & Reporting',
-    labelEs: 'Finanzas y Reportes',
+    key: 'client',
+    label: {
+      en: 'What the client actually receives',
+      es: 'Lo que el cliente realmente recibe',
+      de: 'Was der Kunde erhält',
+    },
+    intro: {
+      en: 'Reporting is not an afterthought. Owners and administrators get a portal, a manual and documents they can read without a login and without training.',
+      es: 'El reporte no es un extra. Propietarios y administradores reciben un portal, un manual y documentos que pueden leer sin iniciar sesión y sin capacitación.',
+      de: 'Berichte sind kein Nachgedanke. Eigentümer erhalten Portal, Handbuch und Dokumente — ohne Login und ohne Schulung.',
+    },
     image: '/images/estate_guide_4.jpg',
     features: [
-      { icon: Calculator, title: 'Tax Tracker & Calculator', titleEs: 'Rastreador y Calculador Fiscal', description: 'Track income, expenses, and deductions by tax category. Estimated tax calculator for US federal and Costa Rica income tax brackets.', descriptionEs: 'Rastrea ingresos, gastos y deducciones por categoría fiscal. Calculador estimado para escalas de EE.UU. y Costa Rica.' },
-      { icon: DollarSign, title: 'Expense & Receipt Organizer', titleEs: 'Organizador de Gastos y Recibos', description: 'Upload receipts, tag expenses by deductible category, and generate year-end summaries for your accountant.', descriptionEs: 'Sube recibos, etiqueta gastos por categoría deducible y genera resúmenes anuales para tu contador.' },
-      { icon: ShoppingBag, title: 'CRM & Sales (Landscapers)', titleEs: 'CRM y Ventas (Jardineros)', description: 'Client directory, product/service catalog, invoice generation, payment tracking, and revenue history. Available for landscaping companies.', descriptionEs: 'Directorio, catálogo, facturación, seguimiento de pagos e historial de ingresos. Disponible para empresas de jardinería.' },
-      { icon: BookOpen, title: 'Estate Manual', titleEs: 'Manual de Propiedad', description: 'Generates a comprehensive property manual from verified data: zones, assets, history, and routines.', descriptionEs: 'Genera un manual integral desde datos verificados: zonas, activos, historial y rutinas.' },
-      { icon: BarChart3, title: 'Duty of Care Reports', titleEs: 'Informes de Cumplimiento', description: 'Generate date-range PDF reports with completed tasks, field check-ins, and photo evidence.', descriptionEs: 'Genera informes PDF por rango de fechas con tareas, registros y evidencia fotográfica.' },
+      {
+        icon: Share2,
+        title: { en: 'Client portal by link', es: 'Portal de cliente por enlace', de: 'Kundenportal per Link' },
+        description: {
+          en: 'A private link shows the client their sites, care status and recent visits. No account, no password. Links can be rotated or revoked at any time.',
+          es: 'Un enlace privado muestra al cliente sus sitios, el estado de cuidado y las visitas recientes. Sin cuenta ni contraseña. Los enlaces se pueden rotar o revocar cuando quiera.',
+          de: 'Ein privater Link zeigt Standorte, Pflegestatus und Besuche. Kein Konto, kein Passwort. Links jederzeit erneuerbar oder widerrufbar.',
+        },
+      },
+      {
+        icon: BookOpen,
+        title: { en: 'Property manual', es: 'Manual de la propiedad', de: 'Objekthandbuch' },
+        description: {
+          en: 'A PDF manual generated from verified data — zones, assets, care routines and responsibilities — approved by you before it is shared.',
+          es: 'Un manual PDF generado a partir de datos verificados — zonas, activos, rutinas y responsabilidades — aprobado por usted antes de compartirse.',
+          de: 'Ein PDF-Handbuch aus geprüften Daten — Zonen, Anlagen, Routinen und Zuständigkeiten — vor dem Teilen freigegeben.',
+        },
+      },
+      {
+        icon: Receipt,
+        title: { en: 'Charges and billing', es: 'Cargos y facturación', de: 'Positionen und Abrechnung' },
+        description: {
+          en: 'Bill separately for what you separately deliver: supplies, replacements, extra visits, maintenance. Totals are grouped per currency so USD and colones never blur together.',
+          es: 'Facture por separado lo que entrega por separado: insumos, reemplazos, visitas extra, mantenimiento. Los totales se agrupan por moneda, sin mezclar dólares y colones.',
+          de: 'Getrennt abrechnen, was getrennt geliefert wird: Material, Ersatz, Zusatzbesuche, Wartung. Summen je Währung getrennt.',
+        },
+      },
+      {
+        icon: BarChart3,
+        title: { en: 'Duty-of-care reports', es: 'Informes de cumplimiento', de: 'Sorgfaltsberichte' },
+        description: {
+          en: 'Date-range PDF reports with completed tasks, check-ins and photo evidence — the document you send when someone asks what was done.',
+          es: 'Informes PDF por rango de fechas con tareas, registros y evidencia fotográfica — el documento que envía cuando le preguntan qué se hizo.',
+          de: 'PDF-Berichte nach Zeitraum mit Aufgaben, Check-ins und Fotonachweis.',
+        },
+      },
+      {
+        icon: Bell,
+        title: { en: 'Reminders you control', es: 'Recordatorios bajo su control', de: 'Erinnerungen unter Kontrolle' },
+        description: {
+          en: 'Watering and maintenance reminders are queued for review and sent by email or WhatsApp when you approve them — nothing leaves without your hand.',
+          es: 'Los recordatorios de riego y mantenimiento se encolan para revisión y se envían por correo o WhatsApp cuando usted los aprueba — nada sale sin su mano.',
+          de: 'Gieß- und Wartungserinnerungen werden zur Prüfung gesammelt und nach Freigabe per E-Mail oder WhatsApp gesendet.',
+        },
+      },
     ],
   },
   {
     key: 'platform',
-    labelEn: 'Platform & Intelligence',
-    labelEs: 'Plataforma e Inteligencia',
+    label: {
+      en: 'A platform you configure, not fight',
+      es: 'Una plataforma que se configura, no se pelea',
+      de: 'Eine konfigurierbare Plattform',
+    },
+    intro: {
+      en: 'You turn on only the modules your operation uses. Navigation, dashboard and permissions change with them, so nobody sees a screen that does not belong to their work.',
+      es: 'Usted activa solo los módulos que su operación usa. La navegación, el panel y los permisos cambian con ellos, así nadie ve pantallas ajenas a su trabajo.',
+      de: 'Sie aktivieren nur die benötigten Module. Navigation, Dashboard und Rechte passen sich an.',
+    },
     image: '/images/estate_guide_2.jpg',
     features: [
-      { icon: Users, title: 'Role-based Access Control', titleEs: 'Control de Acceso por Roles', description: 'Owner, Manager, Crew, Vendor — each role sees precisely what they need, nothing more.', descriptionEs: 'Dueño, Gerente, Equipo, Proveedor — cada rol ve exactamente lo que necesita.' },
-      { icon: QrCode, title: 'QR Code System', titleEs: 'Sistema QR', description: 'Generate and print labels for any asset. Scan to view details, start shifts, or log check-ins.', descriptionEs: 'Genera e imprime etiquetas para activos. Escanea para detalles, turnos o registros.' },
-      { icon: Globe, title: 'Bilingual Interface', titleEs: 'Interfaz Bilingüe', description: 'Full English and Spanish support across the entire platform. Switch languages instantly.', descriptionEs: 'Soporte completo en inglés y español en toda la plataforma. Cambia al instante.' },
-      { icon: Zap, title: 'Smart Intelligence', titleEs: 'Inteligencia Integrada', description: 'Smart suggestions for tasks, auto-generated care protocols, shift validation, and property manual generation.', descriptionEs: 'Sugerencias inteligentes de tareas, protocolos de cuidado, validación de turnos y generación de manuales.' },
-      { icon: Lock, title: 'Enterprise-Grade Security', titleEs: 'Seguridad de Nivel Empresarial', description: 'End-to-end encryption, row-level security, and SOC 2 compliant infrastructure. Your tax IDs, contracts, and sensitive documents are protected by the same security banks use.', descriptionEs: 'Cifrado de extremo a extremo, seguridad a nivel de filas e infraestructura compatible con SOC 2. Tus números fiscales, contratos y documentos sensibles están protegidos con la misma seguridad que usan los bancos.' },
-      { icon: Shield, title: 'Subscription Management', titleEs: 'Gestión de Suscripción', description: 'Monthly or annual plans via PayPal with secure processing and automatic subscription management.', descriptionEs: 'Planes mensuales o anuales por PayPal con procesamiento seguro y gestión automática.' },
+      {
+        icon: SlidersHorizontal,
+        title: { en: 'Modules per operation', es: 'Módulos por operación', de: 'Module je Betrieb' },
+        description: {
+          en: 'Property management, landscaping, plant rental or a single estate — presets enable a sensible set of modules and you adjust from there.',
+          es: 'Administración de propiedades, paisajismo, alquiler de plantas o una sola finca — los presets activan un conjunto sensato de módulos y usted ajusta.',
+          de: 'Hausverwaltung, Garten, Pflanzenvermietung oder ein Anwesen — Presets aktivieren sinnvolle Module, danach anpassbar.',
+        },
+      },
+      {
+        icon: Users,
+        title: { en: 'Roles with real limits', es: 'Roles con límites reales', de: 'Rollen mit echten Grenzen' },
+        description: {
+          en: 'Owner, manager, crew and client each see a different application. Limits are enforced in the database, not only in the interface.',
+          es: 'Dueño, gerente, cuadrilla y cliente ven aplicaciones distintas. Los límites se aplican en la base de datos, no solo en la interfaz.',
+          de: 'Eigentümer, Manager, Team und Kunde sehen unterschiedliche Anwendungen. Grenzen gelten in der Datenbank.',
+        },
+      },
+      {
+        icon: Globe,
+        title: { en: 'English, Spanish, German', es: 'Inglés, español, alemán', de: 'Englisch, Spanisch, Deutsch' },
+        description: {
+          en: 'The whole platform switches language instantly — crews work in Spanish while owners read reports in English or German.',
+          es: 'Toda la plataforma cambia de idioma al instante — las cuadrillas trabajan en español mientras los propietarios leen en inglés o alemán.',
+          de: 'Die gesamte Plattform wechselt sofort die Sprache.',
+        },
+      },
+      {
+        icon: DollarSign,
+        title: { en: 'USD and colones', es: 'Dólares y colones', de: 'USD und Colones' },
+        description: {
+          en: 'Prices, rates and totals can be shown in the currency each client expects, without mixing them in the same total.',
+          es: 'Precios, tarifas y totales se muestran en la moneda que cada cliente espera, sin mezclarlas en un mismo total.',
+          de: 'Preise und Summen in der jeweils erwarteten Währung, ohne Vermischung.',
+        },
+      },
+      {
+        icon: Shield,
+        title: { en: 'Works on the phone', es: 'Funciona en el teléfono', de: 'Funktioniert am Telefon' },
+        description: {
+          en: 'Built mobile-first for iOS and Android, because the work happens outside — on a roof, in a garden, in a shopping centre corridor.',
+          es: 'Construida primero para móvil, iOS y Android, porque el trabajo ocurre afuera — en un techo, en un jardín, en el pasillo de un centro comercial.',
+          de: 'Mobil-first für iOS und Android, denn die Arbeit passiert draußen.',
+        },
+      },
+      {
+        icon: Lock,
+        title: { en: 'Invitation-only access', es: 'Acceso solo por invitación', de: 'Zugang nur auf Einladung' },
+        description: {
+          en: 'Accounts are created by our team after reviewing your operation. There is no open sign-up and no anonymous demo of your data.',
+          es: 'Las cuentas las crea nuestro equipo tras revisar su operación. No hay registro abierto ni demo anónima de sus datos.',
+          de: 'Konten werden nach Prüfung von unserem Team erstellt. Keine offene Registrierung.',
+        },
+      },
     ],
   },
 ];
 
 export default function Features() {
   const { language } = useLanguage();
-  const navigate = useNavigate();
   const es = language === 'es';
+  const l = (v: L3) => (language === 'es' ? v.es : language === 'de' ? v.de : v.en);
+  const t3 = (en: string, esT: string, de: string) => l({ en, es: esT, de });
 
   return (
     <main className="min-h-screen bg-background text-foreground">
       <Seo
-        title={es ? 'Home Guide — Gestión de Propiedades y Paisajes' : 'Home Guide — Property & Landscape Management'}
-        description={es
-          ? 'Plataforma todo-en-uno para fincas y paisajismo: mapa interactivo, activos, tareas, cuadrillas, compostaje y CRM.'
-          : 'All-in-one platform for estates and landscaping: interactive map, assets, tasks, crews, compost and CRM.'}
+        title={t3(
+          'Home Guide — Property, landscape & plant care operations',
+          'Home Guide — Operación de propiedades, paisajes y plantas',
+          'Home Guide — Betrieb von Immobilien, Gärten und Pflanzen',
+        )}
+        description={t3(
+          'Manage clients, sites and living assets with mapped locations, documented care, photo evidence, client portals and separate billing. Invitation only.',
+          'Gestione clientes, sitios y activos vivos con ubicaciones mapeadas, cuidado documentado, evidencia fotográfica, portales de cliente y facturación separada. Solo por invitación.',
+          'Kunden, Standorte und lebende Anlagen verwalten: Karten, dokumentierte Pflege, Fotonachweise, Kundenportale und getrennte Abrechnung. Nur auf Einladung.',
+        )}
         path="/"
       />
       {/* Minimal header */}
@@ -119,15 +368,15 @@ export default function Features() {
           </Link>
           <div className="flex items-center gap-3">
             <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              {es ? 'Inicio' : language === 'de' ? 'Start' : 'Home'}
+              {t3('Home', 'Inicio', 'Start')}
             </Link>
             <LanguagePicker />
             <Link to="/auth" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              {es ? 'Iniciar Sesión' : language === 'de' ? 'Anmelden' : 'Sign In'}
+              {t3('Sign In', 'Iniciar Sesión', 'Anmelden')}
             </Link>
             <Link to="/request-access">
               <Button size="sm" className="text-xs font-medium tracking-wide uppercase bg-primary text-primary-foreground hover:bg-primary/90">
-                {es ? 'Solicitar Acceso' : language === 'de' ? 'Zugang anfragen' : 'Request Access'}
+                {t3('Request Access', 'Solicitar Acceso', 'Zugang anfragen')}
               </Button>
             </Link>
           </div>
@@ -138,7 +387,11 @@ export default function Features() {
       <section className="relative h-[70vh] min-h-[500px] flex items-end overflow-hidden">
         <img
           src="/images/estate_guide_4.jpg"
-          alt="Estate landscape"
+          alt={t3(
+            'Managed estate landscape at dusk',
+            'Paisaje de una propiedad gestionada al atardecer',
+            'Gepflegte Anlage in der Dämmerung',
+          )}
           width={1920}
           height={1080}
           fetchPriority="high"
@@ -148,29 +401,59 @@ export default function Features() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
         <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full">
           <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/80 mb-4">
-            {es ? 'Plataforma' : 'Platform Overview'}
+            {t3('Operations platform', 'Plataforma operativa', 'Betriebsplattform')}
           </p>
           <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-white leading-[1.05] max-w-4xl">
-            {es
-              ? 'Gestión de propiedades con precisión y propósito'
-              : 'Property management with precision and purpose'}
+            {t3(
+              'Every property, every plant, every visit — accounted for',
+              'Cada propiedad, cada planta, cada visita — con respaldo',
+              'Jede Immobilie, jede Pflanze, jeder Besuch — belegt',
+            )}
           </h1>
           <p className="mt-6 text-base md:text-lg text-white/90 max-w-2xl leading-relaxed">
-            {es
-              ? '19 módulos integrados para propiedades que exigen excelencia operativa y cuidado a largo plazo.'
-              : '19 integrated modules for properties that demand operational excellence and long-term stewardship.'}
+            {t3(
+              'Home Guide organizes your clients, their sites and the living assets you care for, then proves the work with GPS, photos and immutable logs — and turns it into reports, manuals and invoices your clients understand.',
+              'Home Guide organiza sus clientes, sus sitios y los activos vivos que cuida, respalda el trabajo con GPS, fotos y registros inmutables, y lo convierte en informes, manuales y facturas que su cliente entiende.',
+              'Home Guide organisiert Kunden, Standorte und lebende Anlagen, belegt die Arbeit mit GPS, Fotos und unveränderlichen Protokollen und erstellt daraus Berichte, Handbücher und Rechnungen.',
+            )}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
-            <Button
-              size="lg"
-              onClick={() => navigate('/auth')}
-              className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-6"
-            >
-              {es ? 'Comenzar' : 'Get Started'}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
+            <Link to="/request-access">
+              <Button
+                size="lg"
+                className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-6"
+              >
+                {t3('Request access', 'Solicitar acceso', 'Zugang anfragen')}
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
+          <p className="mt-4 text-xs text-white/70">
+            {t3(
+              'Invitation only — we review each operation before opening an account.',
+              'Solo por invitación — revisamos cada operación antes de abrir una cuenta.',
+              'Nur auf Einladung — wir prüfen jeden Betrieb vor der Kontoeröffnung.',
+            )}
+          </p>
         </div>
+      </section>
+
+      {/* Who it is for */}
+      <section className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+        <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground max-w-3xl tracking-tight">
+          {t3(
+            'Built for the people who answer when something goes wrong',
+            'Hecho para quienes responden cuando algo sale mal',
+            'Für die, die einstehen, wenn etwas schiefgeht',
+          )}
+        </h2>
+        <p className="mt-4 text-base text-muted-foreground max-w-3xl leading-relaxed">
+          {t3(
+            'A villa manager billing owners for provisioning, guest check-ins and maintenance. A landscaping company running crews across a dozen gardens. A plant rental business keeping hundreds of pots alive inside shopping centres. An owner who simply wants to know what was done last month.',
+            'Una administradora de villas que factura a los dueños por insumos, ingresos de huéspedes y mantenimiento. Una empresa de paisajismo con cuadrillas en una docena de jardines. Un negocio de alquiler de plantas que mantiene vivas cientos de macetas en centros comerciales. Un propietario que solo quiere saber qué se hizo el mes pasado.',
+            'Villenverwaltung mit getrennter Abrechnung. Gartenbaufirma mit Teams in vielen Gärten. Pflanzenvermietung in Einkaufszentren. Eigentümer, die wissen wollen, was passiert ist.',
+          )}
+        </p>
       </section>
 
       {/* Sections */}
@@ -180,7 +463,7 @@ export default function Features() {
           <div className="relative h-64 md:h-80 overflow-hidden">
             <img
               src={section.image}
-              alt={es ? section.labelEs : section.labelEn}
+              alt={l(section.label)}
               loading="lazy"
               decoding="async"
               className="absolute inset-0 w-full h-full object-cover"
@@ -191,13 +474,16 @@ export default function Features() {
                 {String(sIdx + 1).padStart(2, '0')} / 05
               </span>
               <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
-                {es ? section.labelEs : section.labelEn}
+                {l(section.label)}
               </h2>
             </div>
           </div>
 
           {/* Feature grid */}
           <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
+            <p className="text-base text-muted-foreground max-w-3xl leading-relaxed mb-10">
+              {l(section.intro)}
+            </p>
             <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border">
               {section.features.map((feature, fIdx) => (
                 <div
@@ -209,10 +495,10 @@ export default function Features() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="text-base font-semibold text-foreground mb-1.5 tracking-tight">
-                      {es ? feature.titleEs : feature.title}
+                      {l(feature.title)}
                     </h3>
                     <p className="text-sm text-muted-foreground leading-relaxed">
-                      {es ? feature.descriptionEs : feature.description}
+                      {l(feature.description)}
                     </p>
                   </div>
                 </div>
@@ -229,16 +515,18 @@ export default function Features() {
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
               <Lock className="h-4 w-4 text-primary" />
               <span className="text-xs font-medium tracking-widest uppercase text-primary">
-                {es ? 'Seguridad y Confianza' : 'Security & Trust'}
+                {t3('Security & Trust', 'Seguridad y Confianza', 'Sicherheit & Vertrauen')}
               </span>
             </div>
             <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-              {es ? 'Tu información está protegida' : 'Your information is protected'}
+              {t3('Your clients\u2019 data stays your clients\u2019 data', 'Los datos de sus clientes siguen siendo suyos', 'Kundendaten bleiben Kundendaten')}
             </h2>
             <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
-              {es
-                ? 'Sabemos que tus documentos contienen números fiscales, contratos y datos sensibles. Los protegemos con la misma seguridad que usan los bancos.'
-                : 'We know your documents contain tax IDs, contracts, and sensitive data. We protect them with the same security banks use.'}
+              {t3(
+                'Contracts, tax IDs and property details are sensitive. Access is scoped per organization and enforced at the database level.',
+                'Contratos, números fiscales y detalles de propiedades son sensibles. El acceso se limita por organización y se aplica a nivel de base de datos.',
+                'Verträge, Steuernummern und Objektdaten sind sensibel. Zugriff ist je Organisation begrenzt und in der Datenbank durchgesetzt.',
+              )}
             </p>
           </div>
           <div className="grid md:grid-cols-3 gap-6">
@@ -247,12 +535,14 @@ export default function Features() {
                 <Lock className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">
-                {es ? 'Cifrado de Extremo a Extremo' : 'End-to-End Encryption'}
+                {t3('Encrypted in transit and at rest', 'Cifrado en tránsito y en reposo', 'Verschlüsselt bei Übertragung und Speicherung')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {es
-                  ? 'Todos los datos se transmiten y almacenan con cifrado AES-256. Tus documentos nunca viajan sin protección.'
-                  : 'All data is transmitted and stored with AES-256 encryption. Your documents never travel unprotected.'}
+                {t3(
+                  'Documents and photos are stored in private buckets reachable only through short-lived, signed links.',
+                  'Documentos y fotos se guardan en depósitos privados, accesibles solo mediante enlaces firmados de corta duración.',
+                  'Dokumente und Fotos liegen in privaten Buckets, erreichbar nur über kurzlebige signierte Links.',
+                )}
               </p>
             </div>
             <div className="text-center p-6 rounded-2xl border border-border bg-background">
@@ -260,12 +550,14 @@ export default function Features() {
                 <Database className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">
-                {es ? 'Aislamiento de Datos por Fila' : 'Row-Level Data Isolation'}
+                {t3('Row-level isolation', 'Aislamiento por fila', 'Zeilenbasierte Trennung')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {es
-                  ? 'Cada usuario solo puede ver sus propios datos. Políticas de seguridad a nivel de base de datos garantizan que nadie más acceda a tu información.'
-                  : 'Each user can only see their own data. Database-level security policies ensure no one else can access your information.'}
+                {t3(
+                  'Every table is protected by policies tied to your organization and role — one client can never read another.',
+                  'Cada tabla está protegida por políticas ligadas a su organización y rol — un cliente nunca puede leer a otro.',
+                  'Jede Tabelle ist durch Richtlinien nach Organisation und Rolle geschützt.',
+                )}
               </p>
             </div>
             <div className="text-center p-6 rounded-2xl border border-border bg-background">
@@ -273,12 +565,14 @@ export default function Features() {
                 <Eye className="h-6 w-6 text-primary" />
               </div>
               <h3 className="font-semibold text-foreground mb-2">
-                {es ? 'Infraestructura SOC 2' : 'SOC 2 Infrastructure'}
+                {t3('Auditable history', 'Historial auditable', 'Nachvollziehbare Historie')}
               </h3>
               <p className="text-sm text-muted-foreground">
-                {es
-                  ? 'Nuestra infraestructura cumple con los estándares SOC 2 Tipo II, con auditorías regulares, monitoreo continuo y controles de acceso estrictos.'
-                  : 'Our infrastructure meets SOC 2 Type II standards, with regular audits, continuous monitoring, and strict access controls.'}
+                {t3(
+                  'Check-ins, completions and care logs are append-only, so a record cannot be quietly rewritten after the fact.',
+                  'Registros, cierres y bitácoras de cuidado solo se agregan, nunca se reescriben en silencio después.',
+                  'Check-ins, Abschlüsse und Pflegeprotokolle sind unveränderlich.',
+                )}
               </p>
             </div>
           </div>
@@ -290,7 +584,7 @@ export default function Features() {
         <div className="absolute inset-0">
           <img
             src="/images/estate_guide_2.jpg"
-            alt="Estate at night"
+            alt={t3('Estate at night', 'Propiedad de noche', 'Anwesen bei Nacht')}
             loading="lazy"
             decoding="async"
             className="w-full h-full object-cover"
@@ -299,21 +593,24 @@ export default function Features() {
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
           <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">
-            {es ? 'Tu propiedad merece más' : 'Your property deserves more'}
+            {t3('Tell us how your operation works', 'Cuéntenos cómo funciona su operación', 'Erzählen Sie uns von Ihrem Betrieb')}
           </h2>
-          <p className="text-base text-white/80 max-w-lg mx-auto mb-10">
-            {es
-              ? 'Prueba la demo en 30 segundos. Sin registro.'
-              : 'Try the demo in 30 seconds. No signup required.'}
+          <p className="text-base text-white/80 max-w-xl mx-auto mb-10">
+            {t3(
+              'Home Guide is configured around each operation before the first login. Send us a short description and our team will set it up with you.',
+              'Home Guide se configura según cada operación antes del primer ingreso. Envíenos una breve descripción y nuestro equipo la prepara con usted.',
+              'Home Guide wird vor dem ersten Login je Betrieb konfiguriert. Senden Sie eine kurze Beschreibung, wir richten es mit Ihnen ein.',
+            )}
           </p>
-          <Button
-            size="lg"
-            onClick={() => navigate('/auth')}
-            className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-8"
-          >
-            {es ? 'Comenzar Ahora' : 'Get Started Now'}
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Button>
+          <Link to="/request-access">
+            <Button
+              size="lg"
+              className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-8"
+            >
+              {t3('Request access', 'Solicitar acceso', 'Zugang anfragen')}
+              <ArrowRight className="ml-2 h-4 w-4" />
+            </Button>
+          </Link>
         </div>
       </section>
 
@@ -327,16 +624,16 @@ export default function Features() {
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Lock className="h-3 w-3" />
-              <span>{es ? 'Cifrado AES-256' : 'AES-256 Encrypted'}</span>
+              <span>{t3('Encrypted storage', 'Almacenamiento cifrado', 'Verschlüsselter Speicher')}</span>
             </div>
             <span className="text-muted-foreground">|</span>
             <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
               <Shield className="h-3 w-3" />
-              <span>{es ? 'SOC 2 Certificado' : 'SOC 2 Compliant'}</span>
+              <span>{t3('Invitation only', 'Solo por invitación', 'Nur auf Einladung')}</span>
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
+            {es ? 'Gestión digital de propiedades y paisajes' : language === 'de' ? 'Digitale Objekt- und Gartenverwaltung' : 'Digital property & landscape management'}
           </p>
         </div>
       </footer>
