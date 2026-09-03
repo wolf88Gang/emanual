@@ -58,10 +58,6 @@ export default function Onboarding() {
   const [flags, setFlags] = useState<Record<ModuleKey, boolean> | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Account setup is a ONE-TIME step. An account that already belongs to an
-  // organization never sees it again, no matter how it got routed here.
-  if (profile?.org_id) return <Navigate to="/" replace />;
-
   const es = language === 'es';
   const de = language === 'de';
   const l = (en: string, esStr: string, deStr: string) => (de ? deStr : es ? esStr : en);
@@ -282,6 +278,10 @@ export default function Onboarding() {
       desc: l('Find jobs on the marketplace.', 'Encuentre trabajos en el marketplace.', 'Jobs auf dem Marktplatz finden.'),
     },
   ];
+
+  // Account setup is a ONE-TIME step. An account that already belongs to an
+  // organization never sees it again, no matter how it got routed here.
+  if (profile?.org_id) return <Navigate to="/" replace />;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
