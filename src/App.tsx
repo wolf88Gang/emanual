@@ -231,6 +231,7 @@ function AppRoutes() {
     <Suspense fallback={<PageLoader />}>
     <Routes>
       <Route path="/features" element={<Navigate to="/" replace />} />
+      <Route path="/request-access" element={<RequestAccess />} />
       <Route path="/auth" element={user ? (platformAdminStatus === 'not_admin' || platformAdminStatus === 'admin' ? <Navigate to={postAuthRoute} replace /> : <PageLoader />) : <Auth />} />
       {/* Recovery link target — must stay reachable even with a recovery session active. */}
       <Route path="/auth/reset-password" element={<ResetPassword />} />
