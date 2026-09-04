@@ -344,14 +344,14 @@ export default function Features() {
     <main className="min-h-screen bg-background text-foreground">
       <Seo
         title={t3(
-          'Home Guide — Property, landscape & plant care operations',
-          'Home Guide — Operación de propiedades, paisajes y plantas',
-          'Home Guide — Betrieb von Immobilien, Gärten und Pflanzen',
+          'Home Guide — Operations platform for property, landscape and facilities teams',
+          'Home Guide — Plataforma operativa para equipos de propiedades, paisajes e instalaciones',
+          'Home Guide — Betriebsplattform für Immobilien-, Garten- und Facility-Teams',
         )}
         description={t3(
-          'Manage clients, sites and living assets with mapped locations, documented care, photo evidence, client portals and separate billing. Invitation only.',
-          'Gestione clientes, sitios y activos vivos con ubicaciones mapeadas, cuidado documentado, evidencia fotográfica, portales de cliente y facturación separada. Solo por invitación.',
-          'Kunden, Standorte und lebende Anlagen verwalten: Karten, dokumentierte Pflege, Fotonachweise, Kundenportale und getrennte Abrechnung. Nur auf Einladung.',
+          'Manage clients, sites, work and assets with mapped locations, documented care, photo evidence, client portals and separate billing. Invitation only.',
+          'Gestione clientes, sitios, trabajo y activos con ubicaciones mapeadas, cuidado documentado, evidencia fotográfica, portales de cliente y facturación separada. Solo por invitación.',
+          'Kunden, Standorte, Arbeit und Anlagen verwalten: Karten, dokumentierte Pflege, Fotonachweise, Kundenportale und getrennte Abrechnung. Nur auf Einladung.',
         )}
         path="/"
       />
@@ -384,13 +384,13 @@ export default function Features() {
       </header>
 
       {/* Hero */}
-      <section className="relative h-[70vh] min-h-[500px] flex items-end overflow-hidden">
+      <section className="relative h-[calc(100vh-3.5rem)] min-h-[480px] max-h-[760px] flex items-end overflow-hidden">
         <img
           src="/images/estate_guide_4.jpg"
           alt={t3(
-            'Managed estate landscape at dusk',
-            'Paisaje de una propiedad gestionada al atardecer',
-            'Gepflegte Anlage in der Dämmerung',
+            'Managed property at dusk',
+            'Propiedad gestionada al atardecer',
+            'Gepflegtes Anwesen in der Dämmerung',
           )}
           width={1920}
           height={1080}
@@ -403,18 +403,18 @@ export default function Features() {
           <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/80 mb-4">
             {t3('Operations platform', 'Plataforma operativa', 'Betriebsplattform')}
           </p>
-          <h1 className="text-4xl md:text-6xl lg:text-7xl font-display font-bold text-white leading-[1.05] max-w-4xl">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white leading-tight max-w-3xl">
             {t3(
-              'Every property, every plant, every visit — accounted for',
-              'Cada propiedad, cada planta, cada visita — con respaldo',
-              'Jede Immobilie, jede Pflanze, jeder Besuch — belegt',
+              'Operations organized. Proof included.',
+              'Operaciones organizadas. Respaldo incluido.',
+              'Betrieb organisiert. Nachweis inklusive.',
             )}
           </h1>
           <p className="mt-6 text-base md:text-lg text-white/90 max-w-2xl leading-relaxed">
             {t3(
-              'Home Guide organizes your clients, their sites and the living assets you care for, then proves the work with GPS, photos and immutable logs — and turns it into reports, manuals and invoices your clients understand.',
-              'Home Guide organiza sus clientes, sus sitios y los activos vivos que cuida, respalda el trabajo con GPS, fotos y registros inmutables, y lo convierte en informes, manuales y facturas que su cliente entiende.',
-              'Home Guide organisiert Kunden, Standorte und lebende Anlagen, belegt die Arbeit mit GPS, Fotos und unveränderlichen Protokollen und erstellt daraus Berichte, Handbücher und Rechnungen.',
+              'Home Guide brings clients, sites, work and records together, then proves it with GPS, photos and immutable logs. Reports, manuals and invoices come out the other side.',
+              'Home Guide reúne clientes, sitios, trabajo y registros, y lo respalda con GPS, fotos y bitácoras inmutables. Del otro lado salen informes, manuales y facturas.',
+              'Home Guide führt Kunden, Standorte, Arbeit und Aufzeichnungen zusammen und belegt sie mit GPS, Fotos und unveränderlichen Protokollen. Berichte, Handbücher und Rechnungen entstehen daraus.',
             )}
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -430,9 +430,9 @@ export default function Features() {
           </div>
           <p className="mt-4 text-xs text-white/70">
             {t3(
-              'Invitation only — we review each operation before opening an account.',
-              'Solo por invitación — revisamos cada operación antes de abrir una cuenta.',
-              'Nur auf Einladung — wir prüfen jeden Betrieb vor der Kontoeröffnung.',
+              'Invitation only. We review each operation before opening an account.',
+              'Solo por invitación. Revisamos cada operación antes de abrir una cuenta.',
+              'Nur auf Einladung. Wir prüfen jeden Betrieb vor der Kontoeröffnung.',
             )}
           </p>
         </div>
@@ -440,18 +440,18 @@ export default function Features() {
 
       {/* Who it is for */}
       <section className="max-w-7xl mx-auto px-6 py-16 md:py-20">
-        <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground max-w-3xl tracking-tight">
+        <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground max-w-3xl tracking-tight">
           {t3(
-            'Built for the people who answer when something goes wrong',
-            'Hecho para quienes responden cuando algo sale mal',
-            'Für die, die einstehen, wenn etwas schiefgeht',
+            'Built for teams that run physical operations',
+            'Hecho para equipos que operan en físico',
+            'Für Teams, die physische Betriebe führen',
           )}
         </h2>
         <p className="mt-4 text-base text-muted-foreground max-w-3xl leading-relaxed">
           {t3(
-            'A villa manager billing owners for provisioning, guest check-ins and maintenance. A landscaping company running crews across a dozen gardens. A plant rental business keeping hundreds of pots alive inside shopping centres. An owner who simply wants to know what was done last month.',
-            'Una administradora de villas que factura a los dueños por insumos, ingresos de huéspedes y mantenimiento. Una empresa de paisajismo con cuadrillas en una docena de jardines. Un negocio de alquiler de plantas que mantiene vivas cientos de macetas en centros comerciales. Un propietario que solo quiere saber qué se hizo el mes pasado.',
-            'Villenverwaltung mit getrennter Abrechnung. Gartenbaufirma mit Teams in vielen Gärten. Pflanzenvermietung in Einkaufszentren. Eigentümer, die wissen wollen, was passiert ist.',
+            'Property managers, landscaping crews, facilities teams, plant rental businesses and estate owners all need the same thing: a clear record of what was done, where, when and by whom.',
+            'Administradoras de propiedades, cuadrillas de paisajismo, equipos de instalaciones, negocios de alquiler de plantas y propietarios necesitan lo mismo: un registro claro de qué se hizo, dónde, cuándo y por quién.',
+            'Immobilienverwalter, Gartenteams, Facility-Teams, Pflanzenvermieter und Eigentümer brauchen dasselbe: eine klare Aufzeichnung dessen, was wo, wann und von wem erledigt wurde.',
           )}
         </p>
       </section>
@@ -592,7 +592,7 @@ export default function Features() {
           <div className="absolute inset-0 bg-black/70" />
         </div>
         <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
-          <h2 className="text-3xl md:text-5xl font-display font-bold text-white mb-4">
+          <h2 className="text-2xl md:text-4xl font-display font-bold text-white mb-4">
             {t3('Tell us how your operation works', 'Cuéntenos cómo funciona su operación', 'Erzählen Sie uns von Ihrem Betrieb')}
           </h2>
           <p className="text-base text-white/80 max-w-xl mx-auto mb-10">
@@ -633,7 +633,11 @@ export default function Features() {
             </div>
           </div>
           <p className="text-xs text-muted-foreground">
-            {es ? 'Gestión digital de propiedades y paisajes' : language === 'de' ? 'Digitale Objekt- und Gartenverwaltung' : 'Digital property & landscape management'}
+            {es
+              ? 'Plataforma operativa para equipos de propiedades, paisajes e instalaciones'
+              : language === 'de'
+                ? 'Betriebsplattform für Immobilien-, Garten- und Facility-Teams'
+                : 'Operations platform for property, landscape and facilities teams'}
           </p>
         </div>
       </footer>
