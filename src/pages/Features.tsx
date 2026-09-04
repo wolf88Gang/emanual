@@ -45,9 +45,9 @@ const sections: FeatureSection[] = [
         icon: Building2,
         title: { en: 'Client workspace', es: 'Espacio de clientes', de: 'Kunden-Arbeitsbereich' },
         description: {
-          en: 'Each client has its own record with contacts, sites, service plan, care history and communications — so an owner, a villa manager or a shopping centre is never mixed up with another.',
-          es: 'Cada cliente tiene su propio registro con contactos, sitios, plan de servicio, historial de cuidado y comunicaciones — para que un propietario, una administradora de villas o un centro comercial nunca se mezclen.',
-          de: 'Jeder Kunde hat einen eigenen Datensatz mit Kontakten, Standorten, Serviceplan, Pflegehistorie und Kommunikation — nichts wird vermischt.',
+          en: 'Each client has its own record with contacts, sites, service plan, care history and communications - so an owner, a villa manager or a shopping centre is never mixed up with another.',
+          es: 'Cada cliente tiene su propio registro con contactos, sitios, plan de servicio, historial de cuidado y comunicaciones - para que un propietario, una administradora de villas o un centro comercial nunca se mezclen.',
+          de: 'Jeder Kunde hat einen eigenen Datensatz mit Kontakten, Standorten, Serviceplan, Pflegehistorie und Kommunikation - nichts wird vermischt.',
         },
       },
       {
@@ -126,7 +126,7 @@ const sections: FeatureSection[] = [
         description: {
           en: 'Define thresholds for wind, rain, heat or cold. When they are crossed, tasks and alerts are created for the affected sites.',
           es: 'Defina umbrales de viento, lluvia, calor o frío. Al superarse, se crean tareas y alertas para los sitios afectados.',
-          de: 'Schwellen für Wind, Regen, Hitze oder Kälte definieren — bei Überschreitung entstehen Aufgaben und Warnungen.',
+          de: 'Schwellen für Wind, Regen, Hitze oder Kälte definieren - bei Überschreitung entstehen Aufgaben und Warnungen.',
         },
       },
       {
@@ -167,9 +167,9 @@ const sections: FeatureSection[] = [
         icon: Camera,
         title: { en: 'Photo and GPS evidence', es: 'Evidencia con foto y GPS', de: 'Foto- und GPS-Nachweis' },
         description: {
-          en: 'Check-ins and task completions require geotagged, timestamped photos — the backbone of duty-of-care reporting.',
-          es: 'Los registros y las tareas completadas requieren fotos geoetiquetadas y con hora — la base del informe de deber de cuidado.',
-          de: 'Check-ins und Abschlüsse erfordern verortete Fotos mit Zeitstempel — Grundlage der Sorgfaltsnachweise.',
+          en: 'Check-ins and task completions require geotagged, timestamped photos - the backbone of duty-of-care reporting.',
+          es: 'Los registros y las tareas completadas requieren fotos geoetiquetadas y con hora - la base del informe de deber de cuidado.',
+          de: 'Check-ins und Abschlüsse erfordern verortete Fotos mit Zeitstempel - Grundlage der Sorgfaltsnachweise.',
         },
       },
       {
@@ -194,8 +194,8 @@ const sections: FeatureSection[] = [
         icon: QrCode,
         title: { en: 'Scan-to-act labels', es: 'Etiquetas para escanear', de: 'Scan-Etiketten' },
         description: {
-          en: 'Print QR labels for assets and sites. Scanning opens the record, starts a shift or logs a check-in — no menu hunting in the field.',
-          es: 'Imprima etiquetas QR para activos y sitios. Escanear abre la ficha, inicia un turno o registra una visita — sin buscar menús en el campo.',
+          en: 'Print QR labels for assets and sites. Scanning opens the record, starts a shift or logs a check-in - no menu hunting in the field.',
+          es: 'Imprima etiquetas QR para activos y sitios. Escanear abre la ficha, inicia un turno o registra una visita - sin buscar menús en el campo.',
           de: 'QR-Etiketten drucken: Scannen öffnet den Datensatz, startet eine Schicht oder erfasst einen Check-in.',
         },
       },
@@ -211,7 +211,7 @@ const sections: FeatureSection[] = [
     intro: {
       en: 'Reporting is not an afterthought. Owners and administrators get a portal, a manual and documents they can read without a login and without training.',
       es: 'El reporte no es un extra. Propietarios y administradores reciben un portal, un manual y documentos que pueden leer sin iniciar sesión y sin capacitación.',
-      de: 'Berichte sind kein Nachgedanke. Eigentümer erhalten Portal, Handbuch und Dokumente — ohne Login und ohne Schulung.',
+      de: 'Berichte sind kein Nachgedanke. Eigentümer erhalten Portal, Handbuch und Dokumente - ohne Login und ohne Schulung.',
     },
     image: '/images/estate_guide_4.jpg',
     features: [
@@ -228,9 +228,9 @@ const sections: FeatureSection[] = [
         icon: BookOpen,
         title: { en: 'Property manual', es: 'Manual de la propiedad', de: 'Objekthandbuch' },
         description: {
-          en: 'A PDF manual generated from verified data — zones, assets, care routines and responsibilities — approved by you before it is shared.',
-          es: 'Un manual PDF generado a partir de datos verificados — zonas, activos, rutinas y responsabilidades — aprobado por usted antes de compartirse.',
-          de: 'Ein PDF-Handbuch aus geprüften Daten — Zonen, Anlagen, Routinen und Zuständigkeiten — vor dem Teilen freigegeben.',
+          en: 'A PDF manual generated from verified data - zones, assets, care routines and responsibilities - approved by you before it is shared.',
+          es: 'Un manual PDF generado a partir de datos verificados - zonas, activos, rutinas y responsabilidades - aprobado por usted antes de compartirse.',
+          de: 'Ein PDF-Handbuch aus geprüften Daten - Zonen, Anlagen, Routinen und Zuständigkeiten - vor dem Teilen freigegeben.',
         },
       },
       {
@@ -246,8 +246,8 @@ const sections: FeatureSection[] = [
         icon: BarChart3,
         title: { en: 'Duty-of-care reports', es: 'Informes de cumplimiento', de: 'Sorgfaltsberichte' },
         description: {
-          en: 'Date-range PDF reports with completed tasks, check-ins and photo evidence — the document you send when someone asks what was done.',
-          es: 'Informes PDF por rango de fechas con tareas, registros y evidencia fotográfica — el documento que envía cuando le preguntan qué se hizo.',
+          en: 'Date-range PDF reports with completed tasks, check-ins and photo evidence - the document you send when someone asks what was done.',
+          es: 'Informes PDF por rango de fechas con tareas, registros y evidencia fotográfica - el documento que envía cuando le preguntan qué se hizo.',
           de: 'PDF-Berichte nach Zeitraum mit Aufgaben, Check-ins und Fotonachweis.',
         },
       },
@@ -255,8 +255,8 @@ const sections: FeatureSection[] = [
         icon: Bell,
         title: { en: 'Reminders you control', es: 'Recordatorios bajo su control', de: 'Erinnerungen unter Kontrolle' },
         description: {
-          en: 'Watering and maintenance reminders are queued for review and sent by email or WhatsApp when you approve them — nothing leaves without your hand.',
-          es: 'Los recordatorios de riego y mantenimiento se encolan para revisión y se envían por correo o WhatsApp cuando usted los aprueba — nada sale sin su mano.',
+          en: 'Watering and maintenance reminders are queued for review and sent by email or WhatsApp when you approve them - nothing leaves without your hand.',
+          es: 'Los recordatorios de riego y mantenimiento se encolan para revisión y se envían por correo o WhatsApp cuando usted los aprueba - nada sale sin su mano.',
           de: 'Gieß- und Wartungserinnerungen werden zur Prüfung gesammelt und nach Freigabe per E-Mail oder WhatsApp gesendet.',
         },
       },
@@ -280,9 +280,9 @@ const sections: FeatureSection[] = [
         icon: SlidersHorizontal,
         title: { en: 'Modules per operation', es: 'Módulos por operación', de: 'Module je Betrieb' },
         description: {
-          en: 'Property management, landscaping, plant rental or a single estate — presets enable a sensible set of modules and you adjust from there.',
-          es: 'Administración de propiedades, paisajismo, alquiler de plantas o una sola finca — los presets activan un conjunto sensato de módulos y usted ajusta.',
-          de: 'Hausverwaltung, Garten, Pflanzenvermietung oder ein Anwesen — Presets aktivieren sinnvolle Module, danach anpassbar.',
+          en: 'Property management, landscaping, plant rental or a single estate - presets enable a sensible set of modules and you adjust from there.',
+          es: 'Administración de propiedades, paisajismo, alquiler de plantas o una sola finca - los presets activan un conjunto sensato de módulos y usted ajusta.',
+          de: 'Hausverwaltung, Garten, Pflanzenvermietung oder ein Anwesen - Presets aktivieren sinnvolle Module, danach anpassbar.',
         },
       },
       {
@@ -298,8 +298,8 @@ const sections: FeatureSection[] = [
         icon: Globe,
         title: { en: 'English, Spanish, German', es: 'Inglés, español, alemán', de: 'Englisch, Spanisch, Deutsch' },
         description: {
-          en: 'The whole platform switches language instantly — crews work in Spanish while owners read reports in English or German.',
-          es: 'Toda la plataforma cambia de idioma al instante — las cuadrillas trabajan en español mientras los propietarios leen en inglés o alemán.',
+          en: 'The whole platform switches language instantly - crews work in Spanish while owners read reports in English or German.',
+          es: 'Toda la plataforma cambia de idioma al instante - las cuadrillas trabajan en español mientras los propietarios leen en inglés o alemán.',
           de: 'Die gesamte Plattform wechselt sofort die Sprache.',
         },
       },
@@ -316,8 +316,8 @@ const sections: FeatureSection[] = [
         icon: Shield,
         title: { en: 'Works on the phone', es: 'Funciona en el teléfono', de: 'Funktioniert am Telefon' },
         description: {
-          en: 'Built mobile-first for iOS and Android, because the work happens outside — on a roof, in a garden, in a shopping centre corridor.',
-          es: 'Construida primero para móvil, iOS y Android, porque el trabajo ocurre afuera — en un techo, en un jardín, en el pasillo de un centro comercial.',
+          en: 'Built mobile-first for iOS and Android, because the work happens outside - on a roof, in a garden, in a shopping centre corridor.',
+          es: 'Construida primero para móvil, iOS y Android, porque el trabajo ocurre afuera - en un techo, en un jardín, en el pasillo de un centro comercial.',
           de: 'Mobil-first für iOS und Android, denn die Arbeit passiert draußen.',
         },
       },
@@ -344,9 +344,9 @@ export default function Features() {
     <main className="min-h-screen bg-background text-foreground">
       <Seo
         title={t3(
-          'Home Guide — Operations platform for property, landscape and facilities teams',
-          'Home Guide — Plataforma operativa para equipos de propiedades, paisajes e instalaciones',
-          'Home Guide — Betriebsplattform für Immobilien-, Garten- und Facility-Teams',
+          'Home Guide - Operations platform for property, landscape and facilities teams',
+          'Home Guide - Plataforma operativa para equipos de propiedades, paisajes e instalaciones',
+          'Home Guide - Betriebsplattform für Immobilien-, Garten- und Facility-Teams',
         )}
         description={t3(
           'Manage clients, sites, work and assets with mapped locations, documented care, photo evidence, client portals and separate billing. Invitation only.',
@@ -554,8 +554,8 @@ export default function Features() {
               </h3>
               <p className="text-sm text-muted-foreground">
                 {t3(
-                  'Every table is protected by policies tied to your organization and role — one client can never read another.',
-                  'Cada tabla está protegida por políticas ligadas a su organización y rol — un cliente nunca puede leer a otro.',
+                  'Every table is protected by policies tied to your organization and role - one client can never read another.',
+                  'Cada tabla está protegida por políticas ligadas a su organización y rol - un cliente nunca puede leer a otro.',
                   'Jede Tabelle ist durch Richtlinien nach Organisation und Rolle geschützt.',
                 )}
               </p>
