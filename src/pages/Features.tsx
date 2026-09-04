@@ -443,8 +443,8 @@ export default function Features() {
         <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground max-w-3xl tracking-tight">
           {t3(
             'Built for teams that run physical operations',
-            'Hecho para equipos que operan en físico',
-            'Für Teams, die physische Betriebe führen',
+            'Hecho para equipos que operan en el campo',
+            'Für Teams, die physische Operationen durchführen',
           )}
         </h2>
         <p className="mt-4 text-base text-muted-foreground max-w-3xl leading-relaxed">
