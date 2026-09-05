@@ -8,6 +8,8 @@
 - Dashboard cards and shortcuts point at the placeholder destinations above, so many clicks appear to do nothing.
 - Data-loading failures on the console and client list are only written to the browser console. The visible page can remain empty or misleading when a request fails.
 - Requests supports status changes, but lacks a visible query-error state and per-action success feedback.
+- Console subscription and revenue totals count raw legacy subscription rows, while Client Management already chooses one canonical plan per organization. The two screens can therefore disagree.
+- The displayed system-health rows are hardcoded as operational and are not real diagnostics.
 
 ## Implementation
 
@@ -36,11 +38,13 @@ Wire each route to its own page and keep the active top navigation state correct
 - Convert Client Management quick-action boxes into actual buttons/links with meaningful destinations or filters.
 - Audit all controls under `/platform`, including the top navigation, dashboard rail, statistic tiles, recent subscriptions, quick actions, client rows, plan dialog, request statuses, language/theme controls, and sign-out.
 - Remove controls that cannot perform a real action rather than leaving decorative elements that look clickable.
+- Remove the unreachable duplicate platform navigation from the tenant sidebar so the live platform header remains the single route source.
 - Use the shared button/link components and keyboard-accessible labels throughout.
 
 ### 4. Harden data and feedback states
 
 - Check every platform query and surface a visible retryable error instead of silently logging failures.
+- Use one organization-level subscription aggregation everywhere so active-plan and revenue totals do not double-count legacy member-level rows.
 - Treat partial failures independently so one unavailable metric does not blank the whole console.
 - Add consistent loading, empty, saving, success, and failure states.
 - Refresh affected lists and totals after plan or request-status changes.
