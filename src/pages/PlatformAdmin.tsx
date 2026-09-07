@@ -215,72 +215,43 @@ export default function PlatformAdmin() {
             </CardContent>
           </Card>
 
-          {/* System Health */}
+          {/* Access requests entry point */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg font-display flex items-center gap-2">
                 <Activity className="h-5 w-5 text-primary" />
-                {l('System Health', 'Salud del Sistema', 'Systemzustand')}
+                {l('Checks & requests', 'Verificaciones y solicitudes', 'Prüfungen & Anfragen')}
               </CardTitle>
               <CardDescription>
-                {l('Service status', 'Estado de los servicios', 'Dienststatus')}
+                {l('Run service diagnostics or review access requests', 'Ejecuta diagnósticos o revisa solicitudes de acceso', 'Diagnosen ausführen oder Zugangsanfragen prüfen')}
               </CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {[
-                  { name: l('Database', 'Base de datos', 'Datenbank'), status: 'operational' },
-                  { name: l('Authentication', 'Autenticación', 'Authentifizierung'), status: 'operational' },
-                  { name: l('Storage', 'Almacenamiento', 'Speicher'), status: 'operational' },
-                  { name: 'Edge Functions', status: 'operational' },
-                  { name: 'PayPal API', status: 'operational' },
-                ].map((service) => (
-                  <div key={service.name} className="flex items-center justify-between p-3 rounded-lg bg-secondary/50">
-                    <span className="text-sm font-medium text-foreground">{service.name}</span>
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-                      <span className="text-xs text-muted-foreground">
-                        {l('Operational', 'Operativo', 'Betriebsbereit')}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
+            <CardContent className="space-y-3">
+              <button
+                onClick={() => navigate('/platform/system')}
+                className="flex w-full items-center justify-between rounded-lg bg-secondary/50 p-3 text-left transition-colors hover:bg-secondary"
+              >
+                <span className="text-sm font-medium text-foreground">{l('Run system checks', 'Ejecutar verificaciones', 'Systemprüfungen ausführen')}</span>
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </button>
+              <button
+                onClick={() => navigate('/platform/requests')}
+                className="flex w-full items-center justify-between rounded-lg bg-secondary/50 p-3 text-left transition-colors hover:bg-secondary"
+              >
+                <span className="text-sm font-medium text-foreground">{l('Review access requests', 'Revisar solicitudes de acceso', 'Zugangsanfragen prüfen')}</span>
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </button>
+              <button
+                onClick={() => navigate('/platform/payments')}
+                className="flex w-full items-center justify-between rounded-lg bg-secondary/50 p-3 text-left transition-colors hover:bg-secondary"
+              >
+                <span className="text-sm font-medium text-foreground">{l('Payment records', 'Registros de pago', 'Zahlungsdatensätze')}</span>
+                <TrendingUp className="h-4 w-4 text-primary" />
+              </button>
             </CardContent>
           </Card>
         </div>
 
-        {/* Quick Actions */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-display">
-              {l('Quick Actions', 'Acciones Rápidas', 'Schnellaktionen')}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {[
-                { icon: Users, label: l('View Clients', 'Ver Clientes', 'Kunden ansehen'), path: '/platform/clients' },
-                { icon: CreditCard, label: l('Manage Plans', 'Gestionar Planes', 'Pläne verwalten'), path: '/platform/subscriptions' },
-                { icon: BarChart3, label: l('View Metrics', 'Ver Métricas', 'Metriken ansehen'), path: '/platform/metrics' },
-                { icon: AlertTriangle, label: l('Alerts', 'Alertas', 'Warnungen'), path: '/platform/system' },
-              ].map((action) => (
-                <Tooltip key={action.label}>
-                  <TooltipTrigger asChild>
-                    <button
-                      className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/50 transition-all"
-                      onClick={() => navigate(action.path)}
-                    >
-                      <action.icon className="h-6 w-6 text-primary" />
-                      <span className="text-xs font-medium text-foreground text-center">{action.label}</span>
-                    </button>
-                  </TooltipTrigger>
-                  <TooltipContent>{action.label}</TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </>
   );
