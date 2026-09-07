@@ -242,11 +242,13 @@ function AppRoutes() {
       {/* Platform Admin routes */}
       <Route path="/platform" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
       <Route path="/platform/clients" element={<PlatformRoute><PlatformClients /></PlatformRoute>} />
-      <Route path="/platform/subscriptions" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
-      <Route path="/platform/payments" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/clients/:id" element={<PlatformRoute><PlatformClientDetail /></PlatformRoute>} />
+      <Route path="/platform/subscriptions" element={<PlatformRoute><PlatformSubscriptions /></PlatformRoute>} />
+      <Route path="/platform/payments" element={<PlatformRoute><PlatformPayments /></PlatformRoute>} />
       <Route path="/platform/requests" element={<PlatformRoute><PlatformAccessRequests /></PlatformRoute>} />
-      <Route path="/platform/metrics" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
-      <Route path="/platform/system" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/metrics" element={<PlatformRoute><PlatformMetrics /></PlatformRoute>} />
+      <Route path="/platform/system" element={<PlatformRoute><PlatformSystem /></PlatformRoute>} />
+
 
       {/* Public landing for unauthenticated, dashboard for authenticated */}
       <Route path="/" element={<RootRoute />} />
