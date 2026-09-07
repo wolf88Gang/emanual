@@ -55,6 +55,7 @@ export function AppSidebar() {
     { path: '/platform', icon: LayoutDashboard, label: 'Dashboard', tooltip: l('Dashboard', 'Panel de control', 'Dashboard') },
     { path: '/platform/clients', icon: Users, label: l('Clients', 'Clientes', 'Kunden'), tooltip: l('Manage clients', 'Gestionar clientes', 'Kunden verwalten') },
     { path: '/platform/subscriptions', icon: CreditCard, label: l('Subscriptions', 'Suscripciones', 'Abonnements'), tooltip: l('Plans & payments', 'Planes y pagos', 'Pläne & Zahlungen') },
+    { path: '/platform/requests', icon: MessageSquarePlus, label: l('Requests', 'Solicitudes', 'Anfragen'), tooltip: l('Access requests', 'Solicitudes de acceso', 'Zugangsanfragen') },
     { path: '/platform/payments', icon: DollarSign, label: l('Payments', 'Pagos', 'Zahlungen'), tooltip: l('Payment history', 'Historial de pagos', 'Zahlungsverlauf') },
     { path: '/platform/metrics', icon: BarChart3, label: l('Metrics', 'Métricas', 'Metriken'), tooltip: l('Usage & statistics', 'Uso y estadísticas', 'Nutzung & Statistiken') },
     { path: '/platform/system', icon: Activity, label: l('System', 'Sistema', 'System'), tooltip: l('System health', 'Salud del sistema', 'Systemzustand') },

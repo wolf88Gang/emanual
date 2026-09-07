@@ -1,445 +1,178 @@
-import React, { useEffect, useState } from 'react';
-import { useLanguage } from '@/contexts/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
-import { Users, CreditCard, BarChart3, AlertTriangle, Search, Mail, Calendar, Building2, Pencil } from 'lucide-react';
-import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
+import React, { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
-
-interface SubscriptionRow {
-  id: string;
-  org_id: string | null;
-  user_id: string;
-  status: string;
-  plan_type: string;
-  amount: number;
-  currency: string;
-  created_at: string;
-  current_period_end: string | null;
-}
-
-/** One row per billable organization (tenant), never per user/profile. */
-interface OrgClient {
-  org_id: string;
-  org_name: string;
-  org_type: string | null;
-  org_created_at: string;
-  members_count: number;
-  estates_count: number;
-  primary_contact: { id: string; name: string; email: string } | null;
-  subscription: SubscriptionRow | null;
-}
+import { ArrowRight, Building2, Mail, Pencil, Search } from 'lucide-react';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { PlanEditorDialog } from '@/components/platform/PlanEditorDialog';
+import { PlatformEmpty, PlatformError, PlatformLoading } from '@/components/platform/PlatformPageState';
+import { fetchPlatformOrganizations, formatMoney, type PlatformOrganization } from '@/lib/platformAdmin';
 
 export default function PlatformClients() {
   const { language } = useLanguage();
+  const navigate = useNavigate();
   const l = (en: string, es: string, de: string) => (language === 'es' ? es : language === 'de' ? de : en);
 
-  const [orgs, setOrgs] = useState<OrgClient[]>([]);
+  const [rows, setRows] = useState<PlatformOrganization[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [stats, setStats] = useState({
-    totalClients: 0,
-    activeSubscriptions: 0,
-    totalRevenue: 0,
-    newThisMonth: 0,
-  });
-  const [editOrg, setEditOrg] = useState<OrgClient | null>(null);
-  const [planStatus, setPlanStatus] = useState<string>('inactive');
-  const [planType, setPlanType] = useState<string>('monthly');
-  const [planAmount, setPlanAmount] = useState<string>('0');
-  const [savingPlan, setSavingPlan] = useState(false);
+  const [error, setError] = useState('');
+  const [search, setSearch] = useState('');
+  const [editing, setEditing] = useState<PlatformOrganization | null>(null);
 
-  function openEditPlan(org: OrgClient) {
-    setEditOrg(org);
-    setPlanStatus(org.subscription?.status ?? 'inactive');
-    setPlanType(org.subscription?.plan_type ?? 'monthly');
-    setPlanAmount(String(org.subscription?.amount ?? 0));
-  }
-
-  async function savePlan() {
-    if (!editOrg) return;
-    setSavingPlan(true);
+  async function load() {
+    setLoading(true);
+    setError('');
     try {
-      const amount = Number(planAmount) || 0;
-      let error;
-      if (editOrg.subscription) {
-        // Mutate by organization: updates the canonical subscription row of the tenant.
-        ({ error } = await supabase
-          .from('subscriptions')
-          .update({ status: planStatus, plan_type: planType, amount, currency: 'USD' })
-          .eq('org_id', editOrg.org_id));
-      } else {
-        if (!editOrg.primary_contact) {
-          throw new Error(
-            l(
-              'This organization has no members yet, so no plan can be created.',
-              'Esta organización aún no tiene miembros, no se puede crear un plan.',
-              'Diese Organisation hat noch keine Mitglieder, es kann kein Plan erstellt werden.'
-            )
-          );
-        }
-        ({ error } = await supabase.from('subscriptions').insert({
-          org_id: editOrg.org_id,
-          // legacy NOT NULL column: kept pointing at the org admin contact
-          user_id: editOrg.primary_contact.id,
-          status: planStatus,
-          plan_type: planType,
-          amount,
-          currency: 'USD',
-        }));
-      }
-      if (error) throw error;
-      toast.success(l('Plan updated', 'Plan actualizado', 'Plan aktualisiert'));
-      setEditOrg(null);
-      await fetchOrgClients();
-    } catch (err: any) {
-      toast.error(err.message ?? l('Failed to save', 'Error al guardar', 'Speichern fehlgeschlagen'));
-    } finally {
-      setSavingPlan(false);
-    }
-  }
-
-  useEffect(() => {
-    fetchOrgClients();
-  }, []);
-
-  async function fetchOrgClients() {
-    try {
-      setLoading(true);
-
-      const [orgsRes, profilesRes, subsRes, estatesRes] = await Promise.all([
-        supabase.from('organizations').select('id, name, org_type, created_at'),
-        supabase.from('profiles').select('id, email, full_name, org_id, created_at'),
-        supabase.from('subscriptions').select('*'),
-        supabase.from('estates').select('id, org_id'),
-      ]);
-
-      if (orgsRes.error) throw orgsRes.error;
-
-      const profiles = profilesRes.data ?? [];
-      const subs = (subsRes.data ?? []) as SubscriptionRow[];
-      const estates = estatesRes.data ?? [];
-
-      const rows: OrgClient[] = (orgsRes.data ?? []).map((org) => {
-        const members = profiles.filter((p) => p.org_id === org.id);
-        // Legacy data may hold several rows per org (one per member) — pick a single
-        // canonical subscription: prefer active, then the highest amount, then oldest.
-        const orgSubs = subs
-          .filter((s) => s.org_id === org.id || members.some((m) => m.id === s.user_id))
-          .sort((a, b) => {
-            if ((a.status === 'active') !== (b.status === 'active')) return a.status === 'active' ? -1 : 1;
-            if (Number(b.amount) !== Number(a.amount)) return Number(b.amount) - Number(a.amount);
-            return new Date(a.created_at).getTime() - new Date(b.created_at).getTime();
-          });
-        const contact = members[0]
-          ? { id: members[0].id, name: members[0].full_name || members[0].email.split('@')[0], email: members[0].email }
-          : null;
-
-        return {
-          org_id: org.id,
-          org_name: org.name,
-          org_type: org.org_type,
-          org_created_at: org.created_at,
-          members_count: members.length,
-          estates_count: estates.filter((e) => e.org_id === org.id).length,
-          primary_contact: contact,
-          subscription: orgSubs[0] ?? null,
-        };
-      });
-
-      setOrgs(rows);
-
-      const activeSubscriptions = rows.filter((o) => o.subscription?.status === 'active').length;
-      const totalRevenue = rows.reduce(
-        (sum, o) => sum + (o.subscription?.status === 'active' ? Number(o.subscription.amount) || 0 : 0),
-        0
+      setRows(await fetchPlatformOrganizations());
+    } catch (reason) {
+      setError(
+        reason instanceof Error
+          ? reason.message
+          : l('Clients could not be loaded.', 'No se pudieron cargar los clientes.', 'Kunden konnten nicht geladen werden.'),
       );
-      const now = new Date();
-      const newThisMonth = rows.filter((o) => {
-        const created = new Date(o.org_created_at);
-        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
-      }).length;
-
-      setStats({ totalClients: rows.length, activeSubscriptions, totalRevenue, newThisMonth });
-    } catch (error) {
-      console.error('Error fetching organization clients:', error);
     } finally {
       setLoading(false);
     }
   }
 
-  const term = searchTerm.toLowerCase();
-  const filtered = orgs.filter(
-    (o) =>
-      o.org_name.toLowerCase().includes(term) ||
-      (o.org_type ?? '').toLowerCase().includes(term) ||
-      (o.primary_contact?.email ?? '').toLowerCase().includes(term)
+  useEffect(() => {
+    void load();
+  }, []);
+
+  const term = search.toLowerCase();
+  const filtered = useMemo(
+    () =>
+      rows.filter(
+        (row) =>
+          row.name.toLowerCase().includes(term) ||
+          (row.org_type ?? '').toLowerCase().includes(term) ||
+          row.members.some((member) => member.email.toLowerCase().includes(term)),
+      ),
+    [rows, term],
   );
 
-  const quickActions = [
-    { icon: Building2, label: l('Client Organizations', 'Organizaciones cliente', 'Kundenorganisationen'), count: stats.totalClients },
-    { icon: CreditCard, label: l('Manage Plans', 'Gestionar Planes', 'Pläne verwalten'), count: stats.activeSubscriptions },
-    { icon: BarChart3, label: l('View Metrics', 'Ver Métricas', 'Metriken ansehen'), count: `$${stats.totalRevenue.toFixed(0)}` },
-    { icon: AlertTriangle, label: l('New this month', 'Nuevos este mes', 'Neu diesen Monat'), count: stats.newThisMonth },
+  const summary = useMemo(() => {
+    const now = new Date();
+    const active = rows.filter((row) => row.subscription?.status === 'active');
+    return {
+      total: rows.length,
+      active: active.length,
+      revenue: active.reduce((sum, row) => sum + (Number(row.subscription?.amount) || 0), 0),
+      newThisMonth: rows.filter((row) => {
+        const created = new Date(row.created_at);
+        return created.getMonth() === now.getMonth() && created.getFullYear() === now.getFullYear();
+      }).length,
+    };
+  }, [rows]);
+
+  const tiles = [
+    { label: l('Client organizations', 'Organizaciones cliente', 'Kundenorganisationen'), value: String(summary.total) },
+    { label: l('Active plans', 'Planes activos', 'Aktive Pläne'), value: String(summary.active) },
+    { label: l('Active plan value', 'Valor de planes activos', 'Wert aktiver Pläne'), value: formatMoney(summary.revenue, 'USD') },
+    { label: l('New this month', 'Nuevos este mes', 'Neu diesen Monat'), value: String(summary.newThisMonth) },
   ];
 
   return (
-    <>
-      <div className="p-6 space-y-6 max-w-7xl mx-auto">
-        <div>
-          <h1 className="text-2xl font-display font-bold text-foreground">
-            {l('Client Management', 'Gestión de Clientes', 'Kundenverwaltung')}
-          </h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            {l(
-              'One row per billable organization',
-              'Una fila por organización facturable',
-              'Eine Zeile pro abrechenbarer Organisation'
-            )}
-          </p>
-        </div>
+    <div className="mx-auto max-w-7xl space-y-6 p-4 md:p-6">
+      <header>
+        <h1 className="font-display text-2xl font-bold">{l('Clients', 'Clientes', 'Kunden')}</h1>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {l(
+            'Every client organization on the platform.',
+            'Todas las organizaciones cliente de la plataforma.',
+            'Alle Kundenorganisationen der Plattform.',
+          )}
+        </p>
+      </header>
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-display">{l('Quick Actions', 'Acciones Rápidas', 'Schnellaktionen')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              {quickActions.map((action) => (
-                <Tooltip key={action.label}>
-                  <TooltipTrigger asChild>
-                    <div className="flex flex-col items-center gap-2 p-4 rounded-xl border border-border hover:border-primary/50 hover:bg-secondary/50 transition-all cursor-default">
-                      <action.icon className="h-6 w-6 text-primary" />
-                      <span className="text-xs font-medium text-foreground text-center">{action.label}</span>
-                      <span className="text-sm font-bold text-primary">{action.count}</span>
-                    </div>
-                  </TooltipTrigger>
-                  <TooltipContent>{action.label}</TooltipContent>
-                </Tooltip>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder={l('Search organizations...', 'Buscar organizaciones...', 'Organisationen suchen...')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg font-display flex items-center gap-2">
-              <Building2 className="h-5 w-5 text-primary" />
-              {l('All Client Organizations', 'Todas las Organizaciones Cliente', 'Alle Kundenorganisationen')}
-            </CardTitle>
-            <CardDescription>
-              {l(
-                `${filtered.length} organizations found`,
-                `${filtered.length} organizaciones encontradas`,
-                `${filtered.length} Organisationen gefunden`
-              )}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <div className="text-center py-8">
-                <p className="text-sm text-muted-foreground">{l('Loading...', 'Cargando...', 'Wird geladen...')}</p>
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-8">
-                <Building2 className="h-8 w-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-sm text-muted-foreground">
-                  {l('No organizations found', 'No se encontraron organizaciones', 'Keine Organisationen gefunden')}
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {filtered.map((org) => (
-                  <Card key={org.org_id} className="hover:shadow-md transition-shadow">
-                    <CardContent className="p-4">
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="flex-1 space-y-2">
-                          <div className="flex items-center gap-3">
-                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
-                              <span className="text-sm font-semibold text-primary">
-                                {org.org_name.charAt(0).toUpperCase()}
-                              </span>
-                            </div>
-                            <div>
-                              <h3 className="font-semibold text-foreground">{org.org_name}</h3>
-                              <p className="text-sm text-muted-foreground capitalize">
-                                {org.org_type?.replace(/_/g, ' ') || '—'}
-                              </p>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3">
-                            <div className="flex items-center gap-2">
-                              <Users className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm text-foreground">
-                                {l('Members: ', 'Miembros: ', 'Mitglieder: ')}
-                                {org.members_count}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <BarChart3 className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm text-foreground">
-                                {l('Properties: ', 'Propiedades: ', 'Immobilien: ')}
-                                {org.estates_count}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm text-foreground">
-                                {l('Joined: ', 'Registrado: ', 'Beigetreten: ')}
-                                {format(new Date(org.org_created_at), 'MMM dd, yyyy')}
-                              </span>
-                            </div>
-                          </div>
-
-                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-1">
-                            <div className="flex items-center gap-2">
-                              <CreditCard className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm text-foreground">
-                                {org.subscription
-                                  ? `${org.subscription.plan_type} · $${org.subscription.amount}`
-                                  : l('No plan', 'Sin plan', 'Kein Plan')}
-                              </span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                              <Calendar className="h-4 w-4 text-muted-foreground" />
-                              <span className="text-sm text-foreground">
-                                {l('Subscribed: ', 'Suscrito: ', 'Abonniert: ')}
-                                {org.subscription ? format(new Date(org.subscription.created_at), 'MMM dd, yyyy') : '—'}
-                              </span>
-                            </div>
-                            {org.primary_contact && (
-                              <div className="flex items-center gap-2">
-                                <Mail className="h-4 w-4 text-muted-foreground" />
-                                <span className="text-sm text-foreground truncate">{org.primary_contact.email}</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="flex flex-col items-end gap-2">
-                          <Badge
-                            variant={org.subscription?.status === 'active' ? 'default' : 'secondary'}
-                            className="capitalize"
-                          >
-                            {org.subscription?.status === 'active'
-                              ? l('Active', 'Activo', 'Aktiv')
-                              : l('Inactive', 'Inactivo', 'Inaktiv')}
-                          </Badge>
-
-                          <div className="flex gap-1">
-                            {org.primary_contact && (
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => window.open(`mailto:${org.primary_contact!.email}`)}
-                                  >
-                                    <Mail className="h-3 w-3" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>{l('Email contact', 'Enviar email', 'E-Mail senden')}</TooltipContent>
-                              </Tooltip>
-                            )}
-
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Button size="sm" variant="outline" onClick={() => openEditPlan(org)}>
-                                  <Pencil className="h-3 w-3" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>{l('Edit plan', 'Editar plan', 'Plan bearbeiten')}</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {tiles.map((tile) => (
+          <Card key={tile.label}>
+            <CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">{tile.label}</p>
+              <p className="mt-1 font-display text-xl font-bold">{tile.value}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <Dialog open={!!editOrg} onOpenChange={(o) => !o && setEditOrg(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              {l('Edit plan', 'Editar plan', 'Plan bearbeiten')} — {editOrg?.org_name}
-            </DialogTitle>
-            <DialogDescription>
-              {editOrg?.primary_contact
-                ? `${l('Admin contact', 'Contacto administrativo', 'Admin-Kontakt')}: ${editOrg.primary_contact.email}`
-                : l('Billable organization', 'Organización facturable', 'Abrechenbare Organisation')}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-2">
-            <div className="space-y-2">
-              <Label>{l('Status', 'Estado', 'Status')}</Label>
-              <Select value={planStatus} onValueChange={setPlanStatus}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">{l('Active', 'Activo', 'Aktiv')}</SelectItem>
-                  <SelectItem value="trial">{l('Trial', 'Prueba', 'Testphase')}</SelectItem>
-                  <SelectItem value="inactive">{l('Inactive', 'Inactivo', 'Inaktiv')}</SelectItem>
-                  <SelectItem value="cancelled">{l('Cancelled', 'Cancelado', 'Storniert')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{l('Plan type', 'Tipo de plan', 'Plantyp')}</Label>
-              <Select value={planType} onValueChange={setPlanType}>
-                <SelectTrigger><SelectValue /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="monthly">{l('Monthly', 'Mensual', 'Monatlich')}</SelectItem>
-                  <SelectItem value="annual">{l('Annual', 'Anual', 'Jährlich')}</SelectItem>
-                  <SelectItem value="trial">{l('Trial', 'Prueba', 'Testphase')}</SelectItem>
-                  <SelectItem value="unlimited">{l('Unlimited', 'Ilimitado', 'Unbegrenzt')}</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>{l('Amount (USD)', 'Monto (USD)', 'Betrag (USD)')}</Label>
-              <Input
-                type="number"
-                min="0"
-                step="1"
-                value={planAmount}
-                onChange={(e) => setPlanAmount(e.target.value)}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEditOrg(null)}>
-              {l('Cancel', 'Cancelar', 'Abbrechen')}
-            </Button>
-            <Button onClick={savePlan} disabled={savingPlan}>
-              {savingPlan ? l('Saving...', 'Guardando...', 'Speichern...') : l('Save', 'Guardar', 'Speichern')}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+      <div className="relative max-w-md">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          className="pl-9"
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder={l('Search organizations...', 'Buscar organizaciones...', 'Organisationen suchen...')}
+        />
+      </div>
+
+      {loading ? (
+        <PlatformLoading />
+      ) : error ? (
+        <PlatformError message={error} retry={() => void load()} />
+      ) : filtered.length === 0 ? (
+        <PlatformEmpty
+          message={l('No matching organizations.', 'No hay organizaciones coincidentes.', 'Keine passenden Organisationen.')}
+        />
+      ) : (
+        <div className="overflow-hidden rounded-md border">
+          {filtered.map((row) => {
+            const contact = row.members[0];
+            return (
+              <div
+                key={row.id}
+                className="grid gap-3 border-b px-4 py-4 last:border-b-0 md:grid-cols-[minmax(200px,1fr)_150px_140px_auto] md:items-center"
+              >
+                <div className="min-w-0">
+                  <p className="flex items-center gap-2 font-medium">
+                    <Building2 className="h-4 w-4 text-muted-foreground" />
+                    {row.name}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {contact?.email ?? l('No members yet', 'Sin miembros', 'Noch keine Mitglieder')} ·{' '}
+                    {format(new Date(row.created_at), 'MMM d, yyyy')}
+                  </p>
+                </div>
+                <div className="text-xs text-muted-foreground">
+                  {row.members.length} {l('members', 'miembros', 'Mitglieder')} · {row.estates.length}{' '}
+                  {l('sites', 'sitios', 'Standorte')}
+                </div>
+                <Badge className="w-fit" variant={row.subscription?.status === 'active' ? 'default' : 'secondary'}>
+                  {row.subscription
+                    ? `${row.subscription.status} · ${formatMoney(row.subscription.amount, row.subscription.currency)}`
+                    : l('No plan', 'Sin plan', 'Kein Plan')}
+                </Badge>
+                <div className="flex flex-wrap items-center gap-2 md:justify-end">
+                  {contact && (
+                    <Button size="icon" variant="outline" asChild aria-label={l('Email contact', 'Enviar correo', 'E-Mail senden')}>
+                      <a href={`mailto:${contact.email}`}>
+                        <Mail className="h-4 w-4" />
+                      </a>
+                    </Button>
+                  )}
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    onClick={() => setEditing(row)}
+                    aria-label={l('Edit plan', 'Editar plan', 'Plan bearbeiten')}
+                  >
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button size="sm" variant="secondary" onClick={() => navigate(`/platform/clients/${row.id}`)}>
+                    {l('Open', 'Abrir', 'Öffnen')}
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <PlanEditorDialog organization={editing} onOpenChange={(open) => !open && setEditing(null)} onSaved={load} />
+    </div>
   );
 }

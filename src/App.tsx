@@ -24,6 +24,11 @@ const Onboarding = lazy(() => import("./pages/Onboarding"));
 const PlatformAdmin = lazy(() => import("./pages/PlatformAdmin"));
 const PlatformAccessRequests = lazy(() => import("./pages/PlatformAccessRequests"));
 const PlatformClients = lazy(() => import("./pages/PlatformClients"));
+const PlatformClientDetail = lazy(() => import("./pages/PlatformClientDetail"));
+const PlatformSubscriptions = lazy(() => import("./pages/PlatformSubscriptions"));
+const PlatformPayments = lazy(() => import("./pages/PlatformPayments"));
+const PlatformMetrics = lazy(() => import("./pages/PlatformMetrics"));
+const PlatformSystem = lazy(() => import("./pages/PlatformSystem"));
 const WorkView = lazy(() => import("./pages/WorkView"));
 const BusinessHome = lazy(() => import("./pages/BusinessHome"));
 const MapView = lazy(() => import("./pages/MapView"));
@@ -242,11 +247,13 @@ function AppRoutes() {
       {/* Platform Admin routes */}
       <Route path="/platform" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
       <Route path="/platform/clients" element={<PlatformRoute><PlatformClients /></PlatformRoute>} />
-      <Route path="/platform/subscriptions" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
-      <Route path="/platform/payments" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/clients/:id" element={<PlatformRoute><PlatformClientDetail /></PlatformRoute>} />
+      <Route path="/platform/subscriptions" element={<PlatformRoute><PlatformSubscriptions /></PlatformRoute>} />
+      <Route path="/platform/payments" element={<PlatformRoute><PlatformPayments /></PlatformRoute>} />
       <Route path="/platform/requests" element={<PlatformRoute><PlatformAccessRequests /></PlatformRoute>} />
-      <Route path="/platform/metrics" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
-      <Route path="/platform/system" element={<PlatformRoute><PlatformAdmin /></PlatformRoute>} />
+      <Route path="/platform/metrics" element={<PlatformRoute><PlatformMetrics /></PlatformRoute>} />
+      <Route path="/platform/system" element={<PlatformRoute><PlatformSystem /></PlatformRoute>} />
+
 
       {/* Public landing for unauthenticated, dashboard for authenticated */}
       <Route path="/" element={<RootRoute />} />
