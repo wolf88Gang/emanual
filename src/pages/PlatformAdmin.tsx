@@ -158,7 +158,7 @@ export default function PlatformAdmin() {
                     <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">{stat.title}</p>
                       <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">
-                        {loading ? '—' : stat.value}
+                        {('pending' in stat ? stat.pending : loading) ? '—' : stat.value}
                       </p>
                     </div>
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 group-hover:scale-105">
