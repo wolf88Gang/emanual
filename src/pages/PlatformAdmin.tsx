@@ -107,11 +107,16 @@ export default function PlatformAdmin() {
     },
     {
       title: l('System Status', 'Estado del Sistema', 'Systemstatus'),
-      value: l('Operational', 'Operativo', 'Betriebsbereit'),
-      icon: Activity,
-      tooltip: l('All services running', 'Todos los servicios funcionando', 'Alle Dienste laufen'),
-      color: 'text-primary',
+      value: allOk
+        ? l('All systems responding', 'Todo responde', 'Alle Systeme antworten')
+        : l(`Issues detected (${failing.length})`, `Problemas detectados (${failing.length})`, `Probleme erkannt (${failing.length})`),
+      icon: allOk ? Activity : AlertTriangle,
+      tooltip: allOk
+        ? l('Database, session and file storage all responded', 'Datos, sesión y archivos respondieron', 'Datenbank, Sitzung und Dateispeicher haben geantwortet')
+        : l('Open system checks for details', 'Abre las verificaciones para ver detalles', 'Systemprüfungen für Details öffnen'),
+      color: allOk ? 'text-primary' : 'text-destructive',
       route: '/platform/system',
+      pending: checksLoading,
     },
   ];
 
