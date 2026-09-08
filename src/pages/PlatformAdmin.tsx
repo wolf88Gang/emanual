@@ -30,6 +30,7 @@ export default function PlatformAdmin() {
     totalAssets: 0, recentPayments: [],
   });
   const [loading, setLoading] = useState(true);
+  const { failing, allOk, loading: checksLoading } = usePlatformChecks();
 
   useEffect(() => {
     async function fetchStats() {
