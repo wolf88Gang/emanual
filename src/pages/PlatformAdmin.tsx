@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, CreditCard, BarChart3, Activity, TrendingUp, AlertTriangle, DollarSign, Building2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { QuickActionRail } from '@/components/dashboard/QuickActionRail';
+import { usePlatformChecks } from '@/hooks/usePlatformChecks';
 
 interface PlatformStats {
   totalOrgs: number;
