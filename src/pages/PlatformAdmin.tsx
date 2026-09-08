@@ -7,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Users, CreditCard, BarChart3, Activity, TrendingUp, AlertTriangle, DollarSign, Building2 } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
 import { QuickActionRail } from '@/components/dashboard/QuickActionRail';
+import { usePlatformChecks } from '@/hooks/usePlatformChecks';
 
 interface PlatformStats {
   totalOrgs: number;
@@ -29,6 +30,7 @@ export default function PlatformAdmin() {
     totalAssets: 0, recentPayments: [],
   });
   const [loading, setLoading] = useState(true);
+  const { failing, allOk, loading: checksLoading } = usePlatformChecks();
 
   useEffect(() => {
     async function fetchStats() {
@@ -105,11 +107,16 @@ export default function PlatformAdmin() {
     },
     {
       title: l('System Status', 'Estado del Sistema', 'Systemstatus'),
-      value: l('Operational', 'Operativo', 'Betriebsbereit'),
-      icon: Activity,
-      tooltip: l('All services running', 'Todos los servicios funcionando', 'Alle Dienste laufen'),
-      color: 'text-primary',
+      value: allOk
+        ? l('All systems responding', 'Todo responde', 'Alle Systeme antworten')
+        : l(`Issues detected (${failing.length})`, `Problemas detectados (${failing.length})`, `Probleme erkannt (${failing.length})`),
+      icon: allOk ? Activity : AlertTriangle,
+      tooltip: allOk
+        ? l('Database, session and file storage all responded', 'Datos, sesión y archivos respondieron', 'Datenbank, Sitzung und Dateispeicher haben geantwortet')
+        : l('Open system checks for details', 'Abre las verificaciones para ver detalles', 'Systemprüfungen für Details öffnen'),
+      color: allOk ? 'text-primary' : 'text-destructive',
       route: '/platform/system',
+      pending: checksLoading,
     },
   ];
 
@@ -151,7 +158,7 @@ export default function PlatformAdmin() {
                     <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">{stat.title}</p>
                       <p className="mt-1 font-display text-2xl font-bold tabular-nums text-foreground">
-                        {loading ? '—' : stat.value}
+                        {('pending' in stat ? stat.pending : loading) ? '—' : stat.value}
                       </p>
                     </div>
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 transition-transform duration-300 group-hover:scale-105">
