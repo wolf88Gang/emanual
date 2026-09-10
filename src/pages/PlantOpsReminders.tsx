@@ -170,6 +170,33 @@ export default function PlantOpsReminders() {
     }
   };
 
+  /** Sends the reminder from Home Guide itself (no mail app involved). */
+  const sendNow = async (ids: string[]) => {
+    if (ids.length === 0) return;
+    setBusy(true);
+    try {
+      const { sent, failures } = await sendMessagesNow(ids);
+      if (sent > 0) {
+        toast({ title: l(`${sent} reminder(s) sent`, `${sent} recordatorio(s) enviado(s)`) });
+      }
+      if (failures.length > 0) {
+        toast({
+          title: l(`${failures.length} could not be sent`, `${failures.length} no se pudieron enviar`),
+          description: failures[0]?.error,
+          variant: 'destructive',
+        });
+      }
+      if (sent === 0 && failures.length === 0) {
+        toast({ title: l('Nothing to send', 'Nada para enviar'), variant: 'destructive' });
+      }
+      await load();
+    } catch (e: any) {
+      toast({ title: l('Could not send', 'No se pudo enviar'), description: e.message, variant: 'destructive' });
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const openManualSend = (m: OutboxMessage) => {
     const to = m.contact?.email;
     const phone = m.contact?.phone_e164;
@@ -178,7 +205,7 @@ export default function PlantOpsReminders() {
         toast({ title: l('Contact has no email', 'El contacto no tiene correo'), variant: 'destructive' });
         return;
       }
-      window.open(mailtoUrl(to, m.subject || '', m.body, m.cc_emails || []), '_blank');
+      window.location.href = mailtoUrl(to, m.subject || '', m.body, m.cc_emails || []);
     } else {
       if (!phone) {
         toast({ title: l('Contact has no phone', 'El contacto no tiene teléfono'), variant: 'destructive' });
