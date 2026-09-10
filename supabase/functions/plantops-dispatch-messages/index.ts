@@ -1,4 +1,5 @@
 import { createClient } from 'npm:@supabase/supabase-js@2';
+import { dispatchOutboxEmail, OUTBOX_SELECT } from '../_shared/reminder-dispatch.ts';
 
 const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
@@ -13,13 +14,13 @@ const json = (body: unknown, status = 200) =>
   });
 
 /**
- * Optional automatic dispatch.
+ * Daily automatic dispatch.
  *
  * 1. Enqueues due client reminders (idempotent, one row per contact/channel/day).
- * 2. Sends queued EMAIL messages when an email provider is configured.
- *    WhatsApp and every message without a provider stay queued, so the operator
- *    can still send them by hand from the communications tab — nothing is lost
- *    and nothing is silently marked as sent.
+ * 2. Sends every due EMAIL message queued in automatic mode.
+ *
+ * Manual-mode messages and WhatsApp stay queued, so the operator still reviews
+ * and sends them by hand — nothing is silently marked as sent.
  */
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders });
@@ -34,73 +35,25 @@ Deno.serve(async (req) => {
     const { data: enqueued, error: enqErr } = await supabase.rpc('plantops_enqueue_due_client_reminders');
     if (enqErr) console.error('enqueue failed', enqErr.message);
 
-    const resendKey = Deno.env.get('RESEND_API_KEY');
-    const fromAddress = Deno.env.get('RESEND_FROM');
-
-    if (!resendKey || !fromAddress) {
-      return json({
-        enqueued: enqueued ?? 0,
-        sent: 0,
-        note: 'No email provider configured — messages remain queued for manual sending.',
-      });
-    }
-
-    const { data: queued } = await supabase
+    const { data: queued, error: queuedErr } = await supabase
       .from('client_message_outbox')
-      .select('id, subject, body, cc_emails, contact_id, client_contacts:contact_id(email, name)')
+      .select(OUTBOX_SELECT)
       .eq('status', 'queued')
       .eq('channel', 'email')
-      .lte('scheduled_at', new Date().toISOString())
-      .limit(50);
+      .eq('send_mode', 'automatic')
+      .or(`scheduled_at.is.null,scheduled_at.lte.${new Date().toISOString()}`)
+      .limit(200);
+    if (queuedErr) throw queuedErr;
 
     let sent = 0;
-    for (const m of queued || []) {
-      const to = (m as any).client_contacts?.email as string | undefined;
-      if (!to) {
-        await supabase
-          .from('client_message_outbox')
-          .update({ status: 'blocked', last_error: 'Contact has no email address' })
-          .eq('id', m.id);
-        continue;
-      }
-
-      await supabase.from('client_message_outbox').update({ status: 'sending' }).eq('id', m.id);
-
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          from: fromAddress,
-          to: [to],
-          cc: (m as any).cc_emails?.length ? (m as any).cc_emails : undefined,
-          subject: m.subject || 'Home Guide',
-          text: m.body,
-        }),
-      });
-
-      if (res.ok) {
-        const payload = await res.json().catch(() => ({}));
-        await supabase
-          .from('client_message_outbox')
-          .update({
-            status: 'sent',
-            sent_at: new Date().toISOString(),
-            provider: 'resend',
-            provider_message_id: (payload as any)?.id ?? null,
-            last_error: null,
-          })
-          .eq('id', m.id);
-        sent += 1;
-      } else {
-        const text = await res.text();
-        await supabase
-          .from('client_message_outbox')
-          .update({ status: 'failed', last_error: text.slice(0, 500) })
-          .eq('id', m.id);
-      }
+    let failed = 0;
+    for (const m of (queued || []) as any[]) {
+      const result = await dispatchOutboxEmail(supabase, m);
+      if (result.ok && !result.skipped) sent += 1;
+      else if (!result.ok) failed += 1;
     }
 
-    return json({ enqueued: enqueued ?? 0, sent });
+    return json({ enqueued: enqueued ?? 0, sent, failed });
   } catch (e) {
     console.error('plantops-dispatch-messages error', e);
     return json({ error: 'Unexpected error' }, 500);

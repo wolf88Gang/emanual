@@ -296,6 +296,19 @@ export async function enqueueDueReminders(): Promise<number> {
 }
 
 
+/**
+ * Sends queued email reminders right now through the platform mail service.
+ * The recipient is resolved server-side from the stored contact.
+ */
+export async function sendMessagesNow(ids: string[]): Promise<{ sent: number; failures: { id: string; error: string }[] }> {
+  const { data, error } = await supabase.functions.invoke('plantops-send-reminder', {
+    body: { messageIds: ids },
+  });
+  if (error) throw error;
+  if ((data as any)?.error) throw new Error((data as any).error);
+  return { sent: Number((data as any)?.sent ?? 0), failures: ((data as any)?.failures ?? []) as any };
+}
+
 export async function markMessageSent(id: string) {
   const { error } = await supabase.rpc('plantops_mark_message_sent' as any, { p_message_id: id } as any);
   if (error) throw error;
