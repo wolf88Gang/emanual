@@ -3,6 +3,7 @@ import { CheckCircle2, Database, RefreshCw, ShieldCheck, XCircle } from 'lucide-
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { usePlatformChecks, type PlatformCheck } from '@/hooks/usePlatformChecks';
+import { DevBannerSettings } from '@/components/platform/DevBannerSettings';
 
 export default function PlatformSystem() {
   const { language } = useLanguage();
@@ -56,6 +57,8 @@ export default function PlatformSystem() {
               </div>
             ))}
       </div>
+
+      <DevBannerSettings />
 
       <div className="grid gap-3 sm:grid-cols-2">
         <div className="flex gap-3 rounded-md border p-4">

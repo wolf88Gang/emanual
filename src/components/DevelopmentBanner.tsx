@@ -2,12 +2,14 @@ import React from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { HardHat } from 'lucide-react';
+import { useDevBannerVisible } from '@/hooks/useDevBanner';
 
 export function DevelopmentBanner() {
-  const { user, isPlatformAdmin } = useAuth();
+  const { user, isPlatformAdmin, profile } = useAuth();
   const { language } = useLanguage();
+  const visible = useDevBannerVisible(profile?.org_id ?? null);
 
-  if (!user || isPlatformAdmin) return null;
+  if (!user || isPlatformAdmin || !visible) return null;
 
   const es = language === 'es';
   const de = language === 'de';
