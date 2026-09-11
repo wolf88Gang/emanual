@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { BellRing, Loader2, Mail, MessageCircle, Plus, RefreshCw, Check, X } from 'lucide-react';
+import { BellRing, Loader2, Mail, MessageCircle, Plus, RefreshCw, Check, X, Send } from 'lucide-react';
 import { ModernAppLayout } from '@/components/layout/ModernAppLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -312,11 +312,24 @@ export default function PlantOpsReminders() {
             <div className="flex flex-wrap gap-2 pt-1">
               {showSend && (
                 <>
-                  <Button size="sm" variant="outline" onClick={() => openManualSend(m)} disabled={busy}>
-                    {m.channel === 'email' ? <Mail className="h-4 w-4 mr-1" /> : <MessageCircle className="h-4 w-4 mr-1" />}
-                    {l('Open to send', 'Abrir para enviar', 'Zum Senden öffnen')}
-                  </Button>
-                  <Button size="sm" onClick={() => act(() => markMessageSent(m.id), 'Marked as sent', 'Marcado como enviado')} disabled={busy}>
+                  {m.channel === 'email' ? (
+                    <>
+                      <Button size="sm" onClick={() => sendNow([m.id])} disabled={busy}>
+                        <Send className="h-4 w-4 mr-1" />
+                        {l('Send now', 'Enviar ahora', 'Jetzt senden')}
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => openManualSend(m)} disabled={busy}>
+                        <Mail className="h-4 w-4 mr-1" />
+                        {l('Open in my email', 'Abrir en mi correo', 'In meiner Mail öffnen')}
+                      </Button>
+                    </>
+                  ) : (
+                    <Button size="sm" variant="outline" onClick={() => openManualSend(m)} disabled={busy}>
+                      <MessageCircle className="h-4 w-4 mr-1" />
+                      {l('Open WhatsApp', 'Abrir WhatsApp', 'WhatsApp öffnen')}
+                    </Button>
+                  )}
+                  <Button size="sm" variant="secondary" onClick={() => act(() => markMessageSent(m.id), 'Marked as sent', 'Marcado como enviado')} disabled={busy}>
                     <Check className="h-4 w-4 mr-1" />
                     {l('Mark as sent', 'Marcar como enviado', 'Als gesendet markieren')}
                   </Button>
