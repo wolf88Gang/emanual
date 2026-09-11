@@ -1875,6 +1875,7 @@ export type Database = {
           account_scope: string | null
           business_archetype: string | null
           created_at: string
+          dev_banner_override: boolean | null
           id: string
           modules_json: Json
           name: string
@@ -1886,6 +1887,7 @@ export type Database = {
           account_scope?: string | null
           business_archetype?: string | null
           created_at?: string
+          dev_banner_override?: boolean | null
           id?: string
           modules_json?: Json
           name: string
@@ -1897,6 +1899,7 @@ export type Database = {
           account_scope?: string | null
           business_archetype?: string | null
           created_at?: string
+          dev_banner_override?: boolean | null
           id?: string
           modules_json?: Json
           name?: string
@@ -2373,6 +2376,27 @@ export type Database = {
           created_at?: string
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          bool_value: boolean | null
+          key: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          bool_value?: boolean | null
+          key: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          bool_value?: boolean | null
+          key?: string
+          updated_at?: string
+          updated_by?: string | null
         }
         Relationships: []
       }
