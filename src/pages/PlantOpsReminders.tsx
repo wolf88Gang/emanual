@@ -391,7 +391,17 @@ export default function PlantOpsReminders() {
                  'Alles, was der Kunde wissen muss, mit nachvollziehbarem Sendeprotokoll.')}
             </p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            {groups.due.some((m) => m.channel === 'email') && (
+              <Button
+                variant="secondary"
+                onClick={() => sendNow(groups.due.filter((m) => m.channel === 'email').map((m) => m.id))}
+                disabled={busy}
+              >
+                <Send className="h-4 w-4 mr-1" />
+                {l('Send all pending', 'Enviar todos los pendientes', 'Alle fälligen senden')}
+              </Button>
+            )}
             <Button variant="outline" onClick={runEnqueue} disabled={busy}>
               <RefreshCw className="h-4 w-4 mr-1" />
               {l('Generate due', 'Generar pendientes', 'Fällige erzeugen')}
