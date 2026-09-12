@@ -181,13 +181,18 @@ _To be filled after audit completes._
 
 | Entity | Count | Query / Source |
 |--------|-------|----------------|
-| organizations | — | |
-| profiles | — | |
-| clients | — | |
-| estates | — | |
-| plant_placements | — | |
-| tasks | — | |
-| storage objects | — | |
+| organizations | 5 | `SELECT COUNT(*) FROM public.organizations` |
+| profiles | 15 | `SELECT COUNT(*) FROM public.profiles` |
+| clients | 6 | `SELECT COUNT(*) FROM public.clients` |
+| estates | 8 | `SELECT COUNT(*) FROM public.estates` |
+| plant_placements | 0 | `SELECT COUNT(*) FROM public.plant_placements` |
+| tasks | 43 | `SELECT COUNT(*) FROM public.tasks` |
+| assets | 34 | `SELECT COUNT(*) FROM public.assets` |
+| subscriptions | 8 | `SELECT COUNT(*) FROM public.subscriptions` |
+| invoices | 5 | `SELECT COUNT(*) FROM public.invoices` |
+| user_roles | 9 | `SELECT COUNT(*) FROM public.user_roles` |
+| storage objects | — | to be counted |
+
 
 ---
 
