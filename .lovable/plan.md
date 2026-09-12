@@ -75,9 +75,23 @@ Created in the live database with clearly identifiable names so nothing is confu
 
 24. **Also noted, not changed:** places where the product is unnecessarily locked to plants specifically, listed for later, with no scope expansion now.
 
+## Production-safety guardrails
+
+Because this audit writes test records into the live environment:
+
+1. Never modify, delete, archive, reassign, or otherwise mutate an existing non-audit customer, user, property, plant, task, file, subscription, invoice, or historical record.
+2. Every test object must be unmistakably audit-owned: names prefixed with `AUDIT_TEST_`, metadata/tag `audit_test = true` where supported, and a complete inventory of every test record ID created so cleanup can be performed safely later.
+3. Test activity must NOT contact real people. Do not send email/SMS/push notifications to existing customers or technicians. Any test user/invitation must use controlled audit addresses. If notification delivery cannot be safely isolated, test generation/queueing only and mark external delivery UNVERIFIED.
+4. Test records must NOT trigger real commercial or operational side effects: no real billing, no payment capture, no subscription activation with an external provider, no real customer invoices, no third-party service orders, no irreversible external webhook actions, no messages to production customers.
+5. Before any immediate P0 fix: capture the original state/evidence first, use the smallest reversible change possible, do not perform destructive migrations or broad schema rewrites, do not drop tables/columns/policies, do not bulk-update production records. If a P0 requires a destructive or difficult-to-reverse change, STOP, document it and request approval instead.
+6. After every immediate P0 fix: reproduce the original exploit/failure, verify it now fails safely, verify the legitimate workflow still works, verify Organization A and Organization B remain isolated, and record exact SQL/code/policy changes in HOMEGUIDE_LAUNCH_READINESS_AUDIT.md.
+7. Before beginning E2E writes, record the current production baseline: existing organization count, client count, property count, plant/asset count, active task/work-order count, and relevant storage object count if practical. This is only a sanity baseline, not a request to export customer data.
+8. At the end, include an AUDIT TEST DATA INVENTORY containing every organization, user, client, property, area, plant, task, visit and file created during testing, with IDs, so all audit data can later be removed without touching legitimate records.
+
 ## Technical notes
 
 - Verification uses direct database queries, the access-rule linter, the security scanner, server-function logs, typecheck, tests, build, and an authenticated browser run of the real screens at the listed widths.
 - Cross-customer checks are executed as two real signed-in sessions, not inferred from policy text.
 - Browser coverage: Chrome desktop and Chrome Android emulation are testable here; Safari on iPhone, Safari desktop and Edge will be marked UNTESTED with a manual checklist.
 - Any finding I cannot reproduce is recorded as UNVERIFIED with the reason, rather than assumed working or broken.
+
