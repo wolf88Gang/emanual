@@ -206,14 +206,14 @@ _No other P0 blockers remain._
 
 ### MUST FIX BEFORE FIRST CUSTOMER
 
-- [ ] D1 Fix generic task creation (add zone/asset picker + human error message)
-- [ ] D2 Revoke anon/authenticated EXECUTE on SECURITY DEFINER helpers (esp. `get_user_org_id`)
-- [ ] D3 Scope `worker_profiles` SELECT by org
-- [ ] D4 Scope `job_ratings` SELECT
-- [ ] D5 Lock `platform_settings` from anon; expose only the banner boolean
-- [ ] D6 Decide + implement evidence-photo privacy (private bucket + signed URLs, or documented public-by-URL)
-- [ ] D7 Remove fake team roster / dead buttons from /admin
-- [ ] D8 Send and receive one real transactional email
+- [x] D1 FIXED — Zone*/Asset selectors added to the New Task dialog, constraint violation mapped to a human message, suggestion flow falls back to the first zone. Verified in an authenticated browser (screenshot `/tmp/browser/d1/newtask.png`).
+- [x] D2 FIXED — EXECUTE revoked from PUBLIC/anon on every SECURITY DEFINER function in `public`; granted to `authenticated`/`service_role` only where the app calls them; trigger-only helpers revoked from `authenticated` too. Verified: anon RPC `get_user_org_id` returns `42501 permission denied`. Linter anon-executable count 17 → 0.
+- [x] D3 FIXED — `worker_profiles` SELECT now `can_view_worker(user_id)`: self, platform admin, orgs with an application from that worker, or same-org team member. Verified: anon denied; org manager reads 0 unrelated rows.
+- [x] D4 FIXED — `job_ratings` SELECT scoped to participants plus `can_view_worker(to_user_id)`.
+- [x] D5 FIXED — public read policy dropped, authenticated-only SELECT, `REVOKE SELECT ... FROM anon`. Verified: anon `42501`; signed-in read returns the banner flag only.
+- [x] D6 FIXED — `photos` and `asset-photos` are now private buckets, public read policies dropped, reads restricted to signed-in users, and the app resolves every stored reference through short-lived signed URLs (`src/lib/photoUrls.ts`, `StoragePhoto`). Verified: old public URL returns 400, signed URL returns 200, asset grid renders (screenshot `/tmp/browser/d1/assets.png`). Follow-up (P2): tighten signed-URL minting to same-org membership rather than any signed-in user.
+- [x] D7 FIXED — fake roster, mock users, dead Invite/Add/Edit/Delete/Print buttons removed; real `TeamManagement` is the default tab on /admin.
+- [ ] D8 Send and receive one real transactional email (needs a recipient address the operator owns)
 - [ ] J2 Seed a plantops pilot placement set and exercise damage → replacement once
 
 ### FIX DURING FIRST 30 DAYS
