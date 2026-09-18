@@ -4,7 +4,8 @@
  import { Card } from '@/components/ui/card';
  import { supabase } from '@/integrations/supabase/client';
  import { toast } from 'sonner';
- import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { StoragePhoto } from '@/components/media/StoragePhoto';
  
  interface AssetPhotoUploadProps {
    assetId: string;
