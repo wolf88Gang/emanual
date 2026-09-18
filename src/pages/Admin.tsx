@@ -245,14 +245,6 @@ export default function Admin() {
                             </Badge>
                           )}
                         </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-muted-foreground">
                         {vendor.email && (
