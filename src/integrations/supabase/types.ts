@@ -3794,6 +3794,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_view_worker: { Args: { _worker_id: string }; Returns: boolean }
       complete_business_onboarding: {
         Args: {
           p_archetype: string
