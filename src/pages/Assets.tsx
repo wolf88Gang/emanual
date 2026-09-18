@@ -379,15 +379,12 @@ export default function Assets() {
               >
                 {/* Image / Icon header */}
                 <div className="h-32 bg-gradient-to-br from-secondary to-muted flex items-center justify-center relative">
-                  {asset.photos && asset.photos[0] ? (
-                    <img 
-                      src={asset.photos[0].url} 
-                      alt={asset.name}
-                      className="w-full h-full object-cover"
-                    />
-                  ) : (
-                    <AssetTypeIcon type={asset.asset_type as any} size="lg" className="h-12 w-12 opacity-50" />
-                  )}
+                  <StoragePhoto
+                    src={asset.photos?.[0]?.url}
+                    alt={asset.name}
+                    className="w-full h-full object-cover"
+                    fallback={<AssetTypeIcon type={asset.asset_type as any} size="lg" className="h-12 w-12 opacity-50" />}
+                  />
                   {hasRiskFlags(asset) && (
                     <div className="absolute top-2 right-2">
                       <Badge variant="destructive" className="gap-1">
@@ -448,15 +445,12 @@ export default function Assets() {
                   <div className="flex items-center gap-4">
                     {/* Thumbnail */}
                     <div className="w-16 h-16 rounded-lg bg-secondary flex items-center justify-center shrink-0 overflow-hidden">
-                      {asset.photos && asset.photos[0] ? (
-                        <img 
-                          src={asset.photos[0].url} 
-                          alt={asset.name}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <AssetTypeIcon type={asset.asset_type as any} size="lg" />
-                      )}
+                      <StoragePhoto
+                        src={asset.photos?.[0]?.url}
+                        alt={asset.name}
+                        className="w-full h-full object-cover"
+                        fallback={<AssetTypeIcon type={asset.asset_type as any} size="lg" />}
+                      />
                     </div>
 
                     {/* Info */}
