@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  Building2, 
-  CloudSun, 
+import {
+  Building2,
+  CloudSun,
   QrCode,
-  Plus,
-  Edit,
-  Trash2,
   Mail,
   Phone,
-  ChevronRight,
   Settings,
-  Printer,
   UserPlus
 } from 'lucide-react';
 import { TeamManagement } from '@/components/team/TeamManagement';
@@ -25,7 +19,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { SimulateAlertButton } from '@/components/admin/SimulateAlertButton';
 import { AddWeatherRuleDialog } from '@/components/admin/AddWeatherRuleDialog';
@@ -70,12 +63,6 @@ interface QRLabel {
   };
 }
 
-const roleColors: Record<string, string> = {
-  owner: 'bg-primary/20 text-primary',
-  manager: 'bg-info/20 text-info',
-  crew: 'bg-success/20 text-success',
-  vendor: 'bg-warning/20 text-warning',
-};
 
 const weatherRuleLabels: Record<string, { en: string; es: string; icon: string }> = {
   freeze: { en: 'Freeze Warning', es: 'Alerta de Helada', icon: '❄️' },
@@ -88,7 +75,6 @@ export default function Admin() {
   const { t, language } = useLanguage();
   const { currentEstate } = useEstate();
   const { isOwnerOrManager, hasRole } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [weatherRules, setWeatherRules] = useState<WeatherRule[]>([]);
   const [qrLabels, setQRLabels] = useState<QRLabel[]>([]);
