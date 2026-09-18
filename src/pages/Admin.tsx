@@ -189,11 +189,11 @@ export default function Admin() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="users" className="space-y-6">
+        <Tabs defaultValue="team" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="h-4 w-4" />
-              {t('admin.users')}
+            <TabsTrigger value="team" className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              {language === 'es' ? 'Equipo' : 'Team'}
             </TabsTrigger>
             <TabsTrigger value="vendors" className="gap-2">
               <Building2 className="h-4 w-4" />
@@ -207,59 +207,7 @@ export default function Admin() {
               <QrCode className="h-4 w-4" />
               {t('admin.qrLabels')}
             </TabsTrigger>
-            <TabsTrigger value="team" className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              {language === 'es' ? 'Equipo' : 'Team'}
-            </TabsTrigger>
           </TabsList>
-
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium">
-                {language === 'es' ? 'Miembros del Equipo' : 'Team Members'}
-              </h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {language === 'es' ? 'Invitar Usuario' : 'Invite User'}
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {users.map((user) => (
-                <Card key={user.id} className="estate-card">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={user.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {user.full_name?.[0] || user.email[0].toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium">{user.full_name || 'User'}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        {user.roles.map(role => (
-                          <Badge 
-                            key={role} 
-                            variant="secondary"
-                            className={roleColors[role]}
-                          >
-                            {role}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
 
           {/* Vendors Tab */}
           <TabsContent value="vendors" className="space-y-4">
