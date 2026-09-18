@@ -45,6 +45,7 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu';
 import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
+import { StoragePhoto } from '@/components/media/StoragePhoto';
 import { toast } from '@/hooks/use-toast';
 
 interface Asset {

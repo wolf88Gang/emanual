@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { AssetTypeIcon, getAssetBadgeClass, AssetType } from '@/components/icons/AssetTypeIcon';
+import { StoragePhoto } from '@/components/media/StoragePhoto';
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
 import { AssetEditForm } from '@/components/assets/AssetEditForm';
 import { PlantProfileLinker } from '@/components/assets/PlantProfileLinker';
