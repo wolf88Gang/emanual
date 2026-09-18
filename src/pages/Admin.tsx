@@ -133,12 +133,6 @@ export default function Admin() {
         asset: label.assets as QRLabel['asset'],
       })));
 
-      // Mock users for now (in real app, fetch from profiles with roles)
-      setUsers([
-        { id: '1', email: 'owner@demo.com', full_name: 'Estate Owner', avatar_url: null, roles: ['owner'] },
-        { id: '2', email: 'manager@demo.com', full_name: 'Property Manager', avatar_url: null, roles: ['manager'] },
-        { id: '3', email: 'crew@demo.com', full_name: 'Landscape Crew', avatar_url: null, roles: ['crew'] },
-      ]);
 
     } catch (error) {
       console.error('Error fetching admin data:', error);
