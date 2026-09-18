@@ -29,6 +29,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Separator } from '@/components/ui/separator';
 import { AssetTypeIcon, getAssetBadgeClass, AssetType } from '@/components/icons/AssetTypeIcon';
+import { StoragePhoto } from '@/components/media/StoragePhoto';
 import { AssetQRCode } from '@/components/assets/AssetQRCode';
 import { AssetEditForm } from '@/components/assets/AssetEditForm';
 import { PlantProfileLinker } from '@/components/assets/PlantProfileLinker';
@@ -273,17 +274,16 @@ export default function AssetDetail() {
         <div className="flex flex-col md:flex-row gap-6 mb-6">
           {/* Photo */}
           <div className="w-full md:w-64 h-48 md:h-48 rounded-xl overflow-hidden bg-secondary flex-shrink-0">
-            {asset.photos && asset.photos[0] ? (
-              <img 
-                src={asset.photos[0].url} 
-                alt={asset.name}
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <div className="w-full h-full flex items-center justify-center">
-                <AssetTypeIcon type={assetType} size="lg" className="h-16 w-16 opacity-30" />
-              </div>
-            )}
+            <StoragePhoto
+              src={asset.photos?.[0]?.url}
+              alt={asset.name}
+              className="w-full h-full object-cover"
+              fallback={
+                <div className="w-full h-full flex items-center justify-center">
+                  <AssetTypeIcon type={assetType} size="lg" className="h-16 w-16 opacity-30" />
+                </div>
+              }
+            />
           </div>
 
           {/* Info */}
@@ -564,13 +564,11 @@ export default function AssetDetail() {
                   <Card key={c.id} className="estate-card">
                     <CardContent className="p-4">
                       <div className="flex gap-4">
-                        {c.photo_url && (
-                          <img 
-                            src={c.photo_url} 
-                            alt="Evidence" 
-                            className="w-20 h-20 rounded-lg object-cover"
-                          />
-                        )}
+                        <StoragePhoto
+                          src={c.photo_url}
+                          alt="Evidence"
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
                         <div className="flex-1">
                           <p className="font-medium">{c.task_title}</p>
                           <p className="text-sm text-muted-foreground">{c.notes || 'No notes'}</p>
@@ -604,13 +602,11 @@ export default function AssetDetail() {
                   <Card key={c.id} className="estate-card">
                     <CardContent className="p-4">
                       <div className="flex gap-4">
-                        {c.photo_url && (
-                          <img 
-                            src={c.photo_url} 
-                            alt="Check-in" 
-                            className="w-20 h-20 rounded-lg object-cover"
-                          />
-                        )}
+                        <StoragePhoto
+                          src={c.photo_url}
+                          alt="Check-in"
+                          className="w-20 h-20 rounded-lg object-cover"
+                        />
                         <div className="flex-1">
                           <p className="text-sm">{c.notes || 'No notes'}</p>
                           <div className="flex items-center gap-4 mt-2 text-xs text-muted-foreground">

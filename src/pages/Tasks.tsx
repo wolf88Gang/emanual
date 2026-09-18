@@ -85,6 +85,8 @@ export default function Tasks() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [completionDialogOpen, setCompletionDialogOpen] = useState(false);
   const [zoneFilter, setZoneFilter] = useState<string | null>(null);
+  const [zones, setZones] = useState<{ id: string; name: string; color: string | null }[]>([]);
+  const [assets, setAssets] = useState<{ id: string; name: string; asset_type: string; zone_id: string | null }[]>([]);
 
   // New task dialog
   const [showNewTask, setShowNewTask] = useState(false);
@@ -104,8 +106,18 @@ export default function Tasks() {
   }, [searchParams]);
 
   useEffect(() => {
-    if (currentEstate) { fetchTasks(); fetchTemplates(); }
+    if (currentEstate) { fetchTasks(); fetchTemplates(); fetchSpatialOptions(); }
   }, [currentEstate]);
+
+  async function fetchSpatialOptions() {
+    if (!currentEstate) return;
+    const [zonesRes, assetsRes] = await Promise.all([
+      supabase.from('zones').select('id, name, color').eq('estate_id', currentEstate.id).order('name'),
+      supabase.from('assets').select('id, name, asset_type, zone_id').eq('estate_id', currentEstate.id).order('name'),
+    ]);
+    setZones((zonesRes.data ?? []) as any);
+    setAssets((assetsRes.data ?? []) as any);
+  }
 
   async function fetchTasks() {
     if (!currentEstate) return;
@@ -139,6 +151,14 @@ export default function Tasks() {
       toast.error(es ? 'El título es requerido' : 'Title is required');
       return;
     }
+    if (!taskForm.asset_id && !taskForm.zone_id) {
+      toast.error(
+        es
+          ? 'Elige una zona o un activo para esta tarea'
+          : 'Choose a zone or an asset for this task',
+      );
+      return;
+    }
     try {
       const { error } = await supabase.from('tasks').insert({
         estate_id: currentEstate.id,
@@ -158,7 +178,13 @@ export default function Tasks() {
       setShowNewTask(false);
       setTaskForm({ title: '', title_es: '', description: '', description_es: '', frequency: 'once', priority: 2, due_date: new Date().toISOString().split('T')[0], asset_id: '', zone_id: '' });
       fetchTasks();
-    } catch (e: any) { toast.error(e.message); }
+    } catch (e: any) {
+      toast.error(
+        String(e?.message ?? '').includes('spatial_context')
+          ? (es ? 'Cada tarea necesita una zona o un activo.' : 'Every task needs a zone or an asset.')
+          : (es ? 'No se pudo crear la tarea.' : 'Could not create the task.'),
+      );
+    }
   }
 
   async function handleAISuggest() {
@@ -184,6 +210,7 @@ export default function Tasks() {
 
   async function applySuggestion(s: any) {
     if (!currentEstate) return;
+    const fallbackZone = zoneFilter || zones[0]?.id || null;
     try {
       // Save as template
       await supabase.from('task_templates').insert({
@@ -194,19 +221,30 @@ export default function Tasks() {
         season_months: s.season_months || [],
         is_ai_generated: true,
       });
-      // Also create as active task
-      await supabase.from('tasks').insert({
-        estate_id: currentEstate.id,
-        title: s.title, title_es: s.title_es,
-        description: s.description, description_es: s.description_es,
-        frequency: s.frequency as any, priority: s.priority,
-        due_date: new Date().toISOString().split('T')[0],
-        status: 'pending',
-      });
-      toast.success(es ? 'Tarea y plantilla creadas' : 'Task & template created');
+      // Also create as active task when a zone exists to anchor it
+      if (fallbackZone) {
+        await supabase.from('tasks').insert({
+          estate_id: currentEstate.id,
+          zone_id: fallbackZone,
+          title: s.title, title_es: s.title_es,
+          description: s.description, description_es: s.description_es,
+          frequency: s.frequency as any, priority: s.priority,
+          due_date: new Date().toISOString().split('T')[0],
+          status: 'pending',
+        });
+        toast.success(es ? 'Tarea y plantilla creadas' : 'Task & template created');
+      } else {
+        toast.success(
+          es
+            ? 'Plantilla guardada. Crea una zona para poder generar la tarea.'
+            : 'Template saved. Add a zone so the task can be created.',
+        );
+      }
       fetchTasks();
       fetchTemplates();
-    } catch (e: any) { toast.error(e.message); }
+    } catch {
+      toast.error(es ? 'No se pudo guardar la sugerencia.' : 'Could not save the suggestion.');
+    }
   }
 
   async function handleQuickComplete(task: Task, completed: boolean) {
@@ -401,6 +439,45 @@ export default function Tasks() {
               <div className="space-y-2"><Label>{es ? 'Título' : 'Title'} *</Label><Input value={taskForm.title} onChange={e => setTaskForm(f => ({ ...f, title: e.target.value }))} /></div>
               <div className="space-y-2"><Label>{es ? 'Título (ES)' : 'Title (ES)'}</Label><Input value={taskForm.title_es} onChange={e => setTaskForm(f => ({ ...f, title_es: e.target.value }))} /></div>
               <div className="space-y-2"><Label>{es ? 'Descripción' : 'Description'}</Label><Textarea value={taskForm.description} onChange={e => setTaskForm(f => ({ ...f, description: e.target.value }))} rows={3} /></div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>{es ? 'Zona' : 'Zone'} *</Label>
+                  <Select
+                    value={taskForm.zone_id || 'none'}
+                    onValueChange={v => setTaskForm(f => ({ ...f, zone_id: v === 'none' ? '' : v }))}
+                  >
+                    <SelectTrigger><SelectValue placeholder={es ? 'Elegir zona' : 'Choose zone'} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{es ? 'Sin zona' : 'No zone'}</SelectItem>
+                      {zones.map(z => <SelectItem key={z.id} value={z.id}>{z.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label>{es ? 'Activo' : 'Asset'}</Label>
+                  <Select
+                    value={taskForm.asset_id || 'none'}
+                    onValueChange={v => setTaskForm(f => {
+                      if (v === 'none') return { ...f, asset_id: '' };
+                      const picked = assets.find(a => a.id === v);
+                      return { ...f, asset_id: v, zone_id: f.zone_id || picked?.zone_id || '' };
+                    })}
+                  >
+                    <SelectTrigger><SelectValue placeholder={es ? 'Elegir activo' : 'Choose asset'} /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">{es ? 'Sin activo' : 'No asset'}</SelectItem>
+                      {assets
+                        .filter(a => !taskForm.zone_id || !a.zone_id || a.zone_id === taskForm.zone_id)
+                        .map(a => <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {es
+                  ? 'Cada tarea debe estar ubicada en una zona o en un activo.'
+                  : 'Every task must be located in a zone or on an asset.'}
+              </p>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>{es ? 'Frecuencia' : 'Frequency'}</Label>

@@ -4,7 +4,8 @@
  import { Card } from '@/components/ui/card';
  import { supabase } from '@/integrations/supabase/client';
  import { toast } from 'sonner';
- import { useLanguage } from '@/contexts/LanguageContext';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { StoragePhoto } from '@/components/media/StoragePhoto';
  
  interface AssetPhotoUploadProps {
    assetId: string;
@@ -162,11 +163,11 @@
            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
              {currentPhotos.map((photo) => (
                <div key={photo.id} className="relative group">
-                 <img
-                   src={photo.url}
-                   alt={assetName}
-                   className="w-full h-32 object-cover rounded-lg"
-                 />
+                  <StoragePhoto
+                    src={photo.url}
+                    alt={assetName}
+                    className="w-full h-32 object-cover rounded-lg"
+                  />
                  <Button
                    size="icon"
                    variant="destructive"

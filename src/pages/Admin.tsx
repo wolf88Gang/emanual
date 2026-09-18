@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Users, 
-  Building2, 
-  CloudSun, 
+import {
+  Building2,
+  CloudSun,
   QrCode,
-  Plus,
-  Edit,
-  Trash2,
   Mail,
   Phone,
-  ChevronRight,
   Settings,
-  Printer,
   UserPlus
 } from 'lucide-react';
 import { TeamManagement } from '@/components/team/TeamManagement';
@@ -25,7 +19,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Switch } from '@/components/ui/switch';
 import { SimulateAlertButton } from '@/components/admin/SimulateAlertButton';
 import { AddWeatherRuleDialog } from '@/components/admin/AddWeatherRuleDialog';
@@ -70,12 +63,6 @@ interface QRLabel {
   };
 }
 
-const roleColors: Record<string, string> = {
-  owner: 'bg-primary/20 text-primary',
-  manager: 'bg-info/20 text-info',
-  crew: 'bg-success/20 text-success',
-  vendor: 'bg-warning/20 text-warning',
-};
 
 const weatherRuleLabels: Record<string, { en: string; es: string; icon: string }> = {
   freeze: { en: 'Freeze Warning', es: 'Alerta de Helada', icon: '❄️' },
@@ -88,7 +75,6 @@ export default function Admin() {
   const { t, language } = useLanguage();
   const { currentEstate } = useEstate();
   const { isOwnerOrManager, hasRole } = useAuth();
-  const [users, setUsers] = useState<User[]>([]);
   const [vendors, setVendors] = useState<Vendor[]>([]);
   const [weatherRules, setWeatherRules] = useState<WeatherRule[]>([]);
   const [qrLabels, setQRLabels] = useState<QRLabel[]>([]);
@@ -133,12 +119,6 @@ export default function Admin() {
         asset: label.assets as QRLabel['asset'],
       })));
 
-      // Mock users for now (in real app, fetch from profiles with roles)
-      setUsers([
-        { id: '1', email: 'owner@demo.com', full_name: 'Estate Owner', avatar_url: null, roles: ['owner'] },
-        { id: '2', email: 'manager@demo.com', full_name: 'Property Manager', avatar_url: null, roles: ['manager'] },
-        { id: '3', email: 'crew@demo.com', full_name: 'Landscape Crew', avatar_url: null, roles: ['crew'] },
-      ]);
 
     } catch (error) {
       console.error('Error fetching admin data:', error);
@@ -195,11 +175,11 @@ export default function Admin() {
         </div>
 
         {/* Tabs */}
-        <Tabs defaultValue="users" className="space-y-6">
+        <Tabs defaultValue="team" className="space-y-6">
           <TabsList>
-            <TabsTrigger value="users" className="gap-2">
-              <Users className="h-4 w-4" />
-              {t('admin.users')}
+            <TabsTrigger value="team" className="gap-2">
+              <UserPlus className="h-4 w-4" />
+              {language === 'es' ? 'Equipo' : 'Team'}
             </TabsTrigger>
             <TabsTrigger value="vendors" className="gap-2">
               <Building2 className="h-4 w-4" />
@@ -213,59 +193,7 @@ export default function Admin() {
               <QrCode className="h-4 w-4" />
               {t('admin.qrLabels')}
             </TabsTrigger>
-            <TabsTrigger value="team" className="gap-2">
-              <UserPlus className="h-4 w-4" />
-              {language === 'es' ? 'Equipo' : 'Team'}
-            </TabsTrigger>
           </TabsList>
-
-          {/* Users Tab */}
-          <TabsContent value="users" className="space-y-4">
-            <div className="flex justify-between items-center">
-              <h2 className="text-lg font-medium">
-                {language === 'es' ? 'Miembros del Equipo' : 'Team Members'}
-              </h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {language === 'es' ? 'Invitar Usuario' : 'Invite User'}
-              </Button>
-            </div>
-
-            <div className="space-y-3">
-              {users.map((user) => (
-                <Card key={user.id} className="estate-card">
-                  <CardContent className="p-4">
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={user.avatar_url || undefined} />
-                        <AvatarFallback className="bg-primary/10 text-primary">
-                          {user.full_name?.[0] || user.email[0].toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium">{user.full_name || 'User'}</p>
-                        <p className="text-sm text-muted-foreground">{user.email}</p>
-                      </div>
-                      <div className="flex gap-2">
-                        {user.roles.map(role => (
-                          <Badge 
-                            key={role} 
-                            variant="secondary"
-                            className={roleColors[role]}
-                          >
-                            {role}
-                          </Badge>
-                        ))}
-                      </div>
-                      <Button variant="ghost" size="icon">
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </TabsContent>
 
           {/* Vendors Tab */}
           <TabsContent value="vendors" className="space-y-4">
@@ -273,10 +201,6 @@ export default function Admin() {
               <h2 className="text-lg font-medium">
                 {language === 'es' ? 'Proveedores y Contratistas' : 'Vendors & Contractors'}
               </h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {language === 'es' ? 'Agregar Proveedor' : 'Add Vendor'}
-              </Button>
             </div>
 
             {vendors.length === 0 ? (
@@ -306,14 +230,6 @@ export default function Admin() {
                               {vendor.service_type}
                             </Badge>
                           )}
-                        </div>
-                        <div className="flex gap-1">
-                          <Button variant="ghost" size="icon">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button variant="ghost" size="icon" className="text-destructive">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
                         </div>
                       </div>
                       <div className="mt-3 space-y-1 text-sm text-muted-foreground">
@@ -394,9 +310,6 @@ export default function Admin() {
                               checked={rule.enabled}
                               onCheckedChange={(checked) => toggleWeatherRule(rule.id, checked)}
                             />
-                            <Button variant="ghost" size="icon">
-                              <Edit className="h-4 w-4" />
-                            </Button>
                           </div>
                         </div>
                       </CardContent>
@@ -411,16 +324,7 @@ export default function Admin() {
           <TabsContent value="qr" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium">QR Code Labels</h2>
-              <div className="flex gap-2">
-                <Button variant="outline">
-                  <Printer className="h-4 w-4 mr-2" />
-                  {t('admin.printLabels')}
-                </Button>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('admin.generateLabels')}
-                </Button>
-              </div>
+
             </div>
 
             {qrLabels.length === 0 ? (
@@ -435,9 +339,6 @@ export default function Admin() {
                       ? 'Crea códigos QR escaneables para tus activos. Al escanearlos, abrirán la página de detalles del activo en la app.'
                       : "Create scannable QR codes for your assets. When scanned, they'll open the asset's detail page in the app."}
                   </p>
-                  <Button className="mt-4">
-                    {language === 'es' ? 'Generar para Todos los Activos' : 'Generate for All Assets'}
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
