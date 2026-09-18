@@ -215,10 +215,6 @@ export default function Admin() {
               <h2 className="text-lg font-medium">
                 {language === 'es' ? 'Proveedores y Contratistas' : 'Vendors & Contractors'}
               </h2>
-              <Button>
-                <Plus className="h-4 w-4 mr-2" />
-                {language === 'es' ? 'Agregar Proveedor' : 'Add Vendor'}
-              </Button>
             </div>
 
             {vendors.length === 0 ? (
@@ -336,9 +332,6 @@ export default function Admin() {
                               checked={rule.enabled}
                               onCheckedChange={(checked) => toggleWeatherRule(rule.id, checked)}
                             />
-                            <Button variant="ghost" size="icon">
-                              <Edit className="h-4 w-4" />
-                            </Button>
                           </div>
                         </div>
                       </CardContent>
@@ -353,16 +346,7 @@ export default function Admin() {
           <TabsContent value="qr" className="space-y-4">
             <div className="flex justify-between items-center">
               <h2 className="text-lg font-medium">QR Code Labels</h2>
-              <div className="flex gap-2">
-                <Button variant="outline">
-                  <Printer className="h-4 w-4 mr-2" />
-                  {t('admin.printLabels')}
-                </Button>
-                <Button>
-                  <Plus className="h-4 w-4 mr-2" />
-                  {t('admin.generateLabels')}
-                </Button>
-              </div>
+
             </div>
 
             {qrLabels.length === 0 ? (
@@ -377,9 +361,6 @@ export default function Admin() {
                       ? 'Crea códigos QR escaneables para tus activos. Al escanearlos, abrirán la página de detalles del activo en la app.'
                       : "Create scannable QR codes for your assets. When scanned, they'll open the asset's detail page in the app."}
                   </p>
-                  <Button className="mt-4">
-                    {language === 'es' ? 'Generar para Todos los Activos' : 'Generate for All Assets'}
-                  </Button>
                 </CardContent>
               </Card>
             ) : (
