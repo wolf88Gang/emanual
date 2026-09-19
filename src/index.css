@@ -551,29 +551,38 @@
   .trust-list svg { @apply mb-10 h-5 w-5 text-primary; }
   .trust-list h3 { @apply font-display text-base font-semibold; }
   .trust-list p { @apply mt-3 text-sm leading-7 text-muted-foreground; }
-  .pricing-editorial { @apply mt-14 grid overflow-hidden rounded-lg border border-accent/20 bg-card shadow-md lg:grid-cols-[1.25fr_.75fr]; }
-  .pricing-controls { @apply p-5 sm:p-8 lg:border-r lg:border-border; }
-  .pricing-toolbar { @apply flex flex-wrap items-center justify-between gap-3; }
+  .pricing-editorial { @apply mt-16 grid overflow-hidden rounded-lg border border-accent/20 bg-card shadow-md lg:grid-cols-[1.25fr_.75fr]; }
+  .pricing-controls { @apply p-6 sm:p-10 lg:p-14 lg:border-r lg:border-border; }
+  .pricing-toolbar { @apply flex flex-wrap items-center justify-between gap-4; }
   .landing-segmented { @apply flex rounded-md border border-border bg-muted p-1; }
-  .property-control { @apply mt-8 flex items-center justify-between gap-4 border-y border-border py-6; }
-  .addon-list { @apply mt-6; }
-  .addon-list legend { @apply mb-2 text-sm font-semibold; }
-  .addon-row { @apply h-auto w-full justify-between rounded-none border-b border-border px-0 py-4 text-left hover:bg-transparent; }
+  .property-control { @apply mt-12 flex items-center justify-between gap-4 border-y border-border py-8; }
+  .addon-list { @apply mt-12; }
+  .addon-list legend { @apply mb-3 text-sm font-semibold; }
+  .addon-row { @apply h-auto w-full justify-between rounded-none border-b border-border px-0 py-5 text-left hover:bg-transparent; }
   .addon-row > span:first-child { @apply min-w-0 flex-1 pr-4 text-left; }
   .addon-row strong, .addon-row small { @apply block; }
-  .addon-row small { @apply mt-1 font-normal text-muted-foreground; }
+  .addon-row small { @apply mt-1.5 font-normal text-muted-foreground; }
   .addon-check { @apply flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border; }
   .addon-check.is-selected { @apply border-primary bg-primary text-primary-foreground; }
   .addon-check svg { @apply h-3 w-3; }
-  .pricing-summary { @apply flex flex-col justify-between bg-secondary p-6 sm:p-8; }
-  .pricing-total { @apply mt-5 flex flex-wrap items-end gap-2; }
+  .pricing-summary { @apply flex flex-col justify-between gap-10 bg-secondary p-8 sm:p-12; }
+  .pricing-total { @apply mt-6 flex flex-wrap items-end gap-2; }
   .pricing-total span { @apply font-display text-4xl font-semibold tabular-nums md:text-5xl; }
   .pricing-total small { @apply pb-1 text-sm text-muted-foreground; }
   .pricing-saving { @apply mt-3 text-sm font-semibold text-primary; }
-  .pricing-included { @apply mt-8 border-t border-border pt-6 text-sm font-semibold; }
-  .pricing-included ul { @apply mt-4 space-y-3; }
+  .pricing-included { @apply mt-12 border-t border-border pt-8 text-sm font-semibold; }
+  .pricing-included ul { @apply mt-5 space-y-4; }
   .pricing-included li { @apply flex gap-3 font-normal text-muted-foreground; }
   .pricing-included svg { @apply h-4 w-4 shrink-0 text-primary; }
+  .pricing-catalog { @apply mt-20 border-t border-border pt-12 md:mt-24; }
+  .pricing-catalog-head { @apply flex flex-col gap-4 md:flex-row md:items-end md:justify-between; }
+  .pricing-catalog-head h3 { @apply font-display text-2xl font-semibold; }
+  .pricing-catalog-head p { @apply mt-3 max-w-[58ch] text-sm leading-7 text-muted-foreground md:mt-0; }
+  .pricing-catalog-note { @apply shrink-0 text-xs uppercase text-muted-foreground; letter-spacing: .12em; }
+  .pricing-catalog-list { @apply mt-12 grid list-none gap-x-12 border-t border-border p-0 sm:grid-cols-2 lg:grid-cols-3; }
+  .pricing-catalog-list li { @apply border-b border-border py-6; }
+  .pricing-catalog-list strong { @apply text-sm font-semibold; }
+  .pricing-catalog-list p { @apply mt-2 text-sm leading-6 text-muted-foreground; }
   .faq-list { @apply border-y border-border; }
   .faq-list details { @apply border-b border-border last:border-b-0; }
   .faq-list summary { @apply flex cursor-pointer list-none items-center justify-between gap-4 py-6 font-display font-semibold; }
