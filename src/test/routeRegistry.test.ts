@@ -24,6 +24,9 @@ const NON_TENANT_ROUTES = [
   '/join-team',
   '/join-client',
   '/request-access',
+  // Paid-first entry: checkout sits outside the tenant shell and module gate.
+  '/checkout',
+  '/checkout/success',
   '/platform',
   '/platform/clients',
   '/platform/clients/:id',
