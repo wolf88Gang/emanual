@@ -103,7 +103,12 @@ export default function BusinessHome() {
 
   const rows = clientsOn ? (clients ?? []) : [];
   const projectCount = projectsOn ? (siteCount ?? 0) : 0;
-  const loading = modulesLoading || (clientsOn && clientsLoading) || (projectsOn && sitesLoading);
+  const loading =
+    modulesLoading ||
+    (clientsOn && clientsLoading) ||
+    (projectsOn && sitesLoading) ||
+    ((assetsOn || tasksOn) && opLoading);
+
 
   /** Micro-bars: projects per client, so the tile reflects real distribution. */
   const clientSpark = rows.slice(0, 8).map((c) => (c.projects?.length ?? 0) + 1);
@@ -130,7 +135,7 @@ export default function BusinessHome() {
       : []),
   ];
 
-  const hasRecords = rows.length > 0 || projectCount > 0;
+  const hasRecords = rows.length > 0 || projectCount > 0 || (opRecordCount ?? 0) > 0;
   const showEmptyState = !loading && !hasRecords;
   const showMetrics = clientsOn || projectsOn || portalsOn;
 
