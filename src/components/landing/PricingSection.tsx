@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ADDONS, ANNUAL_MONTHS_CHARGED, BASE_PRICE_PER_PROPERTY_USD, quote, type BillingInterval } from '@/lib/pricing';
+import { ADDONS, ANNUAL_MONTHS_CHARGED, BASE_PRICE_PER_PROPERTY_USD, quote, type AddonGroup, type BillingInterval } from '@/lib/pricing';
 import { CRC_PER_USD } from '@/lib/currency';
 import { MODULE_LIST, type ModuleKey } from '@/lib/homeGuideModules';
 import { LandingSectionHeading, HGReveal } from './motion';
@@ -11,12 +11,16 @@ import type { landingCopy, LandingLanguage } from './copy';
 type Copy = (typeof landingCopy)[LandingLanguage]['pricing'];
 type Currency = 'USD' | 'CRC';
 
-const OPTIONAL_ADDON_IDS = ['labor', 'topography', 'financials'];
-const SPECIALIZED_CONFIGURATION_IDS = ['plantops'];
+const ADDON_GROUPS: Array<{ group: AddonGroup; labelKey: string; bodyKey: string }> = [
+  { group: 'operation', labelKey: 'groupOperation', bodyKey: 'groupOperationBody' },
+  { group: 'management', labelKey: 'groupManagement', bodyKey: 'groupManagementBody' },
+  { group: 'analysis', labelKey: 'groupAnalysis', bodyKey: 'groupAnalysisBody' },
+  { group: 'specialized', labelKey: 'groupSpecialized', bodyKey: 'groupSpecializedBody' },
+];
 const CAPABILITY_GROUPS: Array<{ labelKey: string; moduleKeys: ModuleKey[] }> = [
   { labelKey: 'capabilityCore', moduleKeys: ['clients', 'projects', 'assets', 'documents'] },
   { labelKey: 'capabilityField', moduleKeys: ['map', 'tasks', 'visits', 'tools', 'inventory', 'labor'] },
-  { labelKey: 'capabilityCare', moduleKeys: ['plants_pots', 'care', 'reminders', 'rentals'] },
+  { labelKey: 'capabilityCare', moduleKeys: ['plants_pots', 'care', 'reminders'] },
   { labelKey: 'capabilityAdmin', moduleKeys: ['manuals', 'client_portal', 'billing_payments'] },
 ];
 
@@ -34,13 +38,11 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
   const addonById = (id: string) => ADDONS.find((addon) => addon.id === id);
   const addonName = (id: string) => {
     const addon = addonById(id);
-    if (!addon) return id;
-    return id === 'plantops' ? text('plantServicesName') : local(addon.name);
+    return addon ? local(addon.name) : id;
   };
   const addonDescription = (id: string) => {
     const addon = addonById(id);
-    if (!addon) return '';
-    return id === 'plantops' ? text('plantServicesDescription') : local(addon.description);
+    return addon ? local(addon.description) : '';
   };
   const renderAddon = (id: string) => {
     const addon = addonById(id);
@@ -93,16 +95,14 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
               </div>
             </div>
             <div className="addon-list">
-              <fieldset className="pricing-option-group">
-                <legend>{text('extras')}</legend>
-                <p>{text('extrasBody')}</p>
-                <div>{OPTIONAL_ADDON_IDS.map(renderAddon)}</div>
-              </fieldset>
-              <fieldset className="pricing-option-group specialized-configuration">
-                <legend>{text('specializedConfiguration')}</legend>
-                <p>{text('specializedConfigurationBody')}</p>
-                <div>{SPECIALIZED_CONFIGURATION_IDS.map(renderAddon)}</div>
-              </fieldset>
+              <p className="pricing-addons-intro">{text('extrasBody')}</p>
+              {ADDON_GROUPS.map(({ group, labelKey, bodyKey }) => (
+                <fieldset key={group} className="pricing-option-group">
+                  <legend>{text(labelKey)}</legend>
+                  <p>{text(bodyKey)}</p>
+                  <div>{ADDONS.filter((addon) => addon.group === group).map((addon) => renderAddon(addon.id))}</div>
+                </fieldset>
+              ))}
             </div>
           </div>
           <aside className="pricing-summary">
