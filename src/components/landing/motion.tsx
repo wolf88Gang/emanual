@@ -15,11 +15,11 @@ export interface HGRevealProps {
 
 export function HGReveal({ children, className, direction = 'up', delay = 0, duration = 720, threshold = 0.18, once = true }: HGRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
-  const [visible, setVisible] = useState(() => typeof window === 'undefined' || !('IntersectionObserver' in window));
+  const [visible, setVisible] = useState(() => typeof window === 'undefined' || typeof window.IntersectionObserver !== 'function');
 
   useEffect(() => {
     const node = ref.current;
-    if (!node || !('IntersectionObserver' in window)) {
+    if (!node || typeof window.IntersectionObserver !== 'function') {
       setVisible(true);
       return;
     }

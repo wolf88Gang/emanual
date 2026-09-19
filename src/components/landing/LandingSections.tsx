@@ -19,7 +19,7 @@ export function LandingNavbar({ copy }: { copy: Copy['nav'] }) {
     <div className="landing-nav">
       <Link to="/" className="landing-brand" aria-label="Home Guide"><img src="/images/hg-logo.png" alt="" /><span>Home Guide</span></Link>
       <nav className="landing-nav-links" aria-label="Main navigation">{links.map(([label, href]) => <a key={href} href={href}>{label}</a>)}</nav>
-      <div className="landing-nav-actions"><LanguagePicker /><Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link to="/auth">{copy.signIn}</Link></Button><Button asChild size="sm" className="hidden xs:inline-flex"><Link to="/auth?mode=signup">{copy.create}</Link></Button><Button variant="ghost" size="icon" className="lg:hidden" aria-label={copy.menu} aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? <X /> : <Menu />}</Button></div>
+      <div className="landing-nav-actions"><LanguagePicker /><Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link to="/auth">{copy.signIn}</Link></Button><Button asChild size="sm" className="hidden sm:inline-flex"><Link to="/auth?mode=signup">{copy.create}</Link></Button><Button variant="ghost" size="icon" className="lg:hidden" aria-label={copy.menu} aria-expanded={open} onClick={() => setOpen((value) => !value)}>{open ? <X /> : <Menu />}</Button></div>
     </div>
     {open && <nav className="landing-mobile-nav" aria-label="Mobile navigation">{links.map(([label, href]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}<Link to="/auth">{copy.signIn}</Link><Link to="/auth?mode=signup">{copy.create}</Link></nav>}
   </header>;
