@@ -15,3 +15,5 @@ project_id = "jqhbgqznejdijbjocpqc"
     verify_jwt = false
   [functions.onvo-webhook]
     verify_jwt = false
+  [functions.onvo-subscription-status]
+    verify_jwt = false
