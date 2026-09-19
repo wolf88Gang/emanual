@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Settings, Save, DollarSign } from 'lucide-react';
+import { Settings, Save, DollarSign, SprayCan } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -12,20 +12,31 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import type { Currency, RateType } from './types';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import type { Currency, RateType, ServiceFrequency } from './types';
 import type { EstateRate } from './useWorkerRates';
 
 interface EstateRateDialogProps {
   language: string;
   currentRate: EstateRate | null;
-  onSave: (rateType: RateType, rateAmount: number, currency: Currency) => Promise<void>;
+  onSave: (rateType: RateType, rateAmount: number, currency: Currency, notes?: string) => Promise<void>;
 }
+
+const CLEANING_NOTE_PREFIX = 'service_template:cleaning';
 
 export function EstateRateDialog({ language, currentRate, onSave }: EstateRateDialogProps) {
   const [open, setOpen] = useState(false);
   const [currency, setCurrency] = useState<Currency>(currentRate?.currency as Currency || 'USD');
   const [rateType, setRateType] = useState<RateType>(currentRate?.rate_type as RateType || 'hourly');
   const [rateAmount, setRateAmount] = useState(currentRate?.rate_amount || 15);
+  const [serviceTemplate, setServiceTemplate] = useState<'general' | 'cleaning'>('general');
+  const [cleaningFrequency, setCleaningFrequency] = useState<ServiceFrequency>('weekly');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -33,13 +44,19 @@ export function EstateRateDialog({ language, currentRate, onSave }: EstateRateDi
       setCurrency(currentRate.currency as Currency);
       setRateType(currentRate.rate_type as RateType);
       setRateAmount(currentRate.rate_amount);
+      const cleaningMatch = currentRate.notes?.match(/^service_template:cleaning;frequency:(daily|weekly|biweekly)$/);
+      setServiceTemplate(cleaningMatch ? 'cleaning' : 'general');
+      if (cleaningMatch?.[1]) setCleaningFrequency(cleaningMatch[1] as ServiceFrequency);
     }
   }, [currentRate]);
 
   const handleSave = async () => {
     setSaving(true);
     try {
-      await onSave(rateType, rateAmount, currency);
+      const notes = serviceTemplate === 'cleaning'
+        ? `${CLEANING_NOTE_PREFIX};frequency:${cleaningFrequency}`
+        : undefined;
+      await onSave(rateType, rateAmount, currency, notes);
       setOpen(false);
     } finally {
       setSaving(false);
@@ -47,6 +64,14 @@ export function EstateRateDialog({ language, currentRate, onSave }: EstateRateDi
   };
 
   const currencySymbol = currency === 'CRC' ? '₡' : '$';
+  const isSpanish = language === 'es';
+  const isGerman = language === 'de';
+  const t = (en: string, es: string, de: string) => isSpanish ? es : isGerman ? de : en;
+  const rateUnit = rateType === 'hourly'
+    ? t('hour', 'hora', 'Stunde')
+    : rateType === 'daily'
+      ? t('day', 'día', 'Tag')
+      : t('service', 'servicio', 'Einsatz');
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -70,6 +95,44 @@ export function EstateRateDialog({ language, currentRate, onSave }: EstateRateDi
         </DialogHeader>
 
         <div className="space-y-6 py-4">
+          <div className="space-y-2">
+            <Label>{t('Work template', 'Plantilla de trabajo', 'Arbeitsvorlage')}</Label>
+            <Select value={serviceTemplate} onValueChange={(value) => setServiceTemplate(value as 'general' | 'cleaning')}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="general">{t('General labor', 'Mano de obra general', 'Allgemeine Arbeit')}</SelectItem>
+                <SelectItem value="cleaning">{t('Cleaning service', 'Servicio de limpieza', 'Reinigungsservice')}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {serviceTemplate === 'cleaning' && (
+            <div className="space-y-4 rounded-lg border border-border bg-muted/30 p-4">
+              <div className="flex items-start gap-3">
+                <SprayCan className="mt-0.5 h-5 w-5 text-primary" />
+                <div>
+                  <p className="text-sm font-semibold">{t('Cleaning service', 'Servicio de limpieza', 'Reinigungsservice')}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">
+                    {t('Set the normal service frequency and whether it is billed by hour, day, or completed visit.', 'Defina la frecuencia normal y si se paga por hora, día o servicio completado.', 'Legen Sie Häufigkeit und Abrechnung pro Stunde, Tag oder abgeschlossenem Einsatz fest.')}
+                  </p>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label>{t('Service frequency', 'Frecuencia del servicio', 'Servicehäufigkeit')}</Label>
+                <Select value={cleaningFrequency} onValueChange={(value) => setCleaningFrequency(value as ServiceFrequency)}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="daily">{t('Daily', 'Diaria', 'Täglich')}</SelectItem>
+                    <SelectItem value="weekly">{t('Weekly', 'Semanal', 'Wöchentlich')}</SelectItem>
+                    <SelectItem value="biweekly">{t('Every two weeks', 'Quincenal', 'Alle zwei Wochen')}</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          )}
+
           {/* Currency */}
           <div className="space-y-2">
             <Label>{language === 'es' ? 'Moneda' : 'Currency'}</Label>
@@ -125,15 +188,22 @@ export function EstateRateDialog({ language, currentRate, onSave }: EstateRateDi
                 <RadioGroupItem value="daily" id="dialog-daily" className="sr-only" />
                 {language === 'es' ? 'Diario' : 'Daily'}
               </Label>
+              <Label 
+                htmlFor="dialog-task" 
+                className={`flex items-center justify-center p-3 rounded-lg border cursor-pointer flex-1 ${
+                  rateType === 'task' ? 'border-primary bg-primary/10 font-medium' : 'border-muted'
+                }`}
+              >
+                <RadioGroupItem value="task" id="dialog-task" className="sr-only" />
+                {t('Per service', 'Por servicio', 'Pro Einsatz')}
+              </Label>
             </RadioGroup>
           </div>
 
           {/* Rate Amount */}
           <div className="space-y-2">
             <Label>
-              {language === 'es' 
-                ? `Tarifa ${rateType === 'hourly' ? 'por Hora' : 'Diaria'}` 
-                : `${rateType === 'hourly' ? 'Hourly' : 'Daily'} Rate`}
+              {t(`Rate per ${rateUnit}`, `Tarifa por ${rateUnit}`, `Preis pro ${rateUnit}`)}
             </Label>
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground font-mono">
@@ -154,8 +224,8 @@ export function EstateRateDialog({ language, currentRate, onSave }: EstateRateDi
           {currentRate && (
             <div className="p-3 bg-muted/50 rounded-lg text-sm text-muted-foreground">
               {language === 'es' 
-                ? `Tarifa actual: ${currentRate.currency === 'CRC' ? '₡' : '$'}${currentRate.rate_amount} ${currentRate.rate_type === 'hourly' ? 'por hora' : 'diario'} (desde ${currentRate.effective_from})`
-                : `Current rate: ${currentRate.currency === 'CRC' ? '₡' : '$'}${currentRate.rate_amount} ${currentRate.rate_type} (since ${currentRate.effective_from})`}
+                ? `Tarifa actual: ${currentRate.currency === 'CRC' ? '₡' : '$'}${currentRate.rate_amount} por ${rateUnit} (desde ${currentRate.effective_from})`
+                : `Current rate: ${currentRate.currency === 'CRC' ? '₡' : '$'}${currentRate.rate_amount} per ${rateUnit} (since ${currentRate.effective_from})`}
             </div>
           )}
         </div>

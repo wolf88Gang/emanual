@@ -1,6 +1,7 @@
 export type ValidationStatus = 'pending' | 'approved' | 'adjusted' | 'rejected' | 'paid';
 export type DecisionType = 'approval' | 'adjustment' | 'rejection';
 export type RateType = 'hourly' | 'daily' | 'task';
+export type ServiceFrequency = 'daily' | 'weekly' | 'biweekly';
 export type Currency = 'USD' | 'CRC';
 export type PaymentMethod = 'transfer' | 'cash' | 'check' | 'other';
 

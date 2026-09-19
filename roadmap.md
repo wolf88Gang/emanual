@@ -16,3 +16,5 @@
 - [x] Validate pricing logic, desktop/mobile layout, scrolling, and reduced motion.
 
 - [x] Replace the four public add-ons with nine canonical add-ons, remove plantops from public pricing, sync server table and tests
+- [ ] Correct selected add-on contrast in public pricing.
+- [ ] Add a cleaning-service template to labor rates with daily, weekly, and biweekly frequency options.

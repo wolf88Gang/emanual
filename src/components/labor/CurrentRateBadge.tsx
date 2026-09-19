@@ -21,7 +21,9 @@ export function CurrentRateBadge({ rate, language }: CurrentRateBadgeProps) {
   const symbol = rate.currency === 'CRC' ? '₡' : '$';
   const typeLabel = rate.rate_type === 'hourly' 
     ? (language === 'es' ? '/hora' : '/hr')
-    : (language === 'es' ? '/día' : '/day');
+    : rate.rate_type === 'daily'
+      ? (language === 'es' ? '/día' : '/day')
+      : (language === 'es' ? '/servicio' : '/service');
 
   return (
     <Badge variant="secondary" className="font-mono">
