@@ -186,8 +186,13 @@ _No other P0 blockers remain._
 
 | Step | Result | Evidence |
 |------|--------|----------|
-| All steps | **BLOCKED** | `plant_placements` count = 0 in production data; visit runner correctly shows "No installed plants on this property." No placement exists to damage/replace. Replacement RPCs and visit-close tool-return blocking were unit-verified in earlier development but not exercised against live data this audit. |
-| **Recommendation** | — | seed one AUDIT_TEST_ plantops pilot org (inventory → placement → damage → replacement → task) before onboarding the first plant-rental client |
+| Register plant + pot commercial details | PASS | `plantops_upsert_asset_details` on two AUDIT_TEST_ plants (204) |
+| Availability check | PASS | `plantops_check_availability` → true |
+| Reserve placement | PASS | placement 508ebc59-8e56-45cd-b9d1-013561afd0e6, spot "AUDIT_TEST_ lobby" |
+| Install | PASS | `plantops_install_asset` (204), status `installed` |
+| Damage → replacement | PASS | `plantops_replace_plant` returned new placement 293beb26-73d7-4a27-a709-25c6b4578f96; original placement closed as `collected` with condition 2, retired plant moved to `recovery`, slot/pot/zone carried over |
+| Evidence chain | PASS | incident task "Plant replacement completed" auto-created with a matching `task_completions` row (cause recorded) |
+| Cross-org guard | PASS | all RPCs run through `plantops_require_internal()`; replacement of a non-installed placement or same-asset swap is rejected |
 
 ### J3. Multi-customer isolation (run against existing orgs Bahia Vista vs Raiz)
 
@@ -214,7 +219,7 @@ _No other P0 blockers remain._
 - [x] D6 FIXED — `photos` and `asset-photos` are now private buckets, public read policies dropped, reads restricted to signed-in users, and the app resolves every stored reference through short-lived signed URLs (`src/lib/photoUrls.ts`, `StoragePhoto`). Verified: old public URL returns 400, signed URL returns 200, asset grid renders (screenshot `/tmp/browser/d1/assets.png`). Follow-up (P2): tighten signed-URL minting to same-org membership rather than any signed-in user.
 - [x] D7 FIXED — fake roster, mock users, dead Invite/Add/Edit/Delete/Print buttons removed; real `TeamManagement` is the default tab on /admin.
 - [ ] D8 Send and receive one real transactional email (needs a recipient address the operator owns)
-- [ ] J2 Seed a plantops pilot placement set and exercise damage → replacement once
+- [x] J2 DONE — AUDIT_TEST_ plant set seeded and the full reserve → install → damage → replacement chain exercised against live data; incident task and completion auto-created (see section J2). Test rows are listed in section N and can be deleted.
 
 ### FIX DURING FIRST 30 DAYS
 
@@ -271,8 +276,12 @@ Per-org: Bahia Vista Holdings = 5 clients, 1 estate, 41 tasks, 32 assets; Raiz =
 |--------|----|----------|
 | AUDIT_TEST_ Asset Task | 9ce11027-e95a-425a-abe5-4a6be1eaa3c2 | public.tasks (Bahia Vista org, asset 72fb17c7-…) |
 | AUDIT_TEST_ completion | 4f21e2a1-4adb-4c92-b7b0-31ee04222aaa | public.task_completions (photo: storage `photos/80891450-…/tasks/1789695250466.jpg`) |
-| AUDIT_TEST_ Evidence Task | NOT CREATED | generic /tasks dialog failed the spatial-context constraint (D1) |
+| AUDIT_TEST_ Evidence Task | NOT CREATED | generic /tasks dialog failed the spatial-context constraint (D1) — dialog since fixed |
 | AUDIT_TEST_ photos file | /tmp/browser/audit-e2e/audit_photo.jpg | sandbox only |
+| AUDIT_TEST_ Ficus Original | f6e735f1-bee6-478c-bc2c-8a22fe0fbec8 | public.assets (Hacienda Papagayo) + plantops details, lifecycle `recovery` |
+| AUDIT_TEST_ Ficus Replacement | bb4cd757-72b6-4983-9c68-9f6e3f55f225 | public.assets + placement 293beb26-… `installed` |
+| AUDIT_TEST_ lobby placements | 508ebc59-… (collected), 293beb26-… (installed) | public.plant_placements — J2 replacement test, safe to delete |
+| Auto incident task + completion | "Plant replacement completed" | created by the replacement RPC as part of the J2 test |
 
 No existing (non-AUDIT_TEST_) records were mutated. Demo accounts and their data were left intact by design.
 
