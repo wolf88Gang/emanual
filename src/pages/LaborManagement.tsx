@@ -60,6 +60,11 @@ export default function LaborManagement() {
   const effectiveRateAmount = estateDefaultRate?.rate_amount || 15;
   const effectiveRateType = estateDefaultRate?.rate_type || 'hourly';
   const currencySymbol = effectiveCurrency === 'CRC' ? '₡' : '$';
+  const effectiveRateUnit = effectiveRateType === 'hourly'
+    ? (language === 'es' ? 'hora' : language === 'de' ? 'Stunde' : 'hr')
+    : effectiveRateType === 'daily'
+      ? (language === 'es' ? 'día' : language === 'de' ? 'Tag' : 'day')
+      : (language === 'es' ? 'servicio' : language === 'de' ? 'Einsatz' : 'service');
 
   const handleValidation = (
     shiftId: string,
@@ -114,7 +119,7 @@ export default function LaborManagement() {
     );
     yPos += 6;
     doc.text(
-      `${isSpanish ? 'Tarifa:' : 'Rate:'} ${currencySymbol}${effectiveRateAmount.toFixed(2)}/${effectiveRateType === 'hourly' ? 'hr' : 'día'}`,
+      `${isSpanish ? 'Tarifa:' : 'Rate:'} ${currencySymbol}${effectiveRateAmount.toFixed(2)}/${effectiveRateUnit}`,
       margin,
       yPos
     );

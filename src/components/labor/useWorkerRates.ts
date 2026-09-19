@@ -66,7 +66,8 @@ export function useWorkerRates(language: string) {
   const saveEstateDefaultRate = async (
     rateType: RateType,
     rateAmount: number,
-    currency: Currency
+    currency: Currency,
+    notes?: string,
   ) => {
     if (!currentEstate) return;
 
@@ -89,6 +90,7 @@ export function useWorkerRates(language: string) {
           rate_amount: rateAmount,
           currency: currency,
           effective_from: new Date().toISOString().split('T')[0],
+          notes: notes || null,
         });
 
       if (error) throw error;
@@ -162,9 +164,12 @@ export function useWorkerRates(language: string) {
     let amount: number;
     if (rate.rate_type === 'hourly') {
       amount = (minutes / 60) * rate.rate_amount;
-    } else {
+    } else if (rate.rate_type === 'daily') {
       // Daily rate - assume 8 hour day
       amount = (minutes / 480) * rate.rate_amount;
+    } else {
+      // Task rates are flat per completed service, regardless of duration.
+      amount = minutes > 0 ? rate.rate_amount : 0;
     }
 
     return { amount, currency: rate.currency as Currency };
