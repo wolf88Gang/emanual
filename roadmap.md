@@ -9,3 +9,4 @@
 - [x] Reposition the public site around place-connected operations, with plants and rentals as optional configurations.
 - [x] Update broad-category EN/ES/DE SEO while preserving canonical, routes, pricing, checkout, and private product behavior.
 - [x] Re-run functional, accessibility, reduced-motion, responsive, and visual QA at 390/768/1024/1440px.
+- [ ] Apply and visually validate the selected Midnight Forest treatment across the public landing.
