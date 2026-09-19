@@ -120,8 +120,11 @@ export default function PlantOpsSites() {
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="font-medium truncate">{s.name}</p>
                     <p className="text-sm text-muted-foreground truncate">
-                      {[s.clientName, s.address_text].filter(Boolean).join(' · ') || '—'}
+                      {[s.clientName ?? l('No client assigned', 'Sin cliente asignado', 'Kein Kunde zugeordnet'), s.address_text]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </p>
+
                     <div className="flex items-center gap-2 flex-wrap text-xs">
                       <Badge variant="secondary">
                         {s.plants} {l('plants', 'plantas', 'Pflanzen')}
