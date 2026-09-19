@@ -561,7 +561,7 @@
   .pricing-option-group > p { @apply mt-2 max-w-xl text-sm leading-6 text-muted-foreground; }
   .pricing-option-group > div { @apply mt-6 border-t border-border; }
   .pricing-option-group.specialized-configuration { @apply border-l-2 border-accent/50 pl-5 sm:pl-7; }
-  .addon-row { @apply !flex h-auto min-h-[8.5rem] w-full min-w-0 max-w-full items-center justify-between gap-6 whitespace-normal rounded-none border-b border-border px-0 py-7 text-left hover:bg-transparent; }
+  .addon-row { @apply !flex h-auto min-h-[8.5rem] w-full min-w-0 max-w-full items-center justify-between gap-6 whitespace-normal rounded-none border-b border-border px-4 py-7 text-left hover:bg-transparent sm:px-0; }
   .addon-row[data-selected='true'] { @apply border-primary/50 bg-primary/5; }
   .addon-copy { @apply block min-w-0 flex-1 whitespace-normal text-left; }
   .addon-copy strong { @apply block text-base font-semibold text-foreground; }
