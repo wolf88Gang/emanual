@@ -77,6 +77,8 @@ const MyWorkerProfile = lazy(() => import("./pages/MyWorkerProfile"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const JoinTeam = lazy(() => import("./pages/JoinTeam"));
 const JoinClient = lazy(() => import("./pages/JoinClient"));
+const Checkout = lazy(() => import("./pages/Checkout"));
+const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
 
 const PageLoader = () => (
   <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-4">
@@ -134,7 +136,27 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     return <Navigate to="/onboarding" replace />;
   }
   
-  return <EstateProvider><SubscriptionProvider>{children}</SubscriptionProvider></EstateProvider>;
+  return (
+    <EstateProvider>
+      <SubscriptionProvider>
+        <PaywallGate>{children}</PaywallGate>
+      </SubscriptionProvider>
+    </EstateProvider>
+  );
+}
+
+/**
+ * Paid-first entry. An account can only use the platform once its organization
+ * has an active subscription; everything else is sent to checkout. Platform
+ * admins are not a billable tenant and are never gated.
+ */
+function PaywallGate({ children }: { children: React.ReactNode }) {
+  const { status, isPaid, enforceSubscription } = useSubscription();
+
+  if (!enforceSubscription || isPaid) return <>{children}</>;
+  if (status === 'loading') return <PageLoader />;
+
+  return <Navigate to="/checkout" replace />;
 }
 
 /**
@@ -241,6 +263,9 @@ function AppRoutes() {
       {/* Recovery link target — must stay reachable even with a recovery session active. */}
       <Route path="/auth/reset-password" element={<ResetPassword />} />
       <Route path="/onboarding" element={!user ? <Navigate to="/auth" replace /> : (platformAdminStatus === 'loading' || platformAdminStatus === 'error') ? <PageLoader /> : isPlatformAdmin ? <Navigate to="/platform" replace /> : <Onboarding />} />
+      {/* Checkout must stay reachable outside the paywall */}
+      <Route path="/checkout" element={user ? <Checkout /> : <Navigate to="/auth?mode=signup" replace />} />
+      <Route path="/checkout/success" element={user ? <CheckoutSuccess /> : <Navigate to="/auth" replace />} />
       <Route path="/join-team" element={user ? <JoinTeam /> : <Navigate to="/auth" replace />} />
       <Route path="/join-client" element={user ? <JoinClient /> : <Navigate to="/auth" replace />} />
       
