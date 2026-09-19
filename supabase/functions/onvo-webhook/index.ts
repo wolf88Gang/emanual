@@ -19,10 +19,13 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405, headers: corsHeaders });
 
-  const expectedSecret = Deno.env.get("ONVO_WEBHOOK_SECRET");
+  // Accepted secrets depend on ONVO_ENV ("test" or "live"): see _shared/onvo.ts.
+  // Values come from ONVO_WEBHOOK_SECRET_TEST / ONVO_WEBHOOK_SECRET_LIVE
+  // (or the legacy ONVO_WEBHOOK_SECRET) and are never logged.
+  const expected = acceptedWebhookSecrets();
   const providedSecret = req.headers.get("X-Webhook-Secret");
-  if (!expectedSecret || providedSecret !== expectedSecret) {
-    console.error("Rejected ONVO webhook: invalid or missing webhook secret");
+  if (expected.length === 0 || !providedSecret || !expected.includes(providedSecret)) {
+    console.error("Rejected ONVO webhook: invalid or missing webhook secret", { mode: onvoMode() });
     return new Response("Unauthorized", { status: 401, headers: corsHeaders });
   }
 
