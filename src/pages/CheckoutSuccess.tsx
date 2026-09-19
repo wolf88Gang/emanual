@@ -46,6 +46,19 @@ export default function CheckoutSuccess() {
         setState('paid');
         return;
       }
+
+      // The webhook may have activated the account already: ask our own
+      // subscription status before deciding the payment did not land.
+      const { data: statusData } = await supabase.functions.invoke('onvo-subscription-status', {
+        body: {},
+      });
+      if (cancelled) return;
+      if (statusData?.active) {
+        await refreshUserData();
+        setState('paid');
+        return;
+      }
+
       if (attempts.current >= 5) {
         setState(error || data?.status === 'amount_mismatch' ? 'failed' : 'pending');
         return;

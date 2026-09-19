@@ -57,14 +57,29 @@ Deno.serve(async (req) => {
       });
     }
 
-    if (row.status !== "paid") {
-      const paidMinor = Number(session.amountTotal ?? 0);
-      if (paidMinor < row.amount_minor || session.currency !== row.currency) {
-        console.error("ONVO webhook amount mismatch", { paidMinor, expected: row.amount_minor });
-        await admin.from("checkout_sessions").update({ status: "failed" }).eq("id", row.id);
-      } else {
-        await activateSubscription(admin, row, session);
-      }
+    // Idempotency: claim the row first. A duplicate delivery of the same event
+    // finds nothing left to claim and does no work.
+    const { data: claimed } = await admin
+      .from("checkout_sessions")
+      .update({ status: "processing", updated_at: new Date().toISOString() })
+      .eq("id", row.id)
+      .in("status", ["pending", "processing"])
+      .select("id")
+      .maybeSingle();
+
+    if (!claimed) {
+      return new Response(JSON.stringify({ received: true, duplicate: true }), {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    const paidMinor = Number(session.amountTotal ?? 0);
+    if (paidMinor < row.amount_minor || session.currency !== row.currency) {
+      console.error("ONVO webhook amount mismatch", { paidMinor, expected: row.amount_minor });
+      await admin.from("checkout_sessions").update({ status: "failed" }).eq("id", row.id);
+    } else {
+      await activateSubscription(admin, row, session);
     }
 
     return new Response(JSON.stringify({ received: true }), {
