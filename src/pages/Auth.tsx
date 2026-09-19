@@ -24,12 +24,11 @@ type AuthFormData = z.infer<typeof authSchema>;
 
 export default function Auth() {
   const { t, language } = useLanguage();
-  const { user, signIn } = useAuth();
+  const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  // Sign-up is closed: accounts are provisioned by the Home Guide team after an
-  // access request. This flag stays false and exists only so the shared form
-  // keeps its single code path.
-  const isSignUp = false;
+  // Anyone can open an account; the paywall decides who gets in. Sign-up is
+  // driven by ?mode=signup so the checkout flow can link straight to it.
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isForgot, setIsForgot] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
