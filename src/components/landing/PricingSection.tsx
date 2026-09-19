@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Check, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { ADDONS, ANNUAL_MONTHS_CHARGED, BASE_PRICE_PER_PROPERTY_USD, quote, type BillingInterval } from '@/lib/pricing';
+import { ADDONS, ANNUAL_MONTHS_CHARGED, BASE_PRICE_PER_PROPERTY_USD, quote, type AddonGroup, type BillingInterval } from '@/lib/pricing';
 import { CRC_PER_USD } from '@/lib/currency';
 import { MODULE_LIST, type ModuleKey } from '@/lib/homeGuideModules';
 import { LandingSectionHeading, HGReveal } from './motion';
@@ -97,16 +97,14 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
               </div>
             </div>
             <div className="addon-list">
-              <fieldset className="pricing-option-group">
-                <legend>{text('extras')}</legend>
-                <p>{text('extrasBody')}</p>
-                <div>{OPTIONAL_ADDON_IDS.map(renderAddon)}</div>
-              </fieldset>
-              <fieldset className="pricing-option-group specialized-configuration">
-                <legend>{text('specializedConfiguration')}</legend>
-                <p>{text('specializedConfigurationBody')}</p>
-                <div>{SPECIALIZED_CONFIGURATION_IDS.map(renderAddon)}</div>
-              </fieldset>
+              <p className="pricing-addons-intro">{text('extrasBody')}</p>
+              {ADDON_GROUPS.map(({ group, labelKey, bodyKey }) => (
+                <fieldset key={group} className="pricing-option-group">
+                  <legend>{text(labelKey)}</legend>
+                  <p>{text(bodyKey)}</p>
+                  <div>{ADDONS.filter((addon) => addon.group === group).map((addon) => renderAddon(addon.id))}</div>
+                </fieldset>
+              ))}
             </div>
           </div>
           <aside className="pricing-summary">
