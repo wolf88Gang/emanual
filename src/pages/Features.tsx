@@ -15,7 +15,7 @@ export default function Features() {
 
   return (
     <main className="homeguide-landing landing-canvas min-h-screen overflow-x-hidden bg-background text-foreground">
-      <Seo title="Home Guide | Property operations, documented" description={copy.hero.body} path="/" image="https://homeguide.casa/images/og-share.jpg" />
+      <Seo title={copy.seo.title} description={copy.seo.description} path="/" image="https://homeguide.casa/images/og-share.jpg" />
       <LandingNavbar copy={copy.nav} />
       <HeroSection copy={copy.hero} />
       <ProblemSection copy={copy.problem} />
