@@ -95,18 +95,51 @@ Webhook URL to register in the ONVO dashboard for the event
 https://<project-ref>.supabase.co/functions/v1/onvo-webhook
 ```
 
-### Environment variables
+### Environment variables: TEST and LIVE side by side
 
 Set these ONLY as project secrets (Lovable secrets / Supabase function secrets),
 never in source code, and never log their values:
 
 ```
-ONVO_SECRET_KEY=        # onvo_test_secret_key_... or onvo_live_secret_key_...
-ONVO_WEBHOOK_SECRET=    # shown next to the webhook in the ONVO dashboard
+ONVO_ENV=live                 # "test" = fake payments, "live" = real money
+ONVO_SECRET_KEY_TEST=         # onvo_test_secret_key_...
+ONVO_WEBHOOK_SECRET_TEST=     # webhook secret of the TEST webhook
+ONVO_SECRET_KEY_LIVE=         # onvo_live_secret_key_...
+ONVO_WEBHOOK_SECRET_LIVE=     # webhook secret of the LIVE webhook
 ```
 
-Going live is a single change: replace the value of `ONVO_SECRET_KEY` with the
-live key.
+Both pairs can be stored at the same time. `ONVO_ENV` alone decides which pair
+the functions use at runtime, so **switching between test and live never needs a
+code change** — only the value of `ONVO_ENV`.
+
+- `ONVO_ENV=test` → every call to ONVO uses the test key, so payments are
+  fictitious and ONVO test cards work.
+- `ONVO_ENV=live` (or `ONVO_ENV` unset) → the live key, real money.
+
+Fallback for older setups: when the pair for the active environment is missing,
+the legacy `ONVO_SECRET_KEY` / `ONVO_WEBHOOK_SECRET` are used instead, so an
+existing live configuration keeps working untouched. The webhook receiver
+accepts both the environment-specific secret and the legacy one.
+
+ONVO uses the same API host for both environments — the key decides whether a
+charge is a test charge — so there is no endpoint to change.
+
+Resolution logic lives in `supabase/functions/_shared/onvo.ts`
+(`onvoMode()`, `secretKey()`, `acceptedWebhookSecrets()`).
+
+#### Making a fictitious (test) payment
+
+1. Save `ONVO_SECRET_KEY_TEST` and `ONVO_WEBHOOK_SECRET_TEST` as project secrets.
+2. Set `ONVO_ENV=test`.
+3. Go through `/auth?mode=signup` → `/checkout` → "Pay with ONVO". The ONVO page
+   shows the "TEST MODE" label and the checkout URL starts with `pay/test_`.
+4. Pay with the ONVO test card `4242 4242 4242 4242`, exp `12/34`, CVV `123`.
+5. You return to `/checkout/success`, the subscription activates and the app
+   stops redirecting to checkout. No real money moves.
+6. To go back to real charges, set `ONVO_ENV=live`. Nothing else changes.
+
+The `mode` field in the `onvo-create-checkout` response (`"test"` / `"live"`)
+tells you which environment produced a given checkout link.
 
 ### Payload sent to ONVO
 
