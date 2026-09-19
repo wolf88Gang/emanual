@@ -181,3 +181,39 @@ lands.
    checkout.
 5. Optional shortcut: `bash scripts/onvo-smoke-test.sh` (see the comments at the
    top of that file) creates a test session and prints the checkout URL.
+
+### Cómo probar que ONVO está funcionando (checklist)
+
+Modo test: usa siempre la clave `onvo_test_secret_key_...` en `ONVO_SECRET_KEY`.
+Tarjeta de prueba de ONVO: `4242 4242 4242 4242`, vence `12/34`, CVV `123`.
+
+1. [ ] Abrí https://homeguide.casa/auth?mode=signup y creá una cuenta nueva con
+       un correo que controles.
+2. [ ] La app te lleva sola a https://homeguide.casa/checkout.
+3. [ ] Elegí plan (mensual o anual), cantidad de propiedades, extras y moneda
+       (USD o CRC). El total se actualiza en pantalla.
+4. [ ] Pulsá "Pagar con ONVO". Se abre la página de ONVO con el rótulo
+       "ESTÁS EN MODO DE PRUEBA" y el mismo total.
+5. [ ] Paso 1 de ONVO: teléfono y nombre (el correo viene precargado).
+       Paso 2: datos de la tarjeta de prueba y "Pagar".
+6. [ ] Volvés solo a https://homeguide.casa/checkout/success y ves
+       "Pago recibido".
+7. [ ] Pulsá "Continuar": entrás a la plataforma (onboarding o panel). Recargá
+       la página o cerrá y volvé a entrar: ya NO te manda al checkout.
+8. [ ] Opcional: en el dashboard de ONVO el pago aparece como exitoso.
+
+Prueba automática (hace todo lo anterior sin intervención):
+
+```sh
+python3 scripts/onvo-e2e-test.py
+```
+
+Imprime cada paso y termina en `PASS` si el cobro, la activación y el acceso a
+la plataforma funcionaron. Crea un usuario desechable por corrida
+(`audit_test_onvo_...`).
+
+Revisión rápida de las funciones sin pagar:
+
+```sh
+bash scripts/onvo-smoke-test.sh
+```
