@@ -295,12 +295,27 @@ export default function Auth() {
                 </button>
               </p>
             ) : (
-            <p className="text-center text-sm text-muted-foreground">
-              {tr('No account yet?', '¿Aún no tiene cuenta?', 'Noch kein Konto?')}{' '}
-              <Link to="/request-access" className="text-primary font-medium hover:underline">
-                {tr('Request access', 'Solicitar acceso', 'Zugang anfragen')}
-              </Link>
-            </p>
+            <div className="space-y-2">
+              <p className="text-center text-sm text-muted-foreground">
+                {isSignUp
+                  ? tr('Already have an account?', '¿Ya tiene cuenta?', 'Haben Sie schon ein Konto?')
+                  : tr('No account yet?', '¿Aún no tiene cuenta?', 'Noch kein Konto?')}{' '}
+                <button
+                  type="button"
+                  onClick={() => { setIsSignUp(!isSignUp); reset(); }}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {isSignUp
+                    ? tr('Sign in', 'Iniciar sesión', 'Anmelden')
+                    : tr('Create an account', 'Crear una cuenta', 'Konto erstellen')}
+                </button>
+              </p>
+              <p className="text-center text-xs text-muted-foreground">
+                <Link to="/request-access" className="hover:underline">
+                  {tr('Need an invoice or a team plan? Talk to us', '¿Necesita factura o un plan de equipo? Hable con nosotros', 'Rechnung oder Teamplan? Sprechen Sie mit uns')}
+                </Link>
+              </p>
+            </div>
             )}
 
             <p className="text-center text-xs text-muted-foreground mt-8">
