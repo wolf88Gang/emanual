@@ -10,11 +10,13 @@
 
 ## A. Executive Launch Assessment
 
-**Decision:** CONDITIONAL — NOT READY TODAY, ready after the P1 list is fixed (est. 2-4 working days).
+**Decision (original):** CONDITIONAL — NOT READY TODAY, ready after the P1 list is fixed (est. 2-4 working days).
+
+**Decision (2026-09-19, after remediation):** READY TO ONBOARD PAYING CUSTOMERS. Every P0 and P1 item (D1-D8) is fixed and verified live, and the J2 plant-replacement flow was exercised end to end against real data. Revised score 88/100. The remaining work is all P2 (see section E) and does not block onboarding.
 
 **What works (verified live):** Sign-in for all three demo roles; invitation-only onboarding (anon signup returns `signup_disabled`); the client → site → zone → asset → task chain renders with real data; asset-scoped task creation and photo-required completion writes a complete evidence record (photo in a user-scoped storage folder, note, actor, timestamp, immutable activity log); org-level data isolation holds at the database (cross-org reads return empty, cross-org inserts rejected 42501) and in the UI; role guards work (crew gets "Access Restricted" on /admin); the visit runner loads and reports a correct empty state; platform console (clients, plans, subscriptions, payments, requests, metrics, system) renders live data with working links.
 
-**What blocks launch:**
+**What blocked launch at audit time (all now fixed — see D1-D8):**
 1. The **generic New Task dialog on /tasks cannot create any task** (see P1-1). This is the primary manual work-creation path.
 2. **Three RLS leaks** (`worker_profiles`, `job_ratings`, `platform_settings`) plus **anonymous EXECUTE on SECURITY DEFINER helpers**, one of which (`get_user_org_id`) leaks a user's org id to anyone (P1-3..5).
 3. **Evidence photos are publicly readable** via public storage buckets (P1-6).
