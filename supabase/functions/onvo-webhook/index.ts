@@ -8,7 +8,7 @@
  * the X-Webhook-Secret header.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { activateSubscription, type OnvoSession } from "../_shared/onvo.ts";
+import { acceptedWebhookSecrets, activateSubscription, onvoMode, type OnvoSession } from "../_shared/onvo.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",

@@ -1,23 +1,76 @@
 /**
  * Minimal ONVO Pay client.
  *
- * The secret key is read from the ONVO_SECRET_KEY environment variable
- * (Project secrets). NEVER hardcode it and never log its value.
- * Test keys look like onvo_test_secret_key_..., live keys onvo_live_secret_key_...
+ * ── How to switch between TEST and LIVE (no code changes) ───────────────────
+ * Everything is driven by project secrets / environment variables:
+ *
+ *   ONVO_ENV = "test"  -> fake payments, ONVO test cards
+ *   ONVO_ENV = "live"  -> real money (default when ONVO_ENV is not set)
+ *
+ * Keys per environment (set them as project secrets, never in code):
+ *
+ *   TEST:  ONVO_SECRET_KEY_TEST   (onvo_test_secret_key_...)
+ *          ONVO_WEBHOOK_SECRET_TEST
+ *   LIVE:  ONVO_SECRET_KEY_LIVE   (onvo_live_secret_key_...)
+ *          ONVO_WEBHOOK_SECRET_LIVE
+ *
+ * Backwards compatibility: if the per-environment secret is missing, the
+ * legacy single secrets ONVO_SECRET_KEY / ONVO_WEBHOOK_SECRET are used.
+ * ONVO uses the SAME API host for both environments; the key itself decides
+ * whether a charge is a test charge, so no endpoint switch is needed.
+ *
+ * NEVER hardcode or log any of these values.
  */
 import { periodEnd, type BillingInterval } from "./pricing.ts";
 
 const ONVO_API_BASE = "https://api.onvopay.com/v1";
 
+export type OnvoMode = "test" | "live";
+
+/** Active ONVO environment. Defaults to "live" when ONVO_ENV is not set. */
+export function onvoMode(): OnvoMode {
+  return (Deno.env.get("ONVO_ENV") ?? "").trim().toLowerCase() === "test" ? "test" : "live";
+}
+
+function env(name: string): string | undefined {
+  const value = Deno.env.get(name);
+  return value && value.trim() ? value.trim() : undefined;
+}
+
 function secretKey(): string {
-  const key = Deno.env.get("ONVO_SECRET_KEY");
-  if (!key) throw new Error("ONVO_SECRET_KEY is not configured");
+  const mode = onvoMode();
+  const key = mode === "test"
+    ? env("ONVO_SECRET_KEY_TEST") ?? env("ONVO_SECRET_KEY")
+    : env("ONVO_SECRET_KEY_LIVE") ?? env("ONVO_SECRET_KEY");
+  if (!key) {
+    throw new Error(
+      `ONVO secret key for mode "${mode}" is not configured ` +
+        `(expected ONVO_SECRET_KEY_${mode.toUpperCase()} or ONVO_SECRET_KEY)`,
+    );
+  }
   return key;
 }
 
-/** True when the configured key is a test-mode key. */
+/**
+ * Webhook secret(s) accepted for the active environment. Returns the
+ * environment-specific secret plus the legacy one, so a webhook registered
+ * before this change keeps working. Values are never logged.
+ */
+export function acceptedWebhookSecrets(): string[] {
+  const mode = onvoMode();
+  const specific = mode === "test" ? env("ONVO_WEBHOOK_SECRET_TEST") : env("ONVO_WEBHOOK_SECRET_LIVE");
+  return [specific, env("ONVO_WEBHOOK_SECRET")].filter((s): s is string => !!s);
+}
+
+/** True when the active environment is the ONVO test environment. */
 export function isTestMode(): boolean {
-  return (Deno.env.get("ONVO_SECRET_KEY") ?? "").includes("_test_");
+  return onvoMode() === "test" || (() => {
+    try {
+      return secretKey().includes("_test_");
+    } catch {
+      return false;
+    }
+  })();
 }
 
 async function onvoFetch(path: string, init: RequestInit = {}) {
