@@ -181,10 +181,29 @@ function balancesFor(invoices: any[]): CurrencyBalance[] {
   return [...map.values()].sort((a, b) => a.currency.localeCompare(b.currency));
 }
 
+export interface OrgSiteRow extends ClientProjectRow {
+  clientId: string | null;
+}
+
+/**
+ * Last org-wide site projection produced by `fetchClientWorkspace`, so the
+ * flat site list can include sites that are not attached to a client record.
+ */
+let lastOrgSites: { orgId: string; rows: OrgSiteRow[] } | null = null;
+
+/**
+ * Every site of the organization, including sites with no client record.
+ */
+export async function fetchOrgSites(orgId: string): Promise<OrgSiteRow[]> {
+  await fetchClientWorkspace(orgId);
+  return lastOrgSites?.orgId === orgId ? lastOrgSites.rows : [];
+}
+
 /**
  * One row per CLIENT of the organization — never one row per contact or user.
  */
 export async function fetchClientWorkspace(orgId: string): Promise<ClientWorkspaceRow[]> {
+
   const [clientsRes, estatesRes, placementsRes, invoicesRes, linksRes, tasksRes] = await Promise.all([
     supabase.from('clients').select('id, name, email, phone, notes, created_at').eq('org_id', orgId).order('name'),
     supabase
