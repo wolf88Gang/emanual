@@ -10,7 +10,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import { CurrencyProvider } from "./contexts/CurrencyContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import { EstateProvider } from "./contexts/EstateContext";
-import { SubscriptionProvider } from "./contexts/SubscriptionContext";
+import { SubscriptionProvider, useSubscription } from "./contexts/SubscriptionContext";
 import { SidebarLayout } from "./components/layout/SidebarLayout";
 import { TrialGate } from "./components/subscription/TrialGate";
 import { HGLogo } from "./components/HGLogo";
