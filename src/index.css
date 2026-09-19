@@ -488,6 +488,14 @@
   .timeline-content h3 { @apply mt-2 font-display text-xl font-semibold; }
   .timeline-content p { @apply mt-3 max-w-[58ch] text-sm leading-7 text-muted-foreground; }
   .connected-section { @apply border-y border-border/70; }
+  .connected-model { @apply mt-14 border-y border-border py-7; }
+  .connected-model-heading { @apply grid gap-3 md:grid-cols-[minmax(10rem,.45fr)_minmax(0,1fr)] md:items-start; }
+  .connected-model-heading p { @apply max-w-[66ch] text-sm leading-7 text-muted-foreground; }
+  .connected-model ol { @apply mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-7; }
+  .connected-model li { @apply relative flex min-h-20 flex-col justify-between border-l border-border pl-3; }
+  .connected-model li > span { @apply text-xs text-primary; }
+  .connected-model li > strong { @apply mt-5 pr-4 font-display text-sm font-semibold; }
+  .connected-model li > svg { @apply absolute -right-1 top-1/2 hidden h-3.5 w-3.5 -translate-y-1/2 text-accent lg:block; }
   .data-routes { @apply mt-14 border-t border-border; }
   .data-route { @apply grid items-center gap-4 border-b border-border py-7 md:grid-cols-[2.5rem_minmax(8rem,.7fr)_minmax(5rem,.55fr)_1.5rem_minmax(0,1.8fr)]; }
   .data-route-index { @apply text-xs text-muted-foreground; }
@@ -501,7 +509,7 @@
   .data-route:hover .data-targets span::after { @apply scale-x-100; }
   .audience-layout { @apply items-start; }
   .audience-list { @apply grid border-t border-border sm:grid-cols-2; }
-  .audience-list article { @apply border-b border-border py-7 sm:px-6 sm:[&:nth-child(odd)]:border-r; }
+  .audience-list article { @apply min-h-56 border-b border-border py-7 sm:px-6 sm:[&:nth-child(odd)]:border-r; }
   .audience-list article > span, .difference-list article > span { @apply text-xs text-primary; }
   .audience-list h3 { @apply mt-8; }
   .visibility-section { @apply bg-primary text-primary-foreground; }
