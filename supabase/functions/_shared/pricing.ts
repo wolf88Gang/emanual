@@ -10,10 +10,23 @@ export const ANNUAL_MONTHS_CHARGED = 10;
 export const CRC_PER_USD = 520;
 
 export const ADDON_PRICES_USD: Record<string, number> = {
+  field_operations: 8,
   labor: 10,
-  plantops: 12,
+  reminders: 4,
+  inventory: 5,
+  client_portal: 6,
+  reports_manuals: 6,
   topography: 8,
   financials: 8,
+  plant_care: 8,
+};
+
+/**
+ * No longer sold. Kept only so historical subscriptions/checkout sessions that
+ * already contain this id stay readable; serverQuote never accepts it.
+ */
+export const LEGACY_ADDON_PRICES_USD: Record<string, number> = {
+  plantops: 12,
 };
 
 export type BillingInterval = "monthly" | "annual";
