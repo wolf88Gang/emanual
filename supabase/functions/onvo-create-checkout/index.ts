@@ -2,13 +2,18 @@
  * Creates an ONVO checkout session for a Home Guide subscription and returns
  * the hosted checkout URL the browser should be redirected to.
  *
- * The ONVO secret key lives ONLY in the ONVO_SECRET_KEY project secret.
+ * Secrets: the ONVO keys live ONLY in project secrets. Which pair is used is
+ * decided at runtime by ONVO_ENV ("test" or "live"):
+ *   test -> ONVO_SECRET_KEY_TEST  (fallback: ONVO_SECRET_KEY)
+ *   live -> ONVO_SECRET_KEY_LIVE  (fallback: ONVO_SECRET_KEY)
+ * See supabase/functions/_shared/onvo.ts. Never hardcode or log key values.
+ *
  * The price is computed here from the server price table, never taken from
  * the request body.
  */
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { serverQuote, type BillingInterval, type Currency } from "../_shared/pricing.ts";
-import { createOneTimeCheckout } from "../_shared/onvo.ts";
+import { createOneTimeCheckout, onvoMode } from "../_shared/onvo.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -111,6 +116,8 @@ Deno.serve(async (req) => {
     return json({
       checkoutUrl: session.url,
       sessionId: session.id,
+      mode: onvoMode(), // "test" = pago ficticio, "live" = dinero real
+
       amountMinor: q.amountMinor,
       currency: q.currency,
       monthlyUsd: q.monthlyUsd,
