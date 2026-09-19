@@ -47,11 +47,18 @@ Deno.serve(async (req) => {
 
     const { data: profile } = await admin
       .from('profiles')
-      .select('org_id, role')
+      .select('org_id')
       .eq('id', user.id)
       .maybeSingle();
 
-    if (!profile?.org_id || !['owner', 'manager', 'admin'].includes(String(profile.role))) {
+    // Roles live in user_roles (never on profiles), so read them from there.
+    const { data: roleRows } = await admin
+      .from('user_roles')
+      .select('role')
+      .eq('user_id', user.id);
+    const roles = (roleRows || []).map((r: { role: string }) => String(r.role));
+
+    if (!profile?.org_id || !roles.some((r) => ['owner', 'manager'].includes(r))) {
       return json({ error: 'Forbidden' }, 403);
     }
 
