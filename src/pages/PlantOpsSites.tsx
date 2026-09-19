@@ -8,12 +8,13 @@ import { Input } from '@/components/ui/input';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { fetchClientWorkspace, type ClientProjectRow } from '@/lib/plantopsClients';
+import { fetchClientWorkspace, fetchOrgSites, type ClientProjectRow } from '@/lib/plantopsClients';
 
 interface SiteRow extends ClientProjectRow {
   clientId: string | null;
   clientName: string | null;
 }
+
 
 /**
  * Organization-wide site/project list: every site across every client.
@@ -47,10 +48,15 @@ export default function PlantOpsSites() {
       setLoading(true);
       try {
         const clients = await fetchClientWorkspace(orgId);
-        const flat: SiteRow[] = clients.flatMap((c) =>
-          c.projects.map((p) => ({ ...p, clientId: c.id, clientName: c.name })),
-        );
+        const clientNames = new Map(clients.map((c) => [c.id, c.name]));
+        // Org-wide list: includes sites that are not attached to a client record.
+        const sites = await fetchOrgSites(orgId);
+        const flat: SiteRow[] = sites.map((s) => ({
+          ...s,
+          clientName: s.clientId ? clientNames.get(s.clientId) ?? null : null,
+        }));
         if (!cancelled) setRows(flat);
+
       } catch (e: any) {
         toast({ title: l('Could not load sites', 'No se pudieron cargar los sitios'), description: e.message, variant: 'destructive' });
       } finally {
@@ -114,8 +120,11 @@ export default function PlantOpsSites() {
                   <div className="min-w-0 flex-1 space-y-1">
                     <p className="font-medium truncate">{s.name}</p>
                     <p className="text-sm text-muted-foreground truncate">
-                      {[s.clientName, s.address_text].filter(Boolean).join(' · ') || '—'}
+                      {[s.clientName ?? l('No client assigned', 'Sin cliente asignado', 'Kein Kunde zugeordnet'), s.address_text]
+                        .filter(Boolean)
+                        .join(' · ')}
                     </p>
+
                     <div className="flex items-center gap-2 flex-wrap text-xs">
                       <Badge variant="secondary">
                         {s.plants} {l('plants', 'plantas', 'Pflanzen')}

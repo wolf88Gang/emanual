@@ -56,7 +56,35 @@ export default function BusinessHome() {
     },
   });
 
+  const assetsOn = canUse('assets');
+  const tasksOn = canUse('tasks');
+
+  /**
+   * Operational records the current role can actually see. Crew has no client
+   * or site module, so the empty state must not claim the workspace is empty.
+   */
+  const { data: opRecordCount, isLoading: opLoading } = useQuery({
+    queryKey: ['business-home-op-records', orgId, assetsOn, tasksOn],
+    enabled: !!orgId && (assetsOn || tasksOn),
+    queryFn: async () => {
+      // Both tables are scoped by access rules already (assets have no org
+      // column; they belong to a site), so no explicit organization filter.
+      const countOf = async (table: 'assets' | 'tasks') => {
+        const { count, error } = await (supabase.from(table) as any).select('id', { count: 'exact', head: true });
+        if (error) throw error;
+        return (count as number | null) ?? 0;
+      };
+      let total = 0;
+      if (assetsOn) total += await countOf('assets');
+      if (tasksOn) total += await countOf('tasks');
+      return total;
+    },
+
+
+  });
+
   const portalsOn = canUse('client_portal');
+
 
   /** Active (non revoked, non expired) aggregated client portals. */
   const { data: activePortals } = useQuery({
@@ -76,7 +104,12 @@ export default function BusinessHome() {
 
   const rows = clientsOn ? (clients ?? []) : [];
   const projectCount = projectsOn ? (siteCount ?? 0) : 0;
-  const loading = modulesLoading || (clientsOn && clientsLoading) || (projectsOn && sitesLoading);
+  const loading =
+    modulesLoading ||
+    (clientsOn && clientsLoading) ||
+    (projectsOn && sitesLoading) ||
+    ((assetsOn || tasksOn) && opLoading);
+
 
   /** Micro-bars: projects per client, so the tile reflects real distribution. */
   const clientSpark = rows.slice(0, 8).map((c) => (c.projects?.length ?? 0) + 1);
@@ -103,7 +136,7 @@ export default function BusinessHome() {
       : []),
   ];
 
-  const hasRecords = rows.length > 0 || projectCount > 0;
+  const hasRecords = rows.length > 0 || projectCount > 0 || (opRecordCount ?? 0) > 0;
   const showEmptyState = !loading && !hasRecords;
   const showMetrics = clientsOn || projectsOn || portalsOn;
 
