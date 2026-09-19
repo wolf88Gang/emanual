@@ -179,6 +179,12 @@ export function quote({ interval, propertyCount, addonIds }: QuoteInput): Quote 
 
 export function addonName(id: string, language: string): string {
   const addon = ADDONS.find((a) => a.id === id);
-  if (!addon) return id;
-  return language === 'es' ? addon.name.es : language === 'de' ? addon.name.de : addon.name.en;
+  const name = addon?.name ?? LEGACY_ADDON_NAMES[id];
+  if (!name) return id;
+  return language === 'es' ? name.es : language === 'de' ? name.de : name.en;
+}
+
+/** Monthly USD price for any id, including historical ones, for read-only display. */
+export function addonMonthlyUsd(id: string): number {
+  return ADDONS.find((a) => a.id === id)?.monthlyUsd ?? LEGACY_ADDON_PRICES_USD[id] ?? 0;
 }

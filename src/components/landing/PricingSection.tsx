@@ -11,8 +11,12 @@ import type { landingCopy, LandingLanguage } from './copy';
 type Copy = (typeof landingCopy)[LandingLanguage]['pricing'];
 type Currency = 'USD' | 'CRC';
 
-const OPTIONAL_ADDON_IDS = ['labor', 'topography', 'financials'];
-const SPECIALIZED_CONFIGURATION_IDS = ['plantops'];
+const ADDON_GROUPS: Array<{ group: AddonGroup; labelKey: string; bodyKey: string }> = [
+  { group: 'operation', labelKey: 'groupOperation', bodyKey: 'groupOperationBody' },
+  { group: 'management', labelKey: 'groupManagement', bodyKey: 'groupManagementBody' },
+  { group: 'analysis', labelKey: 'groupAnalysis', bodyKey: 'groupAnalysisBody' },
+  { group: 'specialized', labelKey: 'groupSpecialized', bodyKey: 'groupSpecializedBody' },
+];
 const CAPABILITY_GROUPS: Array<{ labelKey: string; moduleKeys: ModuleKey[] }> = [
   { labelKey: 'capabilityCore', moduleKeys: ['clients', 'projects', 'assets', 'documents'] },
   { labelKey: 'capabilityField', moduleKeys: ['map', 'tasks', 'visits', 'tools', 'inventory', 'labor'] },
