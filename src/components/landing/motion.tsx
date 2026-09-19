@@ -23,13 +23,18 @@ export function HGReveal({ children, className, direction = 'up', delay = 0, dur
       setVisible(true);
       return;
     }
-    const observer = new IntersectionObserver(([entry]) => {
-      if (!entry) return;
-      setVisible(entry.isIntersecting);
-      if (entry.isIntersecting && once) observer.unobserve(node);
-    }, { threshold });
-    observer.observe(node);
-    return () => observer.disconnect();
+    try {
+      const observer = new IntersectionObserver(([entry]) => {
+        if (!entry) return;
+        setVisible(entry.isIntersecting);
+        if (entry.isIntersecting && once) observer.unobserve(node);
+      }, { threshold });
+      observer.observe(node);
+      return () => observer.disconnect();
+    } catch {
+      setVisible(true);
+      return;
+    }
   }, [once, threshold]);
 
   return (

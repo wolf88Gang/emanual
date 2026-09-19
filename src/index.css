@@ -538,6 +538,7 @@
   .addon-list { @apply mt-6; }
   .addon-list legend { @apply mb-2 text-sm font-semibold; }
   .addon-row { @apply h-auto w-full justify-between rounded-none border-b border-border px-0 py-4 text-left hover:bg-transparent; }
+  .addon-row > span:first-child { @apply min-w-0 flex-1 pr-4 text-left; }
   .addon-row strong, .addon-row small { @apply block; }
   .addon-row small { @apply mt-1 font-normal text-muted-foreground; }
   .addon-check { @apply flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-border; }
