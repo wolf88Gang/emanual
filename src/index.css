@@ -198,6 +198,27 @@
 }
 
 @layer components {
+  /* Landing palette stays faithful to the HG logo in every system theme. */
+  .homeguide-landing {
+    --background: 40 20% 98%;
+    --foreground: 150 18% 14%;
+    --card: 40 25% 99%;
+    --card-foreground: 150 18% 14%;
+    --popover: 40 25% 99%;
+    --popover-foreground: 150 18% 14%;
+    --primary: 150 40% 25%;
+    --primary-foreground: 40 20% 98%;
+    --secondary: 38 30% 92%;
+    --secondary-foreground: 150 22% 20%;
+    --muted: 40 18% 94%;
+    --muted-foreground: 150 10% 38%;
+    --accent: 42 75% 52%;
+    --accent-foreground: 150 18% 14%;
+    --border: 38 18% 84%;
+    --input: 38 18% 84%;
+    --ring: 150 40% 25%;
+  }
+
   /* Premium card styles */
   .estate-card {
     @apply bg-card rounded-xl border border-border/50;

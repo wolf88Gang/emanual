@@ -176,7 +176,7 @@ export default function Features() {
   const toggleAddon = (id: string) => setAddonIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
 
   return (
-    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+    <main className="homeguide-landing min-h-screen overflow-hidden bg-background text-foreground">
       <Seo title="Home Guide | Property operations, documented" description={c.hero} path="/" />
 
       <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
