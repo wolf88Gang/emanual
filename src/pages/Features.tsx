@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import {
   ArrowRight, BarChart3, BookOpen, Building2, Camera, Check, ChevronDown,
   ClipboardCheck, Clock3, DollarSign, FileText, Globe2, Leaf, Lock,
-  MapPinned, Minus, PackageCheck, Plus, QrCode, ShieldCheck, Users,
+  LogIn, MapPinned, Minus, PackageCheck, Plus, QrCode, ShieldCheck, Users,
 } from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguagePicker } from '@/components/LanguagePicker';
@@ -192,6 +192,7 @@ export default function Features() {
           </nav>
           <div className="flex items-center gap-1 sm:gap-2">
             <LanguagePicker />
+            <Button asChild variant="ghost" size="icon" className="sm:hidden" aria-label={c.signIn}><Link to="/auth"><LogIn /></Link></Button>
             <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link to="/auth">{c.signIn}</Link></Button>
             <Button asChild size="sm"><Link to="/auth?mode=signup">{c.create}</Link></Button>
           </div>
@@ -199,7 +200,7 @@ export default function Features() {
       </header>
 
       <section className="relative min-h-[660px] pt-16 lg:min-h-[760px]">
-        <img src="/images/estate_guide_4.jpg" alt={c.proof} width={1920} height={1080} fetchPriority="high" decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+        <img src="/images/estate_guide_4.jpg" alt={c.proof} width={1920} height={1080} decoding="async" className="absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-foreground/60" />
         <div className="relative mx-auto flex min-h-[644px] max-w-7xl items-end px-4 pb-12 pt-24 sm:px-6 md:pb-20 lg:min-h-[744px]">
           <div className="max-w-3xl animate-rise-in text-primary-foreground motion-reduce:animate-none">
