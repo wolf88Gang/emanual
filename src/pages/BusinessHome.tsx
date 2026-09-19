@@ -67,24 +67,19 @@ export default function BusinessHome() {
     queryKey: ['business-home-op-records', orgId, assetsOn, tasksOn],
     enabled: !!orgId && (assetsOn || tasksOn),
     queryFn: async () => {
+      const countOf = async (table: 'assets' | 'tasks', scoped: boolean) => {
+        let q = (supabase.from(table) as any).select('id', { count: 'exact', head: true });
+        if (scoped) q = q.eq('org_id', orgId!);
+        const { count, error } = await q;
+        if (error) throw error;
+        return (count as number | null) ?? 0;
+      };
       let total = 0;
-      if (assetsOn) {
-        const { count, error } = await supabase
-          .from('assets')
-          .select('id', { count: 'exact', head: true })
-          .eq('org_id', orgId!);
-        if (error) throw error;
-        total += count ?? 0;
-      }
-      if (tasksOn) {
-        const { count, error } = await supabase
-          .from('tasks')
-          .select('id', { count: 'exact', head: true });
-        if (error) throw error;
-        total += count ?? 0;
-      }
+      if (assetsOn) total += await countOf('assets', true);
+      if (tasksOn) total += await countOf('tasks', false);
       return total;
     },
+
   });
 
   const portalsOn = canUse('client_portal');
