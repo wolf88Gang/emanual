@@ -93,8 +93,25 @@ export default function Auth() {
         toast.error(tr('Password must be at least 6 characters.', 'La contraseña debe tener al menos 6 caracteres.', 'Das Passwort muss mindestens 6 Zeichen haben.'));
         return;
       }
-      {
+      if (isSignUp) {
+        const { error } = await signUp(data.email, data.password, data.fullName);
+        if (error) {
+          toast.error(
+            error.message.toLowerCase().includes('already registered')
+              ? tr('That email already has an account. Sign in instead.', 'Ese correo ya tiene una cuenta. Inicie sesión.', 'Diese E-Mail hat bereits ein Konto. Bitte anmelden.')
+              : error.message,
+          );
+          return;
+        }
+        toast.success(
+          tr('Account created. Choose your plan to continue.', 'Cuenta creada. Elige tu plan para continuar.', 'Konto erstellt. Wählen Sie Ihren Plan, um fortzufahren.'),
+        );
+        // Paid-first: new accounts go straight to checkout.
+        navigate('/checkout');
+        return;
+      }
 
+      {
         const { error } = await signIn(data.email, data.password);
         if (error) {
           toast.error(error.message.includes('Invalid login') ? 'Invalid email or password.' : error.message);
