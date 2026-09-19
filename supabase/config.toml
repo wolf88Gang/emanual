@@ -9,3 +9,9 @@ project_id = "jqhbgqznejdijbjocpqc"
     verify_jwt = true
   [functions.plantops-dispatch-messages]
     verify_jwt = false
+  [functions.onvo-create-checkout]
+    verify_jwt = false
+  [functions.onvo-verify-checkout]
+    verify_jwt = false
+  [functions.onvo-webhook]
+    verify_jwt = false

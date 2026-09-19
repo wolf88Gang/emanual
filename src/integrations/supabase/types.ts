@@ -255,6 +255,68 @@ export type Database = {
           },
         ]
       }
+      checkout_sessions: {
+        Row: {
+          addons: Json
+          amount_minor: number
+          billing_interval: string
+          checkout_url: string
+          created_at: string
+          currency: string
+          id: string
+          onvo_payment_intent_id: string | null
+          onvo_session_id: string
+          org_id: string | null
+          paid_at: string | null
+          property_count: number
+          status: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          addons?: Json
+          amount_minor: number
+          billing_interval: string
+          checkout_url: string
+          created_at?: string
+          currency: string
+          id?: string
+          onvo_payment_intent_id?: string | null
+          onvo_session_id: string
+          org_id?: string | null
+          paid_at?: string | null
+          property_count?: number
+          status?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          addons?: Json
+          amount_minor?: number
+          billing_interval?: string
+          checkout_url?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          onvo_payment_intent_id?: string | null
+          onvo_session_id?: string
+          org_id?: string | null
+          paid_at?: string | null
+          property_count?: number
+          status?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "checkout_sessions_org_id_fkey"
+            columns: ["org_id"]
+            isOneToOne: false
+            referencedRelation: "organizations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_access: {
         Row: {
           can_view_assets: boolean
@@ -2756,16 +2818,21 @@ export type Database = {
       }
       subscriptions: {
         Row: {
+          addons: Json
           amount: number
+          billing_interval: string | null
           created_at: string
           currency: string
           current_period_end: string | null
           current_period_start: string | null
           id: string
+          onvo_payment_intent_id: string | null
+          onvo_session_id: string | null
           org_id: string | null
           paypal_capture_id: string | null
           paypal_order_id: string | null
           plan_type: string
+          property_count: number | null
           status: string
           trial_ends_at: string | null
           trial_started_at: string | null
@@ -2773,16 +2840,21 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          addons?: Json
           amount: number
+          billing_interval?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          onvo_payment_intent_id?: string | null
+          onvo_session_id?: string | null
           org_id?: string | null
           paypal_capture_id?: string | null
           paypal_order_id?: string | null
           plan_type?: string
+          property_count?: number | null
           status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null
@@ -2790,16 +2862,21 @@ export type Database = {
           user_id: string
         }
         Update: {
+          addons?: Json
           amount?: number
+          billing_interval?: string | null
           created_at?: string
           currency?: string
           current_period_end?: string | null
           current_period_start?: string | null
           id?: string
+          onvo_payment_intent_id?: string | null
+          onvo_session_id?: string | null
           org_id?: string | null
           paypal_capture_id?: string | null
           paypal_order_id?: string | null
           plan_type?: string
+          property_count?: number | null
           status?: string
           trial_ends_at?: string | null
           trial_started_at?: string | null

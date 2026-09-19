@@ -11,11 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
-declare global {
-  interface Window {
-    paypal?: any;
-  }
-}
 
 const features = [
   { en: 'Unlimited assets & zones per property', es: 'Activos y zonas ilimitados por propiedad', de: 'Unbegrenzte Assets & Zonen pro Immobilie' },
@@ -36,8 +31,6 @@ export default function Subscription() {
   const navigate = useNavigate();
   const [currentSub, setCurrentSub] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const paypalRef = useRef<HTMLDivElement>(null);
-  const buttonsRendered = useRef(false);
 
   const es = language === 'es';
   const de = language === 'de';
@@ -60,44 +53,6 @@ export default function Subscription() {
     fetchSub();
   }, [user]);
 
-  // Render PayPal buttons
-  useEffect(() => {
-    if (!window.paypal || !paypalRef.current || buttonsRendered.current) return;
-    if (isPaid) return;
-
-    buttonsRendered.current = true;
-
-    window.paypal
-      .Buttons({
-        style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
-        createOrder: async () => {
-          const amount = Math.max(propertyCount, 1) * PRICE_PER_PROPERTY;
-          const { data, error } = await supabase.functions.invoke('paypal-create-order', {
-            body: { plan_type: 'monthly', amount: amount.toFixed(2) },
-          });
-          if (error) throw error;
-          return data.id;
-        },
-        onApprove: async (data: any) => {
-          const amount = Math.max(propertyCount, 1) * PRICE_PER_PROPERTY;
-          const { error } = await supabase.functions.invoke('paypal-capture-order', {
-            body: { order_id: data.orderID, plan_type: 'monthly', amount },
-          });
-          if (error) {
-            toast.error(l('Error processing payment', 'Error al procesar el pago', 'Fehler bei der Zahlung'));
-            return;
-          }
-          toast.success(l('Subscription activated!', '¡Suscripción activada!', 'Abonnement aktiviert!'));
-          const { data: sub } = await supabase.from('subscriptions').select('*').eq('user_id', user!.id).maybeSingle();
-          setCurrentSub(sub);
-        },
-        onError: (err: any) => {
-          console.error('PayPal error:', err);
-          toast.error(l('PayPal error', 'Error con PayPal', 'PayPal-Fehler'));
-        },
-      })
-      .render(paypalRef.current);
-  }, [window.paypal, isPaid, loading, propertyCount]);
 
   return (
     <div className="min-h-screen bg-background">
@@ -171,7 +126,7 @@ export default function Subscription() {
           </CardContent>
         </Card>
 
-        {/* PayPal for non-paid users */}
+        {/* Checkout for non-paid users */}
         {!isPaid && (
           <Card>
             <CardHeader>
@@ -180,14 +135,17 @@ export default function Subscription() {
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {l(
-                  `You have ${propertyCount} ${propertyCount === 1 ? 'property' : 'properties'}. Total: $${totalMonthly || PRICE_PER_PROPERTY}/month`,
-                  `Tienes ${propertyCount} ${propertyCount === 1 ? 'propiedad' : 'propiedades'}. Total: $${totalMonthly || PRICE_PER_PROPERTY}/mes`,
-                  `Sie haben ${propertyCount} ${propertyCount === 1 ? 'Immobilie' : 'Immobilien'}. Gesamt: $${totalMonthly || PRICE_PER_PROPERTY}/Monat`
+                  `You have ${propertyCount} ${propertyCount === 1 ? 'property' : 'properties'}. From $${totalMonthly || PRICE_PER_PROPERTY}/month, with extras and an annual option at checkout.`,
+                  `Tienes ${propertyCount} ${propertyCount === 1 ? 'propiedad' : 'propiedades'}. Desde $${totalMonthly || PRICE_PER_PROPERTY}/mes, con extras y opción anual en el pago.`,
+                  `Sie haben ${propertyCount} ${propertyCount === 1 ? 'Immobilie' : 'Immobilien'}. Ab $${totalMonthly || PRICE_PER_PROPERTY}/Monat, mit Extras und Jahresoption bei der Zahlung.`
                 )}
               </p>
             </CardHeader>
             <CardContent>
-              <div ref={paypalRef} className="min-h-[150px]" />
+              <Button className="w-full h-12 text-base" onClick={() => navigate('/checkout')}>
+                <Crown className="h-5 w-5" />
+                {l('Go to checkout', 'Ir al pago', 'Zur Zahlung')}
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -216,9 +174,9 @@ export default function Subscription() {
 
         <p className="text-center text-xs text-muted-foreground">
           {l(
-            'Payments are securely processed via PayPal.',
-            'Los pagos se procesan de forma segura a través de PayPal.',
-            'Zahlungen werden sicher über PayPal abgewickelt.'
+            'Payments are securely processed by ONVO Pay.',
+            'Los pagos se procesan de forma segura con ONVO Pay.',
+            'Zahlungen werden sicher über ONVO Pay abgewickelt.'
           )}
         </p>
       </main>

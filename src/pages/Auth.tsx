@@ -24,12 +24,11 @@ type AuthFormData = z.infer<typeof authSchema>;
 
 export default function Auth() {
   const { t, language } = useLanguage();
-  const { user, signIn } = useAuth();
+  const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
-  // Sign-up is closed: accounts are provisioned by the Home Guide team after an
-  // access request. This flag stays false and exists only so the shared form
-  // keeps its single code path.
-  const isSignUp = false;
+  // Anyone can open an account; the paywall decides who gets in. Sign-up is
+  // driven by ?mode=signup so the checkout flow can link straight to it.
+  const [isSignUp, setIsSignUp] = useState(false);
   const [isForgot, setIsForgot] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +42,12 @@ export default function Auth() {
   useEffect(() => {
     if (user) navigate('/', { replace: true });
   }, [user, navigate]);
+
+  // Deep link from the pricing / checkout flow: /auth?mode=signup
+  useEffect(() => {
+    if (searchParams.get('mode') === 'signup') setIsSignUp(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // One-time notice after a completed password reset (recovery session signed out).
   useEffect(() => {
@@ -88,8 +93,25 @@ export default function Auth() {
         toast.error(tr('Password must be at least 6 characters.', 'La contraseña debe tener al menos 6 caracteres.', 'Das Passwort muss mindestens 6 Zeichen haben.'));
         return;
       }
-      {
+      if (isSignUp) {
+        const { error } = await signUp(data.email, data.password, data.fullName);
+        if (error) {
+          toast.error(
+            error.message.toLowerCase().includes('already registered')
+              ? tr('That email already has an account. Sign in instead.', 'Ese correo ya tiene una cuenta. Inicie sesión.', 'Diese E-Mail hat bereits ein Konto. Bitte anmelden.')
+              : error.message,
+          );
+          return;
+        }
+        toast.success(
+          tr('Account created. Choose your plan to continue.', 'Cuenta creada. Elige tu plan para continuar.', 'Konto erstellt. Wählen Sie Ihren Plan, um fortzufahren.'),
+        );
+        // Paid-first: new accounts go straight to checkout.
+        navigate('/checkout');
+        return;
+      }
 
+      {
         const { error } = await signIn(data.email, data.password);
         if (error) {
           toast.error(error.message.includes('Invalid login') ? 'Invalid email or password.' : error.message);
@@ -273,12 +295,27 @@ export default function Auth() {
                 </button>
               </p>
             ) : (
-            <p className="text-center text-sm text-muted-foreground">
-              {tr('No account yet?', '¿Aún no tiene cuenta?', 'Noch kein Konto?')}{' '}
-              <Link to="/request-access" className="text-primary font-medium hover:underline">
-                {tr('Request access', 'Solicitar acceso', 'Zugang anfragen')}
-              </Link>
-            </p>
+            <div className="space-y-2">
+              <p className="text-center text-sm text-muted-foreground">
+                {isSignUp
+                  ? tr('Already have an account?', '¿Ya tiene cuenta?', 'Haben Sie schon ein Konto?')
+                  : tr('No account yet?', '¿Aún no tiene cuenta?', 'Noch kein Konto?')}{' '}
+                <button
+                  type="button"
+                  onClick={() => { setIsSignUp(!isSignUp); reset(); }}
+                  className="text-primary font-medium hover:underline"
+                >
+                  {isSignUp
+                    ? tr('Sign in', 'Iniciar sesión', 'Anmelden')
+                    : tr('Create an account', 'Crear una cuenta', 'Konto erstellen')}
+                </button>
+              </p>
+              <p className="text-center text-xs text-muted-foreground">
+                <Link to="/request-access" className="hover:underline">
+                  {tr('Need an invoice or a team plan? Talk to us', '¿Necesita factura o un plan de equipo? Hable con nosotros', 'Rechnung oder Teamplan? Sprechen Sie mit uns')}
+                </Link>
+              </p>
+            </div>
             )}
 
             <p className="text-center text-xs text-muted-foreground mt-8">
