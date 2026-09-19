@@ -56,7 +56,39 @@ export default function BusinessHome() {
     },
   });
 
+  const assetsOn = canUse('assets');
+  const tasksOn = canUse('tasks');
+
+  /**
+   * Operational records the current role can actually see. Crew has no client
+   * or site module, so the empty state must not claim the workspace is empty.
+   */
+  const { data: opRecordCount, isLoading: opLoading } = useQuery({
+    queryKey: ['business-home-op-records', orgId, assetsOn, tasksOn],
+    enabled: !!orgId && (assetsOn || tasksOn),
+    queryFn: async () => {
+      let total = 0;
+      if (assetsOn) {
+        const { count, error } = await supabase
+          .from('assets')
+          .select('id', { count: 'exact', head: true })
+          .eq('org_id', orgId!);
+        if (error) throw error;
+        total += count ?? 0;
+      }
+      if (tasksOn) {
+        const { count, error } = await supabase
+          .from('tasks')
+          .select('id', { count: 'exact', head: true });
+        if (error) throw error;
+        total += count ?? 0;
+      }
+      return total;
+    },
+  });
+
   const portalsOn = canUse('client_portal');
+
 
   /** Active (non revoked, non expired) aggregated client portals. */
   const { data: activePortals } = useQuery({
