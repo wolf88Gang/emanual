@@ -556,8 +556,9 @@
   .landing-segmented { @apply flex rounded-md border border-border bg-muted p-1; }
   .property-control { @apply mt-12 flex items-center justify-between gap-4 border-y border-border py-8; }
   .addon-list { @apply mt-12 space-y-14; }
+  .pricing-addons-intro { @apply max-w-xl text-sm leading-6 text-muted-foreground; }
   .pricing-option-group { @apply min-w-0; }
-  .pricing-option-group > legend { @apply text-base font-semibold text-foreground; }
+  .pricing-option-group > legend { @apply text-xs font-semibold uppercase tracking-[0.18em] text-accent; }
   .pricing-option-group > p { @apply mt-2 max-w-xl text-sm leading-6 text-muted-foreground; }
   .pricing-option-group > div { @apply mt-6 border-t border-border; }
   .pricing-option-group.specialized-configuration { @apply border-l-2 border-accent/50 pl-5 sm:pl-7; }
