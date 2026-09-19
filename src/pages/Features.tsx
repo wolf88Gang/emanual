@@ -1,646 +1,293 @@
-import React from 'react';
+import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import {
+  ArrowRight, BarChart3, BookOpen, Building2, Camera, Check, ChevronDown,
+  ClipboardCheck, Clock3, DollarSign, FileText, Globe2, Leaf, Lock,
+  LogIn, MapPinned, Minus, PackageCheck, Plus, QrCode, ShieldCheck, Users,
+} from 'lucide-react';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { LanguagePicker } from '@/components/LanguagePicker';
-import {
-  Leaf, Map, Box, ClipboardList, FolderOpen, Package, Mountain, BookOpen,
-  DollarSign, Users, Clock, Shield, BarChart3, Building2, Share2, Droplets,
-  Camera, QrCode, Bell, Globe, ArrowRight, Lock, Database, Eye, Receipt, SlidersHorizontal
-} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Seo } from '@/components/Seo';
+import { ADDONS, ANNUAL_MONTHS_CHARGED, BASE_PRICE_PER_PROPERTY_USD, quote, type BillingInterval } from '@/lib/pricing';
+import { CRC_PER_USD } from '@/lib/currency';
 
-type L3 = { en: string; es: string; de: string };
+const copy = {
+  en: {
+    navCapabilities: 'Capabilities', navHow: 'How it works', navPricing: 'Pricing', signIn: 'Sign in', create: 'Create account',
+    eyebrow: 'Operations for every site you care for', title: 'Home Guide',
+    hero: 'Organize properties, field work and client records in one operational system. Every task stays connected to its place, its assets and its evidence.',
+    explore: 'Explore the platform', proof: 'From site plan to proof of work',
+    audience: 'Built for the work behind well-run places',
+    audienceBody: 'Property managers, landscape teams, plant-rental operators, facilities crews and estate owners share one need: know what must happen, where it belongs and how it was completed.',
+    capabilitiesEyebrow: 'One connected record', capabilitiesTitle: 'Organize. Execute. Document. Share.',
+    capabilitiesBody: 'Home Guide connects the office, the field and the client without forcing every operation into the same mold.',
+    stages: [
+      ['Organize', 'Clients, sites, zones and assets form a clear hierarchy. Maps, documents and QR labels keep every record attached to a real place.'],
+      ['Execute', 'Plan tasks, visits, care routines and shifts. Crews see only the work and tools relevant to their role.'],
+      ['Document', 'Photo, time, location and immutable logs turn completed work into defensible operational evidence.'],
+      ['Share', 'Client portals, property manuals, reports, reminders and separate charges turn field records into useful service.'],
+    ],
+    realWork: 'Designed around real operations', realWorkBody: 'Choose only the modules your team needs today. Add specialist workflows as the operation grows.',
+    features: [
+      ['Mapped sites', 'Satellite maps, drawn zones, GPS assets and KML/KMZ import.'],
+      ['Tasks and visits', 'Spatial work orders, care queues, check-ins and guided visits.'],
+      ['Field evidence', 'Photo, QR, time and location records tied to completed work.'],
+      ['Plant care', 'Species and placement baselines, watering queues and replacements.'],
+      ['Labor and tools', 'Shifts, rates, assignments, inventory and verified returns.'],
+      ['Client delivery', 'Private portals, PDF manuals, reports, reminders and invoices.'],
+    ],
+    fieldEyebrow: 'A continuous workflow', fieldTitle: 'The record follows the work',
+    fieldBody: 'Start with a mapped site. Assign work to the right person. Capture proof in the field. Give clients a clear view of what happened.',
+    fieldSteps: ['Map the site', 'Assign the work', 'Capture evidence', 'Share the result'],
+    pricingEyebrow: 'Simple, transparent pricing', pricingTitle: 'Build the account your operation needs',
+    pricingBody: 'Start with the number of properties or sites. Add specialist modules only when you need them.',
+    monthly: 'Monthly', annual: 'Annual', annualNote: 'Pay 10 months, use 12', properties: 'Properties', perProperty: 'per property / month',
+    extras: 'Optional modules', accountMonth: 'account / month', summary: 'Your estimate', dueMonthly: 'per month', dueAnnual: 'billed annually', saving: 'You save', continue: 'Create account and continue',
+    included: 'Included in every account', includedItems: ['Clients, sites and asset records', 'Tasks, evidence and reports', 'EN, ES and DE interface', 'USD and CRC display'],
+    trustEyebrow: 'Designed for accountable work', trustTitle: 'Clear access. Private records. Auditable history.',
+    trustItems: [
+      ['Role-based access', 'Owners, managers and crews see the tools and records their work requires.'],
+      ['Private evidence', 'Documents and photos use protected storage and short-lived access links.'],
+      ['Traceable history', 'Check-ins, completions and care logs preserve who did what and when.'],
+    ],
+    faqTitle: 'Questions before you begin', faqs: [
+      ['Can I create an account now?', 'Yes. Create your account, choose your configuration and complete payment with ONVO.'],
+      ['What does annual billing mean?', 'You receive 12 months of service and are charged the equivalent of 10 months.'],
+      ['Can I pay in colones?', 'Yes. Checkout supports USD and CRC, and the estimate can be viewed in either currency.'],
+      ['Can I change my setup later?', 'Yes. You can add properties and optional modules as your operation changes.'],
+    ],
+    finalTitle: 'Give every site a reliable operating record', finalBody: 'Create your account, choose what you manage and activate Home Guide through secure ONVO checkout.',
+    footer: 'Operations platform for property, landscape and facilities teams', secure: 'Secure checkout with ONVO',
+  },
+  es: {
+    navCapabilities: 'Capacidades', navHow: 'Cómo funciona', navPricing: 'Precios', signIn: 'Ingresar', create: 'Crear cuenta',
+    eyebrow: 'Operaciones para cada sitio que cuidás', title: 'Home Guide',
+    hero: 'Organizá propiedades, trabajo de campo y registros de clientes en un solo sistema operativo. Cada tarea queda conectada con su lugar, sus activos y su evidencia.',
+    explore: 'Explorar la plataforma', proof: 'Del plano del sitio a la prueba del trabajo',
+    audience: 'Creado para el trabajo detrás de cada lugar bien operado',
+    audienceBody: 'Administradores de propiedades, equipos de paisajismo, alquiler de plantas, mantenimiento y propietarios comparten una necesidad: saber qué debe hacerse, dónde corresponde y cómo se completó.',
+    capabilitiesEyebrow: 'Un registro conectado', capabilitiesTitle: 'Organizar. Ejecutar. Documentar. Compartir.',
+    capabilitiesBody: 'Home Guide conecta la oficina, el campo y el cliente sin obligar a todas las operaciones a funcionar de la misma manera.',
+    stages: [
+      ['Organizar', 'Clientes, sitios, zonas y activos forman una jerarquía clara. Mapas, documentos y etiquetas QR mantienen cada registro unido a un lugar real.'],
+      ['Ejecutar', 'Planificá tareas, visitas, rutinas de cuidado y turnos. Cada equipo ve solo el trabajo y las herramientas de su rol.'],
+      ['Documentar', 'Foto, hora, ubicación y bitácoras inmutables convierten el trabajo terminado en evidencia operativa.'],
+      ['Compartir', 'Portales, manuales, informes, recordatorios y cargos separados convierten el registro de campo en servicio útil.'],
+    ],
+    realWork: 'Diseñado alrededor de operaciones reales', realWorkBody: 'Elegí solo los módulos que tu equipo necesita hoy. Sumá flujos especializados a medida que la operación crece.',
+    features: [
+      ['Sitios mapeados', 'Mapas satelitales, zonas, activos GPS e importación KML/KMZ.'],
+      ['Tareas y visitas', 'Órdenes espaciales, colas de cuidado, registros y visitas guiadas.'],
+      ['Evidencia de campo', 'Foto, QR, hora y ubicación unidos al trabajo completado.'],
+      ['Cuidado de plantas', 'Bases por especie y ubicación, riego y reemplazos.'],
+      ['Personal y herramientas', 'Turnos, tarifas, asignaciones, inventario y devoluciones.'],
+      ['Entrega al cliente', 'Portales privados, manuales PDF, informes, recordatorios y facturas.'],
+    ],
+    fieldEyebrow: 'Un flujo continuo', fieldTitle: 'El registro acompaña al trabajo',
+    fieldBody: 'Empezá con un sitio mapeado. Asigná el trabajo correcto. Capturá evidencia en campo. Dale al cliente una visión clara de lo sucedido.',
+    fieldSteps: ['Mapear el sitio', 'Asignar el trabajo', 'Capturar evidencia', 'Compartir el resultado'],
+    pricingEyebrow: 'Precios simples y transparentes', pricingTitle: 'Armá la cuenta que tu operación necesita',
+    pricingBody: 'Empezá por la cantidad de propiedades o sitios. Sumá módulos especializados solo cuando los necesités.',
+    monthly: 'Mensual', annual: 'Anual', annualNote: 'Pagá 10 meses, usá 12', properties: 'Propiedades', perProperty: 'por propiedad / mes',
+    extras: 'Módulos opcionales', accountMonth: 'cuenta / mes', summary: 'Tu estimado', dueMonthly: 'por mes', dueAnnual: 'facturado anualmente', saving: 'Ahorrás', continue: 'Crear cuenta y continuar',
+    included: 'Incluido en cada cuenta', includedItems: ['Clientes, sitios y activos', 'Tareas, evidencia e informes', 'Interfaz EN, ES y DE', 'Visualización USD y CRC'],
+    trustEyebrow: 'Diseñado para trabajo responsable', trustTitle: 'Acceso claro. Registros privados. Historial auditable.',
+    trustItems: [
+      ['Acceso por rol', 'Dueños, gerentes y cuadrillas ven las herramientas y registros que requiere su trabajo.'],
+      ['Evidencia privada', 'Documentos y fotos usan almacenamiento protegido y enlaces de acceso de corta duración.'],
+      ['Historial trazable', 'Registros, cierres y bitácoras conservan quién hizo qué y cuándo.'],
+    ],
+    faqTitle: 'Preguntas antes de empezar', faqs: [
+      ['¿Puedo crear una cuenta ahora?', 'Sí. Creá tu cuenta, elegí la configuración y completá el pago con ONVO.'],
+      ['¿Qué significa la modalidad anual?', 'Recibís 12 meses de servicio y se cobra el equivalente a 10 meses.'],
+      ['¿Puedo pagar en colones?', 'Sí. El pago admite USD y CRC, y el estimado se puede ver en ambas monedas.'],
+      ['¿Puedo cambiar la configuración después?', 'Sí. Podés sumar propiedades y módulos opcionales cuando cambie tu operación.'],
+    ],
+    finalTitle: 'Dale a cada sitio un registro operativo confiable', finalBody: 'Creá tu cuenta, elegí qué administrás y activá Home Guide mediante el pago seguro de ONVO.',
+    footer: 'Plataforma operativa para equipos de propiedades, paisajes e instalaciones', secure: 'Pago seguro con ONVO',
+  },
+  de: {
+    navCapabilities: 'Funktionen', navHow: 'Ablauf', navPricing: 'Preise', signIn: 'Anmelden', create: 'Konto erstellen',
+    eyebrow: 'Betrieb für jeden betreuten Standort', title: 'Home Guide',
+    hero: 'Immobilien, Außeneinsätze und Kundendaten in einem Betriebssystem organisieren. Jede Aufgabe bleibt mit Ort, Anlagen und Nachweisen verbunden.',
+    explore: 'Plattform ansehen', proof: 'Vom Standortplan zum Arbeitsnachweis',
+    audience: 'Für die Arbeit hinter gut geführten Standorten',
+    audienceBody: 'Hausverwaltungen, Gartenteams, Pflanzenvermieter, Facility-Teams und Eigentümer müssen wissen, was wo zu tun ist und wie es abgeschlossen wurde.',
+    capabilitiesEyebrow: 'Ein verbundener Datensatz', capabilitiesTitle: 'Organisieren. Ausführen. Dokumentieren. Teilen.',
+    capabilitiesBody: 'Home Guide verbindet Büro, Außendienst und Kunden, ohne jeden Betrieb in dieselbe Form zu zwingen.',
+    stages: [
+      ['Organisieren', 'Kunden, Standorte, Zonen und Anlagen bilden eine klare Hierarchie. Karten, Dokumente und QR-Etiketten halten alles am richtigen Ort.'],
+      ['Ausführen', 'Aufgaben, Besuche, Pflegeroutinen und Schichten planen. Teams sehen nur relevante Arbeit und Werkzeuge.'],
+      ['Dokumentieren', 'Foto, Zeit, Ort und unveränderliche Protokolle machen erledigte Arbeit belastbar.'],
+      ['Teilen', 'Portale, Handbücher, Berichte, Erinnerungen und getrennte Positionen machen Felddaten nutzbar.'],
+    ],
+    realWork: 'Für reale Abläufe entwickelt', realWorkBody: 'Nur die heute benötigten Module wählen. Spezialabläufe später ergänzen.',
+    features: [
+      ['Kartierte Standorte', 'Satellitenkarten, Zonen, GPS-Anlagen und KML/KMZ-Import.'],
+      ['Aufgaben und Besuche', 'Räumliche Aufträge, Pflegelisten, Check-ins und geführte Besuche.'],
+      ['Felddokumentation', 'Foto, QR, Zeit und Ort direkt an erledigter Arbeit.'],
+      ['Pflanzenpflege', 'Arten- und Standortwerte, Gießlisten und Ersatz.'],
+      ['Personal und Werkzeuge', 'Schichten, Sätze, Zuweisungen, Bestand und Rückgaben.'],
+      ['Kundenübergabe', 'Private Portale, PDF-Handbücher, Berichte, Erinnerungen und Rechnungen.'],
+    ],
+    fieldEyebrow: 'Ein durchgängiger Ablauf', fieldTitle: 'Der Datensatz folgt der Arbeit',
+    fieldBody: 'Mit einem kartierten Standort beginnen. Arbeit zuweisen. Nachweise vor Ort erfassen. Kunden das Ergebnis klar zeigen.',
+    fieldSteps: ['Standort kartieren', 'Arbeit zuweisen', 'Nachweis erfassen', 'Ergebnis teilen'],
+    pricingEyebrow: 'Einfache, klare Preise', pricingTitle: 'Das passende Konto zusammenstellen',
+    pricingBody: 'Mit der Anzahl der Standorte beginnen. Spezialmodule nur bei Bedarf ergänzen.',
+    monthly: 'Monatlich', annual: 'Jährlich', annualNote: '10 Monate zahlen, 12 nutzen', properties: 'Immobilien', perProperty: 'pro Immobilie / Monat',
+    extras: 'Optionale Module', accountMonth: 'Konto / Monat', summary: 'Ihre Schätzung', dueMonthly: 'pro Monat', dueAnnual: 'jährlich berechnet', saving: 'Sie sparen', continue: 'Konto erstellen und fortfahren',
+    included: 'In jedem Konto enthalten', includedItems: ['Kunden, Standorte und Anlagen', 'Aufgaben, Nachweise und Berichte', 'Oberfläche EN, ES und DE', 'Anzeige in USD und CRC'],
+    trustEyebrow: 'Für verantwortliche Arbeit', trustTitle: 'Klarer Zugriff. Private Daten. Prüffähige Historie.',
+    trustItems: [
+      ['Rollenbasierter Zugriff', 'Eigentümer, Manager und Teams sehen die passenden Werkzeuge und Daten.'],
+      ['Private Nachweise', 'Dokumente und Fotos liegen geschützt hinter kurzlebigen Zugriffslinks.'],
+      ['Nachvollziehbare Historie', 'Check-ins, Abschlüsse und Pflegeprotokolle halten fest, wer was wann getan hat.'],
+    ],
+    faqTitle: 'Fragen vor dem Start', faqs: [
+      ['Kann ich jetzt ein Konto erstellen?', 'Ja. Konto erstellen, Konfiguration wählen und mit ONVO bezahlen.'],
+      ['Was bedeutet jährliche Abrechnung?', 'Sie erhalten 12 Monate Service und bezahlen den Gegenwert von 10 Monaten.'],
+      ['Kann ich in Colones bezahlen?', 'Ja. Checkout unterstützt USD und CRC; die Schätzung ist in beiden Währungen sichtbar.'],
+      ['Kann ich später etwas ändern?', 'Ja. Standorte und optionale Module können später ergänzt werden.'],
+    ],
+    finalTitle: 'Jeder Standort verdient einen verlässlichen Betriebsnachweis', finalBody: 'Konto erstellen, Umfang wählen und Home Guide über den sicheren ONVO-Checkout aktivieren.',
+    footer: 'Betriebsplattform für Immobilien-, Garten- und Facility-Teams', secure: 'Sichere Zahlung mit ONVO',
+  },
+} as const;
 
-interface FeatureItem {
-  icon: React.ComponentType<{ className?: string }>;
-  title: L3;
-  description: L3;
-}
-
-interface FeatureSection {
-  key: string;
-  label: L3;
-  intro: L3;
-  image: string;
-  features: FeatureItem[];
-}
-
-const sections: FeatureSection[] = [
-  {
-    key: 'structure',
-    label: {
-      en: 'Clients, sites and assets',
-      es: 'Clientes, sitios y activos',
-      de: 'Kunden, Standorte und Anlagen',
-    },
-    intro: {
-      en: 'Home Guide is built around one hierarchy: your organization, the clients you serve, the sites you look after, and every asset inside them. Nothing lives without a place.',
-      es: 'Home Guide se construye sobre una jerarquía: su organización, los clientes que atiende, los sitios que cuida y cada activo dentro de ellos. Nada existe sin un lugar.',
-      de: 'Home Guide basiert auf einer Hierarchie: Ihre Organisation, Ihre Kunden, die betreuten Standorte und jede Anlage darin. Nichts existiert ohne Ort.',
-    },
-    image: '/images/estate_guide_1.jpg',
-    features: [
-      {
-        icon: Building2,
-        title: { en: 'Client workspace', es: 'Espacio de clientes', de: 'Kunden-Arbeitsbereich' },
-        description: {
-          en: 'Each client has its own record with contacts, sites, service plan, care history and communications - so an owner, a villa manager or a shopping centre is never mixed up with another.',
-          es: 'Cada cliente tiene su propio registro con contactos, sitios, plan de servicio, historial de cuidado y comunicaciones - para que un propietario, una administradora de villas o un centro comercial nunca se mezclen.',
-          de: 'Jeder Kunde hat einen eigenen Datensatz mit Kontakten, Standorten, Serviceplan, Pflegehistorie und Kommunikation - nichts wird vermischt.',
-        },
-      },
-      {
-        icon: Map,
-        title: { en: 'Spatial site map', es: 'Mapa del sitio', de: 'Standortkarte' },
-        description: {
-          en: 'Satellite map with drawn zones, GPS-placed asset pins, clustering and KML/KMZ import. Every task and every photo is tied to a real location.',
-          es: 'Mapa satelital con zonas dibujadas, activos ubicados por GPS, agrupación e importación KML/KMZ. Cada tarea y cada foto queda ligada a una ubicación real.',
-          de: 'Satellitenkarte mit gezeichneten Zonen, GPS-Pins, Clustering und KML/KMZ-Import. Jede Aufgabe und jedes Foto ist verortet.',
-        },
-      },
-      {
-        icon: Box,
-        title: { en: 'Asset registry', es: 'Registro de activos', de: 'Anlagenregister' },
-        description: {
-          en: 'Plants, irrigation, hardscape and equipment with photos, install dates, condition, risk flags and full service history. QR labels link the physical asset to its record.',
-          es: 'Plantas, riego, obra dura y equipos con fotos, fechas de instalación, condición, banderas de riesgo e historial completo. Las etiquetas QR conectan el activo físico con su ficha.',
-          de: 'Pflanzen, Bewässerung, Hardscape und Geräte mit Fotos, Einbaudaten, Zustand, Risikomarkierungen und Historie. QR-Etiketten verbinden Objekt und Datensatz.',
-        },
-      },
-      {
-        icon: FolderOpen,
-        title: { en: 'Document vault', es: 'Bóveda de documentos', de: 'Dokumentenablage' },
-        description: {
-          en: 'Warranties, contracts, plans and insurance stored per site or asset, with expiry dates you can actually see coming.',
-          es: 'Garantías, contratos, planos y seguros guardados por sitio o activo, con vencimientos que sí se ven venir.',
-          de: 'Garantien, Verträge, Pläne und Versicherungen pro Standort oder Anlage, mit sichtbaren Ablaufdaten.',
-        },
-      },
-    ],
-  },
-  {
-    key: 'care',
-    label: {
-      en: 'Care that is documented, not guessed',
-      es: 'Cuidado documentado, no adivinado',
-      de: 'Pflege dokumentiert, nicht geraten',
-    },
-    intro: {
-      en: 'Care instructions follow a strict precedence: a documented override wins, then the placement baseline, then the species baseline. When none exists, Home Guide says "needs review" instead of inventing a number.',
-      es: 'Las instrucciones de cuidado siguen una precedencia estricta: manda la excepción documentada, luego la línea base de la ubicación, luego la de la especie. Si no existe ninguna, Home Guide indica «revisar» en vez de inventar un número.',
-      de: 'Pflegeangaben folgen einer festen Rangfolge: dokumentierte Ausnahme, dann Standort-Basis, dann Arten-Basis. Fehlt alles, zeigt Home Guide „prüfen" statt eine erfundene Zahl.',
-    },
-    image: '/images/estate_guide_5.jpg',
-    features: [
-      {
-        icon: Leaf,
-        title: { en: 'Species and placement baselines', es: 'Líneas base por especie y ubicación', de: 'Basiswerte je Art und Standort' },
-        description: {
-          en: 'A botanical library with scientific names, light, watering and substrate needs, combined with the real conditions of the pot and the spot where the plant actually stands.',
-          es: 'Biblioteca botánica con nombres científicos, luz, riego y sustrato, combinada con las condiciones reales de la maceta y del punto donde la planta está colocada.',
-          de: 'Botanische Bibliothek mit Namen, Licht-, Wasser- und Substratbedarf, kombiniert mit den realen Bedingungen von Topf und Standort.',
-        },
-      },
-      {
-        icon: Droplets,
-        title: { en: 'Watering queue and reminders', es: 'Cola de riego y recordatorios', de: 'Gieß-Warteschlange und Erinnerungen' },
-        description: {
-          en: 'The care engine calculates what is due today, this week or overdue. Reminders are opt-in per plant, so a client only hears about what they asked to be reminded of.',
-          es: 'El motor de cuidado calcula qué toca hoy, esta semana o está vencido. Los recordatorios se activan planta por planta, así el cliente solo recibe lo que pidió.',
-          de: 'Die Pflege-Engine berechnet Fälligkeiten für heute, diese Woche oder überfällig. Erinnerungen sind pro Pflanze aktivierbar.',
-        },
-      },
-      {
-        icon: ClipboardList,
-        title: { en: 'Guided visits', es: 'Visitas guiadas', de: 'Geführte Besuche' },
-        description: {
-          en: 'A technician opens a visit, sees the canonical care queue for that site, records what was actually done, and cannot close the visit with tools still unreturned.',
-          es: 'El técnico abre una visita, ve la cola de cuidado del sitio, registra lo que realmente hizo y no puede cerrarla con herramientas pendientes de devolver.',
-          de: 'Techniker öffnen einen Besuch, sehen die Pflegeliste des Standorts, erfassen das Erledigte und können nicht mit offenen Werkzeugen abschließen.',
-        },
-      },
-      {
-        icon: Bell,
-        title: { en: 'Weather-triggered work', es: 'Trabajo activado por clima', de: 'Wetterausgelöste Aufgaben' },
-        description: {
-          en: 'Define thresholds for wind, rain, heat or cold. When they are crossed, tasks and alerts are created for the affected sites.',
-          es: 'Defina umbrales de viento, lluvia, calor o frío. Al superarse, se crean tareas y alertas para los sitios afectados.',
-          de: 'Schwellen für Wind, Regen, Hitze oder Kälte definieren - bei Überschreitung entstehen Aufgaben und Warnungen.',
-        },
-      },
-      {
-        icon: Mountain,
-        title: { en: 'Terrain and risk', es: 'Terreno y riesgo', de: 'Gelände und Risiko' },
-        description: {
-          en: 'Import topographic data, draw elevation transects and read slope and drainage before planting or building in the wrong place.',
-          es: 'Importe datos topográficos, trace transectos de elevación y lea pendiente y drenaje antes de sembrar o construir en el lugar equivocado.',
-          de: 'Topografiedaten importieren, Höhenprofile zeichnen sowie Hang und Entwässerung prüfen.',
-        },
-      },
-    ],
-  },
-  {
-    key: 'operations',
-    label: {
-      en: 'Field operations with evidence',
-      es: 'Operación de campo con evidencia',
-      de: 'Feldbetrieb mit Nachweis',
-    },
-    intro: {
-      en: 'Work is only "done" when there is proof: who, where, when, and a photo. Logs are immutable, so a completed visit can still be defended months later.',
-      es: 'El trabajo solo está «hecho» cuando hay prueba: quién, dónde, cuándo y una foto. Los registros son inmutables, así una visita se puede sustentar meses después.',
-      de: 'Arbeit gilt erst als erledigt, wenn es einen Nachweis gibt: wer, wo, wann und ein Foto. Protokolle sind unveränderlich.',
-    },
-    image: '/images/estate_guide_3.jpg',
-    features: [
-      {
-        icon: Clock,
-        title: { en: 'Shifts by QR and GPS', es: 'Turnos por QR y GPS', de: 'Schichten per QR und GPS' },
-        description: {
-          en: 'Crews clock in and out by scanning a code on site. Hours, location and notes are recorded for the weekly review.',
-          es: 'Las cuadrillas marcan entrada y salida escaneando un código en el sitio. Horas, ubicación y notas quedan registradas para la revisión semanal.',
-          de: 'Teams stempeln per Code vor Ort ein und aus. Stunden, Ort und Notizen werden erfasst.',
-        },
-      },
-      {
-        icon: Camera,
-        title: { en: 'Photo and GPS evidence', es: 'Evidencia con foto y GPS', de: 'Foto- und GPS-Nachweis' },
-        description: {
-          en: 'Check-ins and task completions require geotagged, timestamped photos - the backbone of duty-of-care reporting.',
-          es: 'Los registros y las tareas completadas requieren fotos geoetiquetadas y con hora - la base del informe de deber de cuidado.',
-          de: 'Check-ins und Abschlüsse erfordern verortete Fotos mit Zeitstempel - Grundlage der Sorgfaltsnachweise.',
-        },
-      },
-      {
-        icon: Package,
-        title: { en: 'Tool inventory with returns', es: 'Inventario con devoluciones', de: 'Werkzeugbestand mit Rückgabe' },
-        description: {
-          en: 'Organization-wide stock: what is available, what is assigned and what came back. Partial returns are supported and over-assignment is rejected.',
-          es: 'Inventario de toda la organización: qué hay disponible, qué está asignado y qué regresó. Se admiten devoluciones parciales y se rechaza la sobreasignación.',
-          de: 'Organisationsweiter Bestand: verfügbar, zugewiesen, zurückgegeben. Teilrückgaben möglich, Überzuweisung wird abgelehnt.',
-        },
-      },
-      {
-        icon: DollarSign,
-        title: { en: 'Labor and rates', es: 'Mano de obra y tarifas', de: 'Arbeit und Sätze' },
-        description: {
-          en: 'Weekly shift summaries, configurable rates per worker and payment tracking in USD or colones.',
-          es: 'Resúmenes semanales, tarifas configurables por trabajador y seguimiento de pagos en dólares o colones.',
-          de: 'Wochenübersichten, konfigurierbare Sätze je Mitarbeiter und Zahlungsverfolgung in USD oder Colones.',
-        },
-      },
-      {
-        icon: QrCode,
-        title: { en: 'Scan-to-act labels', es: 'Etiquetas para escanear', de: 'Scan-Etiketten' },
-        description: {
-          en: 'Print QR labels for assets and sites. Scanning opens the record, starts a shift or logs a check-in - no menu hunting in the field.',
-          es: 'Imprima etiquetas QR para activos y sitios. Escanear abre la ficha, inicia un turno o registra una visita - sin buscar menús en el campo.',
-          de: 'QR-Etiketten drucken: Scannen öffnet den Datensatz, startet eine Schicht oder erfasst einen Check-in.',
-        },
-      },
-    ],
-  },
-  {
-    key: 'client',
-    label: {
-      en: 'What the client actually receives',
-      es: 'Lo que el cliente realmente recibe',
-      de: 'Was der Kunde erhält',
-    },
-    intro: {
-      en: 'Reporting is not an afterthought. Owners and administrators get a portal, a manual and documents they can read without a login and without training.',
-      es: 'El reporte no es un extra. Propietarios y administradores reciben un portal, un manual y documentos que pueden leer sin iniciar sesión y sin capacitación.',
-      de: 'Berichte sind kein Nachgedanke. Eigentümer erhalten Portal, Handbuch und Dokumente - ohne Login und ohne Schulung.',
-    },
-    image: '/images/estate_guide_4.jpg',
-    features: [
-      {
-        icon: Share2,
-        title: { en: 'Client portal by link', es: 'Portal de cliente por enlace', de: 'Kundenportal per Link' },
-        description: {
-          en: 'A private link shows the client their sites, care status and recent visits. No account, no password. Links can be rotated or revoked at any time.',
-          es: 'Un enlace privado muestra al cliente sus sitios, el estado de cuidado y las visitas recientes. Sin cuenta ni contraseña. Los enlaces se pueden rotar o revocar cuando quiera.',
-          de: 'Ein privater Link zeigt Standorte, Pflegestatus und Besuche. Kein Konto, kein Passwort. Links jederzeit erneuerbar oder widerrufbar.',
-        },
-      },
-      {
-        icon: BookOpen,
-        title: { en: 'Property manual', es: 'Manual de la propiedad', de: 'Objekthandbuch' },
-        description: {
-          en: 'A PDF manual generated from verified data - zones, assets, care routines and responsibilities - approved by you before it is shared.',
-          es: 'Un manual PDF generado a partir de datos verificados - zonas, activos, rutinas y responsabilidades - aprobado por usted antes de compartirse.',
-          de: 'Ein PDF-Handbuch aus geprüften Daten - Zonen, Anlagen, Routinen und Zuständigkeiten - vor dem Teilen freigegeben.',
-        },
-      },
-      {
-        icon: Receipt,
-        title: { en: 'Charges and billing', es: 'Cargos y facturación', de: 'Positionen und Abrechnung' },
-        description: {
-          en: 'Bill separately for what you separately deliver: supplies, replacements, extra visits, maintenance. Totals are grouped per currency so USD and colones never blur together.',
-          es: 'Facture por separado lo que entrega por separado: insumos, reemplazos, visitas extra, mantenimiento. Los totales se agrupan por moneda, sin mezclar dólares y colones.',
-          de: 'Getrennt abrechnen, was getrennt geliefert wird: Material, Ersatz, Zusatzbesuche, Wartung. Summen je Währung getrennt.',
-        },
-      },
-      {
-        icon: BarChart3,
-        title: { en: 'Duty-of-care reports', es: 'Informes de cumplimiento', de: 'Sorgfaltsberichte' },
-        description: {
-          en: 'Date-range PDF reports with completed tasks, check-ins and photo evidence - the document you send when someone asks what was done.',
-          es: 'Informes PDF por rango de fechas con tareas, registros y evidencia fotográfica - el documento que envía cuando le preguntan qué se hizo.',
-          de: 'PDF-Berichte nach Zeitraum mit Aufgaben, Check-ins und Fotonachweis.',
-        },
-      },
-      {
-        icon: Bell,
-        title: { en: 'Reminders you control', es: 'Recordatorios bajo su control', de: 'Erinnerungen unter Kontrolle' },
-        description: {
-          en: 'Watering and maintenance reminders are queued for review and sent by email or WhatsApp when you approve them - nothing leaves without your hand.',
-          es: 'Los recordatorios de riego y mantenimiento se encolan para revisión y se envían por correo o WhatsApp cuando usted los aprueba - nada sale sin su mano.',
-          de: 'Gieß- und Wartungserinnerungen werden zur Prüfung gesammelt und nach Freigabe per E-Mail oder WhatsApp gesendet.',
-        },
-      },
-    ],
-  },
-  {
-    key: 'platform',
-    label: {
-      en: 'A platform you configure, not fight',
-      es: 'Una plataforma que se configura, no se pelea',
-      de: 'Eine konfigurierbare Plattform',
-    },
-    intro: {
-      en: 'You turn on only the modules your operation uses. Navigation, dashboard and permissions change with them, so nobody sees a screen that does not belong to their work.',
-      es: 'Usted activa solo los módulos que su operación usa. La navegación, el panel y los permisos cambian con ellos, así nadie ve pantallas ajenas a su trabajo.',
-      de: 'Sie aktivieren nur die benötigten Module. Navigation, Dashboard und Rechte passen sich an.',
-    },
-    image: '/images/estate_guide_2.jpg',
-    features: [
-      {
-        icon: SlidersHorizontal,
-        title: { en: 'Modules per operation', es: 'Módulos por operación', de: 'Module je Betrieb' },
-        description: {
-          en: 'Property management, landscaping, plant rental or a single estate - presets enable a sensible set of modules and you adjust from there.',
-          es: 'Administración de propiedades, paisajismo, alquiler de plantas o una sola finca - los presets activan un conjunto sensato de módulos y usted ajusta.',
-          de: 'Hausverwaltung, Garten, Pflanzenvermietung oder ein Anwesen - Presets aktivieren sinnvolle Module, danach anpassbar.',
-        },
-      },
-      {
-        icon: Users,
-        title: { en: 'Roles with real limits', es: 'Roles con límites reales', de: 'Rollen mit echten Grenzen' },
-        description: {
-          en: 'Owner, manager, crew and client each see a different application. Limits are enforced in the database, not only in the interface.',
-          es: 'Dueño, gerente, cuadrilla y cliente ven aplicaciones distintas. Los límites se aplican en la base de datos, no solo en la interfaz.',
-          de: 'Eigentümer, Manager, Team und Kunde sehen unterschiedliche Anwendungen. Grenzen gelten in der Datenbank.',
-        },
-      },
-      {
-        icon: Globe,
-        title: { en: 'English, Spanish, German', es: 'Inglés, español, alemán', de: 'Englisch, Spanisch, Deutsch' },
-        description: {
-          en: 'The whole platform switches language instantly - crews work in Spanish while owners read reports in English or German.',
-          es: 'Toda la plataforma cambia de idioma al instante - las cuadrillas trabajan en español mientras los propietarios leen en inglés o alemán.',
-          de: 'Die gesamte Plattform wechselt sofort die Sprache.',
-        },
-      },
-      {
-        icon: DollarSign,
-        title: { en: 'USD and colones', es: 'Dólares y colones', de: 'USD und Colones' },
-        description: {
-          en: 'Prices, rates and totals can be shown in the currency each client expects, without mixing them in the same total.',
-          es: 'Precios, tarifas y totales se muestran en la moneda que cada cliente espera, sin mezclarlas en un mismo total.',
-          de: 'Preise und Summen in der jeweils erwarteten Währung, ohne Vermischung.',
-        },
-      },
-      {
-        icon: Shield,
-        title: { en: 'Works on the phone', es: 'Funciona en el teléfono', de: 'Funktioniert am Telefon' },
-        description: {
-          en: 'Built mobile-first for iOS and Android, because the work happens outside - on a roof, in a garden, in a shopping centre corridor.',
-          es: 'Construida primero para móvil, iOS y Android, porque el trabajo ocurre afuera - en un techo, en un jardín, en el pasillo de un centro comercial.',
-          de: 'Mobil-first für iOS und Android, denn die Arbeit passiert draußen.',
-        },
-      },
-      {
-        icon: Lock,
-        title: { en: 'Invitation-only access', es: 'Acceso solo por invitación', de: 'Zugang nur auf Einladung' },
-        description: {
-          en: 'Accounts are created by our team after reviewing your operation. There is no open sign-up and no anonymous demo of your data.',
-          es: 'Las cuentas las crea nuestro equipo tras revisar su operación. No hay registro abierto ni demo anónima de sus datos.',
-          de: 'Konten werden nach Prüfung von unserem Team erstellt. Keine offene Registrierung.',
-        },
-      },
-    ],
-  },
-];
+const stageIcons = [Building2, ClipboardCheck, Camera, FileText];
+const featureIcons = [MapPinned, Clock3, QrCode, Leaf, PackageCheck, BookOpen];
+const trustIcons = [Users, Lock, ShieldCheck];
+type Currency = 'USD' | 'CRC';
 
 export default function Features() {
   const { language } = useLanguage();
-  const es = language === 'es';
-  const l = (v: L3) => (language === 'es' ? v.es : language === 'de' ? v.de : v.en);
-  const t3 = (en: string, esT: string, de: string) => l({ en, es: esT, de });
+  const c = copy[language === 'es' ? 'es' : language === 'de' ? 'de' : 'en'];
+  const [interval, setInterval] = useState<BillingInterval>('monthly');
+  const [currency, setCurrency] = useState<Currency>('USD');
+  const [propertyCount, setPropertyCount] = useState(1);
+  const [addonIds, setAddonIds] = useState<string[]>([]);
+  const estimate = useMemo(() => quote({ interval, propertyCount, addonIds }), [interval, propertyCount, addonIds]);
+  const local = <T extends { en: string; es: string; de: string }>(value: T) => value[language === 'es' ? 'es' : language === 'de' ? 'de' : 'en'];
+  const money = (usd: number) => currency === 'CRC'
+    ? `₡${Math.round(usd * CRC_PER_USD).toLocaleString('es-CR')}`
+    : `$${usd.toLocaleString('en-US', { maximumFractionDigits: 0 })}`;
+  const toggleAddon = (id: string) => setAddonIds((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id]);
 
   return (
-    <main className="min-h-screen bg-background text-foreground">
-      <Seo
-        title={t3(
-          'Home Guide - Operations platform for property, landscape and facilities teams',
-          'Home Guide - Plataforma operativa para equipos de propiedades, paisajes e instalaciones',
-          'Home Guide - Betriebsplattform für Immobilien-, Garten- und Facility-Teams',
-        )}
-        description={t3(
-          'Manage clients, sites, work and assets with mapped locations, documented care, photo evidence, client portals and separate billing. Invitation only.',
-          'Gestione clientes, sitios, trabajo y activos con ubicaciones mapeadas, cuidado documentado, evidencia fotográfica, portales de cliente y facturación separada. Solo por invitación.',
-          'Kunden, Standorte, Arbeit und Anlagen verwalten: Karten, dokumentierte Pflege, Fotonachweise, Kundenportale und getrennte Abrechnung. Nur auf Einladung.',
-        )}
-        path="/"
-      />
-      {/* Minimal header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b border-border/50" style={{
-        paddingTop: 'env(safe-area-inset-top)',
-        paddingLeft: 'env(safe-area-inset-left)',
-        paddingRight: 'env(safe-area-inset-right)'
-      }}>
-        <div className="max-w-7xl mx-auto px-6 h-14 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2.5">
-            <img src="/images/hg-logo.png" alt="HG" className="w-8 h-8 object-contain" />
-            <span className="text-base font-display font-semibold text-foreground tracking-tight">Home Guide</span>
+    <main className="min-h-screen overflow-hidden bg-background text-foreground">
+      <Seo title="Home Guide | Property operations, documented" description={c.hero} path="/" />
+
+      <header className="fixed inset-x-0 top-0 z-50 border-b border-border/70 bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6">
+          <Link to="/" className="flex items-center gap-2.5" aria-label="Home Guide">
+            <img src="/images/hg-logo.png" alt="" className="h-9 w-9 object-contain" />
+            <span className="font-display text-base font-semibold">Home Guide</span>
           </Link>
-          <div className="flex items-center gap-3">
-            <Link to="/" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              {t3('Home', 'Inicio', 'Start')}
-            </Link>
+          <nav className="hidden items-center gap-7 lg:flex" aria-label="Main navigation">
+            <a className="story-link text-sm text-muted-foreground hover:text-foreground" href="#capabilities">{c.navCapabilities}</a>
+            <a className="story-link text-sm text-muted-foreground hover:text-foreground" href="#workflow">{c.navHow}</a>
+            <a className="story-link text-sm text-muted-foreground hover:text-foreground" href="#pricing">{c.navPricing}</a>
+          </nav>
+          <div className="flex items-center gap-1 sm:gap-2">
             <LanguagePicker />
-            <Link to="/auth" className="text-sm font-medium text-foreground hover:text-primary transition-colors">
-              {t3('Sign In', 'Iniciar Sesión', 'Anmelden')}
-            </Link>
-            <Link to="/request-access">
-              <Button size="sm" className="text-xs font-medium tracking-wide uppercase bg-primary text-primary-foreground hover:bg-primary/90">
-                {t3('Request Access', 'Solicitar Acceso', 'Zugang anfragen')}
-              </Button>
-            </Link>
+            <Button asChild variant="ghost" size="icon" className="sm:hidden" aria-label={c.signIn}><Link to="/auth"><LogIn /></Link></Button>
+            <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex"><Link to="/auth">{c.signIn}</Link></Button>
+            <Button asChild size="sm"><Link to="/auth?mode=signup">{c.create}</Link></Button>
           </div>
         </div>
       </header>
 
-      {/* Hero */}
-      <section className="relative h-[calc(100vh-3.5rem)] min-h-[480px] max-h-[760px] flex items-end overflow-hidden">
-        <img
-          src="/images/estate_guide_4.jpg"
-          alt={t3(
-            'Managed property at dusk',
-            'Propiedad gestionada al atardecer',
-            'Gepflegtes Anwesen in der Dämmerung',
-          )}
-          width={1920}
-          height={1080}
-          fetchPriority="high"
-          decoding="async"
-          className="absolute inset-0 w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/10" />
-        <div className="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full">
-          <p className="text-xs font-medium tracking-[0.25em] uppercase text-white/80 mb-4">
-            {t3('Operations platform', 'Plataforma operativa', 'Betriebsplattform')}
-          </p>
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-display font-bold text-white leading-tight max-w-3xl">
-            {t3(
-              'Operations organized. Proof included.',
-              'Operaciones organizadas. Respaldo incluido.',
-              'Betrieb organisiert. Nachweis inklusive.',
-            )}
-          </h1>
-          <p className="mt-6 text-base md:text-lg text-white/90 max-w-2xl leading-relaxed">
-            {t3(
-              'Home Guide brings clients, sites, work and records together, then proves it with GPS, photos and immutable logs. Reports, manuals and invoices come out the other side.',
-              'Home Guide reúne clientes, sitios, trabajo y registros, y lo respalda con GPS, fotos y bitácoras inmutables. Del otro lado salen informes, manuales y facturas.',
-              'Home Guide führt Kunden, Standorte, Arbeit und Aufzeichnungen zusammen und belegt sie mit GPS, Fotos und unveränderlichen Protokollen. Berichte, Handbücher und Rechnungen entstehen daraus.',
-            )}
-          </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link to="/request-access">
-              <Button
-                size="lg"
-                className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-6"
-              >
-                {t3('Request access', 'Solicitar acceso', 'Zugang anfragen')}
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </Link>
+      <section className="relative min-h-[660px] pt-16 lg:min-h-[760px]">
+        <img src="/images/estate_guide_4.jpg" alt={c.proof} width={1920} height={1080} decoding="async" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-foreground/60" />
+        <div className="relative mx-auto flex min-h-[644px] max-w-7xl items-end px-4 pb-12 pt-24 sm:px-6 md:pb-20 lg:min-h-[744px]">
+          <div className="max-w-3xl animate-rise-in text-primary-foreground motion-reduce:animate-none">
+            <p className="mb-5 text-xs font-semibold uppercase tracking-widest text-primary-foreground/80">{c.eyebrow}</p>
+            <h1 className="font-display text-4xl font-semibold leading-tight sm:text-5xl md:text-6xl">{c.title}</h1>
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-primary-foreground/90 md:text-lg">{c.hero}</p>
+            <div className="mt-8 flex flex-wrap gap-3">
+              <Button asChild size="lg" className="bg-background text-foreground hover:bg-background/90"><Link to="/auth?mode=signup">{c.create}<ArrowRight /></Link></Button>
+              <Button asChild size="lg" variant="outline" className="border-primary-foreground/50 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><a href="#capabilities">{c.explore}</a></Button>
+            </div>
           </div>
-          <p className="mt-4 text-xs text-white/70">
-            {t3(
-              'Invitation only. We review each operation before opening an account.',
-              'Solo por invitación. Revisamos cada operación antes de abrir una cuenta.',
-              'Nur auf Einladung. Wir prüfen jeden Betrieb vor der Kontoeröffnung.',
-            )}
-          </p>
+          <div className="absolute bottom-8 right-6 hidden items-center gap-3 text-primary-foreground/80 lg:flex">
+            <span className="h-px w-16 bg-primary-foreground/50" /><span className="text-xs uppercase tracking-widest">{c.proof}</span>
+          </div>
         </div>
       </section>
 
-      {/* Who it is for */}
-      <section className="max-w-7xl mx-auto px-6 py-16 md:py-20">
-        <h2 className="text-2xl md:text-3xl font-display font-bold text-foreground max-w-3xl tracking-tight">
-          {t3(
-            'Built for teams that run physical operations',
-            'Hecho para equipos que operan en el campo',
-            'Für Teams, die physische Operationen durchführen',
-          )}
-        </h2>
-        <p className="mt-4 text-base text-muted-foreground max-w-3xl leading-relaxed">
-          {t3(
-            'Property managers, landscaping crews, facilities teams, plant rental businesses and estate owners all need the same thing: a clear record of what was done, where, when and by whom.',
-            'Administradoras de propiedades, cuadrillas de paisajismo, equipos de instalaciones, negocios de alquiler de plantas y propietarios necesitan lo mismo: un registro claro de qué se hizo, dónde, cuándo y por quién.',
-            'Immobilienverwalter, Gartenteams, Facility-Teams, Pflanzenvermieter und Eigentümer brauchen dasselbe: eine klare Aufzeichnung dessen, was wo, wann und von wem erledigt wurde.',
-          )}
-        </p>
+      <section className="border-b border-border bg-secondary/50">
+        <div className="mx-auto grid max-w-7xl gap-6 px-4 py-12 sm:px-6 md:grid-cols-[1fr_1.4fr] md:py-16">
+          <h2 className="max-w-xl font-display text-2xl font-semibold leading-tight md:text-3xl">{c.audience}</h2>
+          <p className="max-w-2xl text-base leading-relaxed text-muted-foreground">{c.audienceBody}</p>
+        </div>
       </section>
 
-      {/* Sections */}
-      {sections.map((section, sIdx) => (
-        <section key={section.key}>
-          {/* Section divider with image */}
-          <div className="relative h-64 md:h-80 overflow-hidden">
-            <img
-              src={section.image}
-              alt={l(section.label)}
-              loading="lazy"
-              decoding="async"
-              className="absolute inset-0 w-full h-full object-cover"
-            />
-            <div className="absolute inset-0 bg-black/55" />
-            <div className="relative z-10 max-w-7xl mx-auto px-6 flex flex-col justify-end h-full pb-10">
-              <span className="text-xs font-medium tracking-[0.2em] uppercase text-white/80 mb-3">
-                {String(sIdx + 1).padStart(2, '0')} / 05
-              </span>
-              <h2 className="text-3xl md:text-4xl font-display font-bold text-white">
-                {l(section.label)}
-              </h2>
-            </div>
+      <section id="capabilities" className="scroll-mt-16 py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="grid gap-8 border-b border-border pb-12 md:grid-cols-[.75fr_1.25fr]">
+            <p className="text-xs font-semibold uppercase tracking-widest text-primary">{c.capabilitiesEyebrow}</p>
+            <div><h2 className="font-display text-3xl font-semibold leading-tight md:text-4xl">{c.capabilitiesTitle}</h2><p className="mt-4 max-w-2xl leading-relaxed text-muted-foreground">{c.capabilitiesBody}</p></div>
           </div>
+          <div className="grid md:grid-cols-2">
+            {c.stages.map(([title, description], index) => {
+              const Icon = stageIcons[index];
+              return <article key={title} className="group border-b border-border py-9 md:px-8 md:first:pl-0 md:[&:nth-child(odd)]:border-r">
+                <div className="mb-8 flex items-center justify-between"><span className="font-display text-sm text-muted-foreground">0{index + 1}</span><Icon className="h-5 w-5 text-primary transition-transform duration-300 group-hover:-translate-y-1 motion-reduce:transform-none" /></div>
+                <h3 className="font-display text-xl font-semibold">{title}</h3><p className="mt-3 max-w-xl text-sm leading-7 text-muted-foreground">{description}</p>
+              </article>;
+            })}
+          </div>
+        </div>
+      </section>
 
-          {/* Feature grid */}
-          <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
-            <p className="text-base text-muted-foreground max-w-3xl leading-relaxed mb-10">
-              {l(section.intro)}
-            </p>
-            <div className="grid gap-px bg-border rounded-2xl overflow-hidden border border-border">
-              {section.features.map((feature, fIdx) => (
-                <div
-                  key={fIdx}
-                  className="bg-card p-8 md:p-10 flex flex-col sm:flex-row gap-6 items-start"
-                >
-                  <div className="w-11 h-11 rounded-xl bg-primary/8 border border-primary/15 flex items-center justify-center flex-shrink-0">
-                    <feature.icon className="h-5 w-5 text-primary" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <h3 className="text-base font-semibold text-foreground mb-1.5 tracking-tight">
-                      {l(feature.title)}
-                    </h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">
-                      {l(feature.description)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+      <section className="bg-primary text-primary-foreground">
+        <div className="mx-auto max-w-7xl px-4 py-20 sm:px-6 md:py-28">
+          <div className="grid gap-8 md:grid-cols-2"><h2 className="font-display text-3xl font-semibold leading-tight md:text-4xl">{c.realWork}</h2><p className="max-w-xl leading-relaxed text-primary-foreground/80">{c.realWorkBody}</p></div>
+          <div className="mt-14 grid gap-px overflow-hidden rounded-md border border-primary-foreground/20 bg-primary-foreground/20 sm:grid-cols-2 lg:grid-cols-3">
+            {c.features.map(([title, description], index) => { const Icon = featureIcons[index]; return <article key={title} className="group bg-primary p-6 transition-colors hover:bg-primary-foreground/5"><Icon className="mb-8 h-5 w-5 text-accent transition-transform duration-300 group-hover:translate-x-1 motion-reduce:transform-none" /><h3 className="text-base font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-primary-foreground/70">{description}</p></article>; })}
           </div>
-        </section>
-      ))}
+        </div>
+      </section>
 
-      {/* Security & Trust Section */}
-      <section className="bg-card border-y border-border">
-        <div className="max-w-7xl mx-auto px-6 py-16 md:py-20">
-          <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 mb-4">
-              <Lock className="h-4 w-4 text-primary" />
-              <span className="text-xs font-medium tracking-widest uppercase text-primary">
-                {t3('Security & Trust', 'Seguridad y Confianza', 'Sicherheit & Vertrauen')}
-              </span>
-            </div>
-            <h2 className="text-3xl md:text-4xl font-display font-bold text-foreground">
-              {t3('Your clients\u2019 data stays your clients\u2019 data', 'Los datos de sus clientes siguen siendo suyos', 'Kundendaten bleiben Kundendaten')}
-            </h2>
-            <p className="text-base text-muted-foreground mt-3 max-w-2xl mx-auto">
-              {t3(
-                'Contracts, tax IDs and property details are sensitive. Access is scoped per organization and enforced at the database level.',
-                'Contratos, números fiscales y detalles de propiedades son sensibles. El acceso se limita por organización y se aplica a nivel de base de datos.',
-                'Verträge, Steuernummern und Objektdaten sind sensibel. Zugriff ist je Organisation begrenzt und in der Datenbank durchgesetzt.',
-              )}
-            </p>
+      <section id="workflow" className="scroll-mt-16 py-20 md:py-28">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 sm:px-6 lg:grid-cols-[1fr_1.1fr] lg:items-center">
+          <div><p className="text-xs font-semibold uppercase tracking-widest text-primary">{c.fieldEyebrow}</p><h2 className="mt-4 font-display text-3xl font-semibold leading-tight md:text-4xl">{c.fieldTitle}</h2><p className="mt-5 max-w-xl leading-relaxed text-muted-foreground">{c.fieldBody}</p>
+            <ol className="mt-9 space-y-0">{c.fieldSteps.map((step, index) => <li key={step} className="flex items-center gap-4 border-t border-border py-4"><span className="font-display text-xs text-primary">0{index + 1}</span><span className="font-medium">{step}</span>{index < 3 && <ArrowRight className="ml-auto h-4 w-4 text-muted-foreground" />}</li>)}</ol>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            <div className="text-center p-6 rounded-2xl border border-border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Lock className="h-6 w-6 text-primary" />
+          <div className="relative aspect-[4/3] overflow-hidden rounded-md"><img src="/images/estate_guide_3.jpg" alt={c.fieldTitle} width={1200} height={900} loading="lazy" decoding="async" className="h-full w-full object-cover transition-transform duration-700 hover:scale-[1.02] motion-reduce:transform-none" /><div className="absolute bottom-4 left-4 right-4 flex items-center justify-between rounded-md bg-background/90 p-4 backdrop-blur"><span className="text-sm font-medium">{c.proof}</span><Check className="h-5 w-5 text-primary" /></div></div>
+        </div>
+      </section>
+
+      <section id="pricing" className="scroll-mt-16 border-y border-border bg-secondary/40 py-20 md:py-28">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6">
+          <div className="grid gap-8 md:grid-cols-[.8fr_1.2fr]"><p className="text-xs font-semibold uppercase tracking-widest text-primary">{c.pricingEyebrow}</p><div><h2 className="font-display text-3xl font-semibold leading-tight md:text-4xl">{c.pricingTitle}</h2><p className="mt-4 max-w-2xl leading-relaxed text-muted-foreground">{c.pricingBody}</p></div></div>
+          <div className="mt-12 grid overflow-hidden rounded-md border border-border bg-card lg:grid-cols-[1.25fr_.75fr]">
+            <div className="border-b border-border p-5 sm:p-8 lg:border-b-0 lg:border-r">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div className="flex rounded-md border border-border bg-muted p-1"><Button size="sm" variant={interval === 'monthly' ? 'default' : 'ghost'} onClick={() => setInterval('monthly')}>{c.monthly}</Button><Button size="sm" variant={interval === 'annual' ? 'default' : 'ghost'} onClick={() => setInterval('annual')}>{c.annual}</Button></div>
+                <div className="flex rounded-md border border-border p-1"><Button size="sm" variant={currency === 'USD' ? 'secondary' : 'ghost'} onClick={() => setCurrency('USD')}>USD</Button><Button size="sm" variant={currency === 'CRC' ? 'secondary' : 'ghost'} onClick={() => setCurrency('CRC')}>CRC</Button></div>
               </div>
-              <h3 className="font-semibold text-foreground mb-2">
-                {t3('Encrypted in transit and at rest', 'Cifrado en tránsito y en reposo', 'Verschlüsselt bei Übertragung und Speicherung')}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t3(
-                  'Documents and photos are stored in private buckets reachable only through short-lived, signed links.',
-                  'Documentos y fotos se guardan en depósitos privados, accesibles solo mediante enlaces firmados de corta duración.',
-                  'Dokumente und Fotos liegen in privaten Buckets, erreichbar nur über kurzlebige signierte Links.',
-                )}
-              </p>
+              <div className="mt-8 flex items-center justify-between border-y border-border py-6"><div><p className="font-semibold">{c.properties}</p><p className="mt-1 text-sm text-muted-foreground">{money(BASE_PRICE_PER_PROPERTY_USD)} {c.perProperty}</p></div><div className="flex items-center gap-3"><Button variant="outline" size="icon" aria-label="Decrease" onClick={() => setPropertyCount((value) => Math.max(1, value - 1))}><Minus /></Button><span className="w-8 text-center font-display text-xl font-semibold tabular-nums">{propertyCount}</span><Button variant="outline" size="icon" aria-label="Increase" onClick={() => setPropertyCount((value) => Math.min(500, value + 1))}><Plus /></Button></div></div>
+              <div className="pt-6"><p className="mb-4 text-sm font-semibold">{c.extras}</p><div className="grid gap-3 sm:grid-cols-2">{ADDONS.map((addon) => { const selected = addonIds.includes(addon.id); return <Button key={addon.id} type="button" variant="outline" aria-pressed={selected} onClick={() => toggleAddon(addon.id)} className={`h-auto min-h-20 justify-between whitespace-normal p-4 text-left ${selected ? 'border-primary bg-primary/5' : ''}`}><span><span className="block font-semibold">{local(addon.name)}</span><span className="mt-1 block text-xs font-normal text-muted-foreground">+{money(addon.monthlyUsd)} / {c.accountMonth}</span></span><span className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${selected ? 'border-primary bg-primary text-primary-foreground' : 'border-border'}`}>{selected && <Check className="h-3 w-3" />}</span></Button>; })}</div></div>
             </div>
-            <div className="text-center p-6 rounded-2xl border border-border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Database className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">
-                {t3('Row-level isolation', 'Aislamiento por fila', 'Zeilenbasierte Trennung')}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t3(
-                  'Every table is protected by policies tied to your organization and role - one client can never read another.',
-                  'Cada tabla está protegida por políticas ligadas a su organización y rol - un cliente nunca puede leer a otro.',
-                  'Jede Tabelle ist durch Richtlinien nach Organisation und Rolle geschützt.',
-                )}
-              </p>
-            </div>
-            <div className="text-center p-6 rounded-2xl border border-border bg-background">
-              <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4">
-                <Eye className="h-6 w-6 text-primary" />
-              </div>
-              <h3 className="font-semibold text-foreground mb-2">
-                {t3('Auditable history', 'Historial auditable', 'Nachvollziehbare Historie')}
-              </h3>
-              <p className="text-sm text-muted-foreground">
-                {t3(
-                  'Check-ins, completions and care logs are append-only, so a record cannot be quietly rewritten after the fact.',
-                  'Registros, cierres y bitácoras de cuidado solo se agregan, nunca se reescriben en silencio después.',
-                  'Check-ins, Abschlüsse und Pflegeprotokolle sind unveränderlich.',
-                )}
-              </p>
-            </div>
+            <aside className="flex flex-col justify-between p-6 sm:p-8"><div><p className="text-sm font-semibold text-muted-foreground">{c.summary}</p><div className="mt-5 flex items-end gap-2"><span className="font-display text-4xl font-semibold tabular-nums md:text-5xl">{money(estimate.totalUsd)}</span><span className="pb-1 text-sm text-muted-foreground">{interval === 'annual' ? c.dueAnnual : c.dueMonthly}</span></div>{interval === 'annual' && <p className="mt-3 text-sm font-medium text-primary">{c.annualNote}. {c.saving}: {money(estimate.savingUsd)}</p>}
+                <div className="mt-8 border-t border-border pt-6"><p className="text-sm font-semibold">{c.included}</p><ul className="mt-4 space-y-3">{c.includedItems.map((item) => <li key={item} className="flex gap-3 text-sm text-muted-foreground"><Check className="h-4 w-4 shrink-0 text-primary" />{item}</li>)}</ul></div></div>
+              <Button asChild size="lg" className="mt-8 w-full"><Link to="/auth?mode=signup">{c.continue}<ArrowRight /></Link></Button>
+            </aside>
           </div>
         </div>
       </section>
 
-      {/* CTA */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0">
-          <img
-            src="/images/estate_guide_2.jpg"
-            alt={t3('Estate at night', 'Propiedad de noche', 'Anwesen bei Nacht')}
-            loading="lazy"
-            decoding="async"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-black/70" />
-        </div>
-        <div className="relative z-10 max-w-7xl mx-auto px-6 py-24 md:py-32 text-center">
-          <h2 className="text-2xl md:text-4xl font-display font-bold text-white mb-4">
-            {t3('Tell us how your operation works', 'Cuéntenos cómo funciona su operación', 'Erzählen Sie uns von Ihrem Betrieb')}
-          </h2>
-          <p className="text-base text-white/80 max-w-xl mx-auto mb-10">
-            {t3(
-              'Home Guide is configured around each operation before the first login. Send us a short description and our team will set it up with you.',
-              'Home Guide se configura según cada operación antes del primer ingreso. Envíenos una breve descripción y nuestro equipo la prepara con usted.',
-              'Home Guide wird vor dem ersten Login je Betrieb konfiguriert. Senden Sie eine kurze Beschreibung, wir richten es mit Ihnen ein.',
-            )}
-          </p>
-          <Link to="/request-access">
-            <Button
-              size="lg"
-              className="bg-white text-black hover:bg-white/90 font-medium tracking-wide px-8"
-            >
-              {t3('Request access', 'Solicitar acceso', 'Zugang anfragen')}
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-          </Link>
-        </div>
-      </section>
+      <section className="py-20 md:py-28"><div className="mx-auto max-w-7xl px-4 sm:px-6"><p className="text-xs font-semibold uppercase tracking-widest text-primary">{c.trustEyebrow}</p><h2 className="mt-4 max-w-3xl font-display text-3xl font-semibold leading-tight md:text-4xl">{c.trustTitle}</h2><div className="mt-12 grid gap-px overflow-hidden rounded-md border border-border bg-border md:grid-cols-3">{c.trustItems.map(([title, body], index) => { const Icon = trustIcons[index]; return <article key={title} className="bg-card p-7"><Icon className="mb-10 h-5 w-5 text-primary" /><h3 className="text-base font-semibold">{title}</h3><p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p></article>; })}</div></div></section>
 
-      {/* Footer */}
-      <footer className="bg-card border-t border-border">
-        <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <img src="/images/hg-logo.png" alt="HG" className="w-6 h-6 object-contain" />
-            <span className="text-sm font-display font-medium text-foreground">Home Guide</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Lock className="h-3 w-3" />
-              <span>{t3('Encrypted storage', 'Almacenamiento cifrado', 'Verschlüsselter Speicher')}</span>
-            </div>
-            <span className="text-muted-foreground">|</span>
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Shield className="h-3 w-3" />
-              <span>{t3('Invitation only', 'Solo por invitación', 'Nur auf Einladung')}</span>
-            </div>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {es
-              ? 'Plataforma operativa para equipos de propiedades, paisajes e instalaciones'
-              : language === 'de'
-                ? 'Betriebsplattform für Immobilien-, Garten- und Facility-Teams'
-                : 'Operations platform for property, landscape and facilities teams'}
-          </p>
-        </div>
-      </footer>
+      <section className="border-y border-border bg-card py-20"><div className="mx-auto grid max-w-7xl gap-10 px-4 sm:px-6 md:grid-cols-[.7fr_1.3fr]"><h2 className="font-display text-2xl font-semibold md:text-3xl">{c.faqTitle}</h2><div className="divide-y divide-border border-y border-border">{c.faqs.map(([question, answer]) => <details key={question} className="group py-5"><summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium">{question}<ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180" /></summary><p className="max-w-2xl pt-3 text-sm leading-6 text-muted-foreground">{answer}</p></details>)}</div></div></section>
+
+      <section className="bg-primary text-primary-foreground"><div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-8 px-4 py-16 sm:px-6 md:flex-row md:items-end md:py-20"><div><h2 className="max-w-2xl font-display text-3xl font-semibold leading-tight md:text-4xl">{c.finalTitle}</h2><p className="mt-4 max-w-xl text-primary-foreground/75">{c.finalBody}</p></div><Button asChild size="lg" className="shrink-0 bg-background text-foreground hover:bg-background/90"><Link to="/auth?mode=signup">{c.create}<ArrowRight /></Link></Button></div></section>
+
+      <footer className="bg-background"><div className="mx-auto flex max-w-7xl flex-col gap-5 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between"><div className="flex items-center gap-2"><img src="/images/hg-logo.png" alt="" className="h-7 w-7 object-contain" /><span className="font-display text-sm font-semibold">Home Guide</span></div><p className="text-xs text-muted-foreground">{c.footer}</p><div className="flex items-center gap-2 text-xs text-muted-foreground"><ShieldCheck className="h-4 w-4 text-primary" />{c.secure}</div></div></footer>
     </main>
   );
 }
