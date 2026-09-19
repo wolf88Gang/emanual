@@ -612,7 +612,7 @@
 @media (max-width: 767px) {
   .landing-hero { min-height: 720px; }
   .landing-hero-inner { min-height: 720px; }
-  .landing-hero-overlay { background: linear-gradient(90deg, hsl(var(--foreground) / .88), hsl(var(--primary) / .48)), linear-gradient(0deg, hsl(var(--foreground) / .52), transparent 50%); }
+  .landing-hero-overlay { background: linear-gradient(90deg, hsl(150 28% 4% / .9), hsl(150 24% 6% / .52)), linear-gradient(0deg, hsl(150 28% 4% / .84), transparent 52%); }
   .data-route { grid-template-columns: 2rem 1fr; }
   .data-route > strong { @apply col-start-2; }
   .data-targets { @apply col-span-2 col-start-1 ml-12 border-l border-border pl-4; }
