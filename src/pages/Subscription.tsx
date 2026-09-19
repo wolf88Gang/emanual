@@ -11,11 +11,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 
-declare global {
-  interface Window {
-    paypal?: any;
-  }
-}
 
 const features = [
   { en: 'Unlimited assets & zones per property', es: 'Activos y zonas ilimitados por propiedad', de: 'Unbegrenzte Assets & Zonen pro Immobilie' },
@@ -36,8 +31,6 @@ export default function Subscription() {
   const navigate = useNavigate();
   const [currentSub, setCurrentSub] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const paypalRef = useRef<HTMLDivElement>(null);
-  const buttonsRendered = useRef(false);
 
   const es = language === 'es';
   const de = language === 'de';
@@ -60,44 +53,6 @@ export default function Subscription() {
     fetchSub();
   }, [user]);
 
-  // Render PayPal buttons
-  useEffect(() => {
-    if (!window.paypal || !paypalRef.current || buttonsRendered.current) return;
-    if (isPaid) return;
-
-    buttonsRendered.current = true;
-
-    window.paypal
-      .Buttons({
-        style: { shape: 'rect', color: 'gold', layout: 'vertical', label: 'subscribe' },
-        createOrder: async () => {
-          const amount = Math.max(propertyCount, 1) * PRICE_PER_PROPERTY;
-          const { data, error } = await supabase.functions.invoke('paypal-create-order', {
-            body: { plan_type: 'monthly', amount: amount.toFixed(2) },
-          });
-          if (error) throw error;
-          return data.id;
-        },
-        onApprove: async (data: any) => {
-          const amount = Math.max(propertyCount, 1) * PRICE_PER_PROPERTY;
-          const { error } = await supabase.functions.invoke('paypal-capture-order', {
-            body: { order_id: data.orderID, plan_type: 'monthly', amount },
-          });
-          if (error) {
-            toast.error(l('Error processing payment', 'Error al procesar el pago', 'Fehler bei der Zahlung'));
-            return;
-          }
-          toast.success(l('Subscription activated!', '¡Suscripción activada!', 'Abonnement aktiviert!'));
-          const { data: sub } = await supabase.from('subscriptions').select('*').eq('user_id', user!.id).maybeSingle();
-          setCurrentSub(sub);
-        },
-        onError: (err: any) => {
-          console.error('PayPal error:', err);
-          toast.error(l('PayPal error', 'Error con PayPal', 'PayPal-Fehler'));
-        },
-      })
-      .render(paypalRef.current);
-  }, [window.paypal, isPaid, loading, propertyCount]);
 
   return (
     <div className="min-h-screen bg-background">
