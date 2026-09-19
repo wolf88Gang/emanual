@@ -4,11 +4,16 @@ import { ArrowRight, Check, Minus, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ADDONS, ANNUAL_MONTHS_CHARGED, BASE_PRICE_PER_PROPERTY_USD, quote, type BillingInterval } from '@/lib/pricing';
 import { CRC_PER_USD } from '@/lib/currency';
+import { MODULE_LIST, type ModuleKey } from '@/lib/homeGuideModules';
 import { LandingSectionHeading, HGReveal } from './motion';
 import type { landingCopy, LandingLanguage } from './copy';
 
 type Copy = (typeof landingCopy)[LandingLanguage]['pricing'];
 type Currency = 'USD' | 'CRC';
+
+/** Modules gated by a paid add-on; everything else is included in the base price. */
+const ADDON_GATED_MODULES: ModuleKey[] = ['labor', 'rentals', 'billing_payments'];
+const INCLUDED_MODULES = MODULE_LIST.filter((m) => !ADDON_GATED_MODULES.includes(m.key));
 
 export function PricingSection({ copy, language }: { copy: Copy; language: LandingLanguage }) {
   const [interval, setInterval] = useState<BillingInterval>('monthly');
@@ -68,6 +73,23 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
             </div>
             <Button asChild size="lg" className="w-full"><Link to="/auth?mode=signup">{text('continue')}<ArrowRight /></Link></Button>
           </aside>
+        </HGReveal>
+        <HGReveal className="pricing-catalog" delay={140}>
+          <div className="pricing-catalog-head">
+            <div>
+              <h3>{text('catalogTitle')}</h3>
+              <p>{text('catalogBody')}</p>
+            </div>
+            <p className="pricing-catalog-note">{text('catalogNote')}</p>
+          </div>
+          <ul className="pricing-catalog-list">
+            {INCLUDED_MODULES.map((mod) => (
+              <li key={mod.key}>
+                <strong>{mod.label[language]}</strong>
+                <p>{mod.description[language]}</p>
+              </li>
+            ))}
+          </ul>
         </HGReveal>
         <p className="sr-only">{ANNUAL_MONTHS_CHARGED}</p>
       </div>
