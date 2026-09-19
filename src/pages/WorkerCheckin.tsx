@@ -62,7 +62,7 @@ export default function WorkerCheckin() {
         .is('check_out_at', null)
         .order('check_in_at', { ascending: false })
         .limit(1)
-        .single();
+        .maybeSingle();
 
       setActiveShift(active);
 
