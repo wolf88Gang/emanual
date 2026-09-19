@@ -14,3 +14,5 @@
 - [x] Restore generous spacing and clear selected states using the adapted Pricing 02 structure.
 - [x] Lighten the top navigation while structurally preventing text from showing behind it.
 - [x] Validate pricing logic, desktop/mobile layout, scrolling, and reduced motion.
+
+- [x] Replace the four public add-ons with nine canonical add-ons, remove plantops from public pricing, sync server table and tests
