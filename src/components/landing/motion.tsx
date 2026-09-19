@@ -91,7 +91,7 @@ export function LandingSectionHeading({ eyebrow, title, subtitle, note, align = 
   );
 }
 
-export function MediaReveal({ children, className }: { children: ReactElement; className?: string }) {
-  const media = isValidElement(children) ? cloneElement(children, { className: cn((children.props as { className?: string }).className, 'hg-media-inner') } as never) : children;
+export function MediaReveal({ children, className }: { children: ReactElement<{ className?: string }>; className?: string }) {
+  const media = isValidElement(children) ? cloneElement(children, { className: cn(children.props.className, 'hg-media-inner') }) : children;
   return <HGReveal className={cn('hg-media-mask', className)}>{media}</HGReveal>;
 }

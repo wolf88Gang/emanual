@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { ArrowRight, Building2, Camera, CheckCircle2, ChevronDown, ClipboardCheck, FileText, Leaf, Lock, MapPinned, Menu, PackageCheck, QrCode, ShieldCheck, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguagePicker } from '@/components/LanguagePicker';
-import { HGReveal, HGStaggerGroup, HGTextReveal, LandingSectionHeading, MediaReveal } from './motion';
+import { HGReveal, HGStaggerGroup, HGTextReveal, LandingSectionHeading } from './motion';
 import type { landingCopy, LandingLanguage } from './copy';
 
 type Copy = (typeof landingCopy)[LandingLanguage];
