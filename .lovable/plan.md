@@ -1,7 +1,7 @@
 # Reposicionamiento público de Home Guide V2
 
 ## Objetivo
-Ajustar la portada pública ya construida para presentar Home Guide como un sistema que conecta lugares físicos, activos, trabajo, personas y evidencia. Se conservarán su identidad visual, estructura modular, movimiento, precios y comportamiento técnico actuales.
+Ajustar la portada pública ya construida para presentar Home Guide como un sistema que conecta lugares físicos, activos, trabajo, personas e información operativa. Se conservarán su identidad visual, estructura modular, movimiento, precios y comportamiento técnico actuales.
 
 ## Estado confirmado
 - La portada pública ya está separada en componentes y `Features.tsx` funciona como coordinador.
@@ -41,11 +41,15 @@ Evidencia
 - Reemplazar la ruta principal de plantas por la ruta genérica de activos: condición, mantenimiento, documentos e historial.
 - Presentar plantas, cuidados y alquileres solamente como una configuración especializada posterior.
 - Comunicar disponibilidad y continuidad de los datos, sin prometer automatizaciones inexistentes.
+- Presentar la cadena como un modelo conceptual “cuando aplica”, no como una jerarquía obligatoria: una operación puede comenzar en un sitio; una tarea puede depender de un sitio o zona sin activo; documentos y evidencia pueden relacionarse con distintos niveles.
+- No modificar el modelo de datos ni forzar que todos los registros recorran todos los niveles.
+- Moderar “evidencia” en hero y problema; priorizar contexto, registro, historial, trabajo documentado e información operativa. Reservar “evidencia” para fotografías, check-ins, ubicación, visitas o comprobación del trabajo.
 
 ### 3. Ampliar audiencias sin convertirlas en industrias exclusivas
-- Presentar ocho configuraciones operativas: servicios y mantenimiento de propiedades, paisajismo, servicios de plantas, administración de propiedades, servicio de activos y equipos, operaciones de campo, operación propia y configuración personalizada.
+- Presentar ocho configuraciones operativas en este orden exacto: servicios y mantenimiento de propiedades; operaciones de campo; servicio de activos y equipos; paisajismo y áreas verdes; administración de propiedades; servicios de plantas; operación propia; configuración personalizada.
 - Usar una lista editorial compacta de dos columnas, no una cuadrícula de tarjetas.
 - Evitar que plantas, paisajismo, lujo o propiedad dominen el orden, las imágenes o el lenguaje.
+- Dar a servicios de plantas exactamente la misma jerarquía visual que a las demás configuraciones; mencionar alquileres solo dentro de esa configuración o en capacidades especializadas.
 
 ### 4. Reorganizar capacidades reales por función
 - Sustituir las seis filas actuales por una matriz editorial agrupada:
@@ -75,6 +79,7 @@ Evidencia
 - No modificar checkout, ONVO, suscripciones, validación del servidor ni reglas de pago.
 - Actualizar title, description, Open Graph, Twitter y JSON-LD estáticos a la nueva categoría amplia; mantener canonical, robots, sitemap e imagen social existentes.
 - Actualizar el SEO dinámico de la portada con títulos y descripciones naturales en ES/EN/DE, sin crear rutas nuevas.
+- No clasificar Home Guide como software de alquiler de plantas, paisajismo, administración de propiedades o facilities. Si se usa `SoftwareApplication`, describirlo ampliamente como software de operaciones para trabajo ligado a lugares físicos, sin inventar categorías ni afirmaciones schema.org.
 - No modificar `App.tsx`, autenticación, módulos, arquetipos, base de datos, paneles ni rutas protegidas.
 
 ## Validación
@@ -87,4 +92,4 @@ Evidencia
 - Revisión final contra las quince preguntas de aceptación comercial; no se considerará terminado si la página todavía parece centrada en plantas, propiedades o una plantilla SaaS genérica.
 
 ## Resultado esperado
-Una portada reconociblemente Home Guide que explique con claridad que el producto conecta lugares físicos con activos, trabajo, personas y evidencia; que admite distintas configuraciones operativas; y que plantas o alquileres son capacidades opcionales, no la identidad de la plataforma.
+Una portada reconociblemente Home Guide que explique con claridad que el producto conserva el contexto entre lugares físicos, activos, trabajo, personas y registros cuando cada relación aplica; que admite distintas configuraciones operativas; y que plantas o alquileres son capacidades opcionales, no la identidad de la plataforma.
