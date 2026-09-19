@@ -10,7 +10,7 @@
 - [x] Update broad-category EN/ES/DE SEO while preserving canonical, routes, pricing, checkout, and private product behavior.
 - [x] Re-run functional, accessibility, reduced-motion, responsive, and visual QA at 390/768/1024/1440px.
 - [x] Apply and visually validate the selected Midnight Forest treatment across the public landing.
-- [ ] Separate functional modules from specialized operating configurations in public pricing.
-- [ ] Restore generous spacing and clear selected states using the adapted Pricing 02 structure.
-- [ ] Lighten the top navigation while structurally preventing text from showing behind it.
-- [ ] Validate pricing logic, desktop/mobile layout, scrolling, and reduced motion.
+- [x] Separate functional modules from specialized operating configurations in public pricing.
+- [x] Restore generous spacing and clear selected states using the adapted Pricing 02 structure.
+- [x] Lighten the top navigation while structurally preventing text from showing behind it.
+- [x] Validate pricing logic, desktop/mobile layout, scrolling, and reduced motion.
