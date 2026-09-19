@@ -425,13 +425,7 @@
   .homeguide-landing h1,
   .homeguide-landing h2,
   .homeguide-landing h3 { font-family: 'Sora', system-ui, sans-serif; letter-spacing: 0; }
-  .landing-canvas {
-    background:
-      radial-gradient(circle at 82% 18%, hsl(var(--primary) / 0.055), transparent 26%),
-      radial-gradient(circle at 13% 48%, hsl(var(--accent) / 0.045), transparent 24%),
-      radial-gradient(circle at 78% 76%, hsl(var(--primary) / 0.04), transparent 28%),
-      linear-gradient(180deg, hsl(var(--background)) 0%, hsl(var(--secondary) / 0.32) 52%, hsl(var(--background)) 100%);
-  }
+  .landing-canvas { @apply bg-background; }
   .landing-shell { @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8; }
   .landing-section { @apply relative py-20 md:py-28 lg:py-32; }
   .landing-eyebrow { @apply text-[0.6875rem] font-bold uppercase text-primary; letter-spacing: .19em; }
@@ -455,7 +449,7 @@
   .landing-hero-overlay { @apply absolute inset-0; background: linear-gradient(90deg, hsl(var(--foreground) / .9) 0%, hsl(var(--primary) / .75) 38%, hsl(var(--primary) / .2) 68%, hsl(var(--foreground) / .1) 100%), linear-gradient(0deg, hsl(var(--foreground) / .42), transparent 34%); }
   .landing-hero-inner { @apply relative flex min-h-[700px] items-end pb-16 pt-32 lg:min-h-[760px] lg:pb-24; }
   .landing-hero-copy { @apply max-w-[680px]; }
-  .landing-hero-title { @apply mt-5 max-w-[15ch] font-display font-semibold; font-size: clamp(2.6rem, 5vw, 4.8rem); line-height: 1.06; letter-spacing: -.035em !important; }
+  .landing-hero-title { @apply mt-5 max-w-[15ch] font-display font-semibold; font-size: clamp(2.6rem, 5vw, 4.8rem); line-height: 1.06; letter-spacing: 0; }
   .landing-hero-body { @apply mt-6 max-w-[62ch] text-base text-primary-foreground/90 md:text-lg; line-height: 1.7; }
   .landing-hero-support { @apply mt-4 text-sm font-medium text-primary-foreground/75; }
   .landing-hero-actions { @apply mt-8 flex flex-wrap gap-3; }
