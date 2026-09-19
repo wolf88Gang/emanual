@@ -561,12 +561,12 @@
   .pricing-option-group > p { @apply mt-2 max-w-xl text-sm leading-6 text-muted-foreground; }
   .pricing-option-group > div { @apply mt-6 border-t border-border; }
   .pricing-option-group.specialized-configuration { @apply border-l-2 border-accent/50 pl-5 sm:pl-7; }
-  .addon-row { @apply grid h-auto min-h-[8.5rem] w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-6 rounded-none border-b border-border px-0 py-7 text-left hover:bg-transparent; }
+  .addon-row { @apply !flex h-auto min-h-[8.5rem] w-full min-w-0 max-w-full items-center justify-between gap-6 whitespace-normal rounded-none border-b border-border px-0 py-7 text-left hover:bg-transparent; }
   .addon-row[data-selected='true'] { @apply border-primary/50 bg-primary/5; }
-  .addon-copy { @apply block min-w-0 text-left; }
+  .addon-copy { @apply block min-w-0 flex-1 whitespace-normal text-left; }
   .addon-copy strong { @apply block text-base font-semibold text-foreground; }
   .addon-copy small { @apply mt-2 block max-w-xl whitespace-normal text-sm font-normal leading-6 text-muted-foreground; }
-  .addon-meta { @apply flex min-w-[9rem] items-center justify-end gap-5 border-l border-border pl-6; }
+  .addon-meta { @apply flex min-w-[9rem] shrink-0 items-center justify-end gap-5 border-l border-border pl-6; }
   .addon-price { @apply block text-right text-base font-semibold tabular-nums text-foreground; }
   .addon-price small { @apply mt-1 block whitespace-nowrap text-xs font-normal text-muted-foreground; }
   .addon-check { @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border; }
@@ -640,7 +640,7 @@
   .capability-row { grid-template-columns: 2rem 2.5rem 1fr; }
   .capability-row h3 { @apply self-center; }
   .capability-row p { @apply col-span-3 pl-0; }
-  .addon-row { @apply min-h-0 grid-cols-1 gap-5 py-7; }
+  .addon-row { @apply !flex-col !items-stretch gap-5 py-7; }
   .addon-meta { @apply min-w-0 justify-between border-l-0 border-t border-border pl-0 pt-5; }
   .addon-price { @apply text-left; }
   .addon-price small { @apply inline pl-1; }
