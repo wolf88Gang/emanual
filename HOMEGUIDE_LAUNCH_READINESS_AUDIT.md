@@ -88,9 +88,10 @@ _No other P0 blockers remain._
 - `Admin.tsx` renders a hardcoded roster (owner@demo.com / manager@demo.com / crew@demo.com) on the live Team Members tab with non-functional Invite User / Add Vendor / Edit buttons, while the real `TeamManagement` component exists unused on that page.
 - **Fix:** remove the fake roster, mount the real TeamManagement component, or hide the tab until functional.
 
-### D8. Transactional email unproven to a real recipient
-- Reminder/dispatch functions deploy clean and the direct dispatch test returned HTTP 200 `{"enqueued":0,"failed":0,"sent":0}` — correct for an empty queue, but no real send was ever observed. `notify.homeguide.casa` is verified as sender domain.
-- **Fix:** send one real reminder to an owned contact before launch (smallest live test), confirm inbox delivery + spam placement, then enable the daily pg_cron (currently 14:00 UTC / 08:00 Costa Rica).
+### D8. Transactional email — FIXED AND PROVEN
+- Live test 2026-09-19: queued an AUDIT_TEST_ watering reminder for contact `wolfgang@novasilva.co` and sent it through the app's own "Send now" path. Result `{"sent":1,"failures":[]}`, outbox row `status=sent`, `provider=lovable`, and the delivery log records `sent` from `notify.homeguide.casa` (message id `_20260919012920.b45c784ff7025bac@notify.homeguide.casa_`).
+- **Bug found and fixed during the test:** `plantops-send-reminder` authorised the caller by reading `profiles.role`, a column that does not exist, so every manual "Send now" returned 403 Forbidden for every user. The check now reads `user_roles` (owner/manager). Verified: 403 before the fix, 200 and a real send after.
+- Remaining operator step: confirm the message landed in the inbox (not spam). The daily automatic dispatch cron is already active at 14:00 UTC / 08:00 Costa Rica.
 
 ## E. P2 Post-Launch Priority
 
@@ -218,7 +219,7 @@ _No other P0 blockers remain._
 - [x] D5 FIXED — public read policy dropped, authenticated-only SELECT, `REVOKE SELECT ... FROM anon`. Verified: anon `42501`; signed-in read returns the banner flag only.
 - [x] D6 FIXED — `photos` and `asset-photos` are now private buckets, public read policies dropped, reads restricted to signed-in users, and the app resolves every stored reference through short-lived signed URLs (`src/lib/photoUrls.ts`, `StoragePhoto`). Verified: old public URL returns 400, signed URL returns 200, asset grid renders (screenshot `/tmp/browser/d1/assets.png`). Follow-up (P2): tighten signed-URL minting to same-org membership rather than any signed-in user.
 - [x] D7 FIXED — fake roster, mock users, dead Invite/Add/Edit/Delete/Print buttons removed; real `TeamManagement` is the default tab on /admin.
-- [ ] D8 Send and receive one real transactional email (needs a recipient address the operator owns)
+- [x] D8 DONE — real reminder sent to wolfgang@novasilva.co and logged as `sent`; a 403-for-everyone authorisation bug in the send function was found and fixed in the process (see D8).
 - [x] J2 DONE — AUDIT_TEST_ plant set seeded and the full reserve → install → damage → replacement chain exercised against live data; incident task and completion auto-created (see section J2). Test rows are listed in section N and can be deleted.
 
 ### FIX DURING FIRST 30 DAYS
