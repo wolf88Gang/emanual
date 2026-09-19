@@ -30,7 +30,7 @@ Separar la portada en componentes específicos de landing:
 - preguntas frecuentes
 - cierre y pie de página
 
-`Features.tsx` quedará como coordinador de la página, el idioma y el estado del estimador.
+`Features.tsx` quedará como un compositor liviano de la página. El estado, cálculo e interacción del estimador permanecerán encapsulados dentro de `PricingSection`; no se volverá a concentrar la implementación en un archivo monolítico.
 
 ### 2. Identidad visual y tipografía
 - Mantener exactamente los tokens públicos verde, crema y dorado indicados, además de los colores `estate-*` existentes.
@@ -55,6 +55,8 @@ Construir las doce respuestas en el orden solicitado:
 
 Toda la redacción tendrá versiones equivalentes y naturales en inglés, español y alemán. No se incluirán métricas, clientes, testimonios, certificaciones, automatizaciones ni módulos inventados.
 
+Las primeras cuatro secciones conservarán literalmente la tesis y el copy comercial definido en el encargo: qué es Home Guide, fragmentación de contexto, organizar → ejecutar → documentar → compartir y un registro → múltiples usos. No se sustituirá por lenguaje SaaS genérico. En español se usará una sola voz profesional de usted: “Organice”, “Planifique”, “Documente”, “Comparta” y “Cree su cuenta”. Inglés y alemán preservarán el significado con redacción natural, no traducción literal.
+
 ### 4. Presentación y navegación
 - Usar `estate_guide_4.jpg` como imagen principal de ancho completo, con una capa legible construida con verde estate y tonos neutros.
 - Incorporar el texto y las llamadas a la acción definidos; “Crear cuenta” seguirá usando `/auth?mode=signup` y “Ver cómo funciona” hará desplazamiento suave a la sección correspondiente.
@@ -68,6 +70,16 @@ Crear primitivas reutilizables y exclusivas de la portada:
 - `HGTextReveal` con máscara para títulos
 - `LandingSectionHeading` con animación separada de eyebrow, título, subtítulo y nota
 
+Los valores del encargo serán defaults reales del sistema, no referencias aproximadas:
+- `HGReveal`: 720 ms, umbral 0.18, `cubic-bezier(0.22, 1, 0.36, 1)`, 28 px verticales y 34 px horizontales
+- `HGTextReveal`: 820 ms, `translateY(108%)` y `cubic-bezier(0.16, 1, 0.3, 1)`
+- `HGStaggerGroup`: paso de 90 ms
+- revelado de medios: escala 1.035 → 1 durante 1100 ms
+- línea de flujo: 2800 ms
+- barrido del registro operativo: aproximadamente 7 s
+
+Estos valores solo se ajustarán puntualmente cuando una composición concreta lo exija; los defaults permanecerán intactos.
+
 La visibilidad se resolverá con `IntersectionObserver` y CSS, con contenido visible por defecto si el observador no existe. También se incorporarán:
 - revelado suave de imágenes
 - líneas de flujo animadas en “Datos conectados”
@@ -80,11 +92,13 @@ La visibilidad se resolverá con `IntersectionObserver` y CSS, con contenido vis
 ### 6. Composiciones clave
 - **Problema:** título lateral fijo en escritorio y tres filas editoriales, sin tarjetas flotantes.
 - **Cómo funciona:** línea temporal vertical con cuatro pasos y estados discretos.
-- **Datos conectados:** cuatro rutas visuales que se apilan sin desbordamiento en móvil.
+- **Datos conectados:** visualización de relaciones con origen, línea animada, flecha y destinos; nunca cuatro tarjetas. Mantendrá explícitamente: Propiedad → Zonas → Activos → Tareas → Documentos; Tarea / visita → Responsable → Hora → Ubicación → Evidencia; Planta / ubicación → Protocolo → Cuidado → Historial → Reemplazo; Trabajo completado → Registro → Reporte → Portal del cliente → Seguimiento. En móvil se apilará sin desbordamiento.
 - **Audiencias:** lista editorial en dos columnas con responsabilidades concretas.
-- **Visibilidad operativa:** representación veraz de propiedad, zona, trabajo, responsable, estado, evidencia, próxima acción y visibilidad del cliente; sin analítica inventada.
+- **Visibilidad operativa:** representación genérica y claramente demostrativa de propiedad, zona, trabajo, responsable, estado, evidencia, próxima acción y visibilidad del cliente; sin apariencia de datos reales, porcentajes, tendencias, clientes ficticios, KPI ni analítica inventada.
 - **Capacidades:** composición editorial con capacidades existentes: sitios mapeados, tareas/visitas, evidencia, plantas, personal/herramientas y entrega al cliente.
 - **Diferenciadores y confianza:** bordes estructurales, numeración discreta y afirmaciones respaldadas por funciones actuales.
+
+Problema, Datos conectados, Audiencias y Diferenciadores conservarán composición editorial. No se convertirán en cuadrículas SaaS de tarjetas durante la implementación.
 
 ### 7. Precio y conversión
 - Conservar `ADDONS`, `ANNUAL_MONTHS_CHARGED`, `BASE_PRICE_PER_PROPERTY_USD`, `quote()` y `CRC_PER_USD` como única fuente de verdad.
@@ -102,7 +116,9 @@ La visibilidad se resolverá con `IntersectionObserver` y CSS, con contenido vis
 - Componentes nuevos bajo un espacio exclusivo de landing, con estilos públicos acotados para no afectar la aplicación autenticada.
 - Mantener el componente `Button` y los tokens semánticos existentes para todas las acciones.
 - Añadir pruebas enfocadas a las primitivas de movimiento: revelado único, fallback sin observador y reducción de movimiento cuando sea práctico en el entorno actual.
-- No modificar `src/App.tsx` salvo que una verificación revele una necesidad estrictamente pública; la estrategia prevista conserva su lógica sin cambios.
+- No introducir Framer Motion. El sistema se implementará con `IntersectionObserver` y CSS; cualquier excepción exigiría una limitación técnica demostrable antes de cambiar el enfoque.
+- Preservar `Seo`, metadata, canonical actual, estructura indexable, titles, descriptions y rutas públicas existentes.
+- No modificar el routing público: `/` conservará la decisión actual entre usuario autenticado y no autenticado, y `/features` seguirá redirigiendo como ahora. No se creará una landing paralela.
 
 ## Verificación final
 - Ejecutar comprobación de tipos, pruebas existentes, pruebas nuevas y compilación.
@@ -111,6 +127,8 @@ La visibilidad se resolverá con `IntersectionObserver` y CSS, con contenido vis
 - Revisar visualmente 390, 768, 1024 y 1440 px.
 - Confirmar ausencia de desbordamiento horizontal, saltos de imagen, errores de consola y recursos fallidos.
 - Repetir la revisión con movimiento reducido y comprobar que todo el contenido sea visible.
+- Realizar una revisión visual, no solo técnica, de continuidad entre secciones, ritmo del scroll, densidad de texto, jerarquía, sticky headings, motion y móvil a 390 px.
+- Si la página compila pero se percibe genérica, fragmentada o excesivamente convertida en tarjetas, iterar antes de considerarla terminada.
 
 ## Resultado esperado
 Una portada reconociblemente Home Guide que explica el sistema antes de presentar capacidades, conecta la historia comercial de principio a fin y se siente más intencional y premium sin adoptar la identidad de Nova Silva.
