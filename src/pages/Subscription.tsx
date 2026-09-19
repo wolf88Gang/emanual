@@ -126,7 +126,7 @@ export default function Subscription() {
           </CardContent>
         </Card>
 
-        {/* PayPal for non-paid users */}
+        {/* Checkout for non-paid users */}
         {!isPaid && (
           <Card>
             <CardHeader>
@@ -135,14 +135,17 @@ export default function Subscription() {
               </CardTitle>
               <p className="text-sm text-muted-foreground">
                 {l(
-                  `You have ${propertyCount} ${propertyCount === 1 ? 'property' : 'properties'}. Total: $${totalMonthly || PRICE_PER_PROPERTY}/month`,
-                  `Tienes ${propertyCount} ${propertyCount === 1 ? 'propiedad' : 'propiedades'}. Total: $${totalMonthly || PRICE_PER_PROPERTY}/mes`,
-                  `Sie haben ${propertyCount} ${propertyCount === 1 ? 'Immobilie' : 'Immobilien'}. Gesamt: $${totalMonthly || PRICE_PER_PROPERTY}/Monat`
+                  `You have ${propertyCount} ${propertyCount === 1 ? 'property' : 'properties'}. From $${totalMonthly || PRICE_PER_PROPERTY}/month, with extras and an annual option at checkout.`,
+                  `Tienes ${propertyCount} ${propertyCount === 1 ? 'propiedad' : 'propiedades'}. Desde $${totalMonthly || PRICE_PER_PROPERTY}/mes, con extras y opción anual en el pago.`,
+                  `Sie haben ${propertyCount} ${propertyCount === 1 ? 'Immobilie' : 'Immobilien'}. Ab $${totalMonthly || PRICE_PER_PROPERTY}/Monat, mit Extras und Jahresoption bei der Zahlung.`
                 )}
               </p>
             </CardHeader>
             <CardContent>
-              <div ref={paypalRef} className="min-h-[150px]" />
+              <Button className="w-full h-12 text-base" onClick={() => navigate('/checkout')}>
+                <Crown className="h-5 w-5" />
+                {l('Go to checkout', 'Ir al pago', 'Zur Zahlung')}
+              </Button>
             </CardContent>
           </Card>
         )}
@@ -171,9 +174,9 @@ export default function Subscription() {
 
         <p className="text-center text-xs text-muted-foreground">
           {l(
-            'Payments are securely processed via PayPal.',
-            'Los pagos se procesan de forma segura a través de PayPal.',
-            'Zahlungen werden sicher über PayPal abgewickelt.'
+            'Payments are securely processed by ONVO Pay.',
+            'Los pagos se procesan de forma segura con ONVO Pay.',
+            'Zahlungen werden sicher über ONVO Pay abgewickelt.'
           )}
         </p>
       </main>
