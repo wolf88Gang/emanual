@@ -219,7 +219,7 @@ _No other P0 blockers remain._
 - [x] D6 FIXED — `photos` and `asset-photos` are now private buckets, public read policies dropped, reads restricted to signed-in users, and the app resolves every stored reference through short-lived signed URLs (`src/lib/photoUrls.ts`, `StoragePhoto`). Verified: old public URL returns 400, signed URL returns 200, asset grid renders (screenshot `/tmp/browser/d1/assets.png`). Follow-up (P2): tighten signed-URL minting to same-org membership rather than any signed-in user.
 - [x] D7 FIXED — fake roster, mock users, dead Invite/Add/Edit/Delete/Print buttons removed; real `TeamManagement` is the default tab on /admin.
 - [ ] D8 Send and receive one real transactional email (needs a recipient address the operator owns)
-- [ ] J2 Seed a plantops pilot placement set and exercise damage → replacement once
+- [x] J2 DONE — AUDIT_TEST_ plant set seeded and the full reserve → install → damage → replacement chain exercised against live data; incident task and completion auto-created (see section J2). Test rows are listed in section N and can be deleted.
 
 ### FIX DURING FIRST 30 DAYS
 
