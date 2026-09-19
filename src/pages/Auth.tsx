@@ -43,6 +43,12 @@ export default function Auth() {
     if (user) navigate('/', { replace: true });
   }, [user, navigate]);
 
+  // Deep link from the pricing / checkout flow: /auth?mode=signup
+  useEffect(() => {
+    if (searchParams.get('mode') === 'signup') setIsSignUp(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // One-time notice after a completed password reset (recovery session signed out).
   useEffect(() => {
     if (searchParams.get('password_reset') !== 'success') return;
