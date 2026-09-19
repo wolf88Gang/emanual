@@ -14,7 +14,7 @@ const trustIcons = [Users, Lock, ShieldCheck];
 
 export function LandingNavbar({ copy }: { copy: Copy['nav'] }) {
   const [open, setOpen] = useState(false);
-  const links = [[copy.how, '#how-it-works'], [copy.visibility, '#visibility'], [copy.capabilities, '#capabilities'], [copy.pricing, '#pricing']];
+  const links = [[copy.how, '#how-it-works'], [copy.audience, '#audience'], [copy.capabilities, '#capabilities'], [copy.pricing, '#pricing']];
   return <header className="landing-nav-wrap">
     <div className="landing-nav">
       <Link to="/" className="landing-brand" aria-label="Home Guide"><img src="/images/hg-logo.png" alt="" /><span>Home Guide</span></Link>
@@ -44,11 +44,11 @@ export function HowItWorksSection({ copy }: { copy: Copy['how'] }) {
 }
 
 export function ConnectedDataSection({ copy }: { copy: Copy['connected'] }) {
-  return <section className="landing-section connected-section numbered-section" aria-labelledby="connected-title"><span className="section-watermark" aria-hidden="true">03</span><div className="landing-shell"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} className="max-w-3xl" /><HGStaggerGroup className="data-routes" startDelay={70} step={110} direction="left">{copy.routes.map(([origin, targets], index) => <div className="data-route" key={origin}><span className="data-route-index">0{index + 1}</span><strong>{origin}</strong><div className="flow-line" aria-hidden="true"><span /></div><ArrowRight className="data-arrow" aria-hidden="true"/><div className="data-targets">{targets.map((target) => <span key={target}>{target}</span>)}</div></div>)}</HGStaggerGroup></div></section>;
+  return <section className="landing-section connected-section numbered-section" aria-labelledby="connected-title"><span className="section-watermark" aria-hidden="true">03</span><div className="landing-shell"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} className="max-w-3xl" /><HGReveal className="connected-model" delay={90}><div className="connected-model-heading"><span className="landing-eyebrow">{copy.modelLabel}</span><p>{copy.modelNote}</p></div><ol>{copy.model.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, '0')}</span><strong>{item}</strong>{index < copy.model.length - 1 && <ArrowRight aria-hidden="true" />}</li>)}</ol></HGReveal><HGStaggerGroup className="data-routes" startDelay={70} step={110} direction="left">{copy.routes.map(([origin, targets], index) => <div className="data-route" key={origin}><span className="data-route-index">0{index + 1}</span><strong>{origin}</strong><div className="flow-line" aria-hidden="true"><span /></div><ArrowRight className="data-arrow" aria-hidden="true"/><div className="data-targets">{targets.map((target) => <span key={target}>{target}</span>)}</div></div>)}</HGStaggerGroup></div></section>;
 }
 
 export function AudienceSection({ copy }: { copy: Copy['audience'] }) {
-  return <section className="landing-section" aria-labelledby="audience-title"><div className="landing-shell editorial-split audience-layout"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} /><HGStaggerGroup className="audience-list" startDelay={70}>{copy.groups.map(([title, body], index) => <article key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{body}</p></article>)}</HGStaggerGroup></div></section>;
+  return <section id="audience" className="landing-section scroll-mt-28" aria-labelledby="audience-title"><div className="landing-shell editorial-split audience-layout"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} /><HGStaggerGroup className="audience-list" startDelay={70}>{copy.groups.map(([title, body], index) => <article key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{body}</p></article>)}</HGStaggerGroup></div></section>;
 }
 
 export function OperationalVisibilitySection({ copy }: { copy: Copy['visibility'] }) {

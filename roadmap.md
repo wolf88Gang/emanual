@@ -6,3 +6,6 @@
 - [x] Build the modular Home Guide Public Website V2 narrative and landing-scoped motion system.
 - [x] Preserve canonical pricing, SEO, public routing, and complete EN/ES/DE copy.
 - [x] Validate motion, reduced motion, sticky behavior, interactions, and visual quality at 390/768/1024/1440px.
+- [x] Reposition the public site around place-connected operations, with plants and rentals as optional configurations.
+- [x] Update broad-category EN/ES/DE SEO while preserving canonical, routes, pricing, checkout, and private product behavior.
+- [x] Re-run functional, accessibility, reduced-motion, responsive, and visual QA at 390/768/1024/1440px.
