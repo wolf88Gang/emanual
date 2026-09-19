@@ -67,18 +67,19 @@ export default function BusinessHome() {
     queryKey: ['business-home-op-records', orgId, assetsOn, tasksOn],
     enabled: !!orgId && (assetsOn || tasksOn),
     queryFn: async () => {
-      const countOf = async (table: 'assets' | 'tasks', scoped: boolean) => {
-        let q = (supabase.from(table) as any).select('id', { count: 'exact', head: true });
-        if (scoped) q = q.eq('org_id', orgId!);
-        const { count, error } = await q;
+      // Both tables are scoped by access rules already (assets have no org
+      // column; they belong to a site), so no explicit organization filter.
+      const countOf = async (table: 'assets' | 'tasks') => {
+        const { count, error } = await (supabase.from(table) as any).select('id', { count: 'exact', head: true });
         if (error) throw error;
         return (count as number | null) ?? 0;
       };
       let total = 0;
-      if (assetsOn) total += await countOf('assets', true);
-      if (tasksOn) total += await countOf('tasks', false);
+      if (assetsOn) total += await countOf('assets');
+      if (tasksOn) total += await countOf('tasks');
       return total;
     },
+
 
   });
 
