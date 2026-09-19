@@ -20,7 +20,7 @@ const ADDON_GROUPS: Array<{ group: AddonGroup; labelKey: string; bodyKey: string
 const CAPABILITY_GROUPS: Array<{ labelKey: string; moduleKeys: ModuleKey[] }> = [
   { labelKey: 'capabilityCore', moduleKeys: ['clients', 'projects', 'assets', 'documents'] },
   { labelKey: 'capabilityField', moduleKeys: ['map', 'tasks', 'visits', 'tools', 'inventory', 'labor'] },
-  { labelKey: 'capabilityCare', moduleKeys: ['plants_pots', 'care', 'reminders', 'rentals'] },
+  { labelKey: 'capabilityCare', moduleKeys: ['plants_pots', 'care', 'reminders'] },
   { labelKey: 'capabilityAdmin', moduleKeys: ['manuals', 'client_portal', 'billing_payments'] },
 ];
 
@@ -38,13 +38,11 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
   const addonById = (id: string) => ADDONS.find((addon) => addon.id === id);
   const addonName = (id: string) => {
     const addon = addonById(id);
-    if (!addon) return id;
-    return id === 'plantops' ? text('plantServicesName') : local(addon.name);
+    return addon ? local(addon.name) : id;
   };
   const addonDescription = (id: string) => {
     const addon = addonById(id);
-    if (!addon) return '';
-    return id === 'plantops' ? text('plantServicesDescription') : local(addon.description);
+    return addon ? local(addon.description) : '';
   };
   const renderAddon = (id: string) => {
     const addon = addonById(id);
