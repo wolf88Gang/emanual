@@ -1,0 +1,2 @@
+ALTER TABLE public.checkout_sessions DROP CONSTRAINT IF EXISTS checkout_sessions_status_check;
+ALTER TABLE public.checkout_sessions ADD CONSTRAINT checkout_sessions_status_check CHECK (status IN ('pending','processing','paid','failed','expired'));
