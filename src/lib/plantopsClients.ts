@@ -256,10 +256,11 @@ export async function fetchClientWorkspace(orgId: string): Promise<ClientWorkspa
     };
   };
 
-  orgSiteCache.set(orgId, {
-    at: Date.now(),
-    rows: estates.map((e) => ({ ...projectRowFor(e), clientId: e.client_id ?? null })),
-  });
+  lastOrgSites = {
+    orgId,
+    rows: estates.map((e) => ({ ...projectRowFor(e), clientId: (e.client_id as string | null) ?? null })),
+  };
+
 
   const rows: ClientWorkspaceRow[] = (clientsRes.data || []).map((c: any) => {
     const clientEstates = estates.filter((e) => e.client_id === c.id);
