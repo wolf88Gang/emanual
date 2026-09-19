@@ -215,47 +215,56 @@ export async function fetchClientWorkspace(orgId: string): Promise<ClientWorkspa
   const t = today();
   const now = new Date().toISOString();
 
+  /** Shared project projection so client-scoped and org-wide site lists agree. */
+  const projectRowFor = (e: any): ClientProjectRow => {
+    const plan = (e.plantops_service_plan_json || {}) as ServicePlan;
+    const ps = placements.filter((p) => p.estate_id === e.id);
+    const installed = ps.filter((p) => p.status === 'installed');
+    const due = installed.filter((p) => p.next_water_due && p.next_water_due <= t);
+    const review = installed.filter(
+      (p) => p.water_interval_override_days == null && p.water_interval_days == null,
+    );
+    const nextCare = installed
+      .map((p) => p.next_water_due)
+      .filter(Boolean)
+      .sort()[0] ?? null;
+    const estTasks = tasks.filter((x) => x.estate_id === e.id);
+    const nextVisit = estTasks
+      .map((x) => x.due_date)
+      .filter((d: string | null) => !!d && d >= t)
+      .sort()[0] ?? null;
+    const openIssues = estTasks.filter((x) => x.status === 'overdue' || (x.due_date && x.due_date < t)).length;
+    const estLinks = links.filter((x) => x.estate_id === e.id);
+    const activeLink = estLinks.find((x) => !x.revoked_at && (!x.expires_at || x.expires_at > now));
+    return {
+      id: e.id,
+      name: e.name,
+      address_text: e.address_text,
+      setup_status: e.setup_status,
+      project_type: ((plan as any).project_type as string) || 'residential',
+      project_status: ((plan as any).project_status as string) || (e.setup_status === 'active' ? 'active' : 'setup'),
+      capabilities: projectCapabilities(plan),
+      plants: installed.length,
+      waterToday: due.length,
+      needsReview: review.length,
+      nextCare,
+      nextVisit,
+      manualApproved: estLinks.some((x) => !!x.manual_approved_at),
+      portalActive: !!activeLink,
+      openIssues,
+      balances: [],
+    };
+  };
+
+  orgSiteCache.set(orgId, {
+    at: Date.now(),
+    rows: estates.map((e) => ({ ...projectRowFor(e), clientId: e.client_id ?? null })),
+  });
+
   const rows: ClientWorkspaceRow[] = (clientsRes.data || []).map((c: any) => {
     const clientEstates = estates.filter((e) => e.client_id === c.id);
-    const projects: ClientProjectRow[] = clientEstates.map((e) => {
-      const plan = (e.plantops_service_plan_json || {}) as ServicePlan;
-      const ps = placements.filter((p) => p.estate_id === e.id);
-      const installed = ps.filter((p) => p.status === 'installed');
-      const due = installed.filter((p) => p.next_water_due && p.next_water_due <= t);
-      const review = installed.filter(
-        (p) => p.water_interval_override_days == null && p.water_interval_days == null,
-      );
-      const nextCare = installed
-        .map((p) => p.next_water_due)
-        .filter(Boolean)
-        .sort()[0] ?? null;
-      const estTasks = tasks.filter((x) => x.estate_id === e.id);
-      const nextVisit = estTasks
-        .map((x) => x.due_date)
-        .filter((d: string | null) => !!d && d >= t)
-        .sort()[0] ?? null;
-      const openIssues = estTasks.filter((x) => x.status === 'overdue' || (x.due_date && x.due_date < t)).length;
-      const estLinks = links.filter((x) => x.estate_id === e.id);
-      const activeLink = estLinks.find((x) => !x.revoked_at && (!x.expires_at || x.expires_at > now));
-      return {
-        id: e.id,
-        name: e.name,
-        address_text: e.address_text,
-        setup_status: e.setup_status,
-        project_type: ((plan as any).project_type as string) || 'residential',
-        project_status: ((plan as any).project_status as string) || (e.setup_status === 'active' ? 'active' : 'setup'),
-        capabilities: projectCapabilities(plan),
-        plants: installed.length,
-        waterToday: due.length,
-        needsReview: review.length,
-        nextCare,
-        nextVisit,
-        manualApproved: estLinks.some((x) => !!x.manual_approved_at),
-        portalActive: !!activeLink,
-        openIssues,
-        balances: [],
-      };
-    });
+    const projects: ClientProjectRow[] = clientEstates.map((e) => projectRowFor(e));
+
 
     const clientInvoices = invoices.filter((i) => i.client_id === c.id);
     const balances = balancesFor(clientInvoices);
