@@ -563,7 +563,7 @@
   .pricing-option-group > div { @apply mt-6 border-t border-border; }
   .pricing-option-group.specialized-configuration { @apply border-l-2 border-accent/50 pl-5 sm:pl-7; }
   .addon-row { @apply !flex !h-auto min-h-[8.5rem] w-full min-w-0 max-w-full items-center justify-between gap-6 whitespace-normal rounded-none border-b border-border px-4 py-7 text-left text-foreground hover:bg-secondary hover:text-foreground focus-visible:bg-secondary focus-visible:text-foreground sm:px-0; }
-  .addon-row[data-selected='true'] { @apply border-primary/60 bg-primary/15 text-foreground hover:bg-primary/20 hover:text-foreground; }
+  .addon-row[data-selected='true'] { @apply border-primary/70 bg-secondary text-foreground hover:bg-secondary hover:text-foreground focus-visible:bg-secondary focus-visible:text-foreground; }
   .addon-copy { @apply block min-w-0 flex-1 whitespace-normal text-left; }
   .addon-copy strong { @apply block text-base font-semibold text-foreground; }
   .addon-copy small { @apply mt-2 block max-w-xl whitespace-normal text-sm font-normal leading-6 text-muted-foreground; }
@@ -571,7 +571,7 @@
   .addon-price { @apply block text-right text-base font-semibold tabular-nums text-foreground; }
   .addon-price small { @apply mt-1 block whitespace-nowrap text-xs font-normal text-muted-foreground; }
   .addon-check { @apply flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-border; }
-  .addon-check.is-selected { @apply border-primary bg-primary text-primary-foreground; }
+  .addon-check.is-selected { @apply border-primary bg-background text-primary; }
   .addon-check svg { @apply h-4 w-4; }
   .pricing-summary { @apply flex flex-col justify-between gap-10 bg-secondary p-8 sm:p-12; }
   .pricing-total { @apply mt-6 flex flex-wrap items-end gap-2; }
