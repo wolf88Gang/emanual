@@ -462,6 +462,21 @@
   .landing-nav-actions { @apply flex items-center gap-1 sm:gap-2; }
   .landing-mobile-nav { @apply mx-auto mt-1 grid max-w-7xl gap-1 rounded-lg border border-border/80 bg-background/95 p-3 shadow-lg backdrop-blur-md lg:hidden; }
   .landing-mobile-nav a { @apply rounded-md px-3 py-3 text-sm font-medium hover:bg-secondary; }
+  .error-page { @apply relative flex flex-col; background-image: linear-gradient(145deg, hsl(var(--background)) 0%, hsl(150 21% 7%) 58%, hsl(148 18% 9%) 100%); }
+  .error-header { @apply relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-6 sm:px-8 lg:py-8; }
+  .error-header > span { @apply font-display text-[0.6875rem] font-semibold uppercase text-muted-foreground; letter-spacing: .16em; }
+  .error-content { @apply relative mx-auto flex w-full max-w-7xl flex-1 items-center px-5 py-16 sm:px-8 lg:py-24; }
+  .error-copy { @apply relative z-10 max-w-2xl; }
+  .error-copy h1 { @apply mt-5 max-w-[16ch] font-display font-semibold; font-size: clamp(2.45rem, 6vw, 5.4rem); line-height: 1.04; }
+  .error-copy > p:not(.landing-eyebrow) { @apply mt-7 max-w-[55ch] text-base text-muted-foreground md:text-lg; line-height: 1.75; }
+  .error-actions { @apply mt-9 flex flex-col items-stretch gap-3 sm:flex-row sm:items-center; }
+  .error-actions > * { @apply sm:min-w-[11rem]; }
+  .error-number { @apply pointer-events-none absolute right-[-.05em] top-1/2 hidden -translate-y-1/2 select-none font-display font-semibold text-accent/[.055] lg:block; font-size: clamp(15rem, 30vw, 29rem); line-height: .8; }
+  .error-topography { @apply pointer-events-none absolute -right-[15%] top-[10%] h-[75%] w-[62%] opacity-20; }
+  .error-topography span { @apply absolute rounded-[50%] border border-primary/70; inset: 8%; transform: rotate(-12deg); }
+  .error-topography span:nth-child(2) { inset: 20% 2% 0 15%; }
+  .error-topography span:nth-child(3) { inset: 34% 13% -8% 0; }
+  .error-footer { @apply relative z-10 mx-auto flex w-full max-w-7xl items-center justify-between border-t border-border px-5 py-5 text-[0.625rem] font-semibold text-muted-foreground sm:px-8; letter-spacing: .14em; }
   .landing-hero { @apply relative min-h-[700px] overflow-hidden text-primary-foreground lg:min-h-[760px]; }
   .landing-hero-image { @apply absolute inset-0 h-full w-full object-cover; filter: saturate(.72) brightness(.58) contrast(1.06); }
   .landing-hero-overlay { @apply absolute inset-0; background: linear-gradient(90deg, hsl(150 28% 4% / .96) 0%, hsl(150 28% 5% / .82) 42%, hsl(150 22% 6% / .38) 76%, hsl(150 22% 5% / .28) 100%), linear-gradient(0deg, hsl(150 28% 4% / .88), transparent 58%); }
