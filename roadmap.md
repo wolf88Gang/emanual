@@ -18,3 +18,5 @@
 - [x] Replace the four public add-ons with nine canonical add-ons, remove plantops from public pricing, sync server table and tests
 - [x] Correct selected add-on contrast in public pricing.
 - [x] Add a cleaning-service template to labor rates with daily, weekly, and biweekly frequency options.
+- [x] Redesign the 404 page to match the public website in English, Spanish, and German.
+- [x] Validate the 404 page on desktop and mobile, including navigation and overflow.
