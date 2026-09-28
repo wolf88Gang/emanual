@@ -20,3 +20,11 @@
 - [x] Add a cleaning-service template to labor rates with daily, weekly, and biweekly frequency options.
 - [x] Redesign the 404 page to match the public website in English, Spanish, and German.
 - [x] Validate the 404 page on desktop and mobile, including navigation and overflow.
+
+## Visual Service Brief (Before / Target / After)
+- [ ] Migración: tablas, RLS heredado de tasks, RPCs con matriz de estados, auditoría append-only, storage congelado
+- [ ] Pruebas negativas de seguridad + camino feliz con datos AUDIT_TEST_VSB
+- [ ] Capa de servicio + pipeline de imagen (EXIF, 1600px, reintentos) + firmas por lote
+- [ ] UI: brief del cliente, evaluación, acuerdo, cierre con foto existente, comparación, revisión, historial de planta
+- [ ] Validación: typecheck, tests, Playwright 390px
+- [ ] Siguiente fase: biblioteca de referencias con clasificación de privacidad (pospuesta)
