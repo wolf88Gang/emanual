@@ -2692,6 +2692,257 @@ export type Database = {
           },
         ]
       }
+      service_types: {
+        Row: {
+          active: boolean
+          key: string
+          label_de: string
+          label_en: string
+          label_es: string
+          requires_after_photo: boolean
+          sort: number
+        }
+        Insert: {
+          active?: boolean
+          key: string
+          label_de: string
+          label_en: string
+          label_es: string
+          requires_after_photo?: boolean
+          sort?: number
+        }
+        Update: {
+          active?: boolean
+          key?: string
+          label_de?: string
+          label_en?: string
+          label_es?: string
+          requires_after_photo?: boolean
+          sort?: number
+        }
+        Relationships: []
+      }
+      service_visual_assets: {
+        Row: {
+          brief_id: string
+          bucket: string
+          bytes: number | null
+          created_at: string
+          frozen_at: string | null
+          height: number | null
+          id: string
+          kind: Database["public"]["Enums"]["visual_asset_kind"]
+          mime: string | null
+          removed_at: string | null
+          source: Database["public"]["Enums"]["visual_asset_source"]
+          source_ref_id: string | null
+          storage_path: string
+          uploaded_by: string
+          width: number | null
+        }
+        Insert: {
+          brief_id: string
+          bucket: string
+          bytes?: number | null
+          created_at?: string
+          frozen_at?: string | null
+          height?: number | null
+          id?: string
+          kind: Database["public"]["Enums"]["visual_asset_kind"]
+          mime?: string | null
+          removed_at?: string | null
+          source: Database["public"]["Enums"]["visual_asset_source"]
+          source_ref_id?: string | null
+          storage_path: string
+          uploaded_by: string
+          width?: number | null
+        }
+        Update: {
+          brief_id?: string
+          bucket?: string
+          bytes?: number | null
+          created_at?: string
+          frozen_at?: string | null
+          height?: number | null
+          id?: string
+          kind?: Database["public"]["Enums"]["visual_asset_kind"]
+          mime?: string | null
+          removed_at?: string | null
+          source?: Database["public"]["Enums"]["visual_asset_source"]
+          source_ref_id?: string | null
+          storage_path?: string
+          uploaded_by?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_visual_assets_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "service_visual_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_visual_brief_events: {
+        Row: {
+          actor_user_id: string | null
+          brief_id: string
+          created_at: string
+          event_type: string
+          from_status: Database["public"]["Enums"]["visual_brief_status"] | null
+          id: string
+          payload: Json
+          to_status: Database["public"]["Enums"]["visual_brief_status"] | null
+        }
+        Insert: {
+          actor_user_id?: string | null
+          brief_id: string
+          created_at?: string
+          event_type: string
+          from_status?:
+            | Database["public"]["Enums"]["visual_brief_status"]
+            | null
+          id?: string
+          payload?: Json
+          to_status?: Database["public"]["Enums"]["visual_brief_status"] | null
+        }
+        Update: {
+          actor_user_id?: string | null
+          brief_id?: string
+          created_at?: string
+          event_type?: string
+          from_status?:
+            | Database["public"]["Enums"]["visual_brief_status"]
+            | null
+          id?: string
+          payload?: Json
+          to_status?: Database["public"]["Enums"]["visual_brief_status"] | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_visual_brief_events_brief_id_fkey"
+            columns: ["brief_id"]
+            isOneToOne: false
+            referencedRelation: "service_visual_briefs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_visual_briefs: {
+        Row: {
+          agreed_at: string | null
+          agreed_by: string | null
+          agreed_scope: string | null
+          assessed_at: string | null
+          assessed_by: string | null
+          client_action:
+            | Database["public"]["Enums"]["visual_review_action"]
+            | null
+          client_description: string | null
+          client_feedback: string | null
+          client_match: Database["public"]["Enums"]["visual_match"] | null
+          created_at: string
+          id: string
+          professional_assessment:
+            | Database["public"]["Enums"]["visual_assessment"]
+            | null
+          professional_notes: string | null
+          proposed_agreement:
+            | Database["public"]["Enums"]["visual_agreement"]
+            | null
+          proposed_at: string | null
+          proposed_by: string | null
+          proposed_scope: string | null
+          requested_by: string
+          reviewed_at: string | null
+          reviewed_by: string | null
+          service_type: string
+          status: Database["public"]["Enums"]["visual_brief_status"]
+          task_id: string
+          updated_at: string
+        }
+        Insert: {
+          agreed_at?: string | null
+          agreed_by?: string | null
+          agreed_scope?: string | null
+          assessed_at?: string | null
+          assessed_by?: string | null
+          client_action?:
+            | Database["public"]["Enums"]["visual_review_action"]
+            | null
+          client_description?: string | null
+          client_feedback?: string | null
+          client_match?: Database["public"]["Enums"]["visual_match"] | null
+          created_at?: string
+          id?: string
+          professional_assessment?:
+            | Database["public"]["Enums"]["visual_assessment"]
+            | null
+          professional_notes?: string | null
+          proposed_agreement?:
+            | Database["public"]["Enums"]["visual_agreement"]
+            | null
+          proposed_at?: string | null
+          proposed_by?: string | null
+          proposed_scope?: string | null
+          requested_by: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          service_type: string
+          status?: Database["public"]["Enums"]["visual_brief_status"]
+          task_id: string
+          updated_at?: string
+        }
+        Update: {
+          agreed_at?: string | null
+          agreed_by?: string | null
+          agreed_scope?: string | null
+          assessed_at?: string | null
+          assessed_by?: string | null
+          client_action?:
+            | Database["public"]["Enums"]["visual_review_action"]
+            | null
+          client_description?: string | null
+          client_feedback?: string | null
+          client_match?: Database["public"]["Enums"]["visual_match"] | null
+          created_at?: string
+          id?: string
+          professional_assessment?:
+            | Database["public"]["Enums"]["visual_assessment"]
+            | null
+          professional_notes?: string | null
+          proposed_agreement?:
+            | Database["public"]["Enums"]["visual_agreement"]
+            | null
+          proposed_at?: string | null
+          proposed_by?: string | null
+          proposed_scope?: string | null
+          requested_by?: string
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          service_type?: string
+          status?: Database["public"]["Enums"]["visual_brief_status"]
+          task_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_visual_briefs_service_type_fkey"
+            columns: ["service_type"]
+            isOneToOne: false
+            referencedRelation: "service_types"
+            referencedColumns: ["key"]
+          },
+          {
+            foreignKeyName: "service_visual_briefs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: true
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       shift_payments: {
         Row: {
           amount: number
@@ -3456,6 +3707,50 @@ export type Database = {
           },
         ]
       }
+      visual_annotations: {
+        Row: {
+          annotation_type: string
+          created_at: string
+          created_by: string
+          id: string
+          label: string | null
+          note: string | null
+          visual_asset_id: string
+          x: number
+          y: number
+        }
+        Insert: {
+          annotation_type?: string
+          created_at?: string
+          created_by: string
+          id?: string
+          label?: string | null
+          note?: string | null
+          visual_asset_id: string
+          x: number
+          y: number
+        }
+        Update: {
+          annotation_type?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          label?: string | null
+          note?: string | null
+          visual_asset_id?: string
+          x?: number
+          y?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "visual_annotations_visual_asset_id_fkey"
+            columns: ["visual_asset_id"]
+            isOneToOne: false
+            referencedRelation: "service_visual_assets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weather_alerts: {
         Row: {
           created_at: string
@@ -3871,7 +4166,39 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_visual_asset: {
+        Args: {
+          p_brief_id: string
+          p_bytes?: number
+          p_height?: number
+          p_kind: Database["public"]["Enums"]["visual_asset_kind"]
+          p_mime?: string
+          p_pins?: Json
+          p_source: Database["public"]["Enums"]["visual_asset_source"]
+          p_source_ref_id?: string
+          p_storage_path?: string
+          p_width?: number
+        }
+        Returns: string
+      }
+      agree_visual_scope: { Args: { p_brief_id: string }; Returns: undefined }
+      assess_visual_brief: {
+        Args: {
+          p_assessment: Database["public"]["Enums"]["visual_assessment"]
+          p_brief_id: string
+          p_notes: string
+        }
+        Returns: undefined
+      }
+      can_access_visual_brief: {
+        Args: { _brief_id: string; _uid: string }
+        Returns: boolean
+      }
       can_view_worker: { Args: { _worker_id: string }; Returns: boolean }
+      can_write_visual_brief_object: {
+        Args: { _name: string; _uid: string }
+        Returns: boolean
+      }
       complete_business_onboarding: {
         Args: {
           p_archetype: string
@@ -3891,6 +4218,23 @@ export type Database = {
           p_org_type: string
         }
         Returns: string
+      }
+      complete_visual_brief: {
+        Args: { p_brief_id: string; p_completion_id: string }
+        Returns: string
+      }
+      create_visual_service_request: {
+        Args: {
+          p_asset_id?: string
+          p_description: string
+          p_due_date?: string
+          p_estate_id: string
+          p_placement_id?: string
+          p_service_type: string
+          p_title: string
+          p_zone_id?: string
+        }
+        Returns: Json
       }
       get_client_maintenance_history: {
         Args: { p_estate_id: string }
@@ -3941,6 +4285,10 @@ export type Database = {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
+        Returns: boolean
+      }
+      is_frozen_visual_evidence: {
+        Args: { _bucket: string; _name: string }
         Returns: boolean
       }
       is_platform_admin: { Args: { _user_id: string }; Returns: boolean }
@@ -4323,9 +4671,60 @@ export type Database = {
         }
         Returns: undefined
       }
+      propose_visual_scope: {
+        Args: {
+          p_agreement: Database["public"]["Enums"]["visual_agreement"]
+          p_brief_id: string
+          p_scope: string
+        }
+        Returns: undefined
+      }
+      remove_visual_asset: { Args: { p_asset_id: string }; Returns: undefined }
+      request_visual_clarification: {
+        Args: { p_brief_id: string; p_note: string }
+        Returns: undefined
+      }
+      review_visual_result: {
+        Args: {
+          p_action: Database["public"]["Enums"]["visual_review_action"]
+          p_brief_id: string
+          p_feedback?: string
+          p_match: Database["public"]["Enums"]["visual_match"]
+        }
+        Returns: undefined
+      }
+      submit_visual_brief: {
+        Args: { p_brief_id: string; p_client_description?: string }
+        Returns: undefined
+      }
       user_can_write_asset_photo: {
         Args: { _path: string; _user_id: string }
         Returns: boolean
+      }
+      vsb_load: { Args: { _brief: string }; Returns: Record<string, unknown> }
+      vsb_log: {
+        Args: {
+          _brief: string
+          _from: Database["public"]["Enums"]["visual_brief_status"]
+          _payload: Json
+          _to: Database["public"]["Enums"]["visual_brief_status"]
+          _type: string
+        }
+        Returns: undefined
+      }
+      vsb_notify: {
+        Args: {
+          _brief: string
+          _target: string
+          _title_en: string
+          _title_es: string
+          _type: string
+        }
+        Returns: undefined
+      }
+      vsb_task_role: {
+        Args: { _task_id: string; _uid: string }
+        Returns: string
       }
     }
     Enums: {
@@ -4400,6 +4799,30 @@ export type Database = {
         | "seasonal"
       task_status: "pending" | "in_progress" | "completed" | "overdue"
       tax_jurisdiction: "US" | "CR"
+      visual_agreement: "exact" | "approximate" | "modified"
+      visual_assessment:
+        | "viable"
+        | "partial"
+        | "not_recommended"
+        | "inspect_first"
+      visual_asset_kind:
+        | "before"
+        | "target_reference"
+        | "agreed_target"
+        | "after"
+      visual_asset_source: "camera" | "upload" | "plant_history" | "completion"
+      visual_brief_status:
+        | "draft"
+        | "client_submitted"
+        | "professional_review"
+        | "needs_clarification"
+        | "professionally_validated"
+        | "scope_agreed"
+        | "result_submitted"
+        | "client_approved"
+        | "adjustment_requested"
+      visual_match: "yes" | "partial" | "no"
+      visual_review_action: "approve" | "request_adjustment"
       weather_rule_type: "freeze" | "heavy_rain" | "high_wind" | "drought"
     }
     CompositeTypes: {
@@ -4602,6 +5025,33 @@ export const Constants = {
       ],
       task_status: ["pending", "in_progress", "completed", "overdue"],
       tax_jurisdiction: ["US", "CR"],
+      visual_agreement: ["exact", "approximate", "modified"],
+      visual_assessment: [
+        "viable",
+        "partial",
+        "not_recommended",
+        "inspect_first",
+      ],
+      visual_asset_kind: [
+        "before",
+        "target_reference",
+        "agreed_target",
+        "after",
+      ],
+      visual_asset_source: ["camera", "upload", "plant_history", "completion"],
+      visual_brief_status: [
+        "draft",
+        "client_submitted",
+        "professional_review",
+        "needs_clarification",
+        "professionally_validated",
+        "scope_agreed",
+        "result_submitted",
+        "client_approved",
+        "adjustment_requested",
+      ],
+      visual_match: ["yes", "partial", "no"],
+      visual_review_action: ["approve", "request_adjustment"],
       weather_rule_type: ["freeze", "heavy_rain", "high_wind", "drought"],
     },
   },
