@@ -48,3 +48,28 @@ export async function resolvePhotoUrl(
   cache.set(key, { url: data.signedUrl, expires: Date.now() + (expiresInSeconds - 60) * 1000 });
   return data.signedUrl;
 }
+
+/** Signs many private objects of one bucket in a single request, sharing the cache above. */
+export async function resolveStoragePaths(
+  bucket: string,
+  paths: string[],
+  expiresInSeconds = 3600,
+): Promise<Record<string, string>> {
+  const out: Record<string, string> = {};
+  const missing: string[] = [];
+  for (const p of Array.from(new Set(paths))) {
+    const hit = cache.get(`${bucket}/${p}`);
+    if (hit && hit.expires > Date.now()) out[p] = hit.url;
+    else missing.push(p);
+  }
+  if (missing.length) {
+    const { data } = await supabase.storage.from(bucket).createSignedUrls(missing, expiresInSeconds);
+    for (const row of data ?? []) {
+      if (row.path && row.signedUrl) {
+        out[row.path] = row.signedUrl;
+        cache.set(`${bucket}/${row.path}`, { url: row.signedUrl, expires: Date.now() + (expiresInSeconds - 60) * 1000 });
+      }
+    }
+  }
+  return out;
+}
