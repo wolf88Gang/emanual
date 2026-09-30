@@ -49,13 +49,16 @@ interface TaskCompletionDialogProps {
   onOpenChange: (open: boolean) => void;
   task: Task | null;
   onSuccess?: () => void;
+  /** When the task carries a visual brief, completion also registers the final photo as its "after" state. */
+  visualBrief?: { id: string; status: string } | null;
 }
 
 export function TaskCompletionDialog({ 
   open, 
   onOpenChange, 
   task,
-  onSuccess 
+  onSuccess,
+  visualBrief = null,
 }: TaskCompletionDialogProps) {
   const { language } = useLanguage();
   const { user } = useAuth();
@@ -74,6 +77,9 @@ export function TaskCompletionDialog({
 
   if (!task) return null;
 
+  const briefReady = !visualBrief || ['scope_agreed', 'adjustment_requested'].includes(visualBrief.status);
+  const photoRequired = task.required_photo || !!visualBrief;
+
   const taskTitle = language === 'es' && task.title_es ? task.title_es : task.title;
   const taskDescription = language === 'es' && task.description_es 
     ? task.description_es 
@@ -85,7 +91,8 @@ export function TaskCompletionDialog({
       return;
     }
 
-    if (task.required_photo && !photoCapture.hasPhoto) {
+    if (!briefReady) return;
+    if (photoRequired && !photoCapture.hasPhoto) {
       toast.error(language === 'es' ? 'Se requiere foto' : 'Photo is required');
       return;
     }
@@ -120,7 +127,7 @@ export function TaskCompletionDialog({
       }
 
       // Create task completion record
-      const { error: completionError } = await supabase
+      const { data: completion, error: completionError } = await supabase
         .from('task_completions')
         .insert({
           task_id: task.id,
@@ -128,9 +135,20 @@ export function TaskCompletionDialog({
           completed_at: new Date().toISOString(),
           photo_url: photoUrl,
           notes: notes || null,
-        });
+        })
+        .select('id')
+        .single();
 
       if (completionError) throw completionError;
+
+      // Same stored object becomes the brief's "after" photo — no second upload.
+      if (visualBrief && completion) {
+        const { error: briefError } = await supabase.rpc('complete_visual_brief', {
+          p_brief_id: visualBrief.id,
+          p_completion_id: completion.id,
+        });
+        if (briefError) throw briefError;
+      }
 
       // Update task status to completed
       const { error: taskError } = await supabase
@@ -197,7 +215,7 @@ export function TaskCompletionDialog({
                 </span>
               )}
             </div>
-            {task.required_photo && (
+            {photoRequired && (
               <Badge variant="outline" className="mt-2 border-primary/30 text-primary">
                 <Camera className="h-3 w-3 mr-1" />
                 {language === 'es' ? 'Se requiere foto' : 'Photo required'}
@@ -209,7 +227,7 @@ export function TaskCompletionDialog({
           <div className="space-y-2">
             <Label className="flex items-center gap-2">
               <Camera className="h-4 w-4" />
-              {task.required_photo 
+              {photoRequired 
                 ? (language === 'es' ? 'Foto (requerida)' : 'Photo (required)')
                 : (language === 'es' ? 'Foto (opcional)' : 'Photo (optional)')
               }
@@ -243,7 +261,7 @@ export function TaskCompletionDialog({
                 onClick={photoCapture.openCamera}
                 className={cn(
                   "w-full h-48 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-3 transition-colors",
-                  task.required_photo 
+                  photoRequired 
                     ? "border-primary/30 hover:border-primary/50 hover:bg-primary/5"
                     : "border-border hover:border-primary/50 hover:bg-secondary/30"
                 )}
@@ -272,10 +290,21 @@ export function TaskCompletionDialog({
             />
           </div>
 
+          {!briefReady && (
+            <p className="flex items-start gap-2 rounded-lg border border-border p-3 text-sm">
+              <AlertCircle className="h-4 w-4 mt-0.5 shrink-0" />
+              {language === 'es'
+                ? 'Esta tarea tiene un resultado deseado sin alcance acordado. Acuerde el alcance antes de completarla.'
+                : language === 'de'
+                  ? 'Diese Aufgabe hat ein gewünschtes Ergebnis ohne vereinbarten Umfang. Vereinbaren Sie zuerst den Umfang.'
+                  : 'This task has a desired result without an agreed scope. Agree on the scope before completing it.'}
+            </p>
+          )}
+
           {/* Submit Button */}
           <Button
             onClick={handleSubmit}
-            disabled={(task.required_photo && !photoCapture.hasPhoto) || submitting}
+            disabled={!briefReady || (photoRequired && !photoCapture.hasPhoto) || submitting}
             className="w-full"
             size="lg"
           >
