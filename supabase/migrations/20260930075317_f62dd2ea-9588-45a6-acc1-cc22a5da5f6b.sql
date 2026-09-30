@@ -1,0 +1,1 @@
+GRANT EXECUTE ON FUNCTION public.user_can_write_asset_photo(text, uuid) TO authenticated;

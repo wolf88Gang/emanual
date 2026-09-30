@@ -134,7 +134,7 @@ export function VisualBriefDialog({ open, onOpenChange, briefId, orgId, task, on
             {has('assess') && (
               <section className="space-y-3">
                 <h4 className="font-medium">{t.assessTitle}</h4>
-                <Choice value={assessment} onChange={setAssessment} options={[['viable', t.viable], ['partial', t.partial], ['not_recommended', t.not_recommended], ['inspect_first', t.inspect_first]]} />
+                <Choice<Assessment> value={assessment} onChange={setAssessment} options={[['viable', t.viable], ['partial', t.partial], ['not_recommended', t.not_recommended], ['inspect_first', t.inspect_first]]} />
                 <Textarea value={notes} onChange={e => setNotes(e.target.value)} rows={3} placeholder={t.assessComment} />
                 <div className="flex flex-wrap gap-2">
                   <Button className="h-11" disabled={busy || !assessment} onClick={() => run(() => rpc('assess_visual_brief', { p_brief_id: brief.id, p_assessment: assessment, p_notes: notes || null }))}>{t.saveAssessment}</Button>
@@ -148,7 +148,7 @@ export function VisualBriefDialog({ open, onOpenChange, briefId, orgId, task, on
             {has('propose') && (
               <section className="space-y-3">
                 <h4 className="font-medium">{t.proposeTitle}</h4>
-                <Choice value={agreement} onChange={setAgreement} options={[['exact', t.exact], ['approximate', t.approximate], ['modified', t.modified]]} />
+                <Choice<Agreement> value={agreement} onChange={setAgreement} options={[['exact', t.exact], ['approximate', t.approximate], ['modified', t.modified]]} />
                 <Textarea value={scope} onChange={e => setScope(e.target.value)} rows={3} placeholder={t.scopePh} />
                 {has('add_agreed_target') && <VisualPhotoPicker kind="agreed_target" label={t.agreedRef} photos={agreedPhotos} onChange={setAgreedPhotos} />}
                 <Button className="h-11" disabled={busy || !agreement || !scope.trim()} onClick={() => run(async () => {
@@ -176,7 +176,7 @@ export function VisualBriefDialog({ open, onOpenChange, briefId, orgId, task, on
             {has('review') && (
               <section className="space-y-3">
                 <h4 className="font-medium">{t.reviewTitle}</h4>
-                <Choice value={match} onChange={setMatch} options={[['yes', t.yes], ['partial', t.partialMatch], ['no', t.no]]} />
+                <Choice<Match> value={match} onChange={setMatch} options={[['yes', t.yes], ['partial', t.partialMatch], ['no', t.no]]} />
                 <Textarea value={feedback} onChange={e => setFeedback(e.target.value)} rows={2} placeholder={t.feedbackPh} />
                 <div className="flex flex-wrap gap-2">
                   <Button className="h-11" disabled={busy || !match} onClick={() => run(() => rpc('review_visual_result', { p_brief_id: brief.id, p_match: match, p_action: 'approve', p_feedback: feedback || null }))}>{t.approve}</Button>
