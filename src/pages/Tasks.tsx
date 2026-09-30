@@ -26,6 +26,11 @@ import { AssetTypeIcon } from '@/components/icons/AssetTypeIcon';
 import { TaskCompletionDialog } from '@/components/tasks/TaskCompletionDialog';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
+import { VisualPhotoPicker } from '@/components/visual-brief/VisualPhotoPicker';
+import { VisualBriefDialog } from '@/components/visual-brief/VisualBriefDialog';
+import { loadAssetHistoryPhotos } from '@/components/visual-brief/PlantVisualHistory';
+import { useVbCopy } from '@/components/visual-brief/copy';
+import { rpcErrorMessage, uploadAndAttach, type PendingPhoto } from '@/lib/visualBriefs';
 
 interface Task {
   id: string;
@@ -99,6 +104,33 @@ export default function Tasks() {
     frequency: 'once', priority: 2, due_date: new Date().toISOString().split('T')[0],
     asset_id: '', zone_id: '',
   });
+  const { t: vb } = useVbCopy();
+  const [briefs, setBriefs] = useState<Record<string, { id: string; status: string }>>({});
+  const [briefDialogOpen, setBriefDialogOpen] = useState(false);
+  const [withBrief, setWithBrief] = useState(false);
+  const [serviceTypes, setServiceTypes] = useState<{ key: string; label: string }[]>([]);
+  const [briefForm, setBriefForm] = useState({ service_type: 'pruning', text: '' });
+  const [beforePhotos, setBeforePhotos] = useState<PendingPhoto[]>([]);
+  const [targetPhotos, setTargetPhotos] = useState<PendingPhoto[]>([]);
+  const [historyPhotos, setHistoryPhotos] = useState<{ id: string; url: string; label: string }[]>([]);
+  const [creating, setCreating] = useState(false);
+
+  useEffect(() => {
+    supabase.from('service_types').select('key, label_es, label_en, label_de, sort').eq('active', true).order('sort').then(({ data }) =>
+      setServiceTypes((data ?? []).map((r: any) => ({ key: r.key, label: language === 'es' ? r.label_es : language === 'de' ? r.label_de : r.label_en }))));
+  }, [language]);
+
+  useEffect(() => {
+    if (withBrief && taskForm.asset_id) loadAssetHistoryPhotos(taskForm.asset_id).then(setHistoryPhotos).catch(() => setHistoryPhotos([]));
+    else setHistoryPhotos([]);
+  }, [withBrief, taskForm.asset_id]);
+
+  useEffect(() => {
+    const id = searchParams.get('brief');
+    if (!id || !tasks.length || !briefs[id]) return;
+    const task = tasks.find(x => x.id === id);
+    if (task) { setSelectedTask(task); setBriefDialogOpen(true); }
+  }, [searchParams, tasks, briefs]);
 
   useEffect(() => {
     const zoneId = searchParams.get('zone');
@@ -136,6 +168,11 @@ export default function Tasks() {
         return { ...task, status, asset: task.assets as Task['asset'], zone: task.zones as Task['zone'], assigned_user: task.profiles as Task['assigned_user'] };
       });
       setTasks(processedTasks);
+      const ids = processedTasks.map(x => x.id);
+      if (ids.length) {
+        const { data: b } = await supabase.from('service_visual_briefs').select('id, status, task_id').in('task_id', ids);
+        setBriefs(Object.fromEntries((b ?? []).map((r: any) => [r.task_id, { id: r.id, status: r.status }])));
+      } else setBriefs({});
     } catch (error) { console.error(error); }
     finally { setLoading(false); }
   }
@@ -159,6 +196,7 @@ export default function Tasks() {
       );
       return;
     }
+    if (withBrief) { await handleCreateBriefTask(); return; }
     try {
       const { error } = await supabase.from('tasks').insert({
         estate_id: currentEstate.id,
@@ -185,6 +223,35 @@ export default function Tasks() {
           : (es ? 'No se pudo crear la tarea.' : 'Could not create the task.'),
       );
     }
+  }
+
+  function resetBriefForm() {
+    setWithBrief(false); setBriefForm({ service_type: 'pruning', text: '' }); setBeforePhotos([]); setTargetPhotos([]);
+  }
+
+  async function handleCreateBriefTask() {
+    if (!currentEstate) return;
+    setCreating(true);
+    try {
+      const { data, error } = await supabase.rpc('create_visual_service_request', {
+        p_estate_id: currentEstate.id, p_service_type: briefForm.service_type, p_title: taskForm.title,
+        p_description: briefForm.text || taskForm.description || null,
+        p_zone_id: taskForm.zone_id || null, p_asset_id: taskForm.asset_id || null, p_due_date: taskForm.due_date || null,
+      });
+      if (error) throw error;
+      const briefId = (data as any).brief_id as string;
+      for (const p of [...beforePhotos, ...targetPhotos]) await uploadAndAttach(currentEstate.org_id, briefId, p);
+      const { error: subErr } = await supabase.rpc('submit_visual_brief', { p_brief_id: briefId, p_client_description: briefForm.text || null });
+      if (subErr) throw subErr;
+      toast.success(es ? 'Solicitud enviada con resultado deseado' : 'Request sent with desired result');
+      setShowNewTask(false);
+      setTaskForm({ title: '', title_es: '', description: '', description_es: '', frequency: 'once', priority: 2, due_date: new Date().toISOString().split('T')[0], asset_id: '', zone_id: '' });
+      resetBriefForm();
+      fetchTasks();
+    } catch (e) {
+      toast.error(rpcErrorMessage(e, es));
+      fetchTasks();
+    } finally { setCreating(false); }
   }
 
   async function handleAISuggest() {
@@ -385,7 +452,7 @@ export default function Tasks() {
             ) : filteredTasks.map(task => {
               const config = statusConfig[task.status];
               return (
-                <Card key={task.id} className="estate-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setSelectedTask(task); setCompletionDialogOpen(true); }}>
+                <Card key={task.id} className="estate-card cursor-pointer hover:shadow-lg transition-shadow" onClick={() => { setSelectedTask(task); if (briefs[task.id]) setBriefDialogOpen(true); else setCompletionDialogOpen(true); }}>
                   <CardContent className="p-4">
                     <div className="flex items-start gap-4">
                       <div className={cn('status-dot mt-2 shrink-0', config.dotClass)} />
@@ -403,7 +470,8 @@ export default function Tasks() {
                             {task.description && <p className="text-sm text-muted-foreground mt-0.5 line-clamp-1">{es && task.description_es ? task.description_es : task.description}</p>}
                           </div>
                           <div className="flex items-center gap-2 shrink-0">
-                            {isOwnerOrManager && (
+                            {briefs[task.id] && <Badge variant="outline" className="shrink-0 border-primary/40">{vb.desiredResult}</Badge>}
+                            {isOwnerOrManager && !briefs[task.id] && (
                               <div onClick={e => e.stopPropagation()}>
                                 <Switch checked={task.status === 'completed'} onCheckedChange={checked => handleQuickComplete(task, checked)} className="data-[state=checked]:bg-success" />
                               </div>
@@ -433,7 +501,7 @@ export default function Tasks() {
 
         {/* New Task Dialog */}
         <Dialog open={showNewTask} onOpenChange={setShowNewTask}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-md max-h-[92vh] overflow-y-auto">
             <DialogHeader><DialogTitle>{es ? 'Nueva Tarea' : 'New Task'}</DialogTitle></DialogHeader>
             <div className="space-y-4">
               <div className="space-y-2"><Label>{es ? 'Título' : 'Title'} *</Label><Input value={taskForm.title} onChange={e => setTaskForm(f => ({ ...f, title: e.target.value }))} /></div>
@@ -478,6 +546,33 @@ export default function Tasks() {
                   ? 'Cada tarea debe estar ubicada en una zona o en un activo.'
                   : 'Every task must be located in a zone or on an asset.'}
               </p>
+              <div className="rounded-lg border border-border p-3 space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-sm font-medium">{vb.sectionTitle}</p>
+                    <p className="text-xs text-muted-foreground">{vb.sectionHint}</p>
+                  </div>
+                  <Switch checked={withBrief} onCheckedChange={setWithBrief} aria-label={vb.sectionTitle} />
+                </div>
+                {withBrief && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>{vb.serviceType}</Label>
+                      <Select value={briefForm.service_type} onValueChange={v => setBriefForm(f => ({ ...f, service_type: v }))}>
+                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectContent>{serviceTypes.map(s => <SelectItem key={s.key} value={s.key}>{s.label}</SelectItem>)}</SelectContent>
+                      </Select>
+                    </div>
+                    <VisualPhotoPicker kind="before" label={vb.current} photos={beforePhotos} onChange={setBeforePhotos} />
+                    <VisualPhotoPicker kind="target_reference" label={vb.reference} hint={vb.referenceHint} photos={targetPhotos} onChange={setTargetPhotos} multiple history={historyPhotos} />
+                    <div className="space-y-2">
+                      <Label>{vb.whatChange}</Label>
+                      <Textarea value={briefForm.text} onChange={e => setBriefForm(f => ({ ...f, text: e.target.value }))} rows={4} placeholder={vb.whatChangePh} />
+                    </div>
+                    <p className="text-xs text-muted-foreground">{vb.disclaimer}</p>
+                  </div>
+                )}
+              </div>
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-2">
                   <Label>{es ? 'Frecuencia' : 'Frequency'}</Label>
@@ -507,7 +602,7 @@ export default function Tasks() {
             </div>
             <DialogFooter>
               <Button variant="outline" onClick={() => setShowNewTask(false)}>{es ? 'Cancelar' : 'Cancel'}</Button>
-              <Button onClick={handleCreateTask}>{es ? 'Crear' : 'Create'}</Button>
+              <Button onClick={handleCreateTask} disabled={creating}>{creating ? vb.uploading : (es ? 'Crear' : 'Create')}</Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
@@ -593,7 +688,12 @@ export default function Tasks() {
           </DialogContent>
         </Dialog>
 
-        <TaskCompletionDialog open={completionDialogOpen} onOpenChange={setCompletionDialogOpen} task={selectedTask} onSuccess={fetchTasks} />
+        <TaskCompletionDialog open={completionDialogOpen} onOpenChange={setCompletionDialogOpen} task={selectedTask} onSuccess={fetchTasks}
+          visualBrief={selectedTask ? briefs[selectedTask.id] ?? null : null} />
+        <VisualBriefDialog open={briefDialogOpen} onOpenChange={setBriefDialogOpen}
+          briefId={selectedTask ? briefs[selectedTask.id]?.id ?? null : null} orgId={currentEstate?.org_id ?? null}
+          task={selectedTask ? { id: selectedTask.id, title: es && selectedTask.title_es ? selectedTask.title_es : selectedTask.title, zone: selectedTask.zone, asset: selectedTask.asset } : null}
+          onRequestComplete={() => { setBriefDialogOpen(false); setCompletionDialogOpen(true); }} onChanged={fetchTasks} />
       </div>
     </ModernAppLayout>
   );
