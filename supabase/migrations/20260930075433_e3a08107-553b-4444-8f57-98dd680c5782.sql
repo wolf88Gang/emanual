@@ -1,0 +1,1 @@
+ALTER TABLE public.service_visual_brief_events ALTER COLUMN created_at SET DEFAULT clock_timestamp();
