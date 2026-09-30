@@ -1,3 +1,4 @@
+import { Image as ImageIcon } from 'lucide-react';
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { 
@@ -35,6 +36,7 @@ import { AssetEditForm } from '@/components/assets/AssetEditForm';
 import { PlantProfileLinker } from '@/components/assets/PlantProfileLinker';
 import { AssetActionsCard } from '@/components/assets/AssetActionsCard';
 import { AssetPhotoUpload } from '@/components/assets/AssetPhotoUpload';
+import { PlantVisualHistory } from '@/components/visual-brief/PlantVisualHistory';
 import { MaintenanceInfoCard } from '@/components/assets/MaintenanceInfoCard';
 
 interface AssetDetail {
@@ -527,11 +529,15 @@ export default function AssetDetail() {
 
         {/* Evidence Tabs - Duty of Care Trail */}
         <Tabs defaultValue="completions" className="mb-6">
-          <TabsList className="w-full justify-start">
+          <TabsList className="w-full justify-start overflow-x-auto">
             <TabsTrigger value="completions" className="gap-2">
               <CheckCircle2 className="h-4 w-4" />
               {language === 'es' ? 'Evidencia de Tareas' : 'Task Evidence'}
               <Badge variant="secondary" className="h-5">{completions.length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="visual" className="gap-2">
+              <ImageIcon className="h-4 w-4" />
+              {language === 'es' ? 'Servicios visuales' : language === 'de' ? 'Visuelle Leistungen' : 'Visual services'}
             </TabsTrigger>
             <TabsTrigger value="checkins" className="gap-2">
               <Camera className="h-4 w-4" />
@@ -586,6 +592,10 @@ export default function AssetDetail() {
                 ))}
               </div>
             )}
+          </TabsContent>
+
+          <TabsContent value="visual" className="mt-4">
+            {id && <PlantVisualHistory assetId={id} />}
           </TabsContent>
 
           <TabsContent value="checkins" className="mt-4">
