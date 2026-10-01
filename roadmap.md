@@ -22,9 +22,9 @@
 - [x] Validate the 404 page on desktop and mobile, including navigation and overflow.
 
 ## Visual Service Brief (Before / Target / After)
-- [ ] Migración: tablas, RLS heredado de tasks, RPCs con matriz de estados, auditoría append-only, storage congelado
-- [ ] Pruebas negativas de seguridad + camino feliz con datos AUDIT_TEST_VSB
-- [ ] Capa de servicio + pipeline de imagen (EXIF, 1600px, reintentos) + firmas por lote
-- [ ] UI: brief del cliente, evaluación, acuerdo, cierre con foto existente, comparación, revisión, historial de planta
-- [ ] Validación: typecheck, tests, Playwright 390px
+- [x] Migración: tablas, RLS heredado de tasks, RPCs con matriz de estados, auditoría append-only, storage congelado
+- [x] Pruebas negativas de seguridad + camino feliz con datos AUDIT_TEST_VSB
+- [x] Capa de servicio + pipeline de imagen (EXIF, 1600px, reintentos) + firmas por lote
+- [x] UI: brief del cliente, evaluación, acuerdo, cierre con foto existente, comparación, revisión, historial de planta
+- [ ] Validación visual en 390px con una cuenta de organización (bloqueado: la cuenta del preview no tiene organización)
 - [ ] Siguiente fase: biblioteca de referencias con clasificación de privacidad (pospuesta)
