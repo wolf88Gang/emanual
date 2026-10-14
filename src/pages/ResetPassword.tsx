@@ -76,7 +76,7 @@ export default function ResetPassword() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        toast.error(error.message);
+        toast.error(tr('We could not save your password. Check that your recovery link is still valid and try again.', 'No pudimos guardar su contraseña. Compruebe que el enlace siga vigente e intente de nuevo.', 'Ihr Passwort konnte nicht gespeichert werden. Prüfen Sie, ob Ihr Link noch gültig ist, und versuchen Sie es erneut.'));
         return;
       }
       toast.success(tr('Password updated.', 'Contraseña actualizada.', 'Passwort aktualisiert.'));
@@ -91,11 +91,11 @@ export default function ResetPassword() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-6">
       <Seo
-        title={tr('New password — Home Guide', 'Nueva contraseña — Home Guide', 'Neues Passwort — Home Guide')}
+        title={tr('New password — HomeGuide', 'Nueva contraseña — HomeGuide', 'Neues Passwort — HomeGuide')}
         description={tr(
-          'Set a new password for your Home Guide account.',
-          'Defina una nueva contraseña para su cuenta de Home Guide.',
-          'Legen Sie ein neues Passwort für Ihr Home Guide-Konto fest.',
+          'Set a new password for your HomeGuide account.',
+          'Defina una nueva contraseña para su cuenta de HomeGuide.',
+          'Legen Sie ein neues Passwort für Ihr HomeGuide-Konto fest.',
         )}
         path="/auth/reset-password"
       />
@@ -121,6 +121,7 @@ export default function ResetPassword() {
             </div>
           ) : (
             <form onSubmit={submit} className="space-y-4">
+              <p className="text-sm text-muted-foreground">{tr("Use at least 8 characters and enter the same password twice. After saving, sign in again.", "Use al menos 8 caracteres y escriba la misma contraseña dos veces. Después de guardarla, inicie sesión de nuevo.", "Verwenden Sie mindestens 8 Zeichen und geben Sie das Passwort zweimal ein. Melden Sie sich nach dem Speichern erneut an.")}</p>
               <div className="space-y-1.5">
                 <Label htmlFor="new-password">{tr('New password', 'Nueva contraseña', 'Neues Passwort')}</Label>
                 <div className="relative">

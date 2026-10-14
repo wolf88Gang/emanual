@@ -6,6 +6,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Seo } from '@/components/Seo';
 import { HGLogo } from '@/components/HGLogo';
 
 type State = 'checking' | 'paid' | 'pending' | 'failed';
@@ -75,6 +76,7 @@ export default function CheckoutSuccess() {
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center p-6">
+      <Seo title={l("Payment status — HomeGuide", "Estado del pago — HomeGuide", "Zahlungsstatus — HomeGuide")} description={l("Check payment confirmation before continuing to HomeGuide.", "Consulte la confirmación del pago antes de continuar a HomeGuide.", "Prüfen Sie die Zahlungsbestätigung, bevor Sie mit HomeGuide fortfahren.")} path="/checkout/success" />
       <Card className="max-w-md w-full text-center">
         <CardContent className="pt-8 pb-6 space-y-4">
           <HGLogo size="md" className="mx-auto" />
@@ -83,12 +85,12 @@ export default function CheckoutSuccess() {
             <>
               <Loader2 className="h-10 w-10 animate-spin text-primary mx-auto" />
               <h1 className="text-xl font-display font-semibold text-foreground">
-                {l('Confirming your payment', 'Confirmando tu pago', 'Zahlung wird bestätigt')}
+                {l('Confirming your payment', 'Confirmando su pago', 'Zahlung wird bestätigt')}
               </h1>
               <p className="text-muted-foreground text-sm">
-                {l('This takes a few seconds. Please do not close this page.',
-                  'Esto toma unos segundos. No cierres esta página.',
-                  'Das dauert einige Sekunden. Bitte diese Seite nicht schließen.')}
+                {l('We are checking the payment status. Please stay on this page; confirmation is not available yet.',
+                  'Estamos comprobando el estado del pago. Espere en esta página; aún no hay confirmación.',
+                  'Wir prüfen den Zahlungsstatus. Bitte bleiben Sie auf dieser Seite; die Bestätigung steht noch aus.')}
               </p>
             </>
           )}
@@ -97,12 +99,12 @@ export default function CheckoutSuccess() {
             <>
               <CheckCircle2 className="h-12 w-12 text-primary mx-auto" />
               <h1 className="text-2xl font-display font-semibold text-foreground">
-                {l('Payment received', 'Pago recibido', 'Zahlung erhalten')}
+                {l('Payment confirmed', 'Pago confirmado', 'Zahlung bestätigt')}
               </h1>
               <p className="text-muted-foreground">
-                {l('Your account is active. Let us set up your first property.',
-                  'Tu cuenta está activa. Vamos a configurar tu primera propiedad.',
-                  'Ihr Konto ist aktiv. Richten wir Ihre erste Immobilie ein.')}
+                {l('Your subscription is confirmed. Continue to HomeGuide to organize your properties and team.',
+                  'Su suscripción está confirmada. Continúe a HomeGuide para organizar sus propiedades y su equipo.',
+                  'Ihr Abonnement ist bestätigt. Weiter zu HomeGuide, um Ihre Immobilien und Ihr Team zu organisieren.')}
               </p>
               <Button className="w-full" onClick={() => navigate('/')}>
                 {l('Continue', 'Continuar', 'Weiter')}
@@ -117,9 +119,9 @@ export default function CheckoutSuccess() {
                 {l('Payment still processing', 'Pago en proceso', 'Zahlung in Bearbeitung')}
               </h1>
               <p className="text-muted-foreground text-sm">
-                {l('We have not received the confirmation yet. Reload this page in a minute; if it does not clear, write to us.',
-                  'Todavía no recibimos la confirmación. Recarga esta página en un minuto; si no se resuelve, escríbenos.',
-                  'Wir haben noch keine Bestätigung erhalten. Laden Sie die Seite in einer Minute neu; andernfalls schreiben Sie uns.')}
+                {l('Confirmation is still pending. Check again in a minute. This does not tell us whether a charge was made; check ONVO and your bank before attempting another payment.',
+                  'La confirmación sigue pendiente. Compruebe de nuevo en un minuto. Este estado no permite saber si hubo un cargo; revise ONVO y su banco antes de intentar otro pago.',
+                  'Die Bestätigung steht noch aus. Prüfen Sie in einer Minute erneut. Ob eine Belastung erfolgt ist, lässt sich hier nicht feststellen. Prüfen Sie ONVO und Ihre Bank, bevor Sie erneut zahlen.')}
               </p>
               <Button variant="outline" className="w-full" onClick={() => window.location.reload()}>
                 {l('Check again', 'Comprobar de nuevo', 'Erneut prüfen')}
@@ -134,9 +136,9 @@ export default function CheckoutSuccess() {
                 {l('We could not confirm the payment', 'No pudimos confirmar el pago', 'Zahlung konnte nicht bestätigt werden')}
               </h1>
               <p className="text-muted-foreground text-sm">
-                {l('Nothing was activated. You can try the payment again.',
-                  'No se activó nada. Puedes intentar el pago de nuevo.',
-                  'Es wurde nichts aktiviert. Sie können die Zahlung erneut versuchen.')}
+                {l('We could not verify the subscription. This does not mean there was no charge. Check ONVO and your bank before attempting another payment.',
+                  'No pudimos verificar la suscripción. Esto no significa que no haya habido un cargo. Revise ONVO y su banco antes de intentar otro pago.',
+                  'Das Abonnement konnte nicht bestätigt werden. Das bedeutet nicht, dass keine Belastung erfolgt ist. Prüfen Sie ONVO und Ihre Bank, bevor Sie erneut zahlen.')}
               </p>
               <Button className="w-full" onClick={() => navigate('/checkout')}>
                 {l('Back to checkout', 'Volver al pago', 'Zurück zur Zahlung')}

@@ -1,5 +1,12 @@
 # Roadmap
 
+## Phase 2 public entry, access and payment copy
+- [x] Verify hosted signup availability and inventory the real acquisition/payment routes without sending emails, creating users or payments. Hosted GET /auth/v1/settings: disable_signup=false, email=true; direct signup CTA retained.
+- [x] Rewrite RequestAccess, Auth, Checkout, CheckoutSuccess, ResetPassword and NotFound in ES/EN/DE; preserve all business logic.
+- [x] Verify 41 existing tests and desktop 1440/mobile 390 screens in ES/EN/DE; no horizontal overflow or runtime exceptions. Checkout tested with existing session; checking/pending/failed messages tested with intercepted responses, no payments.
+- [ ] Confirmed-payment screen and post-payment onboarding E2E: blocked by pre-existing refreshUserData/AppRoutes loading/remount loop when a paid response is simulated. Fix requires auth/payment behavior changes outside editorial scope; no real payment attempted.
+- [ ] Valid recovery form, request submission and new-account creation E2E: intentionally untested because this scope prohibits password changes, actual submissions, new users and email sends.
+
 ## Public copy repositioning
 - [x] Rewrite ES/EN/DE public story around instructions, recurring visits, photos/notes and property history.
 - [x] Simplify relationship visual and clearly label the illustrative service record; align public SEO without changing routes or product behavior.
