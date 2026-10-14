@@ -10,6 +10,7 @@
 - [ ] Valid recovery form, request submission and new-account creation E2E: intentionally untested because this scope prohibits password changes, actual submissions, new users and email sends.
 
 ## Public copy repositioning
+- [ ] Broaden landing ES/EN/DE around the property, people and shared information; preserve signup CTA and all product/pricing logic; verify 390/1440 and full tests.
 - [x] Rewrite ES/EN/DE public story around instructions, recurring visits, photos/notes and property history.
 - [x] Simplify relationship visual and clearly label the illustrative service record; align public SEO without changing routes or product behavior.
 - [x] Verify languages, public links, pricing and desktop/mobile layout (390/768/1024/1440px; 41 tests passed).
