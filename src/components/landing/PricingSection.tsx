@@ -42,7 +42,7 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
   };
   const addonDescription = (id: string) => {
     const addon = addonById(id);
-    return addon ? local(addon.description) : '';
+    return text(`addon_${id}`) || (addon ? local(addon.description) : '');
   };
   const renderAddon = (id: string) => {
     const addon = addonById(id);
