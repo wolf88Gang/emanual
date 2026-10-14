@@ -1,5 +1,10 @@
 # Roadmap
 
+## Phase 2 public entry, access and payment copy
+- [ ] Verify hosted signup availability and inventory the real acquisition/payment routes without sending emails, creating users or payments.
+- [ ] Rewrite RequestAccess, Auth, Checkout, CheckoutSuccess, ResetPassword and NotFound in ES/EN/DE; preserve all business logic.
+- [ ] Verify existing tests and desktop 1440/mobile 390 screens; report signup CTA, exact changed files and unverified states.
+
 ## Public copy repositioning
 - [x] Rewrite ES/EN/DE public story around instructions, recurring visits, photos/notes and property history.
 - [x] Simplify relationship visual and clearly label the illustrative service record; align public SEO without changing routes or product behavior.
