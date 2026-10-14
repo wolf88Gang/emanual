@@ -340,3 +340,9 @@ Payments: PayPal (create/capture order functions, server-side verified)
 - **Edge functions:** 15 remain after deleting the two bootstrap functions; all authenticated ones verify the bearer token (spot-checked plantops-send-reminder, preview-transactional-email).
 - **Deleted functions:** `supabase/functions/setup-demo-accounts/`, `supabase/functions/setup-platform-admin/` (P0 fix).
 - **Tests:** vitest suite present (platform console + usePlatformChecks) — passed in the pre-audit launch pass; Playwright scripts for this audit in `/tmp/browser/audit-e2e/`.
+
+
+## O. Post-payment loop fix (2026-10-14)
+- Bug: CheckoutSuccess called refreshUserData() on paid/active; it set AuthContext.loading=true, AppRoutes replaced every route with PageLoader, unmounting the page, which remounted in 'checking' and re-verified (loop).
+- Fix: CheckoutSuccess only sets state 'paid'. Payment does not change profile/roles/admin state; SubscriptionProvider refetches on mount after Continue. No backend/ONVO/DB/pricing change.
+- Verified (simulated responses, no charge): paid screen stays with a single verify call; Continue -> /onboarding for no-org user; pending and failed screens after 5 retries; 390px and 1440px.

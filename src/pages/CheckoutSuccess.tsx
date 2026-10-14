@@ -18,7 +18,7 @@ type State = 'checking' | 'paid' | 'pending' | 'failed';
  */
 export default function CheckoutSuccess() {
   const { language } = useLanguage();
-  const { user, refreshUserData } = useAuth();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const [state, setState] = useState<State>('checking');
@@ -43,7 +43,8 @@ export default function CheckoutSuccess() {
       if (cancelled) return;
 
       if (!error && data?.status === 'paid') {
-        await refreshUserData();
+        // Do not refresh auth data here: payment does not change profile/roles,
+        // and AuthContext.loading would unmount this page (remount loop).
         setState('paid');
         return;
       }
@@ -55,7 +56,8 @@ export default function CheckoutSuccess() {
       });
       if (cancelled) return;
       if (statusData?.active) {
-        await refreshUserData();
+        // Do not refresh auth data here: payment does not change profile/roles,
+        // and AuthContext.loading would unmount this page (remount loop).
         setState('paid');
         return;
       }
