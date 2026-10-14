@@ -59,6 +59,7 @@ export default function WorkerProfilePage() {
   const { language } = useLanguage();
   const { user } = useAuth();
   const es = language === 'es';
+  const l = (en: string, esText: string, de: string) => (language === 'es' ? esText : language === 'de' ? de : en);
 
   const [profile, setProfile] = useState<WorkerProfile | null>(null);
   const [ratings, setRatings] = useState<Rating[]>([]);
@@ -104,7 +105,7 @@ export default function WorkerProfilePage() {
 
   const sendMessage = async () => {
     if (!user || !profile || !message.trim()) return;
-    toast.success(es ? 'Mensaje enviado' : 'Message sent');
+    toast.success(l('Message sent.', 'Mensaje enviado.', 'Nachricht gesendet.'));
     setShowMessage(false);
     setMessage('');
   };
@@ -112,7 +113,7 @@ export default function WorkerProfilePage() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-muted-foreground">{es ? 'Cargando...' : 'Loading...'}</div>
+        <div className="animate-pulse text-muted-foreground">{l('Loading…', 'Cargando…', 'Wird geladen…')}</div>
       </div>
     );
   }
@@ -120,20 +121,20 @@ export default function WorkerProfilePage() {
   if (!profile) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4">
-        <p className="text-muted-foreground">{es ? 'Perfil no encontrado' : 'Profile not found'}</p>
+        <p className="text-muted-foreground">{l('This profile is not available.', 'Este perfil no está disponible.', 'Dieses Profil ist nicht verfügbar.')}</p>
         <Button variant="outline" onClick={() => navigate(-1)}>
-          <ArrowLeft className="h-4 w-4 mr-2" />{es ? 'Volver' : 'Go back'}
+          <ArrowLeft className="h-4 w-4 mr-2" />{l('Back', 'Volver', 'Zurück')}
         </Button>
       </div>
     );
   }
 
-  const name = (profile.profiles as any)?.full_name || (profile.profiles as any)?.email || 'Worker';
+  const name = (profile.profiles as any)?.full_name || (profile.profiles as any)?.email || l('Professional', 'Profesional', 'Fachkraft');
 
   return (
     <main className="min-h-screen bg-background">
       <Seo
-        title={`${name} — ${es ? 'Perfil de Trabajador' : 'Worker Profile'} | Home Guide`}
+        title={`${name} — ${l('Professional profile', 'Perfil profesional', 'Berufsprofil')} | HomeGuide`}
         description={(es ? profile.bio_es : profile.bio) || `${name} — ${(profile.skills || []).slice(0, 4).join(', ')}`}
         path={`/worker/${profile.id}`}
         type="profile"
@@ -154,7 +155,7 @@ export default function WorkerProfilePage() {
       <div className="bg-gradient-to-br from-primary/10 via-background to-accent/5 border-b border-border">
         <div className="max-w-3xl mx-auto px-4 py-6">
           <Button variant="ghost" size="sm" onClick={() => navigate(-1)} className="mb-4">
-            <ArrowLeft className="h-4 w-4 mr-1" />{es ? 'Volver' : 'Back'}
+            <ArrowLeft className="h-4 w-4 mr-1" />{l('Back', 'Volver', 'Zurück')}
           </Button>
 
           <div className="flex items-start gap-4">
@@ -166,7 +167,7 @@ export default function WorkerProfilePage() {
                 <h1 className="text-2xl font-display font-bold">{name}</h1>
                 {profile.available && (
                   <Badge className="bg-success/20 text-success border-success/30 text-xs">
-                    {es ? 'Disponible' : 'Available'}
+                    {l('Available', 'Disponible', 'Verfügbar')}
                   </Badge>
                 )}
               </div>
@@ -186,12 +187,12 @@ export default function WorkerProfilePage() {
                 )}
                 {profile.hourly_rate && (
                   <span className="flex items-center gap-1 text-primary font-semibold">
-                    {formatCurrency(profile.hourly_rate, profile.currency)}/hr
+                    {formatCurrency(profile.hourly_rate, profile.currency)}{l('/hr', '/hora', '/Std.')}
                   </span>
                 )}
                 <span className="flex items-center gap-1 text-muted-foreground">
                   <Briefcase className="h-3.5 w-3.5" />
-                  {completedJobs.length} {es ? 'trabajos' : 'jobs'}
+                  {completedJobs.length} {l('jobs', 'trabajos', 'Aufträge')}
                 </span>
               </div>
             </div>
@@ -213,7 +214,7 @@ export default function WorkerProfilePage() {
 
           {user && user.id !== profile.user_id && (
             <Button className="mt-4" onClick={() => setShowMessage(true)}>
-              <MessageSquare className="h-4 w-4 mr-2" />{es ? 'Contactar' : 'Contact'}
+              <MessageSquare className="h-4 w-4 mr-2" />{l('Contact', 'Contactar', 'Kontaktieren')}
             </Button>
           )}
         </div>
@@ -225,11 +226,11 @@ export default function WorkerProfilePage() {
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="jobs" className="gap-2">
               <Briefcase className="h-3.5 w-3.5" />
-              {es ? 'Trabajos' : 'Jobs'} ({completedJobs.length})
+              {l('Jobs', 'Trabajos', 'Aufträge')} ({completedJobs.length})
             </TabsTrigger>
             <TabsTrigger value="reviews" className="gap-2">
               <Star className="h-3.5 w-3.5" />
-              {es ? 'Reseñas' : 'Reviews'} ({ratings.length})
+              {l('Reviews', 'Reseñas', 'Bewertungen')} ({ratings.length})
             </TabsTrigger>
           </TabsList>
 
@@ -237,7 +238,7 @@ export default function WorkerProfilePage() {
             {completedJobs.length === 0 ? (
               <Card className="border-dashed">
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  {es ? 'Sin historial de trabajos aún' : 'No job history yet'}
+                  {l('No completed jobs yet.', 'Aún no hay trabajos completados.', 'Noch keine abgeschlossenen Aufträge.')}
                 </CardContent>
               </Card>
             ) : completedJobs.map(job => (
@@ -277,7 +278,7 @@ export default function WorkerProfilePage() {
             {ratings.length === 0 ? (
               <Card className="border-dashed">
                 <CardContent className="py-8 text-center text-muted-foreground">
-                  {es ? 'Sin reseñas aún' : 'No reviews yet'}
+                  {l('No reviews yet.', 'Aún no hay reseñas.', 'Noch keine Bewertungen.')}
                 </CardContent>
               </Card>
             ) : ratings.map(r => (
@@ -294,7 +295,7 @@ export default function WorkerProfilePage() {
                   {r.comment && <p className="text-sm text-foreground">{r.comment}</p>}
                   {(r.job_postings as any)?.title && (
                     <p className="text-xs text-muted-foreground mt-1">
-                      {es ? 'Trabajo:' : 'Job:'} {(r.job_postings as any).title}
+                      {l('Job:', 'Trabajo:', 'Auftrag:')} {(r.job_postings as any).title}
                     </p>
                   )}
                 </CardContent>
@@ -308,21 +309,21 @@ export default function WorkerProfilePage() {
       <Dialog open={showMessage} onOpenChange={setShowMessage}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{es ? 'Contactar a' : 'Contact'} {name}</DialogTitle>
-            <DialogDescription>{es ? 'Envía un mensaje directo' : 'Send a direct message'}</DialogDescription>
+            <DialogTitle>{l('Contact', 'Contactar a', 'Kontakt an')} {name}</DialogTitle>
+            <DialogDescription>{l('Send a direct message.', 'Envíe un mensaje directo.', 'Senden Sie eine direkte Nachricht.')}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <Label>{es ? 'Mensaje' : 'Message'}</Label>
+            <Label>{l('Message', 'Mensaje', 'Nachricht')}</Label>
             <Textarea
               value={message}
               onChange={e => setMessage(e.target.value)}
-              placeholder={es ? 'Escribe tu mensaje...' : 'Write your message...'}
+              placeholder={l('Write your message…', 'Escriba su mensaje…', 'Schreiben Sie Ihre Nachricht…')}
               rows={4}
             />
           </div>
           <DialogFooter>
             <Button onClick={sendMessage} disabled={!message.trim()}>
-              <Send className="h-4 w-4 mr-2" />{es ? 'Enviar' : 'Send'}
+              <Send className="h-4 w-4 mr-2" />{l('Send', 'Enviar', 'Senden')}
             </Button>
           </DialogFooter>
         </DialogContent>

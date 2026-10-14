@@ -1,3 +1,4 @@
+import { Seo } from '@/components/Seo';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { Leaf, Loader2, Droplets, ShieldAlert, CalendarDays, Phone, Download, Sun } from 'lucide-react';
@@ -76,9 +77,11 @@ const RESPONSIBILITY: Record<string, [string, string, string]> = {
 
 const COPY = {
   unavailableTitle: ['Link unavailable', 'Enlace no disponible', 'Link nicht verfügbar'],
-  unavailable: ['This link is not available.', 'Este enlace no está disponible.', 'Dieser Link ist nicht verfügbar.'],
-  expired: ['This link has expired.', 'Este enlace ha vencido.', 'Dieser Link ist abgelaufen.'],
-  revoked: ['This link was deactivated.', 'Este enlace fue desactivado.', 'Dieser Link wurde deaktiviert.'],
+  unavailable: ['We could not find information for this link. Please check it or ask your service provider.', 'No encontramos información para este enlace. Revíselo o consulte a su proveedor de servicio.', 'Zu diesem Link wurden keine Informationen gefunden. Bitte prüfen Sie ihn oder fragen Sie Ihren Dienstleister.'],
+  expired: ['This link has expired. Please ask your service provider for a new one.', 'Este enlace venció. Solicite uno nuevo a su proveedor de servicio.', 'Dieser Link ist abgelaufen. Bitten Sie Ihren Dienstleister um einen neuen.'],
+  revoked: ['This link was deactivated. Please ask your service provider for a new one.', 'Este enlace fue desactivado. Solicite uno nuevo a su proveedor de servicio.', 'Dieser Link wurde deaktiviert. Bitten Sie Ihren Dienstleister um einen neuen.'],
+  pageTitle: ['Your property | HomeGuide', 'Su propiedad | HomeGuide', 'Ihr Objekt | HomeGuide'],
+  pageDesc: ['Private page shared by your service provider.', 'Página privada compartida por su proveedor de servicio.', 'Private Seite Ihres Dienstleisters.'],
   plants: ['Plants at your property', 'Plantas en su propiedad', 'Pflanzen in Ihrem Objekt'],
   noLocation: ['No location recorded', 'Sin ubicación registrada', 'Kein Standort erfasst'],
   pendingReview: ['Pending review by our team', 'Pendiente de revisión por nuestro equipo', 'Wird von unserem Team geprüft'],
@@ -166,6 +169,7 @@ export default function PlantOpsPortal() {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
+      <Seo noindex title={t('pageTitle')} description={t('pageDesc')} path="/c" />
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
       </div>
     );
@@ -174,6 +178,7 @@ export default function PlantOpsPortal() {
   if (errorCode || !data) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background p-6">
+        <Seo noindex title={t('pageTitle')} description={t('pageDesc')} path="/c" />
         <Card className="max-w-md w-full">
           <CardContent className="py-10 text-center space-y-2">
             <ShieldAlert className="h-8 w-8 mx-auto text-muted-foreground" />
@@ -187,6 +192,7 @@ export default function PlantOpsPortal() {
 
   return (
     <main className="min-h-screen bg-background">
+      <Seo noindex title={t('pageTitle')} description={t('pageDesc')} path="/c" />
       <header className="border-b border-border">
         <div className="max-w-2xl mx-auto p-5 space-y-1">
           <div className="flex items-center gap-2 text-primary">

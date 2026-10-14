@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
+import { Seo } from '@/components/Seo';
 import { buildManualDocument, manualToPlainText } from '@/lib/manualRender';
 
 interface PortalPlant {
@@ -39,7 +40,42 @@ interface PortalPayload {
  * Aggregated, login-free client portal: one link, every project of that client.
  * Read-only. Manuals come from approved snapshots. No internal notes.
  */
+type Lang = 'en' | 'es' | 'de';
+/** No language in the payload: browser preference, Spanish fallback (primary market). */
+function browserLang(): Lang {
+  for (const c of navigator.languages ?? [navigator.language]) {
+    const v = (c ?? '').slice(0, 2).toLowerCase();
+    if (v === 'es' || v === 'de' || v === 'en') return v as Lang;
+  }
+  return 'es';
+}
+const COPY = {
+  unavailableTitle: ['Link unavailable', 'Enlace no disponible', 'Link nicht verfügbar'],
+  expired: ['This link has expired. Please ask your service provider for a new one.', 'Este enlace venció. Solicite uno nuevo a su proveedor de servicio.', 'Dieser Link ist abgelaufen. Bitten Sie Ihren Dienstleister um einen neuen.'],
+  revoked: ['This link was deactivated. Please ask your service provider for a new one.', 'Este enlace fue desactivado. Solicite uno nuevo a su proveedor de servicio.', 'Dieser Link wurde deaktiviert. Bitten Sie Ihren Dienstleister um einen neuen.'],
+  unavailable: ['We could not find information for this link. Please check it or ask your service provider.', 'No encontramos información para este enlace. Revíselo o consulte a su proveedor de servicio.', 'Zu diesem Link wurden keine Informationen gefunden. Bitte prüfen Sie ihn oder fragen Sie Ihren Dienstleister.'],
+  intro: ['What was done at your properties and what needs attention.', 'Lo que se hizo en sus propiedades y lo que necesita atención.', 'Was in Ihren Objekten erledigt wurde und was Aufmerksamkeit braucht.'],
+  properties: ['Properties', 'Propiedades', 'Objekte'],
+  plants: ['Plants', 'Plantas', 'Pflanzen'],
+  activity: ['Recent activity', 'Actividad reciente', 'Letzte Aktivität'],
+  manuals: ['Care guides', 'Guías de cuidado', 'Pflegeanleitungen'],
+  invoices: ['Invoices', 'Facturas', 'Rechnungen'],
+  documents: ['Documents', 'Documentos', 'Dokumente'],
+  pendingReview: ['Pending review by your service team', 'Pendiente de revisión por su equipo de servicio', 'Wird von Ihrem Serviceteam geprüft'],
+  amount: ['Amount: ', 'Cantidad: ', 'Menge: '],
+  doNot: ['Do not: ', 'No hacer: ', 'Nicht tun: '],
+  manual: ['Care guide', 'Guía de cuidado', 'Pflegeanleitung'],
+  approvedOn: ['Approved on', 'Aprobado el', 'Genehmigt am'],
+  pageTitle: ['Your properties | HomeGuide', 'Sus propiedades | HomeGuide', 'Ihre Objekte | HomeGuide'],
+  pageDesc: ['Private page shared by your service provider.', 'Página privada compartida por su proveedor de servicio.', 'Private Seite Ihres Dienstleisters.'],
+} as const;
+const LOCALES: Record<Lang, string> = { en: 'en-US', es: 'es-CR', de: 'de-DE' };
+
 export default function ClientPortal() {
+  const lang = useMemo(browserLang, []);
+  const t = (k: keyof typeof COPY) => COPY[k][lang === 'es' ? 1 : lang === 'de' ? 2 : 0];
+  const locale = LOCALES[lang];
+  const seo = <Seo noindex title={t('pageTitle')} description={t('pageDesc')} path="/cliente" />;
   const { token } = useParams<{ token: string }>();
   const [data, setData] = useState<PortalPayload | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,7 +94,6 @@ export default function ClientPortal() {
           setError((res as PortalPayload).error!);
         } else {
           setData(res as PortalPayload);
-          document.title = `${(res as PortalPayload).client ?? 'Portal'} | ${(res as PortalPayload).company ?? 'Home Guide'}`;
         }
       } catch {
         setError('unavailable');
@@ -77,6 +112,7 @@ export default function ClientPortal() {
   if (loading) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background">
+        {seo}
         <Loader2 className="h-6 w-6 animate-spin" />
       </main>
     );
@@ -85,14 +121,11 @@ export default function ClientPortal() {
   if (error || !data) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-background p-6">
+        {seo}
         <Card className="max-w-sm w-full">
-          <CardHeader><CardTitle>Enlace no disponible</CardTitle></CardHeader>
+          <CardHeader><CardTitle>{t('unavailableTitle')}</CardTitle></CardHeader>
           <CardContent className="text-sm text-muted-foreground">
-            {error === 'expired'
-              ? 'Este enlace expiró. Solicite uno nuevo a su proveedor de servicio.'
-              : error === 'revoked'
-              ? 'Este enlace fue desactivado. Solicite uno nuevo a su proveedor de servicio.'
-              : 'No encontramos información para este enlace.'}
+            {t(error === 'expired' ? 'expired' : error === 'revoked' ? 'revoked' : 'unavailable')}
           </CardContent>
         </Card>
       </main>
@@ -112,10 +145,12 @@ export default function ClientPortal() {
 
   return (
     <main className="min-h-screen bg-background">
+      {seo}
       <header className="border-b bg-card">
         <div className="max-w-3xl mx-auto p-4">
           <p className="text-xs uppercase tracking-wide text-muted-foreground">{data.company ?? ''}</p>
           <h1 className="text-2xl font-bold">{data.client ?? ''}</h1>
+          <p className="text-sm text-muted-foreground mt-1">{t('intro')}</p>
           {data.contact_note && <p className="text-sm text-muted-foreground mt-1">{data.contact_note}</p>}
         </div>
       </header>
@@ -123,7 +158,7 @@ export default function ClientPortal() {
       <div className="max-w-3xl mx-auto p-4 space-y-4">
         {(data.projects || []).length > 0 && (
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-base">Propiedades</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-base">{t('properties')}</CardTitle></CardHeader>
             <CardContent className="space-y-2">
               {data.projects!.map((p) => (
                 <div key={p.id} className="flex items-start gap-2 text-sm">
@@ -140,11 +175,11 @@ export default function ClientPortal() {
 
         <Tabs defaultValue={hasPlants ? 'plantas' : hasManuals ? 'manuales' : hasInvoices ? 'facturas' : 'actividad'}>
           <TabsList className="flex-wrap h-auto">
-            {hasPlants && <TabsTrigger value="plantas">Plantas</TabsTrigger>}
-            {hasActivity && <TabsTrigger value="actividad">Actividad</TabsTrigger>}
-            {hasManuals && <TabsTrigger value="manuales">Manuales</TabsTrigger>}
-            {hasInvoices && <TabsTrigger value="facturas">Facturas</TabsTrigger>}
-            {hasDocs && <TabsTrigger value="documentos">Documentos</TabsTrigger>}
+            {hasPlants && <TabsTrigger value="plantas">{t('plants')}</TabsTrigger>}
+            {hasActivity && <TabsTrigger value="actividad">{t('activity')}</TabsTrigger>}
+            {hasManuals && <TabsTrigger value="manuales">{t('manuals')}</TabsTrigger>}
+            {hasInvoices && <TabsTrigger value="facturas">{t('invoices')}</TabsTrigger>}
+            {hasDocs && <TabsTrigger value="documentos">{t('documents')}</TabsTrigger>}
           </TabsList>
 
           {hasPlants && (
@@ -167,14 +202,14 @@ export default function ClientPortal() {
                     </div>
                     <div className="flex items-center gap-2 text-sm font-medium">
                       {waterIcon(p.water_state)}
-                      <span>{p.water_message ?? 'Pendiente de revisión'}</span>
+                      <span>{p.water_message ?? t('pendingReview')}</span>
                     </div>
                     {p.water_amount_note && (
-                      <p className="text-sm"><span className="text-muted-foreground">Cantidad: </span>{p.water_amount_note}</p>
+                      <p className="text-sm"><span className="text-muted-foreground">{t('amount')}</span>{p.water_amount_note}</p>
                     )}
                     {p.client_instructions && <p className="text-sm">{p.client_instructions}</p>}
                     {p.do_not_do && (
-                      <p className="text-sm text-destructive"><span className="font-medium">No hacer: </span>{p.do_not_do}</p>
+                      <p className="text-sm text-destructive"><span className="font-medium">{t('doNot')}</span>{p.do_not_do}</p>
                     )}
                   </CardContent>
                 </Card>
@@ -190,7 +225,7 @@ export default function ClientPortal() {
                     <div key={a.id} className="flex items-center justify-between text-sm border-b last:border-0 pb-2 last:pb-0">
                       <span className="capitalize">{a.action.replace(/_/g, ' ')}</span>
                       <span className="text-muted-foreground text-xs">
-                        {projectName(a.estate_id)} · {new Date(a.at).toLocaleDateString()}
+                        {projectName(a.estate_id)} · {new Date(a.at).toLocaleDateString(locale)}
                       </span>
                     </div>
                   ))}
@@ -205,10 +240,10 @@ export default function ClientPortal() {
                 <Card key={m.estate_id}>
                   <CardHeader className="pb-2">
                     <CardTitle className="text-base flex items-center gap-2">
-                      <FileText className="h-4 w-4" />{projectName(m.estate_id) || 'Manual'}
+                      <FileText className="h-4 w-4" />{projectName(m.estate_id) || t('manual')}
                     </CardTitle>
                     <p className="text-xs text-muted-foreground">
-                      Aprobado el {new Date(m.approved_at).toLocaleDateString()}
+                      {t('approvedOn')} {new Date(m.approved_at).toLocaleDateString(locale)}
                     </p>
                   </CardHeader>
                   <CardContent>
@@ -232,7 +267,7 @@ export default function ClientPortal() {
                         <span>{i.invoice_number}</span>
                       </div>
                       <div className="text-right">
-                        <p>{i.currency} {Number(i.total).toLocaleString()}</p>
+                        <p>{i.currency} {Number(i.total).toLocaleString(locale)}</p>
                         <p className="text-xs text-muted-foreground capitalize">{i.status}</p>
                       </div>
                     </div>
