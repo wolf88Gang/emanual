@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Building2, Camera, CheckCircle2, ChevronDown, ClipboardCheck, FileText, Leaf, Lock, MapPinned, Menu, PackageCheck, QrCode, ShieldCheck, Users, X } from 'lucide-react';
+import { ArrowRight, Building2, Camera, ChevronDown, ClipboardCheck, FileText, Leaf, Lock, Menu, Users, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { LanguagePicker } from '@/components/LanguagePicker';
 import { HGReveal, HGStaggerGroup, HGTextReveal, LandingSectionHeading } from './motion';
@@ -9,8 +9,8 @@ import type { landingCopy, LandingLanguage } from './copy';
 type Copy = (typeof landingCopy)[LandingLanguage];
 const problemIcons = [FileText, ClipboardCheck, Users];
 const stepIcons = [Building2, ClipboardCheck, Camera, FileText];
-const capabilityIcons = [MapPinned, ClipboardCheck, QrCode, Leaf, PackageCheck, FileText];
-const trustIcons = [Users, Lock, ShieldCheck];
+const capabilityIcons = [Building2, ClipboardCheck, Users, Camera, Leaf, FileText];
+const trustIcons = [Users, Lock, FileText];
 
 export function LandingNavbar({ copy }: { copy: Copy['nav'] }) {
   const [open, setOpen] = useState(false);
@@ -44,7 +44,7 @@ export function HowItWorksSection({ copy }: { copy: Copy['how'] }) {
 }
 
 export function ConnectedDataSection({ copy }: { copy: Copy['connected'] }) {
-  return <section className="landing-section connected-section numbered-section" aria-labelledby="connected-title"><span className="section-watermark" aria-hidden="true">03</span><div className="landing-shell"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} className="max-w-3xl" /><HGReveal className="connected-model" delay={90}><div className="connected-model-heading"><span className="landing-eyebrow">{copy.modelLabel}</span><p>{copy.modelNote}</p></div><ol>{copy.model.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, '0')}</span><strong>{item}</strong>{index < copy.model.length - 1 && <ArrowRight aria-hidden="true" />}</li>)}</ol></HGReveal><HGStaggerGroup className="data-routes" startDelay={70} step={110} direction="left">{copy.routes.map(([origin, targets], index) => <div className="data-route" key={origin}><span className="data-route-index">0{index + 1}</span><strong>{origin}</strong><div className="flow-line" aria-hidden="true"><span /></div><ArrowRight className="data-arrow" aria-hidden="true"/><div className="data-targets">{targets.map((target) => <span key={target}>{target}</span>)}</div></div>)}</HGStaggerGroup></div></section>;
+  return <section className="landing-section connected-section numbered-section" aria-labelledby="connected-title"><span className="section-watermark" aria-hidden="true">03</span><div className="landing-shell"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} className="max-w-3xl" /><HGReveal className="connected-model" delay={90}><div className="connected-model-heading"><span className="landing-eyebrow">{copy.modelLabel}</span><p>{copy.modelNote}</p></div><ol className="lg:!grid-cols-6">{copy.model.map((item, index) => <li key={item}><span>{String(index + 1).padStart(2, '0')}</span><strong>{item}</strong>{index < copy.model.length - 1 && <ArrowRight aria-hidden="true" />}</li>)}</ol></HGReveal></div></section>;
 }
 
 export function AudienceSection({ copy }: { copy: Copy['audience'] }) {

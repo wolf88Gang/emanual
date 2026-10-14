@@ -6,7 +6,7 @@ import { ADDONS, ANNUAL_MONTHS_CHARGED, BASE_PRICE_PER_PROPERTY_USD, quote, type
 import { CRC_PER_USD } from '@/lib/currency';
 import { MODULE_LIST, type ModuleKey } from '@/lib/homeGuideModules';
 import { LandingSectionHeading, HGReveal } from './motion';
-import type { landingCopy, LandingLanguage } from './copy';
+import { landingModuleCopy, type landingCopy, type LandingLanguage } from './copy';
 
 type Copy = (typeof landingCopy)[LandingLanguage]['pricing'];
 type Currency = 'USD' | 'CRC';
@@ -42,7 +42,7 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
   };
   const addonDescription = (id: string) => {
     const addon = addonById(id);
-    return addon ? local(addon.description) : '';
+    return text(`addon_${id}`) || (addon ? local(addon.description) : '');
   };
   const renderAddon = (id: string) => {
     const addon = addonById(id);
@@ -131,7 +131,8 @@ export function PricingSection({ copy, language }: { copy: Copy; language: Landi
                   {group.moduleKeys.map((moduleKey) => {
                     const mod = MODULE_LIST.find((item) => item.key === moduleKey);
                     if (!mod) return null;
-                    return <li key={mod.key}><strong>{mod.label[language]}</strong><p>{mod.description[language]}</p></li>;
+                    const publicCopy = landingModuleCopy[mod.key]?.[language];
+                    return <li key={mod.key}><strong>{publicCopy?.[0] ?? mod.label[language]}</strong><p>{publicCopy?.[1] ?? mod.description[language]}</p></li>;
                   })}
                 </ul>
               </section>
