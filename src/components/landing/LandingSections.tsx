@@ -8,7 +8,7 @@ import type { landingCopy, LandingLanguage } from './copy';
 
 type Copy = (typeof landingCopy)[LandingLanguage];
 const problemIcons = [FileText, ClipboardCheck, Users];
-const stepIcons = [Building2, ClipboardCheck, Camera, FileText];
+const stepIcons = [Building2, ClipboardCheck, Users, Camera];
 const capabilityIcons = [Building2, ClipboardCheck, Users, Camera, Leaf, FileText];
 const trustIcons = [Users, Lock, FileText];
 
@@ -30,7 +30,7 @@ export function HeroSection({ copy }: { copy: Copy['hero'] }) {
     <img src="/images/estate_guide_4.jpg" alt={copy.imageAlt} width="1920" height="1080" decoding="async" className="landing-hero-image" />
     <div className="landing-hero-overlay" /><div className="landing-topography" aria-hidden="true"><span /><span /><span /></div>
     <div className="landing-shell landing-hero-inner">
-      <div className="landing-hero-copy"><HGReveal direction="none" duration={520}><p className="landing-eyebrow text-primary-foreground/80">{copy.eyebrow}</p></HGReveal><HGTextReveal as="h1" delay={60} duration={880} className="landing-hero-title" >{copy.title}</HGTextReveal><HGReveal delay={160}><p className="landing-hero-body">{copy.body}</p></HGReveal><HGReveal delay={230}><p className="landing-hero-support">{copy.support}</p></HGReveal><HGReveal delay={300}><div className="landing-hero-actions"><Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90"><Link to="/auth?mode=signup">{copy.primary}<ArrowRight /></Link></Button><Button asChild size="lg" variant="outline" className="border-primary-foreground/40 bg-background/20 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><a href="#how-it-works">{copy.secondary}</a></Button></div></HGReveal></div>
+      <div className="landing-hero-copy !max-w-[840px]"><HGReveal direction="none" duration={520}><p className="landing-eyebrow text-primary-foreground/80">{copy.eyebrow}</p></HGReveal><HGTextReveal as="h1" delay={60} duration={880} className="landing-hero-title !max-w-[23ch] !text-4xl sm:!text-5xl lg:!text-6xl" >{copy.title}</HGTextReveal><HGReveal delay={160}><p className="landing-hero-body">{copy.body}</p></HGReveal><HGReveal delay={230}><p className="landing-hero-support">{copy.support}</p></HGReveal><HGReveal delay={300}><div className="landing-hero-actions"><Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90"><Link to="/auth?mode=signup">{copy.primary}<ArrowRight /></Link></Button><Button asChild size="lg" variant="outline" className="border-primary-foreground/40 bg-background/20 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"><a href="#how-it-works">{copy.secondary}</a></Button></div></HGReveal></div>
     </div>
   </section>;
 }
@@ -48,7 +48,7 @@ export function ConnectedDataSection({ copy }: { copy: Copy['connected'] }) {
 }
 
 export function AudienceSection({ copy }: { copy: Copy['audience'] }) {
-  return <section id="audience" className="landing-section scroll-mt-28" aria-labelledby="audience-title"><div className="landing-shell editorial-split audience-layout"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} /><HGStaggerGroup className="audience-list" startDelay={70}>{copy.groups.map(([title, body], index) => <article key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{body}</p></article>)}</HGStaggerGroup></div></section>;
+  return <section id="audience" className="landing-section scroll-mt-28" aria-labelledby="audience-title"><div className="landing-shell editorial-split audience-layout"><LandingSectionHeading eyebrow={copy.eyebrow} title={copy.title} subtitle={copy.body} /><HGStaggerGroup className="audience-list !grid-cols-1" startDelay={70}>{copy.groups.map(([title, body], index) => <article className="!min-h-0 sm:!border-r-0" key={title}><span>0{index + 1}</span><h3>{title}</h3><p>{body}</p></article>)}</HGStaggerGroup></div></section>;
 }
 
 export function OperationalVisibilitySection({ copy }: { copy: Copy['visibility'] }) {
