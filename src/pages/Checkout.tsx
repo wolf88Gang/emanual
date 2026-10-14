@@ -13,7 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Seo } from '@/components/Seo';
 import { HGLogo } from '@/components/HGLogo';
 import { toast } from 'sonner';
-import { landingCopy } from '@/components/landing/copy';
+import { landingCopy, publicAddonNames } from '@/components/landing/copy';
 
 type Currency = 'USD' | 'CRC';
 
@@ -32,17 +32,7 @@ export default function Checkout() {
   const l = (en: string, es: string, de: string) =>
     language === 'es' ? es : language === 'de' ? de : en;
 
-  const publicAddonName = (id: string) => ({
-    field_operations: l('Visits and completed work', 'Visitas y trabajo realizado', 'Besuche und erledigte Arbeiten'),
-    labor: l('Team hours and shifts', 'Horas y turnos del equipo', 'Teamstunden und Schichten'),
-    reminders: l('Reminders', 'Recordatorios', 'Erinnerungen'),
-    inventory: l('Tools and supplies', 'Herramientas y materiales', 'Werkzeuge und Material'),
-    client_portal: l('Client portal', 'Portal de clientes', 'Kundenportal'),
-    reports_manuals: l('Reports and manuals', 'Reportes y manuales', 'Berichte und Handbücher'),
-    financials: l('Expenses and billing', 'Gastos y facturación', 'Ausgaben und Abrechnung'),
-    topography: l('Terrain and slopes', 'Terreno y pendientes', 'Gelände und Gefälle'),
-    plant_care: l('Plant care', 'Cuidado de plantas', 'Pflanzenpflege'),
-  } as Record<string, string>)[id];
+  const publicAddonName = (id: string) => publicAddonNames[id]?.[language];
 
   useEffect(() => {
     if (searchParams.get('canceled') === '1') {

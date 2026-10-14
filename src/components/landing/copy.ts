@@ -1,5 +1,17 @@
 export type LandingLanguage = 'en' | 'es' | 'de';
 
+export const publicAddonNames: Record<string, Record<LandingLanguage, string>> = {
+  field_operations: { en: 'Visits and completed work', es: 'Visitas y trabajo realizado', de: 'Besuche und erledigte Arbeiten' },
+  labor: { en: 'Team hours and shifts', es: 'Horas y turnos del equipo', de: 'Teamstunden und Schichten' },
+  reminders: { en: 'Reminders', es: 'Recordatorios', de: 'Erinnerungen' },
+  inventory: { en: 'Tools and supplies', es: 'Herramientas y materiales', de: 'Werkzeuge und Material' },
+  client_portal: { en: 'Client portal', es: 'Portal de clientes', de: 'Kundenportal' },
+  reports_manuals: { en: 'Reports and manuals', es: 'Reportes y manuales', de: 'Berichte und Handbücher' },
+  financials: { en: 'Expenses and billing', es: 'Gastos y facturación', de: 'Ausgaben und Abrechnung' },
+  topography: { en: 'Terrain and slopes', es: 'Terreno y pendientes', de: 'Gelände und Gefälle' },
+  plant_care: { en: 'Plant care', es: 'Cuidado de plantas', de: 'Pflanzenpflege' },
+};
+
 type LocalCopy = {
   seo: { title: string; description: string };
   nav: { how: string; audience: string; capabilities: string; pricing: string; signIn: string; create: string; menu: string };

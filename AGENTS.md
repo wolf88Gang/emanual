@@ -1,4 +1,4 @@
 - Visual Service Brief extends `tasks` 1:1 (`service_visual_briefs.task_id`); context (estate/zone/asset) is always derived from the task — never duplicated. Why: avoid drift.
 - All brief writes go through RPCs enforcing the state matrix; tables are SELECT-only for authenticated, events/annotations are append-only. Why: auditable, no arbitrary transitions.
 - The final "after" photo reuses the `task_completions` storage object (no second upload); frozen evidence objects cannot be updated/deleted via storage policies. Why: single source of truth, historical integrity.
-- Public messaging and optional-feature description overrides live in the landing copy module, not shared pricing or module registries. Why: public copy changes must not alter signed-in labels or business rules.
+- Public marketing and optional-feature name/description overrides live in the landing copy module; funnel notices remain page-local, never in pricing or module registries. Why: editorial changes must not alter signed-in labels or business rules.
