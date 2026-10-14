@@ -140,7 +140,7 @@ export default function Checkout() {
                 onClick={() => setInterval('annual')}
                 className={`relative rounded-xl border p-4 text-left transition ${interval === 'annual' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}
               >
-                <Badge className="absolute -top-2 right-3 text-[10px]">
+                <Badge className="mb-2 max-w-full whitespace-normal text-[10px]">
                   {l('Annual saving', 'Ahorro anual', 'Jährliche Ersparnis')}
                 </Badge>
                 <p className="font-semibold text-foreground">{l('Annual', 'Anual', 'Jährlich')}</p>
