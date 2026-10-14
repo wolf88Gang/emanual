@@ -1,5 +1,10 @@
 # Roadmap
 
+## Launch close-out (2026-10-14)
+- [ ] Verify and refine hero presentation only in ES/EN/DE at 390/768/1024/1440; run existing suite and record comprehension criteria.
+- [ ] Read-only map all eight product actors against live roles, policies, grants, RPCs and UI; document confirmed gaps and unverified exploits without changing permissions.
+- [ ] Update launch audit with current visual evidence, actor matrix and prioritized follow-ups; no publishing, deployment or production data writes.
+
 ## Phase 2 public entry, access and payment copy
 - [x] Verify hosted signup availability and inventory the real acquisition/payment routes without sending emails, creating users or payments. Hosted GET /auth/v1/settings: disable_signup=false, email=true; direct signup CTA retained.
 - [x] Rewrite RequestAccess, Auth, Checkout, CheckoutSuccess, ResetPassword and NotFound in ES/EN/DE; preserve all business logic.
