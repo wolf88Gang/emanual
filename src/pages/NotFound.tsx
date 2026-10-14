@@ -2,30 +2,31 @@ import { useEffect } from "react";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import { Seo } from "@/components/Seo";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 const errorCopy = {
   en: {
-    eyebrow: "Route not found",
-    title: "This path does not lead anywhere yet.",
+    eyebrow: "Page not found",
+    title: "We could not find this page.",
     body: "The page may have moved, changed its address, or no longer be available.",
-    home: "Go to Home Guide",
+    home: "Back to home",
     back: "Go back",
     code: "Error 404",
   },
   es: {
-    eyebrow: "Ruta no encontrada",
-    title: "Este camino todavía no lleva a ningún lugar.",
+    eyebrow: "Página no encontrada",
+    title: "No encontramos esta página.",
     body: "Es posible que la página se haya movido, cambiado de dirección o ya no esté disponible.",
-    home: "Ir a Home Guide",
+    home: "Volver al inicio",
     back: "Volver atrás",
     code: "Error 404",
   },
   de: {
     eyebrow: "Seite nicht gefunden",
-    title: "Dieser Weg führt noch nirgendwohin.",
+    title: "Diese Seite wurde nicht gefunden.",
     body: "Die Seite wurde möglicherweise verschoben, umbenannt oder ist nicht mehr verfügbar.",
-    home: "Zu Home Guide",
+    home: "Zur Startseite",
     back: "Zurück",
     code: "Fehler 404",
   },
@@ -43,10 +44,11 @@ const NotFound = () => {
 
   return (
     <main className="homeguide-landing error-page min-h-screen overflow-hidden bg-background text-foreground">
+      <Seo title={`${copy.eyebrow} — HomeGuide`} description={copy.body} path={location.pathname} />
       <header className="error-header">
-        <Link to="/" className="landing-brand" aria-label="Home Guide">
+        <Link to="/" className="landing-brand" aria-label="HomeGuide">
           <img src="/images/hg-logo.png" alt="" />
-          <span>Home Guide</span>
+          <span>HomeGuide</span>
         </Link>
         <span>{copy.code}</span>
       </header>
@@ -70,8 +72,8 @@ const NotFound = () => {
       </section>
 
       <footer className="error-footer">
-        <span>HOME GUIDE</span>
-        <span>OPERATIONS CONNECTED TO PLACE</span>
+        <span>HomeGuide</span>
+        <span>{language === "es" ? "Qué necesita cada propiedad, qué se hizo y qué sigue." : language === "de" ? "Was jede Immobilie braucht, was erledigt wurde und was als Nächstes ansteht." : "What each property needs, what was done and what comes next."}</span>
       </footer>
     </main>
   );

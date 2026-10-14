@@ -24,7 +24,7 @@ import {
 
 /**
  * Access is invitation-only: prospective customers describe their operation and
- * the Home Guide team contacts them. No self-service account creation.
+ * the HomeGuide team contacts them. No self-service account creation.
  */
 const schema = z.object({
   full_name: z.string().trim().min(2).max(120),
@@ -44,9 +44,9 @@ type FormData = z.infer<typeof schema>;
 const OPERATION_TYPES = [
   { value: 'property_management', en: 'Property / villa management', es: 'Administración de propiedades / villas', de: 'Immobilien- / Villenverwaltung' },
   { value: 'landscaping', en: 'Landscaping / grounds maintenance', es: 'Paisajismo / mantenimiento de jardines', de: 'Garten- / Landschaftspflege' },
-  { value: 'plant_rental', en: 'Plant rental / interior plants', es: 'Alquiler de plantas / plantas interiores', de: 'Pflanzenvermietung / Innenraumpflanzen' },
-  { value: 'estate_owner', en: 'Estate or home owner', es: 'Propietario de finca o casa', de: 'Eigentümer eines Anwesens oder Hauses' },
-  { value: 'other', en: 'Other operation', es: 'Otra operación', de: 'Anderer Betrieb' },
+  { value: 'plant_rental', en: 'Plant services / interior planting', es: 'Servicios de plantas / interiorismo vegetal', de: 'Pflanzenservice / Innenraumbegrünung' },
+  { value: 'estate_owner', en: 'Home or property owner', es: 'Propietario de casa o propiedad', de: 'Haus- oder Immobilieneigentümer' },
+  { value: 'other', en: 'General maintenance / other services', es: 'Mantenimiento general / otros servicios', de: 'Instandhaltung / andere Dienstleistungen' },
 ];
 
 export default function RequestAccess() {
@@ -95,11 +95,11 @@ export default function RequestAccess() {
   return (
     <div className="min-h-screen bg-background">
       <Seo
-        title={l('Request access — Home Guide', 'Solicitar acceso — Home Guide', 'Zugang anfragen — Home Guide')}
+        title={l('Request access — HomeGuide', 'Solicitar acceso — HomeGuide', 'Zugang anfragen — HomeGuide')}
         description={l(
-          'Home Guide is invitation-only. Tell us about your operation and our team will contact you.',
-          'Home Guide es por invitación. Cuéntenos sobre su operación y nuestro equipo lo contactará.',
-          'Home Guide ist nur auf Einladung. Erzählen Sie uns von Ihrem Betrieb, wir melden uns.',
+          'Tell us how your team maintains properties and what you need to organize with HomeGuide.',
+          'Cuéntenos cómo su equipo atiende propiedades y qué necesita organizar con HomeGuide.',
+          'Beschreiben Sie, wie Ihr Team Immobilien betreut und was Sie mit HomeGuide organisieren möchten.',
         )}
         path="/request-access"
       />
@@ -122,9 +122,9 @@ export default function RequestAccess() {
               </h1>
               <p className="max-w-md text-sm text-muted-foreground">
                 {l(
-                  'Thank you. Our team reviews every operation individually and will contact you by email to arrange a walkthrough.',
-                  'Gracias. Nuestro equipo revisa cada operación de forma individual y lo contactará por correo para coordinar una demostración.',
-                  'Vielen Dank. Unser Team prüft jeden Betrieb einzeln und meldet sich per E-Mail für eine Vorstellung.',
+                  'Your request has been saved for our team to review. You provided your email so we can discuss the next steps. No account has been created and no payment has been made.',
+                  'Su solicitud quedó guardada para que nuestro equipo la revise. Nos dejó su correo para conversar sobre los próximos pasos. No se creó una cuenta ni se realizó un pago.',
+                  'Ihre Anfrage wurde zur Prüfung gespeichert. Über Ihre E-Mail-Adresse können wir die nächsten Schritte besprechen. Es wurde weder ein Konto erstellt noch eine Zahlung vorgenommen.',
                 )}
               </p>
               <Button asChild variant="outline">
@@ -137,16 +137,16 @@ export default function RequestAccess() {
             <CardHeader>
               <p className="inline-flex w-fit items-center gap-2 rounded-full border border-border/70 bg-muted/50 px-2.5 py-1 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">
                 <ShieldCheck className="h-3.5 w-3.5 text-primary" />
-                {l('Invitation only', 'Solo por invitación', 'Nur auf Einladung')}
+                {l('Tell us about your team', 'Cuéntenos sobre su equipo', 'Erzählen Sie uns von Ihrem Team')}
               </p>
               <CardTitle className="font-display text-2xl">
-                {l('Request access', 'Solicitar acceso', 'Zugang anfragen')}
+                {l('Request access to HomeGuide', 'Solicitar acceso a HomeGuide', 'Zugang zu HomeGuide anfragen')}
               </CardTitle>
               <CardDescription>
                 {l(
-                  'Accounts are created by our team after a short review. Tell us about your operation and we will contact you.',
-                  'Las cuentas las crea nuestro equipo después de una breve revisión. Cuéntenos sobre su operación y lo contactaremos.',
-                  'Konten werden nach einer kurzen Prüfung von unserem Team erstellt. Beschreiben Sie Ihren Betrieb, wir melden uns.',
+                  'Tell us which properties you care for and how you organize instructions, visits and pending work. This sends a request for our team to review; it does not create an account or take a payment.',
+                  'Cuéntenos qué propiedades atiende y cómo organiza instrucciones, visitas y trabajo pendiente. Enviará una solicitud para que nuestro equipo la revise; no creará una cuenta ni realizará un pago.',
+                  'Beschreiben Sie Ihre betreuten Immobilien und wie Sie Anweisungen, Besuche und offene Arbeiten organisieren. Sie senden eine Anfrage zur Prüfung; dabei wird kein Konto erstellt und nichts bezahlt.',
                 )}
               </CardDescription>
             </CardHeader>
@@ -155,28 +155,28 @@ export default function RequestAccess() {
                 <div className="grid gap-4 sm:grid-cols-2">
                   <div className="space-y-1.5">
                     <Label htmlFor="full_name">{l('Full name', 'Nombre completo', 'Vollständiger Name')} *</Label>
-                    <Input id="full_name" {...register('full_name')} maxLength={120} />
-                    {errors.full_name && <p className="text-xs text-destructive">{l('Required', 'Requerido', 'Erforderlich')}</p>}
+                    <Input placeholder={l("Your full name", "Su nombre completo", "Ihr vollständiger Name")} id="full_name" {...register('full_name')} maxLength={120} />
+                    {errors.full_name && <p className="text-xs text-destructive">{l('Complete this field.', 'Complete este campo.', 'Bitte füllen Sie dieses Feld aus.')}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="email">{l('Work email', 'Correo de trabajo', 'Arbeits-E-Mail')} *</Label>
-                    <Input id="email" type="email" {...register('email')} maxLength={255} />
+                    <Input placeholder={l("name@company.com", "nombre@empresa.com", "name@firma.de")} id="email" type="email" {...register('email')} maxLength={255} />
                     {errors.email && <p className="text-xs text-destructive">{l('Valid email required', 'Correo válido requerido', 'Gültige E-Mail erforderlich')}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="phone">{l('Phone / WhatsApp', 'Teléfono / WhatsApp', 'Telefon / WhatsApp')}</Label>
-                    <Input id="phone" {...register('phone')} maxLength={40} />
+                    <Input placeholder={l("Include country code", "Incluya el código de país", "Mit Ländervorwahl")} id="phone" {...register('phone')} maxLength={40} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="company_name">{l('Company', 'Empresa', 'Unternehmen')}</Label>
-                    <Input id="company_name" {...register('company_name')} maxLength={160} />
+                    <Input placeholder={l("Company or team name", "Nombre de su empresa o equipo", "Name Ihres Unternehmens oder Teams")} id="company_name" {...register('company_name')} maxLength={160} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="country">{l('Country / region', 'País / región', 'Land / Region')}</Label>
-                    <Input id="country" {...register('country')} maxLength={80} />
+                    <Input placeholder={l("Where you provide services", "Dónde presta sus servicios", "Wo Sie tätig sind")} id="country" {...register('country')} maxLength={80} />
                   </div>
                   <div className="space-y-1.5">
-                    <Label>{l('Type of operation', 'Tipo de operación', 'Art des Betriebs')} *</Label>
+                    <Label>{l('Main service', 'Actividad principal', 'Haupttätigkeit')} *</Label>
                     <Select
                       value={operationType}
                       onValueChange={(v) => {
@@ -195,17 +195,17 @@ export default function RequestAccess() {
                         ))}
                       </SelectContent>
                     </Select>
-                    {errors.operation_type && <p className="text-xs text-destructive">{l('Required', 'Requerido', 'Erforderlich')}</p>}
+                    {errors.operation_type && <p className="text-xs text-destructive">{l('Complete this field.', 'Complete este campo.', 'Bitte füllen Sie dieses Feld aus.')}</p>}
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="team_size">{l('People in your team', 'Personas en su equipo', 'Personen im Team')}</Label>
-                    <Input id="team_size" {...register('team_size')} maxLength={40} />
+                    <Input placeholder={l("For example: 6 people", "Por ejemplo: 6 personas", "Zum Beispiel: 6 Personen")} id="team_size" {...register('team_size')} maxLength={40} />
                   </div>
                   <div className="space-y-1.5">
                     <Label htmlFor="sites_count">
-                      {l('Properties / sites you manage', 'Propiedades / sitios que gestiona', 'Verwaltete Objekte / Standorte')}
+                      {l('Properties you care for', 'Propiedades que atiende', 'Betreute Immobilien')}
                     </Label>
-                    <Input id="sites_count" {...register('sites_count')} maxLength={40} />
+                    <Input placeholder={l("For example: 12 properties", "Por ejemplo: 12 propiedades", "Zum Beispiel: 12 Immobilien")} id="sites_count" {...register('sites_count')} maxLength={40} />
                   </div>
                 </div>
 
@@ -220,10 +220,10 @@ export default function RequestAccess() {
                   <Label htmlFor="needs">
                     {l('What do you need to solve?', '¿Qué necesita resolver?', 'Was möchten Sie lösen?')} *
                   </Label>
-                  <Textarea id="needs" rows={5} {...register('needs')} maxLength={2000} />
+                  <Textarea id="needs" placeholder={l("For example: keeping each client’s instructions when the crew changes", "Por ejemplo: conservar las instrucciones de cada cliente cuando cambia la cuadrilla", "Zum Beispiel: Kundenanweisungen erhalten, wenn das Team wechselt")} rows={5} {...register('needs')} maxLength={2000} />
                   {errors.needs && (
                     <p className="text-xs text-destructive">
-                      {l('Please describe your operation (min. 10 characters).', 'Describa su operación (mín. 10 caracteres).', 'Bitte beschreiben Sie Ihren Betrieb (min. 10 Zeichen).')}
+                      {l('Describe what you need to organize (at least 10 characters).', 'Describa qué necesita organizar (al menos 10 caracteres).', 'Beschreiben Sie, was Sie organisieren möchten (mindestens 10 Zeichen).')}
                     </p>
                   )}
                 </div>

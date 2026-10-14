@@ -13,6 +13,7 @@ import { Switch } from '@/components/ui/switch';
 import { Seo } from '@/components/Seo';
 import { HGLogo } from '@/components/HGLogo';
 import { toast } from 'sonner';
+import { landingCopy } from '@/components/landing/copy';
 
 type Currency = 'USD' | 'CRC';
 
@@ -31,9 +32,21 @@ export default function Checkout() {
   const l = (en: string, es: string, de: string) =>
     language === 'es' ? es : language === 'de' ? de : en;
 
+  const publicAddonName = (id: string) => ({
+    field_operations: l('Visits and completed work', 'Visitas y trabajo realizado', 'Besuche und erledigte Arbeiten'),
+    labor: l('Team hours and shifts', 'Horas y turnos del equipo', 'Teamstunden und Schichten'),
+    reminders: l('Reminders', 'Recordatorios', 'Erinnerungen'),
+    inventory: l('Tools and supplies', 'Herramientas y materiales', 'Werkzeuge und Material'),
+    client_portal: l('Client portal', 'Portal de clientes', 'Kundenportal'),
+    reports_manuals: l('Reports and manuals', 'Reportes y manuales', 'Berichte und Handbücher'),
+    financials: l('Expenses and billing', 'Gastos y facturación', 'Ausgaben und Abrechnung'),
+    topography: l('Terrain and slopes', 'Terreno y pendientes', 'Gelände und Gefälle'),
+    plant_care: l('Plant care', 'Cuidado de plantas', 'Pflanzenpflege'),
+  } as Record<string, string>)[id];
+
   useEffect(() => {
     if (searchParams.get('canceled') === '1') {
-      toast.info(l('Payment canceled. Nothing was charged.', 'Pago cancelado. No se cobró nada.', 'Zahlung abgebrochen. Es wurde nichts belastet.'));
+      toast.info(l('You returned from the payment page. If you authorized a payment, check its status before trying again.', 'Regresó de la página de pago. Si autorizó un pago, revise su estado antes de volver a intentarlo.', 'Sie sind von der Zahlungsseite zurückgekehrt. Falls Sie eine Zahlung autorisiert haben, prüfen Sie vor einem neuen Versuch deren Status.'));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -67,7 +80,7 @@ export default function Checkout() {
       if (error || !data?.checkoutUrl) {
         toast.error(
           l('We could not open the payment page. Please try again.',
-            'No pudimos abrir la página de pago. Inténtalo de nuevo.',
+            'No pudimos abrir la página de pago. Intente de nuevo.',
             'Die Zahlungsseite konnte nicht geöffnet werden. Bitte erneut versuchen.'),
         );
         return;
@@ -81,10 +94,10 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-background">
       <Seo
-        title={l('Checkout — Home Guide', 'Pago — Home Guide', 'Zahlung — Home Guide')}
-        description={l('Choose your plan and pay to activate your Home Guide account.',
-          'Elige tu plan y paga para activar tu cuenta de Home Guide.',
-          'Wählen Sie Ihren Plan und bezahlen Sie, um Ihr Home Guide Konto zu aktivieren.')}
+        title={l('Checkout — HomeGuide', 'Pago — HomeGuide', 'Zahlung — HomeGuide')}
+        description={l('Choose the properties you care for and optional features. Pay upfront with ONVO.',
+          'Elija las propiedades que atiende y las funciones opcionales. Pague por adelantado con ONVO.',
+          'Wählen Sie betreute Immobilien und optionale Funktionen. Bezahlen Sie im Voraus mit ONVO.')}
         path="/checkout"
       />
 
@@ -95,7 +108,7 @@ export default function Checkout() {
           </Button>
           <HGLogo size="sm" />
           <h1 className="text-lg font-display font-semibold text-foreground">
-            {l('Activate your account', 'Activa tu cuenta', 'Konto aktivieren')}
+            {l('Set up your subscription', 'Configure su suscripción', 'Abonnement zusammenstellen')}
           </h1>
           <div className="ml-auto flex items-center gap-1 rounded-lg border border-border p-0.5">
             {(['USD', 'CRC'] as Currency[]).map((c) => (
@@ -114,6 +127,7 @@ export default function Checkout() {
       </header>
 
       <main className="max-w-3xl mx-auto p-4 space-y-5 pb-28">
+        <p className="text-sm text-muted-foreground">{l("Choose how many client properties your team cares for and the features you need. Review the total before opening ONVO to pay. Access depends on verified payment confirmation.", "Elija cuántas propiedades de clientes atiende su equipo y qué funciones necesita. Revise el total antes de abrir ONVO para pagar. El acceso depende de la confirmación verificada del pago.", "Wählen Sie die betreuten Kundenimmobilien und benötigten Funktionen. Prüfen Sie den Gesamtbetrag, bevor Sie ONVO zur Zahlung öffnen. Der Zugang hängt von der bestätigten Zahlung ab.")}</p>
         {/* Billing interval */}
         <Card>
           <CardHeader className="pb-3">
@@ -137,12 +151,12 @@ export default function Checkout() {
                 className={`relative rounded-xl border p-4 text-left transition ${interval === 'annual' ? 'border-primary bg-primary/5' : 'border-border hover:bg-muted/50'}`}
               >
                 <Badge className="absolute -top-2 right-3 text-[10px]">
-                  {l('2 months free', '2 meses gratis', '2 Monate gratis')}
+                  {l('Annual saving', 'Ahorro anual', 'Jährliche Ersparnis')}
                 </Badge>
                 <p className="font-semibold text-foreground">{l('Annual', 'Anual', 'Jährlich')}</p>
                 <p className="text-sm text-muted-foreground">
                   {l(`Pay ${ANNUAL_MONTHS_CHARGED} months, use 12`,
-                    `Paga ${ANNUAL_MONTHS_CHARGED} meses, usa 12`,
+                    `Pague ${ANNUAL_MONTHS_CHARGED} meses, use 12`,
                     `${ANNUAL_MONTHS_CHARGED} Monate zahlen, 12 nutzen`)}
                 </p>
               </button>
@@ -155,11 +169,11 @@ export default function Checkout() {
           <CardHeader className="pb-3">
             <CardTitle className="text-base">{l('Properties', 'Propiedades', 'Immobilien')}</CardTitle>
           </CardHeader>
-          <CardContent className="flex items-center justify-between">
+          <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted-foreground max-w-xs">
-              {l('How many properties or sites will you manage? You can add more later.',
-                '¿Cuántas propiedades o sitios vas a gestionar? Puedes añadir más después.',
-                'Wie viele Immobilien oder Standorte verwalten Sie? Sie können später weitere hinzufügen.')}
+              {l('A property is a real place your team cares for: a house, villa, condominium or other client site. How many will you include?',
+                'Una propiedad es un lugar real que atiende su equipo: una casa, villa, condominio u otro sitio de un cliente. ¿Cuántas incluirá?',
+                'Eine Immobilie ist ein betreuter Ort: ein Haus, eine Villa, eine Wohnanlage oder ein anderer Kundenstandort. Wie viele möchten Sie einbeziehen?')}
             </p>
             <div className="flex items-center gap-3">
               <Button variant="outline" size="icon" onClick={() => setPropertyCount((n) => Math.max(1, n - 1))}>
@@ -176,18 +190,18 @@ export default function Checkout() {
         {/* Add-ons */}
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-base">{l('Extras', 'Extras', 'Extras')}</CardTitle>
+            <CardTitle className="text-base">{l('Optional features', 'Funciones opcionales', 'Optionale Funktionen')}</CardTitle>
             <p className="text-sm text-muted-foreground">
-              {l('Optional modules, priced per account. Turn them on or off any time.',
-                'Módulos opcionales, con precio por cuenta. Actívalos o desactívalos cuando quieras.',
-                'Optionale Module, Preis pro Konto. Jederzeit ein- oder ausschaltbar.')}
+              {l('Choose only what your team needs. Each optional feature is priced per account, not per property or person.',
+                'Elija solo lo que necesita su equipo. Cada función opcional se cobra por cuenta, no por propiedad ni por persona.',
+                'Wählen Sie nur, was Ihr Team braucht. Jede optionale Funktion wird pro Konto berechnet, nicht pro Immobilie oder Person.')}
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
             {ADDONS.map((addon) => {
               const on = addonIds.includes(addon.id);
-              const name = language === 'es' ? addon.name.es : language === 'de' ? addon.name.de : addon.name.en;
-              const desc = language === 'es' ? addon.description.es : language === 'de' ? addon.description.de : addon.description.en;
+              const name = publicAddonName(addon.id) ?? addon.name[language];
+              const desc = landingCopy[language].pricing[`addon_${addon.id}`];
               return (
                 <div key={addon.id} className={`flex items-start gap-3 rounded-xl border p-3 ${on ? 'border-primary/50 bg-primary/5' : 'border-border'}`}>
                   <div className="flex-1">
@@ -216,8 +230,9 @@ export default function Checkout() {
               <span className="text-foreground">{money(propertyCount * BASE_PRICE_PER_PROPERTY_USD)}{l('/mo', '/mes', '/Mon.')}</span>
             </div>
             {addonIds.map((id) => {
-              const addon = ADDONS.find((a) => a.id === id)!;
-              const name = language === 'es' ? addon.name.es : language === 'de' ? addon.name.de : addon.name.en;
+              const addon = ADDONS.find((a) => a.id === id);
+              if (!addon) return null;
+              const name = publicAddonName(addon.id) ?? addon.name[language];
               return (
                 <div key={id} className="flex justify-between text-sm">
                   <span className="text-muted-foreground">{name}</span>
@@ -229,12 +244,12 @@ export default function Checkout() {
               <div>
                 <p className="text-sm text-muted-foreground">
                   {interval === 'annual'
-                    ? l('Charged today for 12 months', 'Se cobra hoy por 12 meses', 'Heute für 12 Monate belastet')
-                    : l('Charged today for 1 month', 'Se cobra hoy por 1 mes', 'Heute für 1 Monat belastet')}
+                    ? l('Total paid upfront for 12 months', 'Total por adelantado para 12 meses', 'Gesamtbetrag im Voraus für 12 Monate')
+                    : l('Total paid upfront for 1 month', 'Total por adelantado para 1 mes', 'Gesamtbetrag im Voraus für 1 Monat')}
                 </p>
                 {interval === 'annual' && (
                   <p className="text-sm text-primary font-medium">
-                    {l('You save', 'Ahorras', 'Sie sparen')} {money(q.savingUsd)}
+                    {l('You save', 'Ahorra', 'Sie sparen')} {money(q.savingUsd)}
                   </p>
                 )}
               </div>
@@ -252,9 +267,9 @@ export default function Checkout() {
 
         {!user && (
           <p className="text-sm text-muted-foreground">
-            {l('You will be asked to create your account first.',
-              'Primero te pediremos crear tu cuenta.',
-              'Sie werden zuerst gebeten, Ihr Konto zu erstellen.')}
+            {l('Continue to create your account first. You will return to choose your subscription before paying.',
+              'Primero continuará para crear su cuenta. Después elegirá su suscripción antes de pagar.',
+              'Erstellen Sie zunächst Ihr Konto. Anschließend wählen Sie Ihr Abonnement vor der Zahlung.')}
           </p>
         )}
       </main>
@@ -263,11 +278,11 @@ export default function Checkout() {
         <div className="max-w-3xl mx-auto flex items-center gap-3">
           <Button className="flex-1 h-12 text-base" onClick={startCheckout} disabled={submitting}>
             {submitting ? <Loader2 className="h-5 w-5 animate-spin" /> : <Check className="h-5 w-5" />}
-            {l(`Pay ${money(q.totalUsd)} with ONVO`, `Pagar ${money(q.totalUsd)} con ONVO`, `${money(q.totalUsd)} mit ONVO zahlen`)}
+            {!user ? l("Create account to continue", "Crear cuenta para continuar", "Konto erstellen und fortfahren") : l(`Pay ${money(q.totalUsd)} with ONVO`, `Pagar ${money(q.totalUsd)} con ONVO`, `${money(q.totalUsd)} mit ONVO zahlen`)}
           </Button>
           {user && (
             <Button variant="ghost" onClick={() => signOut()}>
-              {l('Sign out', 'Salir', 'Abmelden')}
+              {l('Sign out', 'Cerrar sesión', 'Abmelden')}
             </Button>
           )}
         </div>

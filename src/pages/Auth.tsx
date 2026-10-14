@@ -23,7 +23,7 @@ const authSchema = z.object({
 type AuthFormData = z.infer<typeof authSchema>;
 
 export default function Auth() {
-  const { t, language } = useLanguage();
+  const { language } = useLanguage();
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
   // Anyone can open an account; the paywall decides who gets in. Sign-up is
@@ -66,8 +66,7 @@ export default function Auth() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const es = language === 'es';
-  const tr = (en: string, esText: string, de: string) =>
+    const tr = (en: string, esText: string, de: string) =>
     language === 'es' ? esText : language === 'de' ? de : en;
 
   const onSubmit = async (data: AuthFormData) => {
@@ -99,12 +98,12 @@ export default function Auth() {
           toast.error(
             error.message.toLowerCase().includes('already registered')
               ? tr('That email already has an account. Sign in instead.', 'Ese correo ya tiene una cuenta. Inicie sesión.', 'Diese E-Mail hat bereits ein Konto. Bitte anmelden.')
-              : error.message,
+              : tr('We could not create your account. Please check your details and try again.', 'No pudimos crear su cuenta. Revise sus datos e intente de nuevo.', 'Ihr Konto konnte nicht erstellt werden. Prüfen Sie Ihre Angaben und versuchen Sie es erneut.'),
           );
           return;
         }
         toast.success(
-          tr('Account created. Choose your plan to continue.', 'Cuenta creada. Elige tu plan para continuar.', 'Konto erstellt. Wählen Sie Ihren Plan, um fortzufahren.'),
+          tr('Account created. Choose your properties and features to continue to payment.', 'Cuenta creada. Elija las propiedades y funciones que necesita para continuar al pago.', 'Konto erstellt. Wählen Sie Immobilien und Funktionen für die Zahlung.'),
         );
         // Paid-first: new accounts go straight to checkout.
         navigate('/checkout');
@@ -114,9 +113,9 @@ export default function Auth() {
       {
         const { error } = await signIn(data.email, data.password);
         if (error) {
-          toast.error(error.message.includes('Invalid login') ? 'Invalid email or password.' : error.message);
+          toast.error(error.message.includes('Invalid login') ? tr('Check your email and password.', 'Revise su correo y contraseña.', 'Prüfen Sie Ihre E-Mail-Adresse und Ihr Passwort.') : tr('We could not sign you in. Please try again.', 'No pudimos iniciar su sesión. Intente de nuevo.', 'Die Anmeldung war nicht möglich. Bitte versuchen Sie es erneut.'));
         } else {
-          toast.success('Welcome back!');
+          toast.success(tr('You are signed in.', 'Sesión iniciada.', 'Sie sind angemeldet.'));
           // Routing is centralized: RootRoute / AppRoutes decide the destination
           // once profile, org type and roles have loaded.
           navigate('/');
@@ -131,33 +130,31 @@ export default function Auth() {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       <Seo
-        title={isSignUp ? (es ? 'Crear cuenta — Home Guide' : 'Create account — Home Guide') : (es ? 'Iniciar sesión — Home Guide' : 'Sign in — Home Guide')}
-        description={es ? 'Accede a Home Guide para gestionar tu propiedad, paisajismo y cuadrillas.' : 'Sign in to Home Guide to manage your estate, landscape and crews.'}
+        title={isForgot ? tr('Reset password — HomeGuide', 'Restablecer contraseña — HomeGuide', 'Passwort zurücksetzen — HomeGuide') : isSignUp ? tr('Create account — HomeGuide', 'Crear cuenta — HomeGuide', 'Konto erstellen — HomeGuide') : tr('Sign in — HomeGuide', 'Iniciar sesión — HomeGuide', 'Anmelden — HomeGuide')}
+        description={tr('Access your clients’ instructions, property tasks and work history in HomeGuide.', 'Acceda a las instrucciones de sus clientes, las tareas y el historial de cada propiedad en HomeGuide.', 'Greifen Sie in HomeGuide auf Kundenanweisungen, Aufgaben und bisherige Arbeiten jeder Immobilie zu.')}
         path="/auth"
       />
       {/* Left side — background image */}
       <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative overflow-hidden">
         <img
           src="/images/estate_guide_2.jpg"
-          alt="Luxury estate at night"
+          alt={tr("Property and garden", "Propiedad y jardín", "Immobilie und Garten")}
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/60 via-black/40 to-transparent" />
         <div className="relative z-10 flex flex-col justify-end p-12 pb-16 text-white">
           <div className="flex items-center gap-3 mb-6">
-            <img src="/images/hg-logo.png" alt="Home Guide" className="w-12 h-12 object-contain" />
-            <span className="text-3xl font-display font-semibold tracking-tight">Home Guide</span>
+            <img src="/images/hg-logo.png" alt="HomeGuide" className="w-12 h-12 object-contain" />
+            <span className="text-3xl font-display font-semibold tracking-tight">HomeGuide</span>
           </div>
           <p className="text-xl font-light text-white max-w-lg leading-relaxed">
-            {es
-              ? 'Gestiona propiedades, paisajes y activos vivos — todo en un solo lugar.'
-              : 'Manage properties, landscapes, and living assets — all in one place.'}
+            {tr('Know what each client needs, what work is due and what your team has already done.', 'Sepa qué necesita cada cliente, qué trabajo toca hacer y qué hizo su equipo.', 'Sehen Sie, was jeder Kunde braucht, welche Arbeiten anstehen und was Ihr Team erledigt hat.')}
           </p>
           <Link
             to="/"
             className="mt-6 text-sm text-white/90 hover:text-white transition-colors underline underline-offset-4"
           >
-            {es ? 'Ver todas las funciones →' : 'See all features →'}
+            {tr('How HomeGuide works →', 'Cómo funciona HomeGuide →', 'So funktioniert HomeGuide →')}
           </Link>
         </div>
       </div>
@@ -166,17 +163,17 @@ export default function Auth() {
       <div className="lg:hidden relative h-48 overflow-hidden">
         <img
           src="/images/estate_guide_2.jpg"
-          alt="Luxury estate at night"
+          alt={tr("Property and garden", "Propiedad y jardín", "Immobilie und Garten")}
           className="absolute inset-0 w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 to-black/70" />
         <div className="relative z-10 flex flex-col items-center justify-center h-full text-white text-center px-6">
           <div className="flex items-center gap-2 mb-2">
-            <img src="/images/hg-logo.png" alt="Home Guide" className="w-9 h-9 object-contain" />
-            <span className="text-2xl font-display font-semibold">Home Guide</span>
+            <img src="/images/hg-logo.png" alt="HomeGuide" className="w-9 h-9 object-contain" />
+            <span className="text-2xl font-display font-semibold">HomeGuide</span>
           </div>
           <p className="text-sm text-white/95">
-            {es ? 'Gestión digital de propiedades y paisajes' : 'Digital property & landscape management'}
+            {tr('Instructions, work and history for each property', 'Instrucciones, trabajo e historial por propiedad', 'Anweisungen, Arbeit und Verlauf pro Immobilie')}
           </p>
         </div>
       </div>
@@ -185,7 +182,7 @@ export default function Auth() {
       <div className="flex-1 flex flex-col bg-background">
         <header className="p-4 flex justify-between items-center">
           <Link to="/" className="text-sm text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1">
-            ← {t('nav.home')}
+            ← {tr('Home', 'Inicio', 'Startseite')}
           </Link>
           <LanguagePicker variant="full" />
         </header>
@@ -196,14 +193,14 @@ export default function Auth() {
               <h1 className="text-2xl font-display font-bold text-foreground">
                 {isForgot
                   ? tr('Reset password', 'Restablecer contraseña', 'Passwort zurücksetzen')
-                  : isSignUp ? t('auth.signUp') : t('auth.signIn')}
+                  : isSignUp ? tr('Create account', 'Crear cuenta', 'Konto erstellen') : tr('Sign in', 'Iniciar sesión', 'Anmelden')}
               </h1>
               <p className="text-sm text-muted-foreground mt-1">
                 {isForgot
                   ? tr("We'll email you a reset link", 'Le enviaremos un enlace a su correo', 'Wir senden Ihnen einen Link per E-Mail')
                   : isSignUp
-                  ? tr('Create your account to manage your estate', 'Crea tu cuenta para gestionar tu propiedad', 'Erstellen Sie Ihr Konto zur Verwaltung Ihrer Immobilie')
-                  : tr('Welcome back', 'Bienvenido de nuevo', 'Willkommen zurück')}
+                  ? tr('Create an account, then choose your properties and optional features. Payment is required before using the service.', 'Cree una cuenta y luego elija sus propiedades y funciones opcionales. El servicio se paga por adelantado.', 'Erstellen Sie ein Konto und wählen Sie anschließend Immobilien und optionale Funktionen. Der Dienst wird im Voraus bezahlt.')
+                  : tr('Open your properties to see instructions, pending work and past visits.', 'Abra sus propiedades para consultar instrucciones, trabajo pendiente y visitas anteriores.', 'Öffnen Sie Ihre Immobilien für Anweisungen, offene Arbeiten und frühere Besuche.')}
               </p>
             </div>
 
@@ -221,25 +218,25 @@ export default function Auth() {
               {isSignUp && !isForgot && (
                 <div className="space-y-1.5">
                   <Label htmlFor="fullName">{tr('Full Name', 'Nombre completo', 'Vollständiger Name')}</Label>
-                  <Input id="fullName" placeholder={es ? 'Juan García' : 'John Smith'} {...register('fullName')} />
+                  <Input id="fullName" placeholder={tr('Your full name', 'Su nombre completo', 'Ihr vollständiger Name')} {...register('fullName')} />
                 </div>
               )}
 
               <div className="space-y-1.5">
-                <Label htmlFor="email">{t('auth.email')}</Label>
+                <Label htmlFor="email">{tr('Email', 'Correo electrónico', 'E-Mail-Adresse')}</Label>
                 <Input
                   id="email"
                   type="email"
-                  placeholder="you@example.com"
+                  placeholder={tr("name@company.com", "nombre@empresa.com", "name@firma.de")}
                   {...register('email')}
                   className={errors.email ? 'border-destructive' : ''}
                 />
-                {errors.email && <p className="text-xs text-destructive">{errors.email.message}</p>}
+                {errors.email && <p className="text-xs text-destructive">{tr('Enter a valid email address.', 'Ingrese un correo electrónico válido.', 'Geben Sie eine gültige E-Mail-Adresse ein.')}</p>}
               </div>
 
               {!isForgot && (
               <div className="space-y-1.5">
-                <Label htmlFor="password">{t('auth.password')}</Label>
+                <Label htmlFor="password">{tr('Password', 'Contraseña', 'Passwort')}</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -277,7 +274,7 @@ export default function Auth() {
                   <>
                     {isForgot
                       ? tr('Send reset link', 'Enviar enlace', 'Link senden')
-                      : isSignUp ? t('auth.signUp') : t('auth.signIn')}
+                      : isSignUp ? tr('Create account', 'Crear cuenta', 'Konto erstellen') : tr('Sign in', 'Iniciar sesión', 'Anmelden')}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </>
                 )}
@@ -312,7 +309,7 @@ export default function Auth() {
               </p>
               <p className="text-center text-xs text-muted-foreground">
                 <Link to="/request-access" className="hover:underline">
-                  {tr('Need an invoice or a team plan? Talk to us', '¿Necesita factura o un plan de equipo? Hable con nosotros', 'Rechnung oder Teamplan? Sprechen Sie mit uns')}
+                  {tr('Would you rather request access? Tell us about your team', '¿Prefiere solicitar acceso? Cuéntenos sobre su equipo', 'Möchten Sie lieber Zugang anfragen? Erzählen Sie uns von Ihrem Team')}
                 </Link>
               </p>
             </div>
@@ -320,9 +317,9 @@ export default function Auth() {
 
             <p className="text-center text-xs text-muted-foreground mt-8">
               {tr(
-                'Home Guide manages living assets, design intent, and long-term risk.',
-                'Home Guide gestiona activos vivos, intención de diseño y riesgo a largo plazo.',
-                'Home Guide verwaltet lebende Anlagen, Gestaltungsabsicht und langfristige Risiken.',
+                'Keep client instructions and work history together, even when the team changes.',
+                'Las instrucciones y el historial de cada propiedad permanecen juntos, aunque cambie el equipo.',
+                'Kundenanweisungen und bisherige Arbeiten bleiben zusammen, auch wenn das Team wechselt.',
               )}
             </p>
           </div>
