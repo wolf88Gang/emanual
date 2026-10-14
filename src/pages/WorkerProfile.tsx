@@ -59,6 +59,7 @@ export default function WorkerProfilePage() {
   const { language } = useLanguage();
   const { user } = useAuth();
   const es = language === 'es';
+  const l = (en: string, esText: string, de: string) => (language === 'es' ? esText : language === 'de' ? de : en);
 
   const [profile, setProfile] = useState<WorkerProfile | null>(null);
   const [ratings, setRatings] = useState<Rating[]>([]);
@@ -186,7 +187,7 @@ export default function WorkerProfilePage() {
                 )}
                 {profile.hourly_rate && (
                   <span className="flex items-center gap-1 text-primary font-semibold">
-                    {formatCurrency(profile.hourly_rate, profile.currency)}/hr
+                    {formatCurrency(profile.hourly_rate, profile.currency)}{l('/hr', '/hora', '/Std.')}
                   </span>
                 )}
                 <span className="flex items-center gap-1 text-muted-foreground">
