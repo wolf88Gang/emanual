@@ -18,6 +18,17 @@ type LocalCopy = {
   footer: string;
 };
 
+// Public wording only: the signed-in module registry remains unchanged.
+export const landingModuleCopy: Record<string, Record<LandingLanguage, [string, string]>> = {
+  projects: { es: ['Propiedades', 'Las casas, villas y otros sitios que atiende para cada cliente.'], en: ['Properties', 'The houses, villas and other sites you care for on each client’s behalf.'], de: ['Immobilien', 'Häuser, Villen und andere Orte, die Sie für Ihre Kunden betreuen.'] },
+  assets: { es: ['Plantas, activos y equipos', 'Qué hay en cada propiedad, dónde está y cómo se encuentra.'], en: ['Plants, assets and equipment', 'What is at each property, where it is and its condition.'], de: ['Pflanzen, Anlagen und Geräte', 'Was an jeder Immobilie vorhanden ist, wo es steht und in welchem Zustand es ist.'] },
+  map: { es: ['Mapa y zonas', 'Ubique jardines, equipos y zonas de trabajo en el mapa de la propiedad.'], en: ['Map and areas', 'Locate gardens, equipment and work areas on the property map.'], de: ['Karte und Bereiche', 'Finden Sie Gärten, Geräte und Arbeitsbereiche auf der Immobilienkarte.'] },
+  tasks: { es: ['Tareas', 'Organice lo que hay que hacer y el mantenimiento pendiente.'], en: ['Tasks', 'Organize what needs doing and pending maintenance.'], de: ['Aufgaben', 'Organisieren Sie anstehende Arbeiten und offene Wartung.'] },
+  visits: { es: ['Visitas', 'Registre el trabajo de cada visita con fotos, notas y llegada al sitio.'], en: ['Visits', 'Record each visit’s work with photos, notes and arrival check-ins.'], de: ['Besuche', 'Halten Sie Arbeiten jedes Besuchs mit Fotos, Notizen und Ankunft fest.'] },
+  plants_pots: { es: ['Plantas y macetas', 'Sepa qué plantas atiende, dónde están y cuándo se reemplazaron.'], en: ['Plants and pots', 'Know which plants you care for, where they are and when they were replaced.'], de: ['Pflanzen und Töpfe', 'Sehen Sie, welche Pflanzen Sie betreuen, wo sie stehen und wann sie ersetzt wurden.'] },
+  care: { es: ['Cuidados', 'Consulte fechas de riego, instrucciones y cuidados realizados.'], en: ['Care', 'Check watering dates, instructions and care already provided.'], de: ['Pflege', 'Sehen Sie Gießtermine, Anweisungen und bereits erledigte Pflege.'] },
+};
+
 export const landingCopy: Record<LandingLanguage, LocalCopy> = {
   "es": {
     "seo": {
