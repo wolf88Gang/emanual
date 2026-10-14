@@ -1,9 +1,11 @@
 # Roadmap
 
 ## Launch close-out (2026-10-14)
-- [ ] Verify and refine hero presentation only in ES/EN/DE at 390/768/1024/1440; run existing suite and record comprehension criteria.
-- [ ] Read-only map all eight product actors against live roles, policies, grants, RPCs and UI; document confirmed gaps and unverified exploits without changing permissions.
-- [ ] Update launch audit with current visual evidence, actor matrix and prioritized follow-ups; no publishing, deployment or production data writes.
+- [x] Verify and refine hero presentation only in ES/EN/DE at 390/768/1024/1440; desktop/tablet titles now use three lines, both CTAs remain in the hero viewport, no overflow/errors; 41/41 tests and automatic build OK.
+- [x] Read-only map all eight product actors against live roles, policies, grants, RPCs and UI; no permission or production-data changes.
+- [x] Update launch audit section Q with visual evidence, comprehension criteria, actor matrix and prioritized findings; no publishing or deployment.
+- [ ] P0 authorization remediation: lock profile organization membership, protect subscription truth, guard onboarding owner grants, and enforce logged-in client property/capability scope at the backend. Blocker: requires a separately approved migration and negative security tests.
+- [ ] P1 role-model remediation: organization-scoped roles, payer authorization, assignment-required completion, and explicit supervisor/vendor/property-administrator decisions. Blocker: requires product decisions and backend changes outside this read-only phase.
 
 ## Phase 2 public entry, access and payment copy
 - [x] Verify hosted signup availability and inventory the real acquisition/payment routes without sending emails, creating users or payments. Hosted GET /auth/v1/settings: disable_signup=false, email=true; direct signup CTA retained.
