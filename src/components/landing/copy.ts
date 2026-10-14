@@ -45,7 +45,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
   "es": {
     "seo": {
       "title": "HomeGuide | Organiza el trabajo de cada propiedad",
-      "description": "HomeGuide reúne las instrucciones de cada cliente, el trabajo pendiente y el historial de lo realizado para que su equipo siempre sepa qué hacer, qué pasó y qué sigue."
+      "description": "HomeGuide organiza el trabajo, las personas y la información de cada propiedad para que propietarios, administradores, proveedores y trabajadores sepan qué pasa, qué falta y qué sigue."
     },
     "nav": {
       "how": "Cómo funciona",
@@ -57,53 +57,53 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "menu": "Abrir navegación"
     },
     "hero": {
-      "eyebrow": "PARA EQUIPOS QUE CUIDAN Y MANTIENEN PROPIEDADES",
-      "title": "Que todos sepan qué hay que hacer en cada propiedad.",
-      "body": "HomeGuide reúne las instrucciones de cada cliente, el trabajo pendiente y el historial de lo que ya se hizo. Su equipo abre la propiedad, ve qué toca hacer, registra el resultado y sigue.",
-      "support": "Para paisajismo, mantenimiento, administración de propiedades, plantas y otros servicios recurrentes.",
+      "eyebrow": "PARA PROPIEDADES Y LOS EQUIPOS QUE LAS ATIENDEN",
+      "title": "Cada propiedad tiene mucho que coordinar. HomeGuide lo pone en orden.",
+      "body": "Reúna en un solo lugar las tareas, visitas, instrucciones, fotos, historial y personas relacionadas con cada propiedad. Propietarios, administradores, proveedores y trabajadores pueden entender qué está pasando, qué falta y qué sigue.",
+      "support": "Casas, condominios, edificios, comercios, jardines y otros espacios que necesitan trabajo y mantenimiento continuo.",
       "primary": "Crear cuenta",
       "secondary": "Ver cómo funciona",
       "imageAlt": "Una propiedad con jardines y áreas que necesitan cuidado y mantenimiento"
     },
     "problem": {
       "eyebrow": "EL PROBLEMA",
-      "title": "El problema no es hacer el trabajo. Es mantener el hilo.",
-      "body": "Cada cliente tiene reglas, prioridades y detalles distintos. Cuando esa información queda en chats, hojas de cálculo o en la memoria de una persona, el servicio se vuelve difícil de repetir bien.",
+      "title": "Cuando muchas personas participan, la información se pierde.",
+      "body": "Una propiedad puede tener dueño, administrador, seguridad, mantenimiento y varios proveedores. Si cada uno trabaja desde chats, llamadas, papeles o memoria, nadie tiene la historia completa.",
       "rows": [
         [
-          "CADA CLIENTE ES DIFERENTE",
-          "Frecuencias, zonas, preferencias, excepciones y tareas cambian de una propiedad a otra."
+          "Cada propiedad tiene sus propias reglas",
+          "Accesos, horarios, prioridades e instrucciones cambian de una propiedad a otra. Tenerlos claros evita preguntas y confusiones."
         ],
         [
-          "EL PERSONAL CAMBIA",
-          "Cuando rota una cuadrilla, un encargado o un proveedor, la persona nueva suele empezar preguntando qué había que hacer."
+          "Las personas cambian",
+          "Cuando cambia el administrador, un proveedor o alguien del equipo, las instrucciones y el historial deben seguir disponibles."
         ],
         [
-          "DESPUÉS HAY QUE RECONSTRUIR LO QUE PASÓ",
-          "Fotos, mensajes y notas quedan separados. El administrador o el cliente termina preguntando qué se hizo, cuándo y qué quedó pendiente."
+          "La información queda repartida",
+          "Una foto en un chat, una nota en papel y un acuerdo por teléfono no permiten saber fácilmente qué pasó ni qué falta."
         ]
       ]
     },
     "how": {
       "eyebrow": "CÓMO FUNCIONA",
-      "title": "Cada propiedad mantiene sus instrucciones y su historia.",
-      "body": "HomeGuide acompaña el trabajo desde lo que necesita el cliente hasta lo que realmente ocurrió.",
+      "title": "Una propiedad, la información reunida y el trabajo claro.",
+      "body": "Desde organizar los espacios hasta coordinar a las personas y conservar lo que ocurrió.",
       "steps": [
         [
-          "GUARDE CÓMO SE ATIENDE CADA PROPIEDAD",
-          "Cliente, propiedad, zonas, plantas o activos, instrucciones, preferencias y detalles importantes."
+          "Organice la propiedad",
+          "Reúna sus zonas, elementos importantes e instrucciones para que todos sepan dónde y cómo trabajar."
         ],
         [
-          "ORGANICE LO QUE HAY QUE HACER",
-          "Visitas, tareas recurrentes, mantenimiento, responsables y próximas fechas."
+          "Defina lo que necesita",
+          "Anote tareas, visitas, cuidados y mantenimiento pendiente, con prioridades y fechas."
         ],
         [
-          "REGISTRE EL TRABAJO REALIZADO",
-          "Fotos, notas, hora, responsable, condición encontrada y cualquier problema que requiera seguimiento."
+          "Coordine quién lo hace",
+          "Asigne responsables y deje claras las instrucciones para el personal y los proveedores que atienden la propiedad."
         ],
         [
-          "MANTENGA A TODOS AL DÍA",
-          "El equipo, el administrador y, cuando corresponda, el cliente pueden ver qué se hizo, qué está pendiente y qué sigue."
+          "Registre lo que pasó",
+          "Guarde fotos, notas y trabajo realizado junto a la propiedad. Así se puede revisar qué falta y qué sigue."
         ]
       ]
     },
@@ -111,12 +111,12 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "eyebrow": "MEMORIA DE CADA PROPIEDAD",
       "title": "Cuando cambia la persona, la información no se va con ella.",
       "body": "Las instrucciones, trabajos, fotos y notas quedan ligados a la propiedad donde ocurrieron. La siguiente persona puede continuar desde donde terminó la anterior.",
-      "modelLabel": "La historia de cada servicio",
-      "modelNote": "Desde las instrucciones del cliente hasta las fotos y notas de la visita. Incluya la zona o el elemento cuando corresponda.",
+      "modelLabel": "La propiedad reúne la información",
+      "modelNote": "Las instrucciones, personas, trabajos y registros se consultan junto a la propiedad correspondiente. Incluya la zona o el elemento cuando corresponda.",
       "model": [
-        "Cliente",
         "Propiedad",
         "Zona / elemento",
+        "Instrucciones",
         "Trabajo",
         "Responsable",
         "Registro"
@@ -125,35 +125,27 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     },
     "audience": {
       "eyebrow": "PARA QUIÉN ES",
-      "title": "Para equipos que vuelven una y otra vez a las mismas propiedades.",
-      "body": "HomeGuide funciona mejor cuando cada cliente o propiedad tiene trabajo recurrente y detalles que no deberían depender de la memoria de una sola persona.",
+      "title": "Distintas personas. Una misma propiedad.",
+      "body": "Sea dueño, administrador, proveedor o parte del equipo, el punto de partida es la propiedad y lo que necesita.",
       "groups": [
         [
-          "Paisajismo y jardines",
-          "Guarde cómo cuidar cada jardín, programe podas y visitas, y deje fotos y notas para la siguiente cuadrilla."
+          "Tengo o administro propiedades",
+          "Casas, condominios, villas, edificios y centros comerciales. Reúna instrucciones y revise el trabajo de personal de mantenimiento, seguridad y proveedores."
         ],
         [
-          "Mantenimiento de propiedades",
-          "Organice revisiones y reparaciones, asigne responsables y deje claro qué se resolvió y qué sigue pendiente."
+          "Doy servicios a propiedades",
+          "Paisajismo, jardinería, mantenimiento, control de plagas, fontanería y otros servicios. Organice el trabajo de cada propiedad y conserve lo que se hizo."
         ],
         [
-          "Administración de propiedades, villas y condominios",
-          "Reúna las instrucciones de cada propiedad y revise el trabajo de encargados y proveedores, aunque cambie el personal."
-        ],
-        [
-          "Plantas e interiorismo vegetal",
-          "Sepa qué cuidados necesita cada planta, registre las visitas y conserve las notas sobre su condición y reemplazos."
-        ],
-        [
-          "Mantenimiento de activos y equipos",
-          "Guarde instrucciones de mantenimiento para bombas, riego y otros equipos, con tareas e historial de reparaciones."
+          "Trabajo en propiedades",
+          "Trabajadores independientes, contratistas, cuadrillas y personal de la propiedad. Consulte el trabajo asignado, sus instrucciones y lo pendiente, y registre el resultado."
         ]
       ]
     },
     "visibility": {
       "eyebrow": "EN UNA SOLA VISTA",
       "title": "Abra una propiedad y entienda qué está pasando.",
-      "body": "Vea qué necesita el cliente, cuándo fue la última visita, qué se hizo, quién lo hizo, qué fotos quedaron y qué toca después.",
+      "body": "Vea qué necesita la propiedad, cuándo fue la última visita, qué se hizo, quién lo hizo, qué fotos quedaron y qué toca después.",
       "labels": [
         "Cliente",
         "Propiedad",
@@ -183,7 +175,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "capabilities": {
       "eyebrow": "LO QUE PUEDE HACER",
       "title": "Todo lo necesario para que el trabajo no dependa de la memoria.",
-      "body": "Reúna lo que su equipo necesita antes de la visita y lo que debe quedar claro después.",
+      "body": "Reúna lo que las personas necesitan para atender la propiedad y lo que debe quedar claro después.",
       "items": [
         [
           "Clientes y propiedades",
@@ -214,7 +206,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "differences": {
       "eyebrow": "POR QUÉ HOMEGUIDE",
       "title": "Menos memoria, menos preguntas, más continuidad.",
-      "body": "Las instrucciones y el historial siguen disponibles aunque cambie la persona que atiende la propiedad.",
+      "body": "Una misma propiedad reúne las instrucciones, las personas y el historial. No hay que volver a contar toda la historia para cada trabajo.",
       "items": [
         [
           "La información se queda con la propiedad",
@@ -225,8 +217,8 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
           "Puede revisar lo anterior y lo pendiente sin depender de que alguien le cuente toda la historia."
         ],
         [
-          "El trabajo queda claro con fotos y notas",
-          "Registre el resultado de la visita y los detalles que no se ven en una tarea marcada como terminada."
+          "La misma información sirve para distintos trabajos",
+          "Las tareas, visitas y consultas usan las instrucciones y el historial de la propiedad, sin tener que empezar desde cero cada vez."
         ],
         [
           "El administrador ve lo que está pasando",
@@ -245,7 +237,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "trust": {
       "eyebrow": "INFORMACIÓN PRIVADA",
       "title": "Cada persona ve lo que necesita para hacer su trabajo.",
-      "body": "Organice el acceso del equipo y decida qué información comparte con el cliente.",
+      "body": "Organice el acceso de las personas que atienden la propiedad y decida qué información comparte con el cliente.",
       "items": [
         [
           "Acceso según el trabajo",
@@ -318,7 +310,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "items": [
         [
           "¿HomeGuide es solo para paisajismo?",
-          "No. También sirve para equipos de mantenimiento, administradores de propiedades, servicios de plantas y quienes mantienen equipos. El punto en común es atender las mismas propiedades de forma recurrente."
+          "No. HomeGuide reúne el trabajo y la información de la propiedad para propietarios, administradores, proveedores y trabajadores. Sirve para coordinar mantenimiento y otros trabajos, sean recurrentes o puntuales."
         ],
         [
           "¿Qué pasa si cambia la persona que atiende una propiedad?",
@@ -353,7 +345,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
   "en": {
     "seo": {
       "title": "HomeGuide | Organize the work at every property",
-      "description": "HomeGuide brings client instructions, pending work and service history together so your team always knows what to do, what happened and what comes next."
+      "description": "HomeGuide organizes work, people and information around each property so owners, managers, service providers and workers know what is happening, what is missing and what comes next."
     },
     "nav": {
       "how": "How it works",
@@ -365,53 +357,53 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "menu": "Open navigation"
     },
     "hero": {
-      "eyebrow": "FOR TEAMS THAT CARE FOR AND MAINTAIN PROPERTIES",
-      "title": "Make sure everyone knows what to do at each property.",
-      "body": "HomeGuide brings together each client’s instructions, pending work and a history of what has already been done. Your team opens the property, sees what needs doing, records the result and moves on.",
-      "support": "For landscaping, maintenance, property management, plant care and other recurring services.",
+      "eyebrow": "FOR PROPERTIES AND THE PEOPLE WHO LOOK AFTER THEM",
+      "title": "Every property has a lot to coordinate. HomeGuide brings it all together.",
+      "body": "Bring tasks, visits, instructions, photos, history and the people involved with each property into one place. Owners, managers, service providers and workers can see what is happening, what still needs attention and what comes next.",
+      "support": "Homes, condominiums, buildings, shops, gardens and other spaces that need ongoing work and maintenance.",
       "primary": "Create account",
       "secondary": "See how it works",
       "imageAlt": "A property with gardens and areas that need regular care and maintenance"
     },
     "problem": {
       "eyebrow": "THE PROBLEM",
-      "title": "Doing the work isn’t the problem. Keeping track is.",
-      "body": "Every client has different rules, priorities and details. When that information lives in chats, spreadsheets or one person’s memory, delivering the same good service again becomes harder.",
+      "title": "When many people are involved, information gets lost.",
+      "body": "A property may have an owner, a manager, security staff, maintenance staff and several service providers. If everyone relies on chats, calls, paperwork or memory, no one has the full picture.",
       "rows": [
         [
-          "EVERY CLIENT IS DIFFERENT",
-          "Schedules, areas, preferences, exceptions and tasks vary from one property to the next."
+          "Every property has its own rules",
+          "Access, schedules, priorities and instructions vary from property to property. Keeping them clear avoids questions and confusion."
         ],
         [
-          "PEOPLE CHANGE",
-          "When a crew, supervisor or contractor changes, the next person often has to start by asking what needs to be done."
+          "People change",
+          "When a manager, contractor or team member changes, the instructions and history need to stay available."
         ],
         [
-          "THEN YOU HAVE TO PIECE TOGETHER WHAT HAPPENED",
-          "Photos, messages and notes end up in different places. The manager or client has to ask what was done, when and what is still pending."
+          "Information ends up scattered",
+          "A photo in a chat, a note on paper and an agreement over the phone make it hard to see what happened and what is still missing."
         ]
       ]
     },
     "how": {
       "eyebrow": "HOW IT WORKS",
-      "title": "Every property keeps its instructions and its history.",
-      "body": "HomeGuide follows the work from what the client needs to what actually happened.",
+      "title": "One property. Information together. Clear work.",
+      "body": "Organize the spaces, coordinate the people and keep a record of what happened.",
       "steps": [
         [
-          "SAVE HOW EACH PROPERTY SHOULD BE CARED FOR",
-          "Client, property, areas, plants or equipment, instructions, preferences and important details."
+          "Organize the property",
+          "Keep its areas, important items and instructions together so everyone knows where and how to work."
         ],
         [
-          "ORGANIZE WHAT NEEDS TO BE DONE",
-          "Visits, recurring tasks, maintenance, assigned team members and upcoming dates."
+          "Define what it needs",
+          "List tasks, visits, care and pending maintenance, with priorities and dates."
         ],
         [
-          "RECORD THE WORK YOU COMPLETED",
-          "Photos, notes, time, who did the work, the condition found and any issue that needs follow-up."
+          "Coordinate who does it",
+          "Assign the work and make the instructions clear for staff and service providers looking after the property."
         ],
         [
-          "KEEP EVERYONE UP TO DATE",
-          "The team, manager and, where appropriate, the client can see what was done, what is pending and what comes next."
+          "Record what happened",
+          "Keep photos, notes and completed work with the property so everyone can check what is still needed and what comes next."
         ]
       ]
     },
@@ -419,49 +411,41 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "eyebrow": "EVERY PROPERTY’S MEMORY",
       "title": "When the person changes, the information stays.",
       "body": "Instructions, work, photos and notes stay with the property where they belong. The next person can pick up where the previous person left off.",
-      "modelLabel": "The story of each service",
-      "modelNote": "From the client’s instructions to the visit’s photos and notes. Include the area or item where relevant.",
+      "modelLabel": "The property brings the information together",
+      "modelNote": "Find instructions, people, work and records with the property they belong to. Include the area or item where relevant.",
       "model": [
-        "Client",
         "Property",
         "Area / item",
+        "Instructions",
         "Work",
-        "Team member",
-        "Service record"
+        "Person responsible",
+        "Record"
       ],
       "routes": []
     },
     "audience": {
       "eyebrow": "WHO IT’S FOR",
-      "title": "For teams that return to the same properties, again and again.",
-      "body": "HomeGuide works best when each client or property needs recurring work and has details that should not depend on one person’s memory.",
+      "title": "Different people. The same property.",
+      "body": "Whether you own, manage, service or work at a property, it starts with that property and what it needs.",
       "groups": [
         [
-          "Landscaping and gardens",
-          "Save how each garden should be cared for, plan pruning and visits, and leave photos and notes for the next crew."
+          "I own or manage properties",
+          "Homes, condominiums, villas, buildings and shopping centers. Keep instructions together and review work by maintenance staff, security and service providers."
         ],
         [
-          "Property maintenance",
-          "Organize inspections and repairs, assign the work and make clear what was resolved and what is still pending."
+          "I provide property services",
+          "Landscaping, gardening, maintenance, pest control, plumbing and other services. Organize work at each property and keep a record of what was done."
         ],
         [
-          "Property managers, villas and condominiums",
-          "Keep each property’s instructions together and review work by staff and contractors, even when people change."
-        ],
-        [
-          "Plant care and interior landscaping",
-          "Know what care each plant needs, record visits and keep notes about its condition and replacements."
-        ],
-        [
-          "Asset and equipment maintenance",
-          "Keep maintenance instructions for pumps, irrigation and other equipment alongside tasks and repair history."
+          "I work at properties",
+          "Independent workers, contractors, crews and property staff. Check assigned work, instructions and pending tasks, then record the result."
         ]
       ]
     },
     "visibility": {
       "eyebrow": "AT A GLANCE",
       "title": "Open a property and see what’s happening.",
-      "body": "See what the client needs, when the last visit took place, what was done, who did it, the photos left behind and what comes next.",
+      "body": "See what the property needs, when the last visit took place, what was done, who did it, the photos left behind and what comes next.",
       "labels": [
         "Client",
         "Property",
@@ -491,7 +475,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "capabilities": {
       "eyebrow": "WHAT YOU CAN DO",
       "title": "Everything you need so the work doesn’t rely on memory.",
-      "body": "Keep together what your team needs before a visit and what should be clear afterwards.",
+      "body": "Keep together what people need to look after the property and what should be clear afterwards.",
       "items": [
         [
           "Clients and properties",
@@ -522,7 +506,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "differences": {
       "eyebrow": "WHY HOMEGUIDE",
       "title": "Less to remember. Fewer questions. Easier handovers.",
-      "body": "Instructions and history stay available even when someone else takes over caring for the property.",
+      "body": "Instructions, people and history come together at the same property. There is no need to retell the whole story for every job.",
       "items": [
         [
           "Information stays with the property",
@@ -533,8 +517,8 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
           "They can review previous work and pending tasks without needing someone to retell the whole story."
         ],
         [
-          "Photos and notes make the work clear",
-          "Record the result of a visit and the details a checked-off task alone cannot show."
+          "The same information supports different jobs",
+          "Tasks, visits and checks use the property’s instructions and history, without starting from scratch each time."
         ],
         [
           "The manager sees what is happening",
@@ -553,7 +537,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "trust": {
       "eyebrow": "PRIVATE INFORMATION",
       "title": "Each person sees what they need to do their job.",
-      "body": "Manage your team’s access and decide what information to share with the client.",
+      "body": "Manage access for the people looking after the property and decide what information to share with the client.",
       "items": [
         [
           "Access that fits the job",
@@ -626,7 +610,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "items": [
         [
           "Is HomeGuide only for landscaping?",
-          "No. It also serves maintenance teams, property managers, plant service companies and equipment maintenance teams. What they share is recurring work at the same properties."
+          "No. HomeGuide brings property work and information together for owners, managers, service providers and workers. It helps coordinate maintenance and other work, whether recurring or one-off."
         ],
         [
           "What happens when someone else takes over a property?",
@@ -661,7 +645,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
   "de": {
     "seo": {
       "title": "HomeGuide | Die Arbeit an jeder Immobilie organisieren",
-      "description": "HomeGuide bündelt Kundenanweisungen, offene Aufgaben und bisherige Arbeiten, damit Ihr Team weiß, was zu tun ist, was erledigt wurde und was als Nächstes ansteht."
+      "description": "HomeGuide bündelt Arbeit, Menschen und Informationen je Immobilie. Eigentümer, Verwaltung, Dienstleister und Mitarbeitende sehen, was passiert, was fehlt und was als Nächstes ansteht."
     },
     "nav": {
       "how": "So funktioniert es",
@@ -673,53 +657,53 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "menu": "Navigation öffnen"
     },
     "hero": {
-      "eyebrow": "FÜR TEAMS, DIE IMMOBILIEN PFLEGEN UND INSTAND HALTEN",
-      "title": "Damit alle wissen, was an jeder Immobilie zu tun ist.",
-      "body": "HomeGuide bündelt die Anweisungen jedes Kunden, offene Aufgaben und die bisher erledigten Arbeiten. Ihr Team öffnet die Immobilie, sieht, was ansteht, hält das Ergebnis fest und macht weiter.",
-      "support": "Für Gartenpflege, Instandhaltung, Immobilienverwaltung, Pflanzenpflege und andere regelmäßige Dienstleistungen.",
+      "eyebrow": "FÜR IMMOBILIEN UND DIE MENSCHEN, DIE SIE BETREUEN",
+      "title": "Rund um jede Immobilie gibt es viel zu koordinieren. HomeGuide schafft Ordnung.",
+      "body": "Bündeln Sie Aufgaben, Besuche, Anweisungen, Fotos, bisherige Arbeiten und beteiligte Personen an einem Ort. Eigentümer, Verwaltung, Dienstleister und Mitarbeitende sehen, was gerade passiert, was noch fehlt und was als Nächstes ansteht.",
+      "support": "Häuser, Wohnanlagen, Gebäude, Geschäfte, Gärten und andere Orte, an denen regelmäßig Arbeit und Instandhaltung anfallen.",
       "primary": "Konto erstellen",
       "secondary": "So funktioniert es",
       "imageAlt": "Eine Immobilie mit Gärten und Bereichen, die regelmäßig gepflegt und instand gehalten werden"
     },
     "problem": {
       "eyebrow": "DAS PROBLEM",
-      "title": "Die Arbeit ist nicht das Problem. Sondern den Überblick zu behalten.",
-      "body": "Jeder Kunde hat andere Regeln, Prioritäten und Details. Stehen diese nur in Chats, Tabellen oder im Gedächtnis einer Person, wird es schwieriger, den Service jedes Mal gut zu leisten.",
+      "title": "Wenn viele Menschen beteiligt sind, gehen Informationen verloren.",
+      "body": "Zu einer Immobilie gehören oft Eigentümer, Verwaltung, Sicherheitsdienst, Haustechnik und mehrere Dienstleister. Wenn alle mit Chats, Anrufen, Papier oder aus dem Gedächtnis arbeiten, hat niemand das ganze Bild.",
       "rows": [
         [
-          "JEDER KUNDE IST ANDERS",
-          "Intervalle, Bereiche, Wünsche, Ausnahmen und Aufgaben unterscheiden sich von Immobilie zu Immobilie."
+          "Jede Immobilie hat ihre eigenen Regeln",
+          "Zugang, Zeiten, Prioritäten und Anweisungen unterscheiden sich von Ort zu Ort. Klare Informationen vermeiden Rückfragen und Missverständnisse."
         ],
         [
-          "DAS PERSONAL WECHSELT",
-          "Wenn ein Team, ein Verantwortlicher oder ein Dienstleister wechselt, muss die neue Person oft erst fragen, was zu tun ist."
+          "Menschen wechseln",
+          "Wenn die Verwaltung, ein Dienstleister oder jemand im Team wechselt, müssen Anweisungen und bisherige Arbeiten weiter verfügbar bleiben."
         ],
         [
-          "DANACH MUSS MAN ZUSAMMENSUCHEN, WAS PASSIERT IST",
-          "Fotos, Nachrichten und Notizen liegen an verschiedenen Stellen. Verwaltung oder Kunde müssen nachfragen, was wann erledigt wurde und was noch offen ist."
+          "Informationen liegen verstreut",
+          "Ein Foto im Chat, eine Notiz auf Papier und eine telefonische Absprache machen es schwer zu erkennen, was passiert ist und was noch fehlt."
         ]
       ]
     },
     "how": {
       "eyebrow": "SO FUNKTIONIERT ES",
-      "title": "Jede Immobilie behält ihre Anweisungen und ihre Geschichte.",
-      "body": "HomeGuide begleitet die Arbeit vom Kundenwunsch bis zu dem, was tatsächlich erledigt wurde.",
+      "title": "Eine Immobilie. Alle Informationen zusammen. Klare Aufgaben.",
+      "body": "Ordnen Sie die Bereiche, stimmen Sie die Arbeit ab und halten Sie fest, was passiert ist.",
       "steps": [
         [
-          "FESTHALTEN, WIE JEDE IMMOBILIE BETREUT WIRD",
-          "Kunde, Immobilie, Bereiche, Pflanzen oder Geräte, Anweisungen, Wünsche und wichtige Details."
+          "Die Immobilie organisieren",
+          "Bündeln Sie Bereiche, wichtige Gegenstände und Anweisungen, damit alle wissen, wo und wie sie arbeiten sollen."
         ],
         [
-          "ORGANISIEREN, WAS ZU TUN IST",
-          "Besuche, wiederkehrende Aufgaben, Wartung, Verantwortliche und nächste Termine."
+          "Festlegen, was nötig ist",
+          "Erfassen Sie Aufgaben, Besuche, Pflege und anstehende Wartung mit Prioritäten und Terminen."
         ],
         [
-          "ERLEDIGTE ARBEIT FESTHALTEN",
-          "Fotos, Notizen, Uhrzeit, ausführende Person, vorgefundener Zustand und Probleme, die noch Aufmerksamkeit brauchen."
+          "Abstimmen, wer es übernimmt",
+          "Weisen Sie Verantwortliche zu und halten Sie Anweisungen für Personal und Dienstleister klar fest."
         ],
         [
-          "ALLE AUF DEM LAUFENDEN HALTEN",
-          "Team, Verwaltung und gegebenenfalls der Kunde können sehen, was erledigt wurde, was noch offen ist und was als Nächstes ansteht."
+          "Festhalten, was passiert ist",
+          "Speichern Sie Fotos, Notizen und erledigte Arbeiten bei der Immobilie. So bleibt klar, was noch fehlt und was als Nächstes ansteht."
         ]
       ]
     },
@@ -727,49 +711,41 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "eyebrow": "DAS GEDÄCHTNIS JEDER IMMOBILIE",
       "title": "Wenn die Person wechselt, bleibt das Wissen.",
       "body": "Anweisungen, Arbeiten, Fotos und Notizen bleiben bei der Immobilie, zu der sie gehören. Die nächste Person kann dort weitermachen, wo die vorherige aufgehört hat.",
-      "modelLabel": "Die Geschichte jedes Einsatzes",
-      "modelNote": "Von den Kundenanweisungen bis zu den Fotos und Notizen des Besuchs. Bereich oder Gegenstand werden bei Bedarf zugeordnet.",
+      "modelLabel": "Die Immobilie bündelt die Informationen",
+      "modelNote": "Anweisungen, Personen, Arbeiten und Einträge finden Sie bei der zugehörigen Immobilie. Bereich oder Gegenstand werden bei Bedarf zugeordnet.",
       "model": [
-        "Kunde",
         "Immobilie",
         "Bereich / Gegenstand",
+        "Anweisungen",
         "Arbeit",
         "Verantwortlich",
-        "Besuchsbericht"
+        "Eintrag"
       ],
       "routes": []
     },
     "audience": {
       "eyebrow": "FÜR WEN",
-      "title": "Für Teams, die immer wieder dieselben Immobilien betreuen.",
-      "body": "HomeGuide ist besonders hilfreich, wenn jeder Kunde oder jede Immobilie regelmäßige Arbeit braucht und wichtige Details nicht vom Gedächtnis einer einzelnen Person abhängen sollten.",
+      "title": "Verschiedene Menschen. Dieselbe Immobilie.",
+      "body": "Ob Eigentümer, Verwaltung, Dienstleister oder Mitarbeitende: Ausgangspunkt ist die Immobilie und das, was sie braucht.",
       "groups": [
         [
-          "Garten- und Landschaftspflege",
-          "Halten Sie fest, wie jeder Garten gepflegt wird, planen Sie Schnittarbeiten und Besuche und hinterlassen Sie Fotos und Notizen für das nächste Team."
+          "Ich besitze oder verwalte Immobilien",
+          "Häuser, Wohnanlagen, Villen, Gebäude und Einkaufszentren. Bündeln Sie Anweisungen und sehen Sie, was Haustechnik, Sicherheitsdienst und andere Dienstleister erledigt haben."
         ],
         [
-          "Instandhaltung von Immobilien",
-          "Organisieren Sie Kontrollen und Reparaturen, weisen Sie Aufgaben zu und halten Sie fest, was gelöst wurde und was noch offen ist."
+          "Ich biete Dienstleistungen für Immobilien an",
+          "Gartenpflege, Instandhaltung, Schädlingsbekämpfung, Sanitärarbeiten und andere Leistungen. Organisieren Sie die Arbeit je Immobilie und halten Sie fest, was erledigt wurde."
         ],
         [
-          "Immobilienverwaltung, Villen und Wohnanlagen",
-          "Bündeln Sie die Anweisungen jeder Immobilie und prüfen Sie die Arbeiten von Personal und Dienstleistern, auch bei Personalwechsel."
-        ],
-        [
-          "Pflanzenpflege und Innenraumbegrünung",
-          "Sehen Sie, welche Pflege jede Pflanze braucht, erfassen Sie Besuche und halten Sie Zustand und Austausch fest."
-        ],
-        [
-          "Wartung von Anlagen und Geräten",
-          "Speichern Sie Wartungsanweisungen für Pumpen, Bewässerung und andere Geräte zusammen mit Aufgaben und bisherigen Reparaturen."
+          "Ich arbeite an Immobilien",
+          "Selbstständige, Auftragnehmer, Teams und Personal vor Ort. Sehen Sie zugewiesene Aufgaben, Anweisungen und offene Arbeiten und halten Sie das Ergebnis fest."
         ]
       ]
     },
     "visibility": {
       "eyebrow": "AUF EINEN BLICK",
       "title": "Eine Immobilie öffnen und sehen, was gerade ansteht.",
-      "body": "Sehen Sie, was der Kunde braucht, wann der letzte Besuch war, was erledigt wurde, von wem, welche Fotos vorliegen und was als Nächstes ansteht.",
+      "body": "Sehen Sie, was die Immobilie braucht, wann der letzte Besuch war, was erledigt wurde, von wem, welche Fotos vorliegen und was als Nächstes ansteht.",
       "labels": [
         "Kunde",
         "Immobilie",
@@ -799,7 +775,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "capabilities": {
       "eyebrow": "WAS SIE TUN KÖNNEN",
       "title": "Damit die Arbeit nicht vom Gedächtnis abhängt.",
-      "body": "Bündeln Sie, was Ihr Team vor dem Besuch braucht und was danach klar sein muss.",
+      "body": "Bündeln Sie, was die beteiligten Personen für die Betreuung brauchen und was danach klar sein muss.",
       "items": [
         [
           "Kunden und Immobilien",
@@ -830,7 +806,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "differences": {
       "eyebrow": "WARUM HOMEGUIDE",
       "title": "Weniger merken. Weniger nachfragen. Einfacher weitermachen.",
-      "body": "Anweisungen und bisherige Arbeiten bleiben verfügbar, auch wenn jemand anderes die Betreuung übernimmt.",
+      "body": "Anweisungen, Menschen und bisherige Arbeiten gehören zur selben Immobilie. Die ganze Geschichte muss nicht für jede Arbeit neu erzählt werden.",
       "items": [
         [
           "Die Informationen bleiben bei der Immobilie",
@@ -841,8 +817,8 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
           "Sie kann frühere Arbeiten und offene Aufgaben ansehen, ohne dass jemand die ganze Geschichte erzählen muss."
         ],
         [
-          "Fotos und Notizen machen die Arbeit verständlich",
-          "Halten Sie das Ergebnis eines Besuchs und die Details fest, die eine abgehakte Aufgabe allein nicht zeigt."
+          "Dieselben Informationen helfen bei verschiedenen Arbeiten",
+          "Aufgaben, Besuche und Kontrollen nutzen die Anweisungen und bisherigen Einträge der Immobilie, statt jedes Mal bei null anzufangen."
         ],
         [
           "Die Verwaltung sieht, was passiert",
@@ -861,7 +837,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
     "trust": {
       "eyebrow": "PRIVATE INFORMATIONEN",
       "title": "Jede Person sieht, was sie für ihre Arbeit braucht.",
-      "body": "Verwalten Sie den Zugriff Ihres Teams und entscheiden Sie, welche Informationen Sie mit dem Kunden teilen.",
+      "body": "Verwalten Sie den Zugriff der beteiligten Personen und entscheiden Sie, welche Informationen Sie mit dem Kunden teilen.",
       "items": [
         [
           "Zugriff passend zur Arbeit",
@@ -934,7 +910,7 @@ export const landingCopy: Record<LandingLanguage, LocalCopy> = {
       "items": [
         [
           "Ist HomeGuide nur für Gartenpflege?",
-          "Nein. Auch Instandhaltungsteams, Immobilienverwaltungen, Pflanzenservices und Gerätewartungsteams können es nutzen. Gemeinsam ist ihnen die regelmäßige Arbeit an denselben Immobilien."
+          "Nein. HomeGuide bündelt Arbeit und Informationen rund um die Immobilie für Eigentümer, Verwaltung, Dienstleister und Mitarbeitende. Es hilft bei Instandhaltung und anderen Arbeiten, regelmäßig oder einmalig."
         ],
         [
           "Was passiert, wenn eine neue Person die Betreuung übernimmt?",
