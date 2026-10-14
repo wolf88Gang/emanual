@@ -1,9 +1,9 @@
 # Roadmap
 
 ## Public copy repositioning
-- [ ] Rewrite ES/EN/DE public story around instructions, recurring visits, photos/notes and property history.
-- [ ] Simplify relationship visual and clearly label the illustrative service record; align public SEO without changing routes or product behavior.
-- [ ] Verify languages, public links, pricing and desktop/mobile layout.
+- [x] Rewrite ES/EN/DE public story around instructions, recurring visits, photos/notes and property history.
+- [x] Simplify relationship visual and clearly label the illustrative service record; align public SEO without changing routes or product behavior.
+- [x] Verify languages, public links, pricing and desktop/mobile layout (390/768/1024/1440px; 41 tests passed).
 
 - [x] Preserve the current Home Guide visual identity while restructuring the public landing with OriginKit-inspired organization and motion.
 - [x] Add interactive pricing using the existing checkout pricing rules.
