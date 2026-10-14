@@ -5,7 +5,8 @@
 - [x] Rewrite RequestAccess, Auth, Checkout, CheckoutSuccess, ResetPassword and NotFound in ES/EN/DE; preserve all business logic.
 - [x] Verify 41 existing tests and desktop 1440/mobile 390 screens in ES/EN/DE; no horizontal overflow or runtime exceptions. Checkout tested with existing session; checking/pending/failed messages tested with intercepted responses, no payments.
 - [x] Confirmed-payment remount loop fixed: CheckoutSuccess no longer calls refreshUserData (it set AuthContext.loading, AppRoutes swapped in PageLoader and remounted the page). Verified with simulated paid/pending/failed; no real payment.
-- [ ] Next phase: align /jobs, /worker/:id, /c/:token, /cliente/:token with public positioning (see audit section O)
+- [x] Phase 3: /jobs, /worker/:id, /c/:token, /cliente/:token copy aligned ES/EN/DE; demo jobs labelled fictitious and excluded from JobPosting data; token pages noindex (audit section P)
+- [ ] P2 follow-ups: demo job schedule/DE text, worker canonical id, client portal raw status/action labels
 - [ ] Valid recovery form, request submission and new-account creation E2E: intentionally untested because this scope prohibits password changes, actual submissions, new users and email sends.
 
 ## Public copy repositioning

@@ -346,3 +346,10 @@ Payments: PayPal (create/capture order functions, server-side verified)
 - Bug: CheckoutSuccess called refreshUserData() on paid/active; it set AuthContext.loading=true, AppRoutes replaced every route with PageLoader, unmounting the page, which remounted in 'checking' and re-verified (loop).
 - Fix: CheckoutSuccess only sets state 'paid'. Payment does not change profile/roles/admin state; SubscriptionProvider refetches on mount after Continue. No backend/ONVO/DB/pricing change.
 - Verified (simulated responses, no charge): paid screen stays with a single verify call; Continue -> /onboarding for no-org user; pending and failed screens after 5 retries; 390px and 1440px.
+
+## P. Phase 3 public routes (2026-10-14)
+- /jobs: HomeGuide brand, broadened to maintenance/gardens/property services, full ES/EN/DE, emoji removed. Demo jobs: visible "fictitious examples, not real jobs" notice, count shows "examples only", no JobPosting JSON-LD (verified false with demo, true with simulated real jobs).
+- /worker/:id: "Professional profile" ES/EN/DE, HomeGuide brand; data/messaging unchanged.
+- /c/:token (one property, plantops-portal) and /cliente/:token (all properties of a client, plantops-client-portal) are different views; both kept. /cliente now ES/EN/DE (browser language), no client name in document title.
+- Seo gained optional noindex (robots noindex,nofollow; no canonical, og:url or JSON-LD). Both token pages use it with generic titles. Verified with simulated responses incl. expired/revoked.
+- Open P2: demo job schedule text and German job content come from English data; worker canonical uses profile row id, not URL id; /cliente shows raw activity/invoice status codes; demo jobs remain visible on /jobs by design.
